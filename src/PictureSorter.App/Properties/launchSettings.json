@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "PictureSorter.App (Unpackaged)": {
+      "commandName": "Project"
+    },
+    "PictureSorter.App (Package)": {
+      "commandName": "MsixPackage"
+    }
+  }
+}

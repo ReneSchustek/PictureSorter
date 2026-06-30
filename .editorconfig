@@ -1,0 +1,145 @@
+# EditorConfig – https://editorconfig.org
+root = true
+
+# Alle Dateien
+[*]
+charset = utf-8
+end_of_line = crlf
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+# C# Quellcode
+[*.cs]
+indent_size = 4
+# Namespace-Deklaration: file-scoped (namespace Foo;)
+dotnet_style_namespace_declarations = file_scoped:warning
+
+# ── Vereinfachungen erzwingen ────────────────────────────────────────────────
+# using-Anweisungen ohne Block (using var x = ...; statt using (var x = ...) { })
+csharp_prefer_simple_using_statement = true:warning
+# Sammlungs-Initialisierung: [] statt new List<T>() wo möglich (C# 12+)
+dotnet_style_collection_expression = true:warning
+# Target-Typed new: new() statt new ClassName() wenn Typ aus Kontext klar
+csharp_style_implicit_object_creation_when_type_is_apparent = true:warning
+# Vereinfachte default-Ausdrücke: default statt default(T)
+csharp_prefer_simple_default_expression = true:warning
+# Pattern Matching bevorzugen wo sinnvoll
+csharp_style_prefer_pattern_matching = true:suggestion
+# Switch-Expressions statt switch-Statements (wenn lesbar)
+csharp_style_prefer_switch_expression = true:suggestion
+# Unnötige Zuweisungen vermeiden
+dotnet_diagnostic.IDE0059.severity = warning
+
+# =========================
+# Bug Prevention
+# =========================
+
+# Nullability (kritisch)
+dotnet_diagnostic.CS8600.severity = error
+dotnet_diagnostic.CS8602.severity = error
+dotnet_diagnostic.CS8618.severity = error
+
+# Async Fehler verhindern
+dotnet_diagnostic.CS4014.severity = error
+
+# Resource / Dispose
+dotnet_diagnostic.CA2000.severity = error
+dotnet_diagnostic.CA2213.severity = error
+
+# Unused Code
+dotnet_diagnostic.CS0168.severity = error
+dotnet_diagnostic.CS0219.severity = error
+dotnet_diagnostic.IDE0060.severity = error
+
+# ConfigureAwait vergessen vermeiden
+dotnet_diagnostic.CA2007.severity = warning
+
+# =========================
+# Security (security.md)
+# =========================
+
+# SQL-Injection
+dotnet_diagnostic.CA2100.severity = error
+
+# Schwacher Zufallsgenerator (System.Random fuer Security)
+dotnet_diagnostic.CA5394.severity = error
+
+# Unsichere Deserialisierung
+dotnet_diagnostic.CA2300.severity = error
+dotnet_diagnostic.CA2301.severity = error
+dotnet_diagnostic.CA2302.severity = error
+
+# Hardcodierte Verschluesselung
+dotnet_diagnostic.CA5350.severity = error
+dotnet_diagnostic.CA5351.severity = error
+
+# Unsichere TLS-Version
+dotnet_diagnostic.CA5364.severity = error
+
+# Cookie ohne HttpOnly/Secure
+dotnet_diagnostic.CA5382.severity = error
+dotnet_diagnostic.CA5383.severity = error
+
+# Unsichere Cipher-Modi (ECB)
+dotnet_diagnostic.CA5358.severity = error
+
+# Path-Traversal
+dotnet_diagnostic.CA3003.severity = error
+
+# XSS
+dotnet_diagnostic.CA3002.severity = error
+
+# =========================
+# Resilience (resilience.md)
+# =========================
+
+# async void (Prozess-Absturz bei unbehandelter Exception)
+dotnet_diagnostic.VSTHRD100.severity = error
+
+# Task.Result / Task.Wait (Deadlock)
+dotnet_diagnostic.CA1849.severity = error
+
+# IDisposable korrekt implementieren
+dotnet_diagnostic.CA1816.severity = warning
+
+# =========================
+# Architecture (architecture.md)
+# =========================
+
+# Nicht verwendete private Member entfernen
+dotnet_diagnostic.IDE0051.severity = error
+
+# Nicht verwendeter Ausdruck
+dotnet_diagnostic.IDE0058.severity = warning
+
+# Kein generischer Exception-Catch
+dotnet_diagnostic.CA1031.severity = warning
+
+# Static-faehige Methoden
+dotnet_diagnostic.CA1822.severity = suggestion
+
+# Logger-Performance
+dotnet_diagnostic.CA1848.severity = suggestion
+
+# Projekt- und Config-Dateien
+[*.{csproj,props,targets,xml}]
+indent_size = 2
+
+# JSON / YAML
+[*.{json,yml,yaml}]
+indent_size = 2
+
+# Markdown
+[*.md]
+trim_trailing_whitespace = false
+
+# XAML
+[*.xaml]
+indent_size = 4
+
+# Code-Behind / generierte XAML-Partials: einige IDE-Regeln greifen hier nicht sinnvoll
+[**/{*.xaml.cs,*Page.*.cs,*Window.xaml.cs,*Control.xaml.cs}]
+dotnet_diagnostic.IDE0051.severity = none
+dotnet_diagnostic.IDE0060.severity = none
