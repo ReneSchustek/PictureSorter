@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="PictureSorter.App.Views.AboutPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:PictureSorter.App.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Loaded="OnPageLoaded"
+    mc:Ignorable="d">
+
+    <ScrollViewer Padding="24">
+        <StackPanel MaxWidth="680" Spacing="16">
+            <TextBlock
+                FontSize="20"
+                FontWeight="SemiBold"
+                Text="Einstellungen" />
+
+            <!-- Darstellung -->
+            <Border Style="{StaticResource CardBorderStyle}">
+                <StackPanel Spacing="8">
+                    <TextBlock FontWeight="SemiBold" Text="Darstellung" />
+                    <TextBlock
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="Wähle zwischen hellem und dunklem Design."
+                        TextWrapping="Wrap" />
+                    <ToggleSwitch
+                        x:Name="DarkToggle"
+                        Header="Dunkles Design"
+                        OffContent="Aus"
+                        OnContent="An"
+                        Toggled="OnDarkToggled" />
+                </StackPanel>
+            </Border>
+
+            <!-- Updates -->
+            <Border Style="{StaticResource CardBorderStyle}">
+                <StackPanel Spacing="10">
+                    <TextBlock FontWeight="SemiBold" Text="Updates" />
+                    <TextBlock
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="PictureSorter kann beim Start nach einer neueren Version suchen und sie auf Wunsch automatisch installieren."
+                        TextWrapping="Wrap" />
+                    <ToggleSwitch
+                        x:Name="UpdateCheckToggle"
+                        Header="Beim Start nach Updates suchen"
+                        OffContent="Aus"
+                        OnContent="An"
+                        Toggled="OnUpdateCheckToggled" />
+                    <ToggleSwitch
+                        x:Name="AutoUpdateToggle"
+                        Header="Updates automatisch installieren"
+                        OffContent="Aus"
+                        OnContent="An"
+                        Toggled="OnAutoUpdateToggled" />
+                    <InfoBar
+                        x:Name="UpdateStatusBar"
+                        IsClosable="False"
+                        IsOpen="True"
+                        Message="Noch nicht geprüft."
+                        Severity="Informational" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Click="OnCheckUpdatesClick" Content="Nach Updates suchen" />
+                        <Button
+                            x:Name="InstallUpdateButton"
+                            Click="OnInstallUpdateClick"
+                            Content="Jetzt aktualisieren"
+                            Style="{ThemeResource AccentButtonStyle}"
+                            Visibility="Collapsed" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Lokale KI (Ollama) -->
+            <Border Style="{StaticResource CardBorderStyle}">
+                <StackPanel Spacing="10">
+                    <TextBlock FontWeight="SemiBold" Text="Lokale KI (Ollama)" />
+                    <TextBlock
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        TextWrapping="Wrap">
+                        PictureSorter erkennt Bildinhalte mit einer KI, die vollständig auf
+                        diesem PC läuft – deine Fotos verlassen den Rechner nicht. Falls das
+                        Sortieren nicht startet, richte die KI hier mit einem Klick ein. Der
+                        Download kann beim ersten Mal einige Minuten dauern.
+                    </TextBlock>
+                    <InfoBar
+                        x:Name="KiStatusBar"
+                        IsClosable="False"
+                        IsOpen="True"
+                        Message="Status wird geprüft…"
+                        Severity="Informational" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button
+                            Click="OnSetupClick"
+                            Content="Jetzt einrichten"
+                            Style="{ThemeResource AccentButtonStyle}" />
+                        <Button Click="OnCheckClick" Content="Status prüfen" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Protokoll (Fehlerdiagnose) -->
+            <Border Style="{StaticResource CardBorderStyle}">
+                <StackPanel Spacing="10">
+                    <TextBlock FontWeight="SemiBold" Text="Protokoll (Fehlerdiagnose)" />
+                    <TextBlock
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        TextWrapping="Wrap">
+                        Hier siehst du die jüngsten Programmmeldungen. Wenn etwas nicht
+                        funktioniert, hilft dieser Verlauf bei der Ursachensuche. Die
+                        vollständigen, täglichen Protokolldateien liegen im Log-Ordner.
+                    </TextBlock>
+                    <TextBox
+                        x:Name="LogView"
+                        Height="220"
+                        FontFamily="Consolas"
+                        FontSize="12"
+                        IsReadOnly="True"
+                        IsSpellCheckEnabled="False"
+                        ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                        ScrollViewer.VerticalScrollBarVisibility="Auto"
+                        TextWrapping="NoWrap" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Click="OnRefreshLogClick" Content="Aktualisieren" />
+                        <Button Click="OnOpenLogFolderClick" Content="Log-Ordner öffnen" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Über -->
+            <Border Style="{StaticResource CardBorderStyle}">
+                <StackPanel Spacing="8">
+                    <TextBlock FontWeight="SemiBold" Text="Über PictureSorter" />
+                    <TextBlock TextWrapping="Wrap">
+                        PictureSorter sortiert Fotos mithilfe einer lokal laufenden KI (Ollama)
+                        lernfähig in Unterordner. Alle Bildanalysen geschehen offline auf diesem Rechner.
+                    </TextBlock>
+                    <TextBlock
+                        x:Name="VersionText"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

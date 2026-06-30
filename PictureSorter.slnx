@@ -1,0 +1,17 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/PictureSorter.App/PictureSorter.App.csproj">
+      <Platform Project="x64" />
+    </Project>
+    <Project Path="src/PictureSorter.Application/PictureSorter.Application.csproj" />
+    <Project Path="src/PictureSorter.Core/PictureSorter.Core.csproj" />
+    <Project Path="src/PictureSorter.Data/PictureSorter.Data.csproj" />
+    <Project Path="src/PictureSorter.Imaging/PictureSorter.Imaging.csproj" />
+    <Project Path="src/PictureSorter.Infrastructure/PictureSorter.Infrastructure.csproj" />
+    <Project Path="src/PictureSorter.Ollama/PictureSorter.Ollama.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/PictureSorter.Tests.Integration/PictureSorter.Tests.Integration.csproj" />
+    <Project Path="tests/PictureSorter.Tests.Unit/PictureSorter.Tests.Unit.csproj" />
+  </Folder>
+</Solution>

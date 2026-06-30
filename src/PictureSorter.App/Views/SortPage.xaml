@@ -1,0 +1,366 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="PictureSorter.App.Views.SortPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:PictureSorter.App.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:PictureSorter.Application.ViewModels"
+    xmlns:vo="using:PictureSorter.Core.ValueObjects"
+    Loaded="OnPageLoaded"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource AppBackgroundBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Immer sichtbar: KI-Hinweis, Titel und Ansichts-Umschalter -->
+        <StackPanel Padding="24,16,24,8" Spacing="12">
+            <InfoBar
+                IsClosable="False"
+                IsOpen="{x:Bind ModelHint.IsHintVisible, Mode=OneWay}"
+                Message="{x:Bind ModelHint.Message, Mode=OneWay}"
+                Severity="Warning"
+                Title="KI noch nicht einsatzbereit">
+                <InfoBar.ActionButton>
+                    <Button Click="OnSetupOllamaClick" Content="Jetzt einrichten" />
+                </InfoBar.ActionButton>
+            </InfoBar>
+
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock
+                    VerticalAlignment="Center"
+                    FontSize="22"
+                    FontWeight="SemiBold"
+                    Text="Fotos sortieren" />
+                <StackPanel
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal"
+                    Spacing="8">
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="Ansicht:" />
+                    <ComboBox
+                        x:Name="ViewModeCombo"
+                        MinWidth="170"
+                        AutomationProperties.Name="Ansicht"
+                        SelectionChanged="OnViewModeChanged">
+                        <ComboBoxItem Content="Schritt für Schritt" />
+                        <ComboBoxItem Content="Standard" />
+                    </ComboBox>
+                </StackPanel>
+            </Grid>
+        </StackPanel>
+
+        <!-- Nur im Schritt-für-Schritt-Modus: klickbare Schrittleiste + Titel + Neustart -->
+        <StackPanel
+            Grid.Row="1"
+            Padding="24,0,24,8"
+            Spacing="6"
+            Visibility="{x:Bind ViewModel.Wizard.IsGuided, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+            <!-- Schrittleiste: Sprung zu bereits erreichten Schritten. Der ContentControl
+                 deaktiviert die ganze Leiste, während ein Vorgang läuft. -->
+            <ContentControl
+                HorizontalContentAlignment="Left"
+                IsEnabled="{x:Bind ViewModel.Wizard.IsInteractive, Mode=OneWay}"
+                IsTabStop="False">
+                <StackPanel Orientation="Horizontal" Spacing="2">
+                <HyperlinkButton
+                    Padding="4,2"
+                    Click="OnStepClick"
+                    Content="1. Ordner"
+                    FontWeight="{x:Bind ViewModel.Wizard.IsStep1, Mode=OneWay, Converter={StaticResource BoolToFontWeightConverter}}"
+                    IsEnabled="{x:Bind ViewModel.Wizard.MaxReachedStep, Mode=OneWay, Converter={StaticResource StepReachedConverter}, ConverterParameter=0}"
+                    Tag="0" />
+                <TextBlock
+                    VerticalAlignment="Center"
+                    Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                    Text="▸" />
+                <HyperlinkButton
+                    Padding="4,2"
+                    Click="OnStepClick"
+                    Content="2. Kategorie"
+                    FontWeight="{x:Bind ViewModel.Wizard.IsStep2, Mode=OneWay, Converter={StaticResource BoolToFontWeightConverter}}"
+                    IsEnabled="{x:Bind ViewModel.Wizard.MaxReachedStep, Mode=OneWay, Converter={StaticResource StepReachedConverter}, ConverterParameter=1}"
+                    Tag="1" />
+                <TextBlock
+                    VerticalAlignment="Center"
+                    Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                    Text="▸" />
+                <HyperlinkButton
+                    Padding="4,2"
+                    Click="OnStepClick"
+                    Content="3. Beispiele"
+                    FontWeight="{x:Bind ViewModel.Wizard.IsStep3, Mode=OneWay, Converter={StaticResource BoolToFontWeightConverter}}"
+                    IsEnabled="{x:Bind ViewModel.Wizard.MaxReachedStep, Mode=OneWay, Converter={StaticResource StepReachedConverter}, ConverterParameter=2}"
+                    Tag="2" />
+                <TextBlock
+                    VerticalAlignment="Center"
+                    Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                    Text="▸" />
+                <HyperlinkButton
+                    Padding="4,2"
+                    Click="OnStepClick"
+                    Content="4. Analyse"
+                    FontWeight="{x:Bind ViewModel.Wizard.IsStep4, Mode=OneWay, Converter={StaticResource BoolToFontWeightConverter}}"
+                    IsEnabled="{x:Bind ViewModel.Wizard.MaxReachedStep, Mode=OneWay, Converter={StaticResource StepReachedConverter}, ConverterParameter=3}"
+                    Tag="3" />
+                <TextBlock
+                    VerticalAlignment="Center"
+                    Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                    Text="▸" />
+                <HyperlinkButton
+                    Padding="4,2"
+                    Click="OnStepClick"
+                    Content="5. Sortieren"
+                    FontWeight="{x:Bind ViewModel.Wizard.IsStep5, Mode=OneWay, Converter={StaticResource BoolToFontWeightConverter}}"
+                    IsEnabled="{x:Bind ViewModel.Wizard.MaxReachedStep, Mode=OneWay, Converter={StaticResource StepReachedConverter}, ConverterParameter=4}"
+                    Tag="4" />
+                </StackPanel>
+            </ContentControl>
+
+            <!-- Titel des aktuellen Schritts + Neu starten -->
+            <Grid ColumnSpacing="8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock
+                    VerticalAlignment="Center"
+                    FontSize="16"
+                    FontWeight="SemiBold"
+                    Text="{x:Bind ViewModel.Wizard.StepTitle, Mode=OneWay}" />
+                <Button
+                    Grid.Column="1"
+                    Command="{x:Bind ViewModel.Wizard.RestartCommand}"
+                    Content="↺ Neu starten" />
+            </Grid>
+        </StackPanel>
+
+        <!-- Inhalt: Schritt-Karten. Im Schritt-Modus nur die aktive, im Standard alle. -->
+        <ScrollViewer Grid.Row="2" Padding="24,4,24,12">
+            <StackPanel MaxWidth="840" Spacing="16">
+
+                <!-- Schritt 1: Quellordner -->
+                <Border
+                    Style="{StaticResource CardBorderStyle}"
+                    Visibility="{x:Bind ViewModel.Wizard.ShowStep1, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel Spacing="12">
+                        <TextBlock FontWeight="SemiBold" Text="1. Ordner mit Fotos wählen" />
+                        <TextBlock
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Text="Wähle den Ordner, in dem deine Fotos liegen. PictureSorter sieht sie sich an und hilft dir, sie zu ordnen."
+                            TextWrapping="Wrap" />
+                        <Grid ColumnSpacing="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBox
+                                Header="Ordner mit Fotos"
+                                PlaceholderText="z. B. C:\Fotos"
+                                Text="{x:Bind ViewModel.SourceFolder, Mode=TwoWay}" />
+                            <Button
+                                Grid.Column="1"
+                                VerticalAlignment="Bottom"
+                                Command="{x:Bind ViewModel.BrowseCommand}"
+                                Content="Durchsuchen…" />
+                        </Grid>
+                        <CheckBox
+                            Content="Auch Unterordner einbeziehen"
+                            IsChecked="{x:Bind ViewModel.IncludeSubfolders, Mode=TwoWay}" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Schritt 2: Kategorie beschreiben -->
+                <Border
+                    Style="{StaticResource CardBorderStyle}"
+                    Visibility="{x:Bind ViewModel.Wizard.ShowStep2, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel Spacing="12">
+                        <TextBlock FontWeight="SemiBold" Text="2. Kategorie beschreiben" />
+                        <TextBlock
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Text="Was sollen wir heraussuchen? Gib der Gruppe einen Namen und beschreibe in eigenen Worten, was darauf zu sehen ist."
+                            TextWrapping="Wrap" />
+                        <TextBox
+                            Header="Name der Gruppe"
+                            PlaceholderText="z. B. Familie"
+                            Text="{x:Bind ViewModel.CategoryName, Mode=TwoWay}" />
+                        <TextBox
+                            Header="Beschreibung (in eigenen Worten)"
+                            AcceptsReturn="True"
+                            PlaceholderText="z. B. Bilder, auf denen meine Familie zu sehen ist"
+                            Text="{x:Bind ViewModel.CategoryDescription, Mode=TwoWay}"
+                            TextWrapping="Wrap" />
+                        <CheckBox
+                            Content="Ereignis-Gruppe (Ordnername erhält das Aufnahmedatum, z. B. „Urlaub 14.07.25“)"
+                            IsChecked="{x:Bind ViewModel.IsEventCategory, Mode=TwoWay}" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Schritt 3: Beispiele auswählen -->
+                <Border
+                    Style="{StaticResource CardBorderStyle}"
+                    Visibility="{x:Bind ViewModel.Wizard.ShowStep3, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel Spacing="12">
+                        <TextBlock FontWeight="SemiBold" Text="3. Beispiele auswählen" />
+                        <TextBlock
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Text="Die Beispielbilder werden automatisch geladen. Markiere, ob sie zur Gruppe „dazu“ gehören oder „nicht“."
+                            TextWrapping="Wrap" />
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Button
+                                Command="{x:Bind ViewModel.LoadExamplesCommand}"
+                                Content="Beispiele neu laden"
+                                ToolTipService.ToolTip="Lädt die Beispielbilder erneut – nützlich, falls das automatische Laden nicht geklappt hat." />
+                            <Button
+                                Command="{x:Bind ViewModel.LearnCommand}"
+                                Content="Profil lernen"
+                                Style="{ThemeResource AccentButtonStyle}"
+                                Visibility="{x:Bind ViewModel.Wizard.ShowStandardActions, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                        </StackPanel>
+                        <GridView
+                            MaxHeight="360"
+                            ItemsSource="{x:Bind ViewModel.ExampleCandidates}"
+                            SelectionMode="None">
+                            <GridView.ItemTemplate>
+                                <DataTemplate x:DataType="vm:ExampleCandidateViewModel">
+                                    <StackPanel
+                                        Width="170"
+                                        Padding="6"
+                                        Spacing="4">
+                                        <Image
+                                            Height="120"
+                                            AutomationProperties.Name="{x:Bind FileName}"
+                                            Source="{x:Bind FilePath, Converter={StaticResource ThumbnailConverter}}"
+                                            Stretch="UniformToFill"
+                                            ToolTipService.ToolTip="{x:Bind InfoTooltip}" />
+                                        <TextBlock
+                                            MaxWidth="158"
+                                            FontSize="12"
+                                            Text="{x:Bind FileName}"
+                                            TextTrimming="CharacterEllipsis" />
+                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <ToggleButton
+                                                Padding="6,2"
+                                                Content="✓ dazu"
+                                                FontSize="12"
+                                                IsChecked="{x:Bind IsPositive, Mode=TwoWay}" />
+                                            <ToggleButton
+                                                Padding="6,2"
+                                                Content="✗ nicht"
+                                                FontSize="12"
+                                                IsChecked="{x:Bind IsNegative, Mode=TwoWay}" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </GridView.ItemTemplate>
+                        </GridView>
+                        <TextBlock>
+                            <Run Text="Aktive Gruppe:" />
+                            <Run FontWeight="SemiBold" Text="{x:Bind ViewModel.ActiveCategoryName, Mode=OneWay}" />
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+
+                <!-- Schritt 4: Analyse starten -->
+                <Border
+                    Style="{StaticResource CardBorderStyle}"
+                    Visibility="{x:Bind ViewModel.Wizard.ShowStep4, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel Spacing="12">
+                        <TextBlock FontWeight="SemiBold" Text="4. Analyse starten" />
+                        <TextBlock
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Text="Jetzt sieht sich PictureSorter alle Fotos im Ordner an und schlägt vor, welche zur Gruppe passen. Das kann je nach Anzahl etwas dauern."
+                            TextWrapping="Wrap" />
+                        <Button
+                            Command="{x:Bind ViewModel.AnalyzeCommand}"
+                            Content="Analysieren"
+                            Style="{ThemeResource AccentButtonStyle}"
+                            Visibility="{x:Bind ViewModel.Wizard.ShowStandardActions, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Schritt 5: Vorschau und Sortieren -->
+                <Border
+                    Style="{StaticResource CardBorderStyle}"
+                    Visibility="{x:Bind ViewModel.Wizard.ShowStep5, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel Spacing="12">
+                        <TextBlock FontWeight="SemiBold" Text="5. Vorschau und sortieren" />
+                        <TextBlock
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Text="Prüfe die Vorschläge. Mit „Sortieren“ werden die Dateien in den Zielordner verschoben."
+                            TextWrapping="Wrap" />
+                        <Button
+                            Command="{x:Bind ViewModel.ApplyCommand}"
+                            Content="Sortieren"
+                            Style="{ThemeResource AccentButtonStyle}"
+                            Visibility="{x:Bind ViewModel.Wizard.ShowStandardActions, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                        <ListView
+                            MaxHeight="360"
+                            ItemsSource="{x:Bind ViewModel.Proposals}"
+                            SelectionMode="None">
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="vo:SortProposal">
+                                    <Grid Padding="0,6" ColumnSpacing="12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Image
+                                            Width="56"
+                                            Height="56"
+                                            AutomationProperties.Name="{x:Bind Photo.FileName}"
+                                            Source="{x:Bind Photo.FullPath, Converter={StaticResource ThumbnailConverter}}"
+                                            Stretch="UniformToFill"
+                                            ToolTipService.ToolTip="{x:Bind Photo.ToDetailedInfo()}" />
+                                        <StackPanel Grid.Column="1" Spacing="2">
+                                            <TextBlock FontWeight="SemiBold" Text="{x:Bind Photo.FileName}" />
+                                            <TextBlock
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                Text="{x:Bind TargetFolderPath}" />
+                                        </StackPanel>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Nur im Schritt-für-Schritt-Modus: Zurück und der eine Aktionsknopf -->
+        <Grid
+            Grid.Row="3"
+            Padding="24,4,24,16"
+            ColumnSpacing="8"
+            Visibility="{x:Bind ViewModel.Wizard.IsGuided, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Button
+                Command="{x:Bind ViewModel.Wizard.GoBackCommand}"
+                Content="◀ Zurück" />
+            <Button
+                Grid.Column="2"
+                MinWidth="140"
+                Command="{x:Bind ViewModel.Wizard.PrimaryActionCommand}"
+                Content="{x:Bind ViewModel.Wizard.PrimaryActionLabel, Mode=OneWay}"
+                Style="{ThemeResource AccentButtonStyle}" />
+        </Grid>
+    </Grid>
+</Page>

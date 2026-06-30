@@ -1,0 +1,91 @@
+# ============================================================
+# .gitignore – PictureSorter
+# ============================================================
+
+# ============================================================
+# Lokale Werkzeug- und Editordateien (nicht versionieren)
+# ============================================================
+NOTIZEN.md
+**/NOTIZEN.md
+.gitignore-template
+
+# ============================================================
+# SCRIPTE nie committen — Ausnahme: tools/ liefert Repo-Skripte
+# ============================================================
+*.ps1
+!tools/*.ps1
+
+# ============================================================
+# Test- und Coverage-Artefakte
+# ============================================================
+test-results/
+TestResults/
+coverage/
+*.trx
+*.coverage
+*.coveragexml
+
+# ============================================================
+# Secrets / Umgebungsvariablen (NIEMALS in Git!)
+# ============================================================
+.env
+.env.local
+.env.*.local
+!.env.example
+appsettings.Development.json
+appsettings.Local.json
+appsettings.Secrets.json
+appsettings.Production.json
+secrets.json
+*.pfx
+*.p12
+*.key
+config/secrets/
+
+# ============================================================
+# Logs
+# ============================================================
+*.log
+/logs/
+
+# ============================================================
+# .NET / Visual Studio
+# ============================================================
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+packages/
+*.nupkg
+project.lock.json
+*.nuget.props
+*.nuget.targets
+
+# Build-Ergebnisse
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+ARM64/
+[Bb]uild/
+bld/
+
+# Publish
+publish/
+AppPackages/
+
+# NuGet
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Rider
+.idea/

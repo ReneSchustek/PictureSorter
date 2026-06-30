@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- net10.0-windows wegen Windows-spezifischer APIs der Desktop-Anwendung;
+         Cross-Platform der Application-Schicht ist nicht Ziel. -->
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PictureSorter.Core\PictureSorter.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.5" />
+    <!-- DI-Registrierung der Use-Case-Dienste und ViewModels. -->
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.5" />
+    <!-- UI-agnostische MVVM-Bausteine (ObservableObject/RelayCommand) für die
+         testbaren ViewModels der Application-Schicht. Keine WinUI-Abhängigkeit. -->
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="PictureSorter.Tests.Unit" />
+  </ItemGroup>
+
+</Project>
