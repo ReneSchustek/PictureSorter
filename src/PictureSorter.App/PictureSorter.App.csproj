@@ -1,0 +1,113 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <RootNamespace>PictureSorter.App</RootNamespace>
+    <AssemblyName>PictureSorter</AssemblyName>
+    <Version>1.2.0</Version>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- Bettet das Icon in die EXE ein (Explorer, Taskleiste, gepinnte
+         Verknüpfung). Das Laufzeit-Fenstericon wird zusätzlich über
+         AppWindow.SetIcon gesetzt. -->
+    <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
+    <Platforms>x86;x64;ARM64</Platforms>
+    <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
+    <PublishProfile>win-$(Platform).pubxml</PublishProfile>
+    <UseWinUI>true</UseWinUI>
+    <WinUISDKReferences>false</WinUISDKReferences>
+    <Nullable>enable</Nullable>
+    <!-- Standardmaessig unpackaged: F5/Run und die portable Variante laufen ohne
+         Deploy. Fuer ein MSIX-Paket explizit mit -p:WindowsPackageType=MSIX bauen. -->
+    <WindowsPackageType Condition="'$(WindowsPackageType)' == ''">None</WindowsPackageType>
+    <EnableMsixTooling Condition="'$(WindowsPackageType)' != 'None'">true</EnableMsixTooling>
+  </PropertyGroup>
+
+  <!-- MSIX-Signierung: nur für paketierte Builds. Das selbstsignierte
+       Testzertifikat (Subjekt CN=AppPublisher, passend zum Publisher im
+       Package.appxmanifest) erlaubt das lokale Erstellen und Sideloaden des
+       Pakets. NICHT für die Verteilung gedacht – für ein Release ein echtes
+       Code-Signing-Zertifikat verwenden. -->
+  <PropertyGroup Condition="'$(WindowsPackageType)' != 'None'">
+    <AppxPackageSigningEnabled>true</AppxPackageSigningEnabled>
+    <PackageCertificateKeyFile>PictureSorter.App_TemporaryKey.pfx</PackageCertificateKeyFile>
+    <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="PictureSorter.App_TemporaryKey.pfx" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\SplashScreen.scale-200.png" />
+    <Content Include="Assets\LockScreenLogo.scale-200.png" />
+    <Content Include="Assets\Square150x150Logo.scale-200.png" />
+    <Content Include="Assets\Square44x44Logo.scale-200.png" />
+    <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
+    <Content Include="Assets\StoreLogo.png" />
+    <Content Include="Assets\AppIcon.ico" />
+    <Content Include="Assets\Wide310x150Logo.scale-200.png" />
+  </ItemGroup>
+
+  <!-- SplashScreen-Logo wird ins Assembly eingebettet (nie zur Laufzeit aus einer
+       Datei geladen). Der Build bricht ab, wenn das Logo fehlt. -->
+  <ItemGroup>
+    <None Remove="Assets\SplashLogo.png" />
+    <EmbeddedResource Include="Assets\SplashLogo.png" LogicalName="PictureSorter.App.Assets.SplashLogo.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- Einrichtungsskript für Ollama wird ins Ausgabeverzeichnis kopiert und vom
+       OllamaSetupService gestartet. -->
+  <ItemGroup>
+    <None Update="Tools\install-ollama.ps1" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Manifest Include="$(ApplicationManifest)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
+    <ProjectCapability Include="Msix" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.5" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="*" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PictureSorter.Application\PictureSorter.Application.csproj" />
+    <ProjectReference Include="..\PictureSorter.Core\PictureSorter.Core.csproj" />
+    <ProjectReference Include="..\PictureSorter.Data\PictureSorter.Data.csproj" />
+    <ProjectReference Include="..\PictureSorter.Imaging\PictureSorter.Imaging.csproj" />
+    <ProjectReference Include="..\PictureSorter.Infrastructure\PictureSorter.Infrastructure.csproj" />
+    <ProjectReference Include="..\PictureSorter.Ollama\PictureSorter.Ollama.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
+    <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
+  </PropertyGroup>
+
+  <!-- Trimming und ReadyToRun sind mit WinUI 3 + .NET 10 noch nicht kompatibel. -->
+  <PropertyGroup>
+    <PublishReadyToRun>false</PublishReadyToRun>
+    <PublishTrimmed>false</PublishTrimmed>
+  </PropertyGroup>
+
+  <!-- Verteidigung in der Tiefe: Build schlaegt fehl, wenn das eingebettete
+       Splash-Logo fehlt (splashscreen.md). -->
+  <Target Name="ValidateSplashLogoEmbeddedResource" BeforeTargets="BeforeBuild">
+    <Error
+      Condition="!Exists('$(MSBuildProjectDirectory)\Assets\SplashLogo.png')"
+      Text="SplashScreen-Logo fehlt: Assets\SplashLogo.png muss vorhanden und als EmbeddedResource eingebettet sein." />
+  </Target>
+</Project>

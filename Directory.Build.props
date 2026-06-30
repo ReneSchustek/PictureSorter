@@ -1,0 +1,41 @@
+<Project>
+  <!--
+    Zentrale Build-Konfiguration für alle Projekte in dieser Solution.
+    Einzelne .csproj-Dateien können diese Werte überschreiben.
+  -->
+  <PropertyGroup>
+    <!-- Single Source of Truth für die Versionsnummer (siehe VERSION).
+         Die CI kann diesen Wert beim Tag-Push überschreiben (-p:Version=…). -->
+    <Version>1.1.0</Version>
+    <!-- Nullability: Null-Reference-Warnungen als Fehler -->
+    <Nullable>enable</Nullable>
+    <!-- Moderne using-Direktiven automatisch -->
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Alle Warnungen sind Fehler -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <!-- Alle Analyzer-Regeln aktiv (Security, Performance, Reliability) -->
+    <AnalysisMode>All</AnalysisMode>
+    <!-- Code-Style in Build erzwingen -->
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <!-- XML-Dokumentation generieren (für IntelliSense) -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- Reproduzierbare Builds -->
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true' or '$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+  <!-- Test-Projekte: xUnit-Konventionen und keine XML-Doku erforderlich.
+       Trifft sowohl auf '*.Tests' als auch auf '*.Tests.*' zu (z. B. .Tests.Unit). -->
+  <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('.Tests')) or $(MSBuildProjectName.Contains('.Tests.'))">
+    <NoWarn>$(NoWarn);CA1707</NoWarn>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <Optimize>true</Optimize>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
+</Project>

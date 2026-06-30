@@ -1,0 +1,42 @@
+name: CI
+
+# Build-, Style-, Test- und Sicherheits-Gate. Läuft bei jedem Push auf main und
+# bei jedem Pull Request. Spiegelt das lokale Qualitäts-Gate aus der README wider,
+# damit der Code-Stand für Außenstehende jederzeit nachweisbar grün ist.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-test:
+    name: Build, Test & Audit
+    runs-on: windows-latest
+
+    steps:
+      - name: Quellcode auschecken
+        uses: actions/checkout@v4
+
+      - name: .NET SDK einrichten
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Abhängigkeiten wiederherstellen
+        run: dotnet restore PictureSorter.slnx
+
+      - name: Release-Build (Warnungen = Fehler)
+        run: dotnet build PictureSorter.slnx -c Release --no-restore
+
+      - name: Zeilenenden/Whitespace prüfen
+        run: dotnet format whitespace PictureSorter.slnx --verify-no-changes
+
+      - name: Tests ausführen
+        run: dotnet test PictureSorter.slnx -c Release --no-build
+
+      - name: Sicherheits-Audit (anfällige Pakete)
+        run: dotnet list PictureSorter.slnx package --vulnerable --include-transitive
