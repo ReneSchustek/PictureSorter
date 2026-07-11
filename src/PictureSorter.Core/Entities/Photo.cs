@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace PictureSorter.Core.Entities;
@@ -135,6 +136,24 @@ public sealed record Photo
     /// Menschlich lesbare Dateigröße (z. B. „2,4 MB").
     /// </summary>
     public string FormattedSize => FormatSize(SizeBytes);
+
+    /// <summary>
+    /// Berechnet eine stabile Signatur des Fotos aus Pfad, Größe und Aufnahmezeit.
+    /// Sie identifiziert das Foto im Sortier-Gedächtnis: Bleibt die Datei
+    /// unverändert, bleibt die Signatur gleich und eine getroffene Entscheidung
+    /// gilt weiter; ändert sich die Datei, entsteht eine neue Signatur und das Foto
+    /// wird erneut bewertet. Bewusst ohne Dateisystem-Zugriff, damit die Domäne
+    /// frei von Ein-/Ausgabe bleibt.
+    /// </summary>
+    /// <returns>Die hexadezimale Signatur (SHA-256).</returns>
+    public string ComputeSignature()
+    {
+        string raw = string.Create(
+            CultureInfo.InvariantCulture,
+            $"{FullPath}|{SizeBytes}|{CapturedAt?.UtcTicks ?? 0}");
+
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(raw)));
+    }
 
     /// <summary>
     /// Baut eine mehrzeilige, für ein Tooltip bzw. Mouse-Over geeignete Übersicht

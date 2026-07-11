@@ -11,7 +11,13 @@
     <Project Path="src/PictureSorter.Ollama/PictureSorter.Ollama.csproj" />
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="tests/PictureSorter.Tests.Integration/PictureSorter.Tests.Integration.csproj" />
-    <Project Path="tests/PictureSorter.Tests.Unit/PictureSorter.Tests.Unit.csproj" />
+    <Project Path="tests/PictureSorter.App.Tests/PictureSorter.App.Tests.csproj">
+      <Platform Project="x64" />
+    </Project>
+    <Project Path="tests/PictureSorter.Application.Tests/PictureSorter.Application.Tests.csproj" />
+    <Project Path="tests/PictureSorter.Core.Tests/PictureSorter.Core.Tests.csproj" />
+    <Project Path="tests/PictureSorter.Data.Tests/PictureSorter.Data.Tests.csproj" />
+    <Project Path="tests/PictureSorter.Infrastructure.Tests/PictureSorter.Infrastructure.Tests.csproj" />
+    <Project Path="tests/PictureSorter.Ollama.Tests/PictureSorter.Ollama.Tests.csproj" />
   </Folder>
 </Solution>
