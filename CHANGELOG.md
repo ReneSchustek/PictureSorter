@@ -4,6 +4,52 @@ Alle nennenswerten Änderungen an diesem Projekt werden hier dokumentiert.
 Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/),
 die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
+## [1.3.0]
+
+### Hinzugefügt
+
+- **Sortier-Gedächtnis**: PictureSorter merkt sich dauerhaft (SQLite), was zu welchem
+  Foto entschieden wurde. Ein zweiter Lauf überspringt bereits einsortierte, abgewählte
+  und von der KI abgelehnte Fotos – das spart die teuren KI-Aufrufe. Dasselbe Foto darf
+  je Kategorie unterschiedlich beurteilt werden.
+- **Seite „Gedächtnis"**: zeigt alle gemerkten Entscheidungen, filterbar nach Ordner und
+  Kategorie. Einzelne Einträge oder ein ganzes Ordner-Gedächtnis lassen sich verwerfen –
+  die betroffenen Fotos werden dann wieder neu bewertet.
+- **Vorschau: Bilder abwählen** – jeder Vorschlag hat eine Auswahl-Box, dazu
+  „Alle aus-/abwählen" und die Anzeige „x von y ausgewählt". Nur ausgewählte Bilder
+  werden verschoben; abgewählte werden gemerkt und nicht erneut vorgeschlagen.
+- **Großansicht**: Klick auf ein Vorschaubild zeigt das Foto in voller Größe samt allen
+  Bildinformationen.
+- **Startseite (Dashboard)** mit Kacheln in die drei Bereiche und dem Zustand der lokalen KI.
+- **Neues Erscheinungsbild**: dunkle Navigationsleiste, farbige Kopfbereiche je Seite,
+  Leerzustände mit Hinweis, was als Nächstes zu tun ist.
+
+### Geändert
+
+- Die ViewModels liegen jetzt in der App-Schicht (MVVM nach Vorlage); die
+  Application-Schicht ist damit vollständig UI-frei.
+- Je Projekt ein eigenes Testprojekt (App, Application, Core, Data, Infrastructure, Ollama).
+
+### Sicherheit
+
+- **Aktualisierung nur aus vertrauenswürdiger Quelle**: Der Updater wird ausschließlich
+  über HTTPS von GitHub geladen und vor dem Start auf eine gültige, von Windows als
+  vertrauenswürdig eingestufte Signatur geprüft. Ohne gültige Signatur wird die Datei
+  verworfen. Der Download läuft in einem eigenen, frisch angelegten Ordner.
+- Die native SQLite-Bibliothek wurde auf eine Version ohne bekannte Sicherheitslücke
+  angehoben (GHSA-2m69-gcr7-jv3q).
+
+### Behoben
+
+- Ein einzelner Dateifehler (z. B. gesperrte Datei) brach bisher den gesamten
+  Sortiervorgang ab. Jetzt werden die übrigen Dateien weiter verschoben; die
+  fehlgeschlagene bleibt ungemerkt und wird erneut vorgeschlagen.
+- Ein KI-Ausfall wurde nicht mehr als „Foto passt nicht" gemerkt – nur tatsächlich
+  gefällte Urteile landen im Gedächtnis.
+- Die Protokolldatei ist auf 100 MB je Tag begrenzt; der Log-Viewer lädt nur noch das
+  Dateiende statt der kompletten Datei.
+- Fremd-Protokolle (Datenbank, HTTP) fluten die Logdatei nicht mehr auf „Information".
+
 ## [1.2.0]
 
 ### Hinzugefügt

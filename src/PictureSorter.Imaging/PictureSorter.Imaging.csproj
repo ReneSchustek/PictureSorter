@@ -17,9 +17,4 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.5" />
   </ItemGroup>
 
-  <ItemGroup>
-    <InternalsVisibleTo Include="PictureSorter.Tests.Unit" />
-    <InternalsVisibleTo Include="PictureSorter.Tests.Integration" />
-  </ItemGroup>
-
 </Project>

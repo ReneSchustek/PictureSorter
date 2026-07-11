@@ -20,6 +20,13 @@ public sealed record SortProposal
     public required string CategoryName { get; init; }
 
     /// <summary>
+    /// Der Quellordner, aus dem das Foto stammt. Wird gebraucht, um die
+    /// Entscheidung im Sortier-Gedächtnis dem richtigen Ordner zuzuordnen (das Foto
+    /// selbst kann in einem Unterordner liegen).
+    /// </summary>
+    public required string SourceFolder { get; init; }
+
+    /// <summary>
     /// Vollständiger Zielordnerpfad (inkl. evtl. Datum bei Ereignis-Kategorien).
     /// </summary>
     public required string TargetFolderPath { get; init; }

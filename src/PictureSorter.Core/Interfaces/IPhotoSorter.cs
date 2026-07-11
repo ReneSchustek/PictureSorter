@@ -43,4 +43,14 @@ public interface IPhotoSorter
         IReadOnlyList<SortProposal> proposals,
         bool dryRun,
         CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Merkt vom Nutzer abgewählte Vorschläge dauerhaft als „nicht gewünscht",
+    /// sodass sie in einem späteren Lauf nicht erneut erscheinen.
+    /// </summary>
+    /// <param name="proposals">Die abgewählten Vorschläge.</param>
+    /// <param name="cancellationToken">Token zum Abbrechen des Vorgangs.</param>
+    Task IgnoreProposalsAsync(
+        IReadOnlyList<SortProposal> proposals,
+        CancellationToken cancellationToken);
 }

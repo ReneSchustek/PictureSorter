@@ -27,6 +27,28 @@
             <SolidColorBrush x:Key="AppStepActiveBrush" Color="#2E6DA4" />
             <SolidColorBrush x:Key="AppStepInactiveBrush" Color="#C3C9D2" />
             <SolidColorBrush x:Key="AppStepForegroundBrush" Color="#FFFFFF" />
+
+            <!-- Dunkle Navigationsleiste gegen die helle Arbeitsfläche. Die Werte
+                 gelten in beiden Designs, damit die Leiste ihren Charakter behält.
+                 Kontrast Text (#F2F5F8) auf Pane (#233240): 12,1:1 – über WCAG AA. -->
+            <SolidColorBrush x:Key="AppNavPaneBackgroundBrush" Color="#233240" />
+            <SolidColorBrush x:Key="AppNavForegroundBrush" Color="#F2F5F8" />
+            <SolidColorBrush x:Key="NavigationViewDefaultPaneBackground" Color="#233240" />
+            <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="#233240" />
+            <SolidColorBrush x:Key="NavigationViewItemForeground" Color="#F2F5F8" />
+            <SolidColorBrush x:Key="NavigationViewItemForegroundPointerOver" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="NavigationViewItemForegroundSelected" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="NavigationViewItemForegroundSelectedPointerOver" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="NavigationViewItemBackgroundPointerOver" Color="#31465A" />
+            <SolidColorBrush x:Key="NavigationViewItemBackgroundSelected" Color="#31465A" />
+            <SolidColorBrush x:Key="NavigationViewItemBackgroundSelectedPointerOver" Color="#3B556E" />
+
+            <!-- Sanfter Akzentverlauf für die Kopfbereiche (Hero). -->
+            <LinearGradientBrush x:Key="AppHeroBrush" StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Offset="0" Color="#2E6DA4" />
+                <GradientStop Offset="1" Color="#1F5A8A" />
+            </LinearGradientBrush>
+            <SolidColorBrush x:Key="AppHeroForegroundBrush" Color="#FFFFFF" />
         </ResourceDictionary>
 
         <!-- ───────────────────────── Dunkel ───────────────────────── -->
@@ -43,6 +65,27 @@
             <SolidColorBrush x:Key="AppStepActiveBrush" Color="#4A9CC5" />
             <SolidColorBrush x:Key="AppStepInactiveBrush" Color="#4A5160" />
             <SolidColorBrush x:Key="AppStepForegroundBrush" Color="#FFFFFF" />
+
+            <!-- Im Dunkelmodus setzt sich die Leiste durch eine noch dunklere,
+                 leicht blaustichige Fläche von der Arbeitsfläche ab.
+                 Kontrast Text (#E8EDF2) auf Pane (#151B22): 14,4:1. -->
+            <SolidColorBrush x:Key="AppNavPaneBackgroundBrush" Color="#151B22" />
+            <SolidColorBrush x:Key="AppNavForegroundBrush" Color="#E8EDF2" />
+            <SolidColorBrush x:Key="NavigationViewDefaultPaneBackground" Color="#151B22" />
+            <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="#151B22" />
+            <SolidColorBrush x:Key="NavigationViewItemForeground" Color="#E8EDF2" />
+            <SolidColorBrush x:Key="NavigationViewItemForegroundPointerOver" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="NavigationViewItemForegroundSelected" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="NavigationViewItemForegroundSelectedPointerOver" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="NavigationViewItemBackgroundPointerOver" Color="#26303B" />
+            <SolidColorBrush x:Key="NavigationViewItemBackgroundSelected" Color="#26303B" />
+            <SolidColorBrush x:Key="NavigationViewItemBackgroundSelectedPointerOver" Color="#31404F" />
+
+            <LinearGradientBrush x:Key="AppHeroBrush" StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Offset="0" Color="#2A5F8F" />
+                <GradientStop Offset="1" Color="#1B3E5C" />
+            </LinearGradientBrush>
+            <SolidColorBrush x:Key="AppHeroForegroundBrush" Color="#FFFFFF" />
         </ResourceDictionary>
 
     </ResourceDictionary.ThemeDictionaries>

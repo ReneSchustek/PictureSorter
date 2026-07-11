@@ -5,7 +5,7 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using PictureSorter.App.Services;
-using PictureSorter.Application.ViewModels;
+using PictureSorter.App.ViewModels;
 
 namespace PictureSorter.App.Views;
 
@@ -44,7 +44,27 @@ internal sealed partial class MainWindow : Window
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
         AppWindow.SetIcon("Assets/AppIcon.ico");
 
-        _ = NavFrame.Navigate(typeof(SortPage));
+        _ = NavFrame.Navigate(typeof(DashboardPage));
+    }
+
+    /// <summary>
+    /// Wechselt zu einem Bereich und markiert den passenden Eintrag in der
+    /// Navigationsleiste. Die Kacheln der Startseite laufen hierüber, damit Menü und
+    /// Inhalt nicht auseinanderlaufen.
+    /// </summary>
+    /// <param name="tag">Die Kennung des Zielbereichs (z. B. „sort").</param>
+    public void NavigateTo(string tag)
+    {
+        foreach (object item in NavView.MenuItems)
+        {
+            if (item is NavigationViewItem navigationItem
+                && string.Equals(navigationItem.Tag as string, tag, StringComparison.Ordinal))
+            {
+                // Das Setzen der Auswahl löst SelectionChanged aus – dort wird navigiert.
+                NavView.SelectedItem = navigationItem;
+                return;
+            }
+        }
     }
 
     private void TitleBar_PaneToggleRequested(TitleBar sender, object args)
@@ -75,11 +95,17 @@ internal sealed partial class MainWindow : Window
 
         switch (item.Tag)
         {
+            case "dashboard":
+                _ = NavFrame.Navigate(typeof(DashboardPage));
+                break;
             case "sort":
                 _ = NavFrame.Navigate(typeof(SortPage));
                 break;
             case "duplicates":
                 _ = NavFrame.Navigate(typeof(DuplicatesPage));
+                break;
+            case "memory":
+                _ = NavFrame.Navigate(typeof(MemoryPage));
                 break;
             case "about":
                 _ = NavFrame.Navigate(typeof(AboutPage));

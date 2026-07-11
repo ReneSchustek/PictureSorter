@@ -23,8 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="PictureSorter.Tests.Unit" />
-    <InternalsVisibleTo Include="PictureSorter.Tests.Integration" />
+    <InternalsVisibleTo Include="PictureSorter.Infrastructure.Tests" />
   </ItemGroup>
 
 </Project>

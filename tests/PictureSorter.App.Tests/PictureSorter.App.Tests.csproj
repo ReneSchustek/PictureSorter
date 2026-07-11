@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Muss dem Windows-SDK-Ziel von PictureSorter.App entsprechen. -->
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <!-- Kein XAML-Host: die ViewModels sind UI-frei und laufen ohne WinUI-Laufzeit. -->
+    <UseWinUI>false</UseWinUI>
+    <!-- PictureSorter.App wird als x64 gebaut; das Testprojekt muss dieselbe
+         Architektur nutzen. Das WindowsAppSDK ist self-contained, daher muss auch
+         dieses Projekt self-contained sein (sonst greift der NETSDK1151-Check). -->
+    <PlatformTarget>x64</PlatformTarget>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.4" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\PictureSorter.App\PictureSorter.App.csproj" />
+    <ProjectReference Include="..\..\src\PictureSorter.Application\PictureSorter.Application.csproj" />
+    <ProjectReference Include="..\..\src\PictureSorter.Core\PictureSorter.Core.csproj" />
+  </ItemGroup>
+
+</Project>
