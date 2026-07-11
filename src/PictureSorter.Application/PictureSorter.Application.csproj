@@ -14,16 +14,13 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.5" />
-    <!-- DI-Registrierung der Use-Case-Dienste und ViewModels. -->
+    <!-- DI-Registrierung der Use-Case-Dienste. -->
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.5" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.5" />
-    <!-- UI-agnostische MVVM-Bausteine (ObservableObject/RelayCommand) für die
-         testbaren ViewModels der Application-Schicht. Keine WinUI-Abhängigkeit. -->
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="PictureSorter.Tests.Unit" />
+    <InternalsVisibleTo Include="PictureSorter.Application.Tests" />
   </ItemGroup>
 
 </Project>

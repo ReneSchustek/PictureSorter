@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="PictureSorter.App.Views.DashboardPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:PictureSorter.App.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Loaded="OnPageLoaded"
+    mc:Ignorable="d">
+
+    <ScrollViewer Background="{ThemeResource AppBackgroundBrush}">
+        <StackPanel
+            MaxWidth="900"
+            Margin="24"
+            Spacing="20">
+
+            <!-- Hero-Kopf -->
+            <Border Style="{StaticResource HeroBorderStyle}">
+                <StackPanel Spacing="6">
+                    <TextBlock Style="{StaticResource HeroTitleStyle}" Text="Willkommen bei PictureSorter" />
+                    <TextBlock
+                        Style="{StaticResource HeroSubtitleStyle}"
+                        Text="Ordne deine Fotos in wenigen Schritten. Alles läuft auf deinem Rechner – nichts wird ins Internet geladen." />
+                </StackPanel>
+            </Border>
+
+            <!-- Zustand der lokalen KI -->
+            <InfoBar
+                IsClosable="False"
+                IsOpen="True"
+                Message="{x:Bind ViewModel.AiStatusText, Mode=OneWay}"
+                Severity="{x:Bind ViewModel.IsAiReady, Mode=OneWay, Converter={StaticResource BoolToInfoBarSeverityConverter}}"
+                Title="Lokale KI" />
+
+            <TextBlock
+                FontSize="16"
+                FontWeight="SemiBold"
+                Text="Was möchtest du tun?" />
+
+            <!-- Kacheln in die drei Bereiche -->
+            <GridView
+                IsItemClickEnabled="False"
+                SelectionMode="None">
+                <Button
+                    Margin="0,0,12,12"
+                    AutomationProperties.Name="Fotos sortieren"
+                    Click="OnSortClick"
+                    Style="{StaticResource TileButtonStyle}">
+                    <StackPanel Spacing="8">
+                        <FontIcon
+                            HorizontalAlignment="Left"
+                            FontSize="26"
+                            Foreground="{ThemeResource AccentFillColorDefaultBrush}"
+                            Glyph="&#xE8B7;" />
+                        <TextBlock FontWeight="SemiBold" Text="Fotos sortieren" />
+                        <TextBlock
+                            MaxWidth="220"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Text="Beschreibe eine Gruppe, bestätige ein paar Beispiele – der Rest passiert automatisch."
+                            TextWrapping="Wrap" />
+                    </StackPanel>
+                </Button>
+
+                <Button
+                    Margin="0,0,12,12"
+                    AutomationProperties.Name="Duplikate finden"
+                    Click="OnDuplicatesClick"
+                    Style="{StaticResource TileButtonStyle}">
+                    <StackPanel Spacing="8">
+                        <FontIcon
+                            HorizontalAlignment="Left"
+                            FontSize="26"
+                            Foreground="{ThemeResource AccentFillColorDefaultBrush}"
+                            Glyph="&#xE8C8;" />
+                        <TextBlock FontWeight="SemiBold" Text="Duplikate finden" />
+                        <TextBlock
+                            MaxWidth="220"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Text="Doppelte und sehr ähnliche Bilder aufspüren und in den Papierkorb legen."
+                            TextWrapping="Wrap" />
+                    </StackPanel>
+                </Button>
+
+                <Button
+                    Margin="0,0,12,12"
+                    AutomationProperties.Name="Gedächtnis verwalten"
+                    Click="OnMemoryClick"
+                    Style="{StaticResource TileButtonStyle}">
+                    <StackPanel Spacing="8">
+                        <FontIcon
+                            HorizontalAlignment="Left"
+                            FontSize="26"
+                            Foreground="{ThemeResource AccentFillColorDefaultBrush}"
+                            Glyph="&#xE81C;" />
+                        <TextBlock FontWeight="SemiBold" Text="Gedächtnis" />
+                        <TextBlock
+                            MaxWidth="220"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Text="Sieh nach, was sich PictureSorter gemerkt hat – und vergiss, was nicht stimmt."
+                            TextWrapping="Wrap" />
+                    </StackPanel>
+                </Button>
+            </GridView>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

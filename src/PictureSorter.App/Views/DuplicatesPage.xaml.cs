@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
-using PictureSorter.Application.ViewModels;
+using PictureSorter.App.ViewModels;
 
 namespace PictureSorter.App.Views;
 

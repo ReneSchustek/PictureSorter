@@ -9,13 +9,15 @@ using Microsoft.UI.Xaml;
 using PictureSorter.App.DependencyInjection;
 using PictureSorter.App.Logging;
 using PictureSorter.App.Services;
+using PictureSorter.App.ViewModels;
 using PictureSorter.App.Views;
 using PictureSorter.Application.DependencyInjection;
 using PictureSorter.Application.Duplicates;
 using PictureSorter.Application.Sorting;
-using PictureSorter.Application.ViewModels;
 using PictureSorter.Core.Interfaces;
 using PictureSorter.Core.ValueObjects;
+using PictureSorter.Data.Context;
+using PictureSorter.Data.DependencyInjection;
 using PictureSorter.Imaging.DependencyInjection;
 using PictureSorter.Infrastructure.DependencyInjection;
 using PictureSorter.Ollama.DependencyInjection;
@@ -74,6 +76,14 @@ public partial class App : Microsoft.UI.Xaml.Application
 
         // Mindestanzeige des SplashScreens parallel zur Initialisierung.
         Task minimumDisplay = Task.Delay(MinimumSplashDuration);
+
+        // Datenbank auf den aktuellen Schemastand bringen. Schlägt das fehl, läuft
+        // die Anwendung ohne Sortier-Gedächtnis weiter (Graceful Degradation); der
+        // Fehler steht im Protokoll.
+        _ = await Services.GetRequiredService<DatabaseInitializer>()
+            .InitializeAsync(CancellationToken.None)
+            .ConfigureAwait(true);
+
         _window = new MainWindow();
         Services.GetRequiredService<WindowContext>().MainWindow = _window;
         Services.GetRequiredService<ThemeService>().Initialize();
@@ -162,6 +172,14 @@ public partial class App : Microsoft.UI.Xaml.Application
         {
             _ = builder.AddDebug();
             _ = builder.SetMinimumLevel(LogLevel.Information);
+
+            // Ohne diese Filter fluten Framework-Kategorien das Protokoll: EF Core
+            // schreibt jedes SQL-Kommando und der HttpClient jede Anfrage auf
+            // „Information". Das verdeckt die eigenen Meldungen und lässt die
+            // Logdatei unnötig wachsen. Fehler dieser Kategorien bleiben sichtbar.
+            _ = builder.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
+            _ = builder.AddFilter("System.Net.Http", LogLevel.Warning);
+            _ = builder.AddFilter("Microsoft.Extensions.Http", LogLevel.Warning);
         });
 
         _ = services.Configure<SortingOptions>(configuration.GetSection(SortingOptions.SectionName));
@@ -169,6 +187,7 @@ public partial class App : Microsoft.UI.Xaml.Application
         _ = services.AddPictureSorterOllama(configuration);
         _ = services.AddPictureSorterImaging();
         _ = services.AddPictureSorterInfrastructure(configuration, dataDirectory);
+        _ = services.AddPictureSorterData(dataDirectory);
         _ = services.AddPictureSorterApplication();
         _ = services.AddPictureSorterAppServices(dataDirectory);
 
