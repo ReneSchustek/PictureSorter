@@ -19,10 +19,10 @@ jobs:
 
     steps:
       - name: Quellcode auschecken
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: .NET SDK einrichten
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '10.0.x'
 
@@ -38,5 +38,17 @@ jobs:
       - name: Tests ausführen
         run: dotnet test PictureSorter.slnx -c Release --no-build
 
+      # `dotnet list package --vulnerable` meldet Funde nur im Text und endet immer
+      # mit Exit-Code 0. Ohne die Auswertung unten wäre dieser Schritt ein Gate, das
+      # niemals rot werden kann. Deshalb wird die Ausgabe geprüft und der Lauf bei
+      # einem Treffer hart abgebrochen.
       - name: Sicherheits-Audit (anfällige Pakete)
-        run: dotnet list PictureSorter.slnx package --vulnerable --include-transitive
+        shell: pwsh
+        run: |
+          $ausgabe = dotnet list PictureSorter.slnx package --vulnerable --include-transitive | Out-String
+          Write-Output $ausgabe
+          if ($ausgabe -match '(?m)^\s*>\s') {
+            Write-Error 'Anfällige Pakete gefunden – siehe Ausgabe oben.'
+            exit 1
+          }
+          Write-Output 'Keine anfälligen Pakete.'
