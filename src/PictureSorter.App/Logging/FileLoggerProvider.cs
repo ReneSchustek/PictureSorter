@@ -27,6 +27,14 @@ namespace PictureSorter.App.Logging;
 /// </summary>
 internal sealed class FileLoggerProvider : ILoggerProvider
 {
+    // Obergrenze je Tagesdatei (logging.md). Darüber wird die Datei zur Seite gelegt
+    // und neu begonnen, damit ein Dauerfehler die Platte nicht vollschreibt.
+    private const long MaxLogFileSizeBytes = 100L * 1024 * 1024;
+
+    // So viel vom Dateiende liest der Log-Viewer höchstens ein; das reicht für einige
+    // tausend Zeilen und hält den Speicherbedarf konstant.
+    private const long TailReadBytes = 512L * 1024;
+
     private readonly string _logDirectory;
     private readonly int _retentionDays;
     private readonly object _writeGate = new();
@@ -79,9 +87,24 @@ internal sealed class FileLoggerProvider : ILoggerProvider
 
                 // FileShare.ReadWrite, da der Logger parallel weiterschreiben kann.
                 using FileStream stream = new(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+
+                // Nur das Ende der Datei lesen. Die Tagesdatei darf bis zu 100 MB groß
+                // werden – sie komplett in den Speicher zu laden, nur um die letzten
+                // Zeilen zu zeigen, wäre eine unnötige Speicherspitze.
+                long tailBytes = Math.Min(stream.Length, TailReadBytes);
+                _ = stream.Seek(-tailBytes, SeekOrigin.End);
+
                 using StreamReader reader = new(stream, Encoding.UTF8);
                 string content = reader.ReadToEnd();
                 string[] lines = content.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
+
+                // Wurde mitten in einer Zeile aufgesetzt, ist die erste Zeile
+                // abgeschnitten und wird verworfen.
+                if (tailBytes == TailReadBytes && lines.Length > 0)
+                {
+                    lines = [.. lines.Skip(1)];
+                }
+
                 return lines.Length <= maxLines ? lines : [.. lines.Skip(lines.Length - maxLines)];
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
@@ -130,6 +153,9 @@ internal sealed class FileLoggerProvider : ILoggerProvider
 
     // Wird vom FileLogger je Eintrag aufgerufen. Der Dateiname enthält das Datum,
     // wodurch die Rotation ohne expliziten Umschalt-Schritt täglich erfolgt.
+    // Zusätzlich greift ein Größen-Limit: Ohne dieses könnte ein Fehler, der in einer
+    // Schleife protokolliert wird, die Datei an einem einzigen Tag unbegrenzt wachsen
+    // lassen und die Platte füllen.
     internal void Append(string line)
     {
         string path = CurrentLogPath();
@@ -137,6 +163,7 @@ internal sealed class FileLoggerProvider : ILoggerProvider
         {
             try
             {
+                RollIfTooLarge(path);
                 File.AppendAllText(path, line, Encoding.UTF8);
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
@@ -144,6 +171,26 @@ internal sealed class FileLoggerProvider : ILoggerProvider
                 // Einzelner Schreibfehler: Eintrag geht verloren, die App läuft weiter.
             }
         }
+    }
+
+    // Ist die Tagesdatei zu groß, wird sie einmalig zur Seite gelegt und neu begonnen.
+    // Die vorherige Sicherung wird dabei überschrieben, sodass höchstens zwei Dateien
+    // je Tag entstehen.
+    private void RollIfTooLarge(string path)
+    {
+        FileInfo info = new(path);
+        if (!info.Exists || info.Length < MaxLogFileSizeBytes)
+        {
+            return;
+        }
+
+        string rolled = path + ".1";
+        if (File.Exists(rolled))
+        {
+            File.Delete(rolled);
+        }
+
+        File.Move(path, rolled);
     }
 
     private string CurrentLogPath() => Path.Combine(
@@ -166,7 +213,9 @@ internal sealed class FileLoggerProvider : ILoggerProvider
     private void RemoveExpiredFiles()
     {
         DateTime threshold = DateTimeOffset.Now.AddDays(-_retentionDays).LocalDateTime;
-        foreach (string file in Directory.EnumerateFiles(_logDirectory, "picturesorter-*.log"))
+
+        // Das Muster erfasst auch die zur Seite gelegten Dateien („…​.log.1").
+        foreach (string file in Directory.EnumerateFiles(_logDirectory, "picturesorter-*.log*"))
         {
             if (File.GetLastWriteTime(file) >= threshold)
             {

@@ -1,7 +1,7 @@
 using System;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
-using PictureSorter.Application.ViewModels;
+using PictureSorter.App.ViewModels;
 
 namespace PictureSorter.App.Converters;
 

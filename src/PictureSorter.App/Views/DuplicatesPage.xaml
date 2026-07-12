@@ -6,20 +6,27 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:PictureSorter.App.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:vm="using:PictureSorter.Application.ViewModels"
+    xmlns:vm="using:PictureSorter.App.ViewModels"
     mc:Ignorable="d">
 
-    <Grid Padding="24" RowSpacing="16">
+    <Grid
+        Background="{ThemeResource AppBackgroundBrush}"
+        Padding="24"
+        RowSpacing="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
         <StackPanel Spacing="16">
-            <TextBlock
-                FontSize="20"
-                FontWeight="SemiBold"
-                Text="Duplikate finden" />
+            <Border Style="{StaticResource HeroBorderStyle}">
+                <StackPanel Spacing="4">
+                    <TextBlock Style="{StaticResource HeroTitleStyle}" Text="Duplikate finden" />
+                    <TextBlock
+                        Style="{StaticResource HeroSubtitleStyle}"
+                        Text="Findet gleiche und sehr ähnliche Bilder. Gelöschte Dateien landen im Papierkorb und bleiben wiederherstellbar." />
+                </StackPanel>
+            </Border>
 
             <Grid ColumnSpacing="8">
                 <Grid.ColumnDefinitions>
