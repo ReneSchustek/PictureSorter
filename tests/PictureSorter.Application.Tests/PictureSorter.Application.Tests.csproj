@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <!-- Folgt der Plattform-Vorgabe der Application-Schicht. -->
-    <TargetFramework>net10.0-windows</TargetFramework>
+    <!-- Folgt dem plattformneutralen TFM der Application-Schicht. -->
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
