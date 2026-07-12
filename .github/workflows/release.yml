@@ -1,0 +1,79 @@
+name: Release
+
+# Baut beim Push eines Versions-Tags (z. B. v1.3.0) die portable, self-contained
+# Variante je Architektur, packt sie als ZIP und haengt sie an ein GitHub-Release.
+# Die App bringt die Windows App Runtime selbst mit; die ZIPs laufen daher ohne
+# Vorinstallation. Signierung/MSIX ist bewusst nicht Teil dieses Workflows: dafuer
+# fehlt ein echtes Code-Signing-Zertifikat (siehe README). Solange die Update-Kette
+# ruht (leerer GitHubOwner), werden unsignierte Portable-ZIPs verteilt.
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Portable-Build & Release
+    runs-on: windows-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - rid: win-x64
+            platform: x64
+          - rid: win-x86
+            platform: x86
+          - rid: win-arm64
+            platform: ARM64
+
+    steps:
+      - name: Quellcode auschecken
+        uses: actions/checkout@v5
+
+      - name: .NET SDK einrichten
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Version aus Tag ableiten
+        id: version
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}".TrimStart('v')
+          "value=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          Write-Output "Version: $version"
+
+      - name: Portable-Variante veroeffentlichen (${{ matrix.rid }})
+        shell: pwsh
+        run: >-
+          dotnet publish src/PictureSorter.App/PictureSorter.App.csproj
+          -c Release
+          -p:Platform=${{ matrix.platform }}
+          -r ${{ matrix.rid }}
+          --self-contained true
+          -p:WindowsPackageType=None
+          -p:Version=${{ steps.version.outputs.value }}
+          -o publish/${{ matrix.rid }}
+
+      - name: ZIP packen
+        shell: pwsh
+        run: |
+          $name = "PictureSorter-${{ github.ref_name }}-${{ matrix.rid }}.zip"
+          Compress-Archive -Path "publish/${{ matrix.rid }}/*" -DestinationPath $name -Force
+          Write-Output "Erstellt: $name"
+
+      - name: An GitHub-Release anhaengen
+        uses: softprops/action-gh-release@v2
+        with:
+          files: PictureSorter-${{ github.ref_name }}-${{ matrix.rid }}.zip
+          draft: true
+          fail_on_unmatched_files: true
+          body: >-
+            Portable, self-contained Builds von PictureSorter ${{ github.ref_name }}.
+            Entpacken und PictureSorter.exe starten -- keine Installation, keine
+            vorinstallierte Windows App Runtime noetig.
