@@ -55,6 +55,7 @@
                         Toggled="OnAutoUpdateToggled" />
                     <InfoBar
                         x:Name="UpdateStatusBar"
+                        AutomationProperties.LiveSetting="Polite"
                         IsClosable="False"
                         IsOpen="True"
                         Message="Noch nicht geprüft."
@@ -85,6 +86,7 @@
                     </TextBlock>
                     <InfoBar
                         x:Name="KiStatusBar"
+                        AutomationProperties.LiveSetting="Polite"
                         IsClosable="False"
                         IsOpen="True"
                         Message="Status wird geprüft…"

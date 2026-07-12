@@ -52,6 +52,13 @@ internal sealed partial class DuplicatePhotoViewModel : ObservableObject
     public string InfoTooltip => Photo.ToDetailedInfo();
 
     /// <summary>
+    /// Barrierefreier Name der Lösch-Auswahl. Ohne den Dateibezug hörte ein
+    /// Screenreader in einer Gruppe nur wiederholt „Löschen"; hier wird klar,
+    /// welches Foto betroffen ist.
+    /// </summary>
+    public string DeletionLabel => $"„{FileName}\" zum Löschen vormerken";
+
+    /// <summary>
     /// <see langword="true"/>, wenn dieses Foto zum Löschen vorgemerkt ist.
     /// </summary>
     [ObservableProperty]

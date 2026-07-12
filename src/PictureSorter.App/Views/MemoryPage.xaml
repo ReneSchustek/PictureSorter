@@ -111,7 +111,7 @@
                             <TextBlock FontWeight="SemiBold" Text="{x:Bind FileName}" />
                             <TextBlock
                                 FontSize="12"
-                                Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 Text="{x:Bind FolderPath}"
                                 TextTrimming="CharacterEllipsis" />
                         </StackPanel>
@@ -128,8 +128,8 @@
                                 Text="{x:Bind StatusText}" />
                             <TextBlock
                                 HorizontalAlignment="Right"
-                                FontSize="11"
-                                Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                FontSize="12"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 Text="{x:Bind UpdatedText}" />
                         </StackPanel>
 

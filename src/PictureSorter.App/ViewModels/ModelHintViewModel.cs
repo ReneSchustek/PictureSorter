@@ -8,9 +8,9 @@ namespace PictureSorter.App.ViewModels;
 /// <summary>
 /// Hält den Hinweis zur Verfügbarkeit der lokalen KI (Ollama). Prüft auf Anfrage,
 /// ob Ollama erreichbar ist und die benötigten Modelle installiert sind, und stellt
-/// bei Bedarf eine erklärende Meldung samt passendem <c>ollama pull</c>-Befehl bereit.
-/// Eigenes ViewModel, damit die Sortierseite frei von dieser Nebenverantwortung
-/// bleibt (Separation of Concerns).
+/// bei Bedarf eine laienverständliche Meldung bereit, die auf die geführte
+/// Einrichtung verweist (ohne Kommandozeilen-Befehle). Eigenes ViewModel, damit die
+/// Sortierseite frei von dieser Nebenverantwortung bleibt (Separation of Concerns).
 /// </summary>
 internal sealed partial class ModelHintViewModel : ObservableObject
 {
@@ -56,18 +56,13 @@ internal sealed partial class ModelHintViewModel : ObservableObject
         IsHintVisible = true;
     }
 
-    private static string BuildHint(ModelAvailability availability)
-    {
-        if (!availability.IsReachable)
-        {
-            return "Ollama ist nicht erreichbar. Bitte Ollama starten "
-                + "(Standard: http://localhost:11434) und diese Modelle laden: "
-                + $"{string.Join(", ", availability.RequiredModels)}. "
-                + $"Befehl: ollama pull {string.Join(" && ollama pull ", availability.RequiredModels)}";
-        }
-
-        return "Es fehlen Ollama-Modelle: "
-            + $"{string.Join(", ", availability.MissingModels)}. "
-            + $"Bitte laden mit: ollama pull {string.Join(" && ollama pull ", availability.MissingModels)}";
-    }
+    // Bewusst ohne Kommandozeilen-Befehl (kein „ollama pull …"): Die Zielnutzerin
+    // hat wenig PC-Erfahrung. Die Einrichtung übernimmt der Knopf „Jetzt einrichten";
+    // die Meldung erklärt nur, was zu tun ist, nicht wie es technisch geht.
+    private static string BuildHint(ModelAvailability availability) =>
+        availability.IsReachable
+            ? "Die KI ist noch nicht vollständig eingerichtet. Bitte auf „Jetzt einrichten\" "
+                + "klicken – die fehlenden Bestandteile werden dann automatisch geladen."
+            : "Die lokale KI ist noch nicht bereit. Bitte auf „Jetzt einrichten\" klicken; "
+                + "der Assistent installiert und startet sie für dich.";
 }
