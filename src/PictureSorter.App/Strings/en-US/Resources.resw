@@ -64,4 +64,313 @@
   <data name="AboutPage_CheckUpdatesButton.Content" xml:space="preserve">
     <value>Check for updates</value>
   </data>
+  <data name="MainWindow_UpdateBar.Title" xml:space="preserve">
+    <value>Update available</value>
+  </data>
+  <data name="MainWindow_UpdateNowButton.Content" xml:space="preserve">
+    <value>Update</value>
+  </data>
+  <data name="MainWindow_DashboardNavItem.Content" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="MainWindow_SortNavItem.Content" xml:space="preserve">
+    <value>Sort</value>
+  </data>
+  <data name="MainWindow_DuplicatesNavItem.Content" xml:space="preserve">
+    <value>Duplicates</value>
+  </data>
+  <data name="MainWindow_MemoryNavItem.Content" xml:space="preserve">
+    <value>Memory</value>
+  </data>
+  <data name="MainWindow_SettingsNavItem.Content" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="MainWindow_StopButton.Content" xml:space="preserve">
+    <value>Stop</value>
+  </data>
+  <data name="DashboardPage_HeroTitle.Text" xml:space="preserve">
+    <value>Welcome to PictureSorter</value>
+  </data>
+  <data name="DashboardPage_HeroSubtitle.Text" xml:space="preserve">
+    <value>Organize your photos in just a few steps. Everything runs on your computer – nothing is uploaded to the internet.</value>
+  </data>
+  <data name="DashboardPage_AiStatusInfoBar.Title" xml:space="preserve">
+    <value>Local AI</value>
+  </data>
+  <data name="DashboardPage_ActionsPrompt.Text" xml:space="preserve">
+    <value>What would you like to do?</value>
+  </data>
+  <data name="DashboardPage_SortTileTitle.Text" xml:space="preserve">
+    <value>Sort photos</value>
+  </data>
+  <data name="DashboardPage_SortTileDescription.Text" xml:space="preserve">
+    <value>Describe a group, confirm a few examples – the rest happens automatically.</value>
+  </data>
+  <data name="DashboardPage_DuplicatesTileTitle.Text" xml:space="preserve">
+    <value>Find duplicates</value>
+  </data>
+  <data name="DashboardPage_DuplicatesTileDescription.Text" xml:space="preserve">
+    <value>Track down duplicate and very similar images and move them to the recycle bin.</value>
+  </data>
+  <data name="DashboardPage_MemoryTileTitle.Text" xml:space="preserve">
+    <value>Memory</value>
+  </data>
+  <data name="DashboardPage_MemoryTileDescription.Text" xml:space="preserve">
+    <value>See what PictureSorter has remembered – and forget what isn't right.</value>
+  </data>
+  <data name="DuplicatesPage_HeroTitle.Text" xml:space="preserve">
+    <value>Find duplicates</value>
+  </data>
+  <data name="DuplicatesPage_HeroSubtitle.Text" xml:space="preserve">
+    <value>Finds identical and very similar images. Deleted files go to the Recycle Bin and remain recoverable.</value>
+  </data>
+  <data name="DuplicatesPage_FolderTextBox.Header" xml:space="preserve">
+    <value>Folder</value>
+  </data>
+  <data name="DuplicatesPage_FolderTextBox.PlaceholderText" xml:space="preserve">
+    <value>e.g. C:\Photos</value>
+  </data>
+  <data name="DuplicatesPage_BrowseButton.Content" xml:space="preserve">
+    <value>Browse…</value>
+  </data>
+  <data name="DuplicatesPage_IncludeSubfoldersCheckBox.Content" xml:space="preserve">
+    <value>Include subfolders</value>
+  </data>
+  <data name="DuplicatesPage_ScanButton.Content" xml:space="preserve">
+    <value>Search for duplicates</value>
+  </data>
+  <data name="DuplicatesPage_DeleteSelectedButton.Content" xml:space="preserve">
+    <value>Move selected to Recycle Bin</value>
+  </data>
+  <data name="DuplicatesPage_DeleteCheckBox.Content" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="MemoryPage_HeroTitle.Text" xml:space="preserve">
+    <value>Memory</value>
+  </data>
+  <data name="MemoryPage_HeroSubtitle.Text" xml:space="preserve">
+    <value>What PictureSorter has remembered. Remembered photos are skipped the next time you sort – if you forget an entry, the photo will be evaluated again.</value>
+  </data>
+  <data name="MemoryPage_FolderFilter.Header" xml:space="preserve">
+    <value>Folder</value>
+  </data>
+  <data name="MemoryPage_CategoryFilter.Header" xml:space="preserve">
+    <value>Category</value>
+  </data>
+  <data name="MemoryPage_ClearFolderButton.Content" xml:space="preserve">
+    <value>Forget folder</value>
+  </data>
+  <data name="MemoryPage_ClearFolderButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Discards all remembered decisions for the folder selected above.</value>
+  </data>
+  <data name="MemoryPage_RefreshButton.Content" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="MemoryPage_EmptyStateTitle.Text" xml:space="preserve">
+    <value>Nothing remembered yet</value>
+  </data>
+  <data name="MemoryPage_EmptyStateText.Text" xml:space="preserve">
+    <value>As soon as you sort for the first time, the decisions will appear here.</value>
+  </data>
+  <data name="MemoryPage_ForgetItemButton.Content" xml:space="preserve">
+    <value>Forget</value>
+  </data>
+  <data name="PhotoPreviewDialog_Close.CloseButtonText" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="AboutPage_SettingsTitle.Text" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="AboutPage_AppearanceHeader.Text" xml:space="preserve">
+    <value>Appearance</value>
+  </data>
+  <data name="AboutPage_AppearanceDescription.Text" xml:space="preserve">
+    <value>Choose between light and dark theme.</value>
+  </data>
+  <data name="AboutPage_DarkToggle.Header" xml:space="preserve">
+    <value>Dark theme</value>
+  </data>
+  <data name="AboutPage_DarkToggle.OffContent" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="AboutPage_DarkToggle.OnContent" xml:space="preserve">
+    <value>On</value>
+  </data>
+  <data name="AboutPage_UpdatesHeader.Text" xml:space="preserve">
+    <value>Updates</value>
+  </data>
+  <data name="AboutPage_UpdatesDescription.Text" xml:space="preserve">
+    <value>PictureSorter can check for a newer version at startup and install it automatically if you want.</value>
+  </data>
+  <data name="AboutPage_AutoUpdateToggle.Header" xml:space="preserve">
+    <value>Install updates automatically</value>
+  </data>
+  <data name="AboutPage_AutoUpdateToggle.OffContent" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="AboutPage_AutoUpdateToggle.OnContent" xml:space="preserve">
+    <value>On</value>
+  </data>
+  <data name="AboutPage_InstallUpdateButton.Content" xml:space="preserve">
+    <value>Update now</value>
+  </data>
+  <data name="AboutPage_LocalAiHeader.Text" xml:space="preserve">
+    <value>Local AI (Ollama)</value>
+  </data>
+  <data name="AboutPage_LocalAiDescription.Text" xml:space="preserve">
+    <value>PictureSorter recognizes image content with an AI that runs entirely on this PC - your photos never leave the machine. If sorting does not start, set up the AI here with a single click. The first download may take a few minutes.</value>
+  </data>
+  <data name="AboutPage_SetupButton.Content" xml:space="preserve">
+    <value>Set up now</value>
+  </data>
+  <data name="AboutPage_CheckStatusButton.Content" xml:space="preserve">
+    <value>Check status</value>
+  </data>
+  <data name="AboutPage_LogHeader.Text" xml:space="preserve">
+    <value>Log (troubleshooting)</value>
+  </data>
+  <data name="AboutPage_LogDescription.Text" xml:space="preserve">
+    <value>Here you can see the most recent program messages. If something is not working, this history helps to find the cause. The complete daily log files are located in the log folder.</value>
+  </data>
+  <data name="AboutPage_RefreshLogButton.Content" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="AboutPage_OpenLogFolderButton.Content" xml:space="preserve">
+    <value>Open log folder</value>
+  </data>
+  <data name="AboutPage_AboutHeader.Text" xml:space="preserve">
+    <value>About PictureSorter</value>
+  </data>
+  <data name="AboutPage_AboutDescription.Text" xml:space="preserve">
+    <value>PictureSorter sorts photos into subfolders adaptively using a locally running AI (Ollama). All image analysis happens offline on this machine.</value>
+  </data>
+  <data name="SortPage_ModelHintBar.Title" xml:space="preserve">
+    <value>AI not ready yet</value>
+  </data>
+  <data name="SortPage_SetupOllamaButton.Content" xml:space="preserve">
+    <value>Set up now</value>
+  </data>
+  <data name="SortPage_HeroTitle.Text" xml:space="preserve">
+    <value>Sort photos</value>
+  </data>
+  <data name="SortPage_HeroSubtitle.Text" xml:space="preserve">
+    <value>Describe a group, confirm a few examples – PictureSorter handles the rest.</value>
+  </data>
+  <data name="SortPage_ViewModeLabel.Text" xml:space="preserve">
+    <value>View:</value>
+  </data>
+  <data name="SortPage_ViewModeStepByStep.Content" xml:space="preserve">
+    <value>Step by step</value>
+  </data>
+  <data name="SortPage_ViewModeStandard.Content" xml:space="preserve">
+    <value>Standard</value>
+  </data>
+  <data name="SortPage_Step1Link.Content" xml:space="preserve">
+    <value>1. Folder</value>
+  </data>
+  <data name="SortPage_Step2Link.Content" xml:space="preserve">
+    <value>2. Category</value>
+  </data>
+  <data name="SortPage_Step3Link.Content" xml:space="preserve">
+    <value>3. Examples</value>
+  </data>
+  <data name="SortPage_Step4Link.Content" xml:space="preserve">
+    <value>4. Analysis</value>
+  </data>
+  <data name="SortPage_Step5Link.Content" xml:space="preserve">
+    <value>5. Sort</value>
+  </data>
+  <data name="SortPage_RestartButton.Content" xml:space="preserve">
+    <value>↺ Restart</value>
+  </data>
+  <data name="SortPage_Step1Heading.Text" xml:space="preserve">
+    <value>1. Choose a folder with photos</value>
+  </data>
+  <data name="SortPage_Step1Description.Text" xml:space="preserve">
+    <value>Choose the folder where your photos are stored. PictureSorter reviews them and helps you organize them.</value>
+  </data>
+  <data name="SortPage_SourceFolderBox.Header" xml:space="preserve">
+    <value>Folder with photos</value>
+  </data>
+  <data name="SortPage_SourceFolderBox.PlaceholderText" xml:space="preserve">
+    <value>e.g. C:\Photos</value>
+  </data>
+  <data name="SortPage_BrowseButton.Content" xml:space="preserve">
+    <value>Browse…</value>
+  </data>
+  <data name="SortPage_IncludeSubfoldersCheck.Content" xml:space="preserve">
+    <value>Include subfolders too</value>
+  </data>
+  <data name="SortPage_Step2Heading.Text" xml:space="preserve">
+    <value>2. Describe the category</value>
+  </data>
+  <data name="SortPage_Step2Description.Text" xml:space="preserve">
+    <value>What should we look for? Give the group a name and describe in your own words what it shows.</value>
+  </data>
+  <data name="SortPage_CategoryNameBox.Header" xml:space="preserve">
+    <value>Group name</value>
+  </data>
+  <data name="SortPage_CategoryNameBox.PlaceholderText" xml:space="preserve">
+    <value>e.g. Family</value>
+  </data>
+  <data name="SortPage_CategoryDescriptionBox.Header" xml:space="preserve">
+    <value>Description (in your own words)</value>
+  </data>
+  <data name="SortPage_CategoryDescriptionBox.PlaceholderText" xml:space="preserve">
+    <value>e.g. Pictures that show my family</value>
+  </data>
+  <data name="SortPage_EventCategoryCheck.Content" xml:space="preserve">
+    <value>Event group (folder name includes the capture date, e.g. "Vacation 14.07.25")</value>
+  </data>
+  <data name="SortPage_Step3Heading.Text" xml:space="preserve">
+    <value>3. Select examples</value>
+  </data>
+  <data name="SortPage_Step3Description.Text" xml:space="preserve">
+    <value>The example images load automatically. Mark whether they belong to the group ("yes") or "not".</value>
+  </data>
+  <data name="SortPage_ReloadExamplesButton.Content" xml:space="preserve">
+    <value>Reload examples</value>
+  </data>
+  <data name="SortPage_ReloadExamplesButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Reloads the example images – useful if automatic loading did not work.</value>
+  </data>
+  <data name="SortPage_LearnButton.Content" xml:space="preserve">
+    <value>Learn profile</value>
+  </data>
+  <data name="SortPage_ExamplePositiveToggle.Content" xml:space="preserve">
+    <value>✓ yes</value>
+  </data>
+  <data name="SortPage_ExampleNegativeToggle.Content" xml:space="preserve">
+    <value>✗ no</value>
+  </data>
+  <data name="SortPage_ActiveGroupLabel.Text" xml:space="preserve">
+    <value>Active group:</value>
+  </data>
+  <data name="SortPage_Step4Heading.Text" xml:space="preserve">
+    <value>4. Start analysis</value>
+  </data>
+  <data name="SortPage_Step4Description.Text" xml:space="preserve">
+    <value>Now PictureSorter reviews all photos in the folder and suggests which ones fit the group. This may take a while depending on the number.</value>
+  </data>
+  <data name="SortPage_AnalyzeButton.Content" xml:space="preserve">
+    <value>Analyze</value>
+  </data>
+  <data name="SortPage_Step5Heading.Text" xml:space="preserve">
+    <value>5. Preview and sort</value>
+  </data>
+  <data name="SortPage_Step5Description.Text" xml:space="preserve">
+    <value>Review the suggestions. Simply uncheck images you don't want – they won't be moved and won't be suggested again. Click an image to view it enlarged.</value>
+  </data>
+  <data name="SortPage_ToggleAllButton.Content" xml:space="preserve">
+    <value>Select/deselect all</value>
+  </data>
+  <data name="SortPage_ApplyButton.Content" xml:space="preserve">
+    <value>Sort</value>
+  </data>
+  <data name="SortPage_ProposalSelectCheck.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Unchecking means: don't move and don't suggest again in the future.</value>
+  </data>
+  <data name="SortPage_BackButton.Content" xml:space="preserve">
+    <value>◀ Back</value>
+  </data>
 </root>

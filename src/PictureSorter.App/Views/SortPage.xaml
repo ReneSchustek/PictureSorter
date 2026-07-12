@@ -21,13 +21,14 @@
         <!-- Immer sichtbar: KI-Hinweis, Titel und Ansichts-Umschalter -->
         <StackPanel Padding="24,16,24,8" Spacing="12">
             <InfoBar
+                x:Uid="SortPage_ModelHintBar"
                 IsClosable="False"
                 IsOpen="{x:Bind ModelHint.IsHintVisible, Mode=OneWay}"
                 Message="{x:Bind ModelHint.Message, Mode=OneWay}"
                 Severity="Warning"
                 Title="KI noch nicht einsatzbereit">
                 <InfoBar.ActionButton>
-                    <Button Click="OnSetupOllamaClick" Content="Jetzt einrichten" />
+                    <Button x:Uid="SortPage_SetupOllamaButton" Click="OnSetupOllamaClick" Content="Jetzt einrichten" />
                 </InfoBar.ActionButton>
             </InfoBar>
 
@@ -38,8 +39,9 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <StackPanel VerticalAlignment="Center" Spacing="4">
-                        <TextBlock Style="{StaticResource HeroTitleStyle}" Text="Fotos sortieren" />
+                        <TextBlock x:Uid="SortPage_HeroTitle" Style="{StaticResource HeroTitleStyle}" Text="Fotos sortieren" />
                         <TextBlock
+                            x:Uid="SortPage_HeroSubtitle"
                             Style="{StaticResource HeroSubtitleStyle}"
                             Text="Beschreibe eine Gruppe, bestätige ein paar Beispiele – den Rest übernimmt PictureSorter." />
                     </StackPanel>
@@ -59,14 +61,15 @@
                     <TextBlock
                         VerticalAlignment="Center"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        x:Uid="SortPage_ViewModeLabel"
                         Text="Ansicht:" />
                     <ComboBox
                         x:Name="ViewModeCombo"
                         MinWidth="170"
                         AutomationProperties.Name="Ansicht"
                         SelectionChanged="OnViewModeChanged">
-                        <ComboBoxItem Content="Schritt für Schritt" />
-                        <ComboBoxItem Content="Standard" />
+                        <ComboBoxItem x:Uid="SortPage_ViewModeStepByStep" Content="Schritt für Schritt" />
+                        <ComboBoxItem x:Uid="SortPage_ViewModeStandard" Content="Standard" />
                     </ComboBox>
                 </StackPanel>
             </Grid>
@@ -88,6 +91,7 @@
                 <HyperlinkButton
                     Padding="4,2"
                     Click="OnStepClick"
+                    x:Uid="SortPage_Step1Link"
                     Content="1. Ordner"
                     FontWeight="{x:Bind ViewModel.Wizard.IsStep1, Mode=OneWay, Converter={StaticResource BoolToFontWeightConverter}}"
                     IsEnabled="{x:Bind ViewModel.Wizard.MaxReachedStep, Mode=OneWay, Converter={StaticResource StepReachedConverter}, ConverterParameter=0}"
@@ -99,6 +103,7 @@
                 <HyperlinkButton
                     Padding="4,2"
                     Click="OnStepClick"
+                    x:Uid="SortPage_Step2Link"
                     Content="2. Kategorie"
                     FontWeight="{x:Bind ViewModel.Wizard.IsStep2, Mode=OneWay, Converter={StaticResource BoolToFontWeightConverter}}"
                     IsEnabled="{x:Bind ViewModel.Wizard.MaxReachedStep, Mode=OneWay, Converter={StaticResource StepReachedConverter}, ConverterParameter=1}"
@@ -110,6 +115,7 @@
                 <HyperlinkButton
                     Padding="4,2"
                     Click="OnStepClick"
+                    x:Uid="SortPage_Step3Link"
                     Content="3. Beispiele"
                     FontWeight="{x:Bind ViewModel.Wizard.IsStep3, Mode=OneWay, Converter={StaticResource BoolToFontWeightConverter}}"
                     IsEnabled="{x:Bind ViewModel.Wizard.MaxReachedStep, Mode=OneWay, Converter={StaticResource StepReachedConverter}, ConverterParameter=2}"
@@ -121,6 +127,7 @@
                 <HyperlinkButton
                     Padding="4,2"
                     Click="OnStepClick"
+                    x:Uid="SortPage_Step4Link"
                     Content="4. Analyse"
                     FontWeight="{x:Bind ViewModel.Wizard.IsStep4, Mode=OneWay, Converter={StaticResource BoolToFontWeightConverter}}"
                     IsEnabled="{x:Bind ViewModel.Wizard.MaxReachedStep, Mode=OneWay, Converter={StaticResource StepReachedConverter}, ConverterParameter=3}"
@@ -132,6 +139,7 @@
                 <HyperlinkButton
                     Padding="4,2"
                     Click="OnStepClick"
+                    x:Uid="SortPage_Step5Link"
                     Content="5. Sortieren"
                     FontWeight="{x:Bind ViewModel.Wizard.IsStep5, Mode=OneWay, Converter={StaticResource BoolToFontWeightConverter}}"
                     IsEnabled="{x:Bind ViewModel.Wizard.MaxReachedStep, Mode=OneWay, Converter={StaticResource StepReachedConverter}, ConverterParameter=4}"
@@ -153,6 +161,7 @@
                 <Button
                     Grid.Column="1"
                     Command="{x:Bind ViewModel.Wizard.RestartCommand}"
+                    x:Uid="SortPage_RestartButton"
                     Content="↺ Neu starten" />
             </Grid>
         </StackPanel>
@@ -166,9 +175,10 @@
                     Style="{StaticResource CardBorderStyle}"
                     Visibility="{x:Bind ViewModel.Wizard.ShowStep1, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                     <StackPanel Spacing="12">
-                        <TextBlock FontWeight="SemiBold" Text="1. Ordner mit Fotos wählen" />
+                        <TextBlock x:Uid="SortPage_Step1Heading" FontWeight="SemiBold" Text="1. Ordner mit Fotos wählen" />
                         <TextBlock
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            x:Uid="SortPage_Step1Description"
                             Text="Wähle den Ordner, in dem deine Fotos liegen. PictureSorter sieht sie sich an und hilft dir, sie zu ordnen."
                             TextWrapping="Wrap" />
                         <Grid ColumnSpacing="8">
@@ -177,6 +187,7 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <TextBox
+                                x:Uid="SortPage_SourceFolderBox"
                                 Header="Ordner mit Fotos"
                                 PlaceholderText="z. B. C:\Fotos"
                                 Text="{x:Bind ViewModel.SourceFolder, Mode=TwoWay}" />
@@ -184,9 +195,11 @@
                                 Grid.Column="1"
                                 VerticalAlignment="Bottom"
                                 Command="{x:Bind ViewModel.BrowseCommand}"
+                                x:Uid="SortPage_BrowseButton"
                                 Content="Durchsuchen…" />
                         </Grid>
                         <CheckBox
+                            x:Uid="SortPage_IncludeSubfoldersCheck"
                             Content="Auch Unterordner einbeziehen"
                             IsChecked="{x:Bind ViewModel.IncludeSubfolders, Mode=TwoWay}" />
                     </StackPanel>
@@ -197,22 +210,26 @@
                     Style="{StaticResource CardBorderStyle}"
                     Visibility="{x:Bind ViewModel.Wizard.ShowStep2, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                     <StackPanel Spacing="12">
-                        <TextBlock FontWeight="SemiBold" Text="2. Kategorie beschreiben" />
+                        <TextBlock x:Uid="SortPage_Step2Heading" FontWeight="SemiBold" Text="2. Kategorie beschreiben" />
                         <TextBlock
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            x:Uid="SortPage_Step2Description"
                             Text="Was sollen wir heraussuchen? Gib der Gruppe einen Namen und beschreibe in eigenen Worten, was darauf zu sehen ist."
                             TextWrapping="Wrap" />
                         <TextBox
+                            x:Uid="SortPage_CategoryNameBox"
                             Header="Name der Gruppe"
                             PlaceholderText="z. B. Familie"
                             Text="{x:Bind ViewModel.CategoryName, Mode=TwoWay}" />
                         <TextBox
+                            x:Uid="SortPage_CategoryDescriptionBox"
                             Header="Beschreibung (in eigenen Worten)"
                             AcceptsReturn="True"
                             PlaceholderText="z. B. Bilder, auf denen meine Familie zu sehen ist"
                             Text="{x:Bind ViewModel.CategoryDescription, Mode=TwoWay}"
                             TextWrapping="Wrap" />
                         <CheckBox
+                            x:Uid="SortPage_EventCategoryCheck"
                             Content="Ereignis-Gruppe (Ordnername erhält das Aufnahmedatum, z. B. „Urlaub 14.07.25“)"
                             IsChecked="{x:Bind ViewModel.IsEventCategory, Mode=TwoWay}" />
                     </StackPanel>
@@ -223,18 +240,21 @@
                     Style="{StaticResource CardBorderStyle}"
                     Visibility="{x:Bind ViewModel.Wizard.ShowStep3, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                     <StackPanel Spacing="12">
-                        <TextBlock FontWeight="SemiBold" Text="3. Beispiele auswählen" />
+                        <TextBlock x:Uid="SortPage_Step3Heading" FontWeight="SemiBold" Text="3. Beispiele auswählen" />
                         <TextBlock
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            x:Uid="SortPage_Step3Description"
                             Text="Die Beispielbilder werden automatisch geladen. Markiere, ob sie zur Gruppe „dazu“ gehören oder „nicht“."
                             TextWrapping="Wrap" />
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <Button
                                 Command="{x:Bind ViewModel.LoadExamplesCommand}"
+                                x:Uid="SortPage_ReloadExamplesButton"
                                 Content="Beispiele neu laden"
                                 ToolTipService.ToolTip="Lädt die Beispielbilder erneut – nützlich, falls das automatische Laden nicht geklappt hat." />
                             <Button
                                 Command="{x:Bind ViewModel.LearnCommand}"
+                                x:Uid="SortPage_LearnButton"
                                 Content="Profil lernen"
                                 Style="{ThemeResource AccentButtonStyle}"
                                 Visibility="{x:Bind ViewModel.Wizard.ShowStandardActions, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
@@ -263,11 +283,13 @@
                                         <StackPanel Orientation="Horizontal" Spacing="4">
                                             <ToggleButton
                                                 Padding="6,2"
+                                                x:Uid="SortPage_ExamplePositiveToggle"
                                                 Content="✓ dazu"
                                                 FontSize="12"
                                                 IsChecked="{x:Bind IsPositive, Mode=TwoWay}" />
                                             <ToggleButton
                                                 Padding="6,2"
+                                                x:Uid="SortPage_ExampleNegativeToggle"
                                                 Content="✗ nicht"
                                                 FontSize="12"
                                                 IsChecked="{x:Bind IsNegative, Mode=TwoWay}" />
@@ -277,7 +299,7 @@
                             </GridView.ItemTemplate>
                         </GridView>
                         <TextBlock>
-                            <Run Text="Aktive Gruppe:" />
+                            <Run x:Uid="SortPage_ActiveGroupLabel" Text="Aktive Gruppe:" />
                             <Run FontWeight="SemiBold" Text="{x:Bind ViewModel.ActiveCategoryName, Mode=OneWay}" />
                         </TextBlock>
                     </StackPanel>
@@ -288,13 +310,15 @@
                     Style="{StaticResource CardBorderStyle}"
                     Visibility="{x:Bind ViewModel.Wizard.ShowStep4, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                     <StackPanel Spacing="12">
-                        <TextBlock FontWeight="SemiBold" Text="4. Analyse starten" />
+                        <TextBlock x:Uid="SortPage_Step4Heading" FontWeight="SemiBold" Text="4. Analyse starten" />
                         <TextBlock
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            x:Uid="SortPage_Step4Description"
                             Text="Jetzt sieht sich PictureSorter alle Fotos im Ordner an und schlägt vor, welche zur Gruppe passen. Das kann je nach Anzahl etwas dauern."
                             TextWrapping="Wrap" />
                         <Button
                             Command="{x:Bind ViewModel.AnalyzeCommand}"
+                            x:Uid="SortPage_AnalyzeButton"
                             Content="Analysieren"
                             Style="{ThemeResource AccentButtonStyle}"
                             Visibility="{x:Bind ViewModel.Wizard.ShowStandardActions, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
@@ -306,9 +330,10 @@
                     Style="{StaticResource CardBorderStyle}"
                     Visibility="{x:Bind ViewModel.Wizard.ShowStep5, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                     <StackPanel Spacing="12">
-                        <TextBlock FontWeight="SemiBold" Text="5. Vorschau und sortieren" />
+                        <TextBlock x:Uid="SortPage_Step5Heading" FontWeight="SemiBold" Text="5. Vorschau und sortieren" />
                         <TextBlock
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            x:Uid="SortPage_Step5Description"
                             Text="Prüfe die Vorschläge. Bilder, die du nicht möchtest, einfach abhaken – sie werden nicht verschoben und nicht erneut vorgeschlagen. Klicke auf ein Bild, um es groß anzusehen."
                             TextWrapping="Wrap" />
 
@@ -320,6 +345,7 @@
                             </Grid.ColumnDefinitions>
                             <Button
                                 Command="{x:Bind ViewModel.ToggleAllCommand}"
+                                x:Uid="SortPage_ToggleAllButton"
                                 Content="Alle aus-/abwählen" />
                             <TextBlock
                                 Grid.Column="1"
@@ -329,6 +355,7 @@
                             <Button
                                 Grid.Column="2"
                                 Command="{x:Bind ViewModel.ApplyCommand}"
+                                x:Uid="SortPage_ApplyButton"
                                 Content="Sortieren"
                                 Style="{ThemeResource AccentButtonStyle}"
                                 Visibility="{x:Bind ViewModel.Wizard.ShowStandardActions, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
@@ -354,6 +381,7 @@
                                             VerticalAlignment="Center"
                                             AutomationProperties.Name="Diesen Vorschlag übernehmen"
                                             IsChecked="{x:Bind IsSelected, Mode=TwoWay}"
+                                            x:Uid="SortPage_ProposalSelectCheck"
                                             ToolTipService.ToolTip="Abhaken heißt: nicht verschieben und künftig nicht mehr vorschlagen." />
                                         <!-- Klick auf das Bild öffnet die Großansicht. -->
                                         <Button
@@ -418,6 +446,7 @@
             </Grid.ColumnDefinitions>
             <Button
                 Command="{x:Bind ViewModel.Wizard.GoBackCommand}"
+                x:Uid="SortPage_BackButton"
                 Content="◀ Zurück" />
             <Button
                 Grid.Column="2"
