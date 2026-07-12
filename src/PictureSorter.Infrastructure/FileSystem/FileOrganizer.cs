@@ -1,5 +1,6 @@
 using System.Globalization;
 using Microsoft.Extensions.Logging;
+using PictureSorter.Core.Diagnostics;
 using PictureSorter.Core.Interfaces;
 using PictureSorter.Core.ValueObjects;
 
@@ -57,7 +58,8 @@ public sealed class FileOrganizer : IFileOrganizer
             },
             cancellationToken).ConfigureAwait(false);
 
-        OrganizerLog.Moved(_logger, proposal.Photo.FileName, targetFolder);
+        string redactedTarget = LogPaths.Redact(targetFolder);
+        OrganizerLog.Moved(_logger, proposal.Photo.FileName, redactedTarget);
         return targetPath;
     }
 

@@ -36,6 +36,14 @@ internal static class AppServiceCollectionExtensions
             new ThemeService(provider.GetRequiredService<WindowContext>(), dataDirectory));
         _ = services.AddSingleton(provider =>
             new OllamaSetupService(provider.GetRequiredService<ILogger<OllamaSetupService>>()));
+
+        // Eigener Download-Client OHNE automatische Weiterleitung. Der Standard-Client
+        // folgt 3xx-Antworten selbsttätig – eine Umleitung von einem erlaubten
+        // GitHub-Host auf einen Fremdhost würde damit die Host-Allowlist umgehen. Der
+        // UpdateService folgt Weiterleitungen deshalb selbst und prüft jeden Sprung.
+        _ = services.AddHttpClient(UpdateService.DownloadClientName)
+            .ConfigurePrimaryHttpMessageHandler(static () => new HttpClientHandler { AllowAutoRedirect = false });
+
         _ = services.AddSingleton(provider => new UpdateService(
             provider.GetRequiredService<IUpdateChecker>(),
             provider.GetRequiredService<IHttpClientFactory>(),
