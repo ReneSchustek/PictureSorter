@@ -54,10 +54,17 @@ Bildanalysen laufen vollständig offline auf dem eigenen Rechner.
 ## Entwicklung
 
 - Solution-Datei: `PictureSorter.slnx` (Visual Studio 2022/2026 oder `dotnet`).
-- Schichten: `src/PictureSorter.App` (WinUI 3), `src/PictureSorter.Application`
-  (Use Cases, ViewModels), `src/PictureSorter.Core` (Domäne), `src/PictureSorter.Data`
-  (Persistenz, Ollama-Anbindung).
-- Tests: `tests/PictureSorter.Tests.Unit`, `tests/PictureSorter.Tests.Integration`.
+- Schichten (sieben Projekte, Abhängigkeiten stets nach innen zur Domäne `Core`):
+  - `src/PictureSorter.App` — WinUI 3, Views **und** ViewModels, Composition Root
+  - `src/PictureSorter.Application` — Use Cases / Sortierlogik, UI-frei
+  - `src/PictureSorter.Core` — Domäne (Entitäten, Wertobjekte, Schnittstellen)
+  - `src/PictureSorter.Data` — Persistenz (EF Core / SQLite, Sortier-Gedächtnis)
+  - `src/PictureSorter.Imaging` — EXIF-Auslesen und Wahrnehmungs-Hash (WinRT)
+  - `src/PictureSorter.Infrastructure` — Dateisystem, Update, Cache, JSON
+  - `src/PictureSorter.Ollama` — HTTP-Anbindung der lokalen KI
+- Tests: je `src`-Projekt ein Testprojekt unter `tests/` (`PictureSorter.App.Tests`,
+  `.Application.Tests`, `.Core.Tests`, `.Data.Tests`, `.Infrastructure.Tests`,
+  `.Ollama.Tests`).
 - Qualitäts-Gate vor jedem Abschluss:
 
   ```pwsh
@@ -65,9 +72,6 @@ Bildanalysen laufen vollständig offline auf dem eigenen Rechner.
   dotnet format PictureSorter.slnx --verify-no-changes
   dotnet test PictureSorter.slnx
   ```
-
-- Die Schichten sind oben unter „Entwicklung" beschrieben; Abhängigkeiten zeigen
-  stets nach innen zur Domäne (`Core`).
 
 ## MSIX-Paket erstellen (Sideload)
 
