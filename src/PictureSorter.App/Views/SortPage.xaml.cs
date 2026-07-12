@@ -4,7 +4,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using PictureSorter.App.Services;
-using PictureSorter.Application.ViewModels;
+using PictureSorter.App.ViewModels;
 
 namespace PictureSorter.App.Views;
 
@@ -79,6 +79,16 @@ internal sealed partial class SortPage : Page
             && int.TryParse(text, out int step))
         {
             ViewModel.Wizard.GoToStep(step);
+        }
+    }
+
+    // Öffnet die Großansicht des angeklickten Vorschlags. Kleine Kacheln sind schwer
+    // zu beurteilen; hier sieht der Nutzer das Bild in voller Größe.
+    private async void OnProposalImageClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { Tag: ProposalViewModel proposal })
+        {
+            await PhotoPreviewDialog.ShowAsync(this, proposal.Photo).ConfigureAwait(true);
         }
     }
 

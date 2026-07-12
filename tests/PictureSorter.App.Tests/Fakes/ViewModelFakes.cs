@@ -1,0 +1,172 @@
+using PictureSorter.Application.Services;
+using PictureSorter.Core.Entities;
+using PictureSorter.Core.Enums;
+using PictureSorter.Core.Interfaces;
+using PictureSorter.Core.ValueObjects;
+
+namespace PictureSorter.App.Tests.Fakes;
+
+/// <summary>Liefert eine feste Liste von Duplikat-Gruppen und meldet Fortschritt.</summary>
+internal sealed class FakeDuplicateScanner(IReadOnlyList<DuplicateGroup> groups) : IDuplicateScanner
+{
+    public Task<IReadOnlyList<DuplicateGroup>> ScanAsync(
+        string folderPath,
+        bool includeSubfolders,
+        IProgress<DuplicateScanProgress>? progress,
+        CancellationToken cancellationToken)
+    {
+        progress?.Report(new DuplicateScanProgress(groups.Count, groups.Count));
+        return Task.FromResult(groups);
+    }
+}
+
+/// <summary>Protokolliert gelöschte Pfade, ohne echte Dateien anzufassen.</summary>
+internal sealed class FakeFileDeleter : IFileDeleter
+{
+    public List<string> Deleted { get; } = [];
+
+    public Task DeleteAsync(string filePath, CancellationToken cancellationToken)
+    {
+        Deleted.Add(filePath);
+        return Task.CompletedTask;
+    }
+}
+
+/// <summary>Liefert einen festen Ordnerpfad (oder <see langword="null"/>).</summary>
+internal sealed class FakeFolderPicker(string? folder) : IFolderPicker
+{
+    public Task<string?> PickFolderAsync(CancellationToken cancellationToken) => Task.FromResult(folder);
+}
+
+/// <summary>Beantwortet jede Rückfrage mit einem festen Ergebnis.</summary>
+internal sealed class StubConfirmationService(bool result) : IConfirmationService
+{
+    public Task<bool> ConfirmAsync(string title, string message, string confirmText, string cancelText) =>
+        Task.FromResult(result);
+}
+
+/// <summary>
+/// Liefert feste Vorschläge und protokolliert, was angewendet bzw. abgewählt wurde.
+/// </summary>
+internal sealed class FakePhotoSorter(IReadOnlyList<SortProposal> proposals) : IPhotoSorter
+{
+    public List<SortProposal> Applied { get; } = [];
+
+    public List<SortProposal> Ignored { get; } = [];
+
+    public Task<IReadOnlyList<SortProposal>> CreateProposalsAsync(
+        string sourceFolder,
+        Category category,
+        bool includeSubfolders,
+        IProgress<SortProgress>? progress,
+        CancellationToken cancellationToken)
+    {
+        progress?.Report(new SortProgress(proposals.Count, proposals.Count));
+        return Task.FromResult(proposals);
+    }
+
+    public Task<int> ApplyProposalsAsync(
+        IReadOnlyList<SortProposal> toApply,
+        bool dryRun,
+        CancellationToken cancellationToken)
+    {
+        Applied.AddRange(toApply);
+        return Task.FromResult(toApply.Count);
+    }
+
+    public Task IgnoreProposalsAsync(IReadOnlyList<SortProposal> toIgnore, CancellationToken cancellationToken)
+    {
+        Ignored.AddRange(toIgnore);
+        return Task.CompletedTask;
+    }
+}
+
+/// <summary>Liefert eine feste Fotoliste.</summary>
+internal sealed class FakePhotoSource(IReadOnlyList<Photo> photos) : IPhotoSource
+{
+    public Task<IReadOnlyList<Photo>> GetPhotosAsync(
+        string folderPath,
+        bool includeSubfolders,
+        CancellationToken cancellationToken) => Task.FromResult(photos);
+}
+
+/// <summary>Liefert eine feste, bereits angelernte Kategorie.</summary>
+internal sealed class FakeCategoryTrainer(Category category) : ICategoryTrainer
+{
+    public Task<Category> TrainAsync(
+        string name,
+        string description,
+        CategoryKind kind,
+        IReadOnlyList<TrainingExample> examples,
+        CancellationToken cancellationToken) => Task.FromResult(category);
+}
+
+/// <summary>Hält Kategorien im Speicher.</summary>
+internal sealed class FakeCategoryRepository : ICategoryRepository
+{
+    public List<Category> Saved { get; } = [];
+
+    public Task<IReadOnlyList<Category>> LoadAllAsync(CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<Category>>([.. Saved]);
+
+    public Task SaveAllAsync(IReadOnlyList<Category> categories, CancellationToken cancellationToken)
+    {
+        Saved.Clear();
+        Saved.AddRange(categories);
+        return Task.CompletedTask;
+    }
+}
+
+/// <summary>Hält das Sortier-Gedächtnis im Speicher.</summary>
+internal sealed class FakeSortMemory : ISortMemory
+{
+    public List<SortMemoryRecord> Records { get; } = [];
+
+    public Task<IReadOnlyList<SortMemoryRecord>> GetForFolderAsync(
+        string folderPath,
+        CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<SortMemoryRecord>>(
+            [.. Records.Where(record => record.FolderPath == folderPath)]);
+
+    public Task<SortMemoryRecord?> GetAsync(
+        string folderPath,
+        string fileSignature,
+        string categoryName,
+        CancellationToken cancellationToken) =>
+        Task.FromResult(Records.Find(record =>
+            record.FolderPath == folderPath
+            && record.FileSignature == fileSignature
+            && record.CategoryName == categoryName));
+
+    public Task UpsertAsync(SortMemoryRecord record, CancellationToken cancellationToken)
+    {
+        _ = Records.RemoveAll(existing =>
+            existing.FolderPath == record.FolderPath
+            && existing.FileSignature == record.FileSignature
+            && existing.CategoryName == record.CategoryName);
+        Records.Add(record);
+        return Task.CompletedTask;
+    }
+
+    public Task RemoveAsync(
+        string folderPath,
+        string fileSignature,
+        string categoryName,
+        CancellationToken cancellationToken)
+    {
+        _ = Records.RemoveAll(record =>
+            record.FolderPath == folderPath
+            && record.FileSignature == fileSignature
+            && record.CategoryName == categoryName);
+        return Task.CompletedTask;
+    }
+
+    public Task ClearFolderAsync(string folderPath, CancellationToken cancellationToken)
+    {
+        _ = Records.RemoveAll(record => record.FolderPath == folderPath);
+        return Task.CompletedTask;
+    }
+
+    public Task<IReadOnlyList<SortMemoryRecord>> GetAllAsync(CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<SortMemoryRecord>>([.. Records]);
+}

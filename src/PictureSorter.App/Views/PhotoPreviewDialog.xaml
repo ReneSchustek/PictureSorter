@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentDialog
+    x:Class="PictureSorter.App.Views.PhotoPreviewDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    CloseButtonText="Schließen"
+    DefaultButton="Close"
+    mc:Ignorable="d">
+
+    <!-- Großansicht eines Fotos: das Bild in voller Auflösung plus alle bekannten
+         Bildinformationen. Über die Esc-Taste bzw. „Schließen" wieder zu verlassen. -->
+    <Grid MaxWidth="900" RowSpacing="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Border
+            MinHeight="240"
+            Background="{ThemeResource AppCardBackgroundBrush}"
+            CornerRadius="8">
+            <Image
+                x:Name="PreviewImage"
+                MaxHeight="520"
+                AutomationProperties.Name="Vergrößerte Ansicht des Fotos"
+                Stretch="Uniform" />
+        </Border>
+
+        <ScrollViewer
+            Grid.Row="1"
+            MaxHeight="160"
+            VerticalScrollBarVisibility="Auto">
+            <TextBlock
+                x:Name="InfoText"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                IsTextSelectionEnabled="True"
+                TextWrapping="Wrap" />
+        </ScrollViewer>
+    </Grid>
+</ContentDialog>

@@ -11,8 +11,10 @@ namespace PictureSorter.Application.Sorting;
 
 /// <summary>
 /// Orchestriert die Sortierung: schnelle Embedding-Vorsortierung, Vision-Prüfung
-/// für Grenzfälle und Erzeugung überprüfbarer Vorschläge. Ist die KI nicht
-/// erreichbar, wird das betroffene Bild übersprungen statt den Lauf abzubrechen.
+/// für Grenzfälle und Erzeugung überprüfbarer Vorschläge. Bereits entschiedene
+/// Fotos überspringt der Dienst anhand des Sortier-Gedächtnisses, statt sie erneut
+/// teuer von der KI bewerten zu lassen. Ist die KI nicht erreichbar, wird das
+/// betroffene Bild übersprungen statt den Lauf abzubrechen.
 /// </summary>
 public sealed class PhotoSortingService : IPhotoSorter
 {
@@ -20,6 +22,7 @@ public sealed class PhotoSortingService : IPhotoSorter
     private readonly IEmbeddingProvider _embeddingProvider;
     private readonly IImageClassifier _imageClassifier;
     private readonly IFileOrganizer _fileOrganizer;
+    private readonly SortMemoryGateway _memory;
     private readonly SortingOptions _options;
     private readonly ILogger<PhotoSortingService> _logger;
 
@@ -30,6 +33,7 @@ public sealed class PhotoSortingService : IPhotoSorter
     /// <param name="embeddingProvider">Embedding-Erzeugung.</param>
     /// <param name="imageClassifier">Vision-Prüfung für Grenzfälle.</param>
     /// <param name="fileOrganizer">Datei-Verschiebung.</param>
+    /// <param name="memory">Zugriff auf das Sortier-Gedächtnis.</param>
     /// <param name="options">Schwellwerte der Sortierlogik.</param>
     /// <param name="logger">Der Logger.</param>
     public PhotoSortingService(
@@ -37,6 +41,7 @@ public sealed class PhotoSortingService : IPhotoSorter
         IEmbeddingProvider embeddingProvider,
         IImageClassifier imageClassifier,
         IFileOrganizer fileOrganizer,
+        SortMemoryGateway memory,
         IOptions<SortingOptions> options,
         ILogger<PhotoSortingService> logger)
     {
@@ -44,6 +49,7 @@ public sealed class PhotoSortingService : IPhotoSorter
         ArgumentNullException.ThrowIfNull(embeddingProvider);
         ArgumentNullException.ThrowIfNull(imageClassifier);
         ArgumentNullException.ThrowIfNull(fileOrganizer);
+        ArgumentNullException.ThrowIfNull(memory);
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(logger);
 
@@ -51,6 +57,7 @@ public sealed class PhotoSortingService : IPhotoSorter
         _embeddingProvider = embeddingProvider;
         _imageClassifier = imageClassifier;
         _fileOrganizer = fileOrganizer;
+        _memory = memory;
         _options = options.Value;
         _logger = logger;
     }
@@ -83,14 +90,35 @@ public sealed class PhotoSortingService : IPhotoSorter
 
         List<SortProposal> proposals = [];
         int processed = 0;
+        int skipped = 0;
+
         foreach (Photo photo in photos)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            SortProposal? proposal = await EvaluateAsync(photo, category, positives, sourceFolder, cancellationToken)
-                .ConfigureAwait(false);
-            if (proposal is not null)
+
+            if (await _memory.IsSettledAsync(sourceFolder, photo, category.Name, cancellationToken).ConfigureAwait(false))
             {
-                proposals.Add(proposal);
+                skipped++;
+                processed++;
+                progress?.Report(new SortProgress(processed, total));
+                continue;
+            }
+
+            Evaluation evaluation = await EvaluateAsync(photo, category, positives, sourceFolder, cancellationToken)
+                .ConfigureAwait(false);
+
+            if (evaluation.Proposal is not null)
+            {
+                proposals.Add(evaluation.Proposal);
+            }
+
+            // Nur ein tatsächlich gefälltes Urteil wird gemerkt. Bei einem KI-Ausfall
+            // bleibt das Foto ungemerkt, damit der nächste Lauf es erneut versucht.
+            if (evaluation.WasEvaluated)
+            {
+                await _memory
+                    .RememberEvaluationAsync(sourceFolder, photo, category.Name, evaluation.Proposal, cancellationToken)
+                    .ConfigureAwait(false);
             }
 
             processed++;
@@ -98,6 +126,11 @@ public sealed class PhotoSortingService : IPhotoSorter
         }
 
         SortingLog.ProposalsCreated(_logger, proposals.Count, category.Name);
+        if (skipped > 0)
+        {
+            SortingLog.PhotosSkippedByMemory(_logger, skipped);
+        }
+
         return proposals;
     }
 
@@ -110,18 +143,63 @@ public sealed class PhotoSortingService : IPhotoSorter
         ArgumentNullException.ThrowIfNull(proposals);
 
         int applied = 0;
+        int failed = 0;
+
         foreach (SortProposal proposal in proposals)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            _ = await _fileOrganizer.ApplyAsync(proposal, dryRun, cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                _ = await _fileOrganizer.ApplyAsync(proposal, dryRun, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                // Eine einzelne gesperrte oder verschwundene Datei darf den Lauf nicht
+                // abbrechen – sonst bliebe die Sortierung auf halber Strecke stehen.
+                // Das Foto wird nicht als erledigt gemerkt und beim nächsten Lauf
+                // erneut vorgeschlagen.
+                SortingLog.MoveFailed(_logger, proposal.Photo.FileName, ex);
+                failed++;
+                continue;
+            }
+
+            // Im Probelauf wird nichts verschoben – dann darf auch nichts als
+            // erledigt gemerkt werden.
+            if (!dryRun)
+            {
+                await _memory.MarkSortedAsync(proposal, cancellationToken).ConfigureAwait(false);
+            }
+
             applied++;
         }
 
         SortingLog.ProposalsApplied(_logger, applied, dryRun);
+        if (failed > 0)
+        {
+            SortingLog.MovesFailed(_logger, failed);
+        }
+
         return applied;
     }
 
-    private async Task<SortProposal?> EvaluateAsync(
+    /// <inheritdoc />
+    public async Task IgnoreProposalsAsync(
+        IReadOnlyList<SortProposal> proposals,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(proposals);
+
+        foreach (SortProposal proposal in proposals)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            await _memory.MarkIgnoredAsync(proposal, cancellationToken).ConfigureAwait(false);
+        }
+
+        SortingLog.ProposalsIgnored(_logger, proposals.Count);
+    }
+
+    private async Task<Evaluation> EvaluateAsync(
         Photo photo,
         Category category,
         IReadOnlyList<ImageEmbedding> positives,
@@ -137,25 +215,27 @@ public sealed class PhotoSortingService : IPhotoSorter
 
             if (similarity >= _options.UpperSimilarityThreshold)
             {
-                return CreateProposal(photo, category, sourceFolder, similarity, ClassificationMethod.Embedding);
+                return Evaluation.Matched(
+                    CreateProposal(photo, category, sourceFolder, similarity, ClassificationMethod.Embedding));
             }
 
             if (similarity <= _options.LowerSimilarityThreshold)
             {
-                return null;
+                return Evaluation.Rejected();
             }
 
             return await ResolveBorderlineAsync(photo, category, sourceFolder, cancellationToken).ConfigureAwait(false);
         }
         catch (AiUnavailableException ex)
         {
-            // Fallback-Regel: Bild überspringen, Lauf nicht abbrechen.
+            // Fallback-Regel: Bild überspringen, Lauf nicht abbrechen. Bewusst NICHT
+            // als Ablehnung gemerkt – der Ausfall ist kein Urteil über das Bild.
             SortingLog.PhotoSkipped(_logger, photo.FileName, ex);
-            return null;
+            return Evaluation.NotEvaluated();
         }
     }
 
-    private async Task<SortProposal?> ResolveBorderlineAsync(
+    private async Task<Evaluation> ResolveBorderlineAsync(
         Photo photo,
         Category category,
         string sourceFolder,
@@ -165,12 +245,10 @@ public sealed class PhotoSortingService : IPhotoSorter
             .ClassifyAsync(photo, category, cancellationToken)
             .ConfigureAwait(false);
 
-        if (verdict.Matches && verdict.Confidence >= _options.VisionConfidenceThreshold)
-        {
-            return CreateProposal(photo, category, sourceFolder, verdict.Confidence, ClassificationMethod.VisionModel);
-        }
-
-        return null;
+        return verdict.Matches && verdict.Confidence >= _options.VisionConfidenceThreshold
+            ? Evaluation.Matched(
+                CreateProposal(photo, category, sourceFolder, verdict.Confidence, ClassificationMethod.VisionModel))
+            : Evaluation.Rejected();
     }
 
     private static double BestSimilarity(ImageEmbedding embedding, IReadOnlyList<ImageEmbedding> positives)
@@ -203,6 +281,7 @@ public sealed class PhotoSortingService : IPhotoSorter
         {
             Photo = photo,
             CategoryName = category.Name,
+            SourceFolder = sourceFolder,
             TargetFolderPath = BuildTargetFolder(sourceFolder, category, photo),
             Confidence = confidence,
             Method = method,
@@ -226,6 +305,20 @@ public sealed class PhotoSortingService : IPhotoSorter
         IEnumerable<char> cleaned = name.Select(character => invalid.Contains(character) ? '_' : character);
         return new string([.. cleaned]).Trim();
     }
+
+    /// <summary>
+    /// Ergebnis einer Foto-Bewertung. Unterscheidet ausdrücklich zwischen „von der
+    /// KI abgelehnt" (Urteil, wird gemerkt) und „nicht bewertet" (KI-Ausfall, wird
+    /// nicht gemerkt).
+    /// </summary>
+    private readonly record struct Evaluation(SortProposal? Proposal, bool WasEvaluated)
+    {
+        public static Evaluation Matched(SortProposal proposal) => new(proposal, WasEvaluated: true);
+
+        public static Evaluation Rejected() => new(Proposal: null, WasEvaluated: true);
+
+        public static Evaluation NotEvaluated() => new(Proposal: null, WasEvaluated: false);
+    }
 }
 
 /// <summary>
@@ -244,4 +337,16 @@ internal static partial class SortingLog
 
     [LoggerMessage(EventId = 3003, Level = LogLevel.Warning, Message = "Foto {FileName} übersprungen (KI nicht verfügbar).")]
     public static partial void PhotoSkipped(ILogger logger, string fileName, Exception exception);
+
+    [LoggerMessage(EventId = 3004, Level = LogLevel.Information, Message = "{Count} Fotos aus dem Gedächtnis übersprungen (bereits entschieden).")]
+    public static partial void PhotosSkippedByMemory(ILogger logger, int count);
+
+    [LoggerMessage(EventId = 3005, Level = LogLevel.Information, Message = "{Count} Vorschläge abgewählt und gemerkt.")]
+    public static partial void ProposalsIgnored(ILogger logger, int count);
+
+    [LoggerMessage(EventId = 3006, Level = LogLevel.Warning, Message = "Datei {FileName} konnte nicht verschoben werden; der Lauf wird fortgesetzt.")]
+    public static partial void MoveFailed(ILogger logger, string fileName, Exception exception);
+
+    [LoggerMessage(EventId = 3007, Level = LogLevel.Warning, Message = "{Count} Datei(en) konnten nicht verschoben werden.")]
+    public static partial void MovesFailed(ILogger logger, int count);
 }
