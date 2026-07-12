@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using PictureSorter.Core.Diagnostics;
 using PictureSorter.Core.Entities;
 using PictureSorter.Core.Enums;
 using PictureSorter.Core.Interfaces;
@@ -68,7 +69,8 @@ public sealed class DuplicateScanService : IDuplicateScanner
             AddSimilarGroups(fingerprinted, groups, consumed);
         }
 
-        DuplicateLog.Scanned(_logger, groups.Count, folderPath);
+        string redactedFolder = LogPaths.Redact(folderPath);
+        DuplicateLog.Scanned(_logger, groups.Count, redactedFolder);
         return groups;
     }
 
