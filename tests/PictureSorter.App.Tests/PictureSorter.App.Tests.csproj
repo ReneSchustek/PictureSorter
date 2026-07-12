@@ -11,7 +11,11 @@
     <UseWinUI>false</UseWinUI>
     <!-- PictureSorter.App wird als x64 gebaut; das Testprojekt muss dieselbe
          Architektur nutzen. Das WindowsAppSDK ist self-contained, daher muss auch
-         dieses Projekt self-contained sein (sonst greift der NETSDK1151-Check). -->
+         dieses Projekt self-contained sein (sonst greift der NETSDK1151-Check).
+         'Platforms' muss x64 enthalten, sonst zeigt die .slnx auf eine Plattform,
+         die das Projekt nicht kennt (Visual Studio meldet dann eine unbekannte
+         Projektkonfigurationszuordnung). -->
+    <Platforms>x64</Platforms>
     <PlatformTarget>x64</PlatformTarget>
     <SelfContained>true</SelfContained>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
