@@ -8,6 +8,8 @@
     <!-- Die Version kommt zentral aus Directory.Build.props (siehe VERSION). -->
 
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- Standardsprache der Ressourcen (Fallback, wenn die Systemsprache fehlt). -->
+    <DefaultLanguage>de-DE</DefaultLanguage>
     <!-- Bettet das Icon in die EXE ein (Explorer, Taskleiste, gepinnte
          Verknüpfung). Das Laufzeit-Fenstericon wird zusätzlich über
          AppWindow.SetIcon gesetzt. -->
