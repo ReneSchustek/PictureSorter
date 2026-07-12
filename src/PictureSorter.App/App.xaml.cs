@@ -58,7 +58,13 @@ public partial class App : Microsoft.UI.Xaml.Application
         InitializeComponent();
         Services = ConfigureServices();
         _logger = Services.GetRequiredService<ILogger<App>>();
+
+        // Drei Quellen unbehandelter Ausnahmen abdecken, damit kein Absturz ohne
+        // Protokolleintrag verschwindet: der UI-Dispatcher, der Prozess-weite
+        // AppDomain-Kanal und nicht beobachtete Task-Ausnahmen (Fire-and-Forget).
         UnhandledException += OnUnhandledException;
+        AppDomain.CurrentDomain.UnhandledException += OnDomainUnhandledException;
+        TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
     }
 
     /// <summary>
@@ -70,31 +76,43 @@ public partial class App : Microsoft.UI.Xaml.Application
 
     private async Task StartAsync()
     {
-        SplashWindow splash = new();
-        splash.Activate();
-        await splash.LoadLogoAsync().ConfigureAwait(true);
+        // OnLaunched ruft StartAsync als Fire-and-Forget auf. Ohne dieses try/catch
+        // würde eine Ausnahme hier zu einer nicht beobachteten Task-Ausnahme, die erst
+        // beim Garbage-Collector und ohne klaren Bezug auftauchte. Der Start-Fehler
+        // wird deshalb hier direkt protokolliert.
+        try
+        {
+            SplashWindow splash = new();
+            splash.Activate();
+            await splash.LoadLogoAsync().ConfigureAwait(true);
 
-        // Mindestanzeige des SplashScreens parallel zur Initialisierung.
-        Task minimumDisplay = Task.Delay(MinimumSplashDuration);
+            // Mindestanzeige des SplashScreens parallel zur Initialisierung.
+            Task minimumDisplay = Task.Delay(MinimumSplashDuration);
 
-        // Datenbank auf den aktuellen Schemastand bringen. Schlägt das fehl, läuft
-        // die Anwendung ohne Sortier-Gedächtnis weiter (Graceful Degradation); der
-        // Fehler steht im Protokoll.
-        _ = await Services.GetRequiredService<DatabaseInitializer>()
-            .InitializeAsync(CancellationToken.None)
-            .ConfigureAwait(true);
+            // Datenbank auf den aktuellen Schemastand bringen. Schlägt das fehl, läuft
+            // die Anwendung ohne Sortier-Gedächtnis weiter (Graceful Degradation); der
+            // Fehler steht im Protokoll.
+            _ = await Services.GetRequiredService<DatabaseInitializer>()
+                .InitializeAsync(CancellationToken.None)
+                .ConfigureAwait(true);
 
-        _window = new MainWindow();
-        Services.GetRequiredService<WindowContext>().MainWindow = _window;
-        Services.GetRequiredService<ThemeService>().Initialize();
-        await minimumDisplay.ConfigureAwait(true);
+            _window = new MainWindow();
+            Services.GetRequiredService<WindowContext>().MainWindow = _window;
+            Services.GetRequiredService<ThemeService>().Initialize();
+            await minimumDisplay.ConfigureAwait(true);
 
-        _window.Activate();
-        splash.Close();
-        AppLog.Started(_logger!);
+            _window.Activate();
+            splash.Close();
+            AppLog.Started(_logger!);
 
-        await CheckModelsAtStartupAsync().ConfigureAwait(true);
-        await CheckForUpdatesAtStartupAsync().ConfigureAwait(true);
+            await CheckModelsAtStartupAsync().ConfigureAwait(true);
+            await CheckForUpdatesAtStartupAsync().ConfigureAwait(true);
+        }
+        catch (Exception ex)
+        {
+            AppLog.StartupFailed(_logger!, ex);
+            throw;
+        }
     }
 
     // Prüft beim Start auf eine neuere Version. Ist eine verfügbar, erscheint ein
@@ -145,6 +163,23 @@ public partial class App : Microsoft.UI.Xaml.Application
 
     private void OnUnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
         => AppLog.Unhandled(_logger!, e.Exception);
+
+    private void OnDomainUnhandledException(object sender, System.UnhandledExceptionEventArgs e)
+    {
+        if (e.ExceptionObject is Exception exception)
+        {
+            AppLog.Unhandled(_logger!, exception);
+        }
+    }
+
+    private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
+    {
+        AppLog.Unhandled(_logger!, e.Exception);
+
+        // Als beobachtet markieren: Der Fehler ist protokolliert; die veraltete
+        // Eskalation zum Prozessabbruch beim Finalizer soll dadurch entfallen.
+        e.SetObserved();
+    }
 
     private static ServiceProvider ConfigureServices()
     {
@@ -205,6 +240,9 @@ internal static partial class AppLog
 
     [LoggerMessage(EventId = 1001, Level = LogLevel.Error, Message = "Unbehandelte Ausnahme in der Oberfläche.")]
     public static partial void Unhandled(ILogger logger, Exception exception);
+
+    [LoggerMessage(EventId = 1004, Level = LogLevel.Error, Message = "Start der Anwendung fehlgeschlagen.")]
+    public static partial void StartupFailed(ILogger logger, Exception exception);
 
     [LoggerMessage(EventId = 1002, Level = LogLevel.Warning, Message = "KI beim Start nicht einsatzbereit. Fehlende/erforderliche Modelle: {Models}.")]
     public static partial void ModelsNotReady(ILogger logger, string models);

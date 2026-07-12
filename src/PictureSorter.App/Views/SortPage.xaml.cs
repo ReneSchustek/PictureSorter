@@ -20,6 +20,7 @@ internal sealed partial class SortPage : Page
     private readonly OllamaSetupService _setupService;
     private readonly ThemeService _themeService;
     private bool _initializing = true;
+    private bool _previewOpen;
 
     /// <summary>
     /// Das an die Oberfläche gebundene ViewModel.
@@ -86,9 +87,26 @@ internal sealed partial class SortPage : Page
     // zu beurteilen; hier sieht der Nutzer das Bild in voller Größe.
     private async void OnProposalImageClick(object sender, RoutedEventArgs e)
     {
-        if (sender is FrameworkElement { Tag: ProposalViewModel proposal })
+        // Wiedereintritt verhindern: WinUI lässt nur einen ContentDialog gleichzeitig
+        // zu; ein zweiter, fast gleichzeitiger Klick würde sonst eine unbehandelte
+        // InvalidOperationException im async-void-Handler auslösen (= Prozessabbruch).
+        if (_previewOpen || sender is not FrameworkElement { Tag: ProposalViewModel proposal })
+        {
+            return;
+        }
+
+        _previewOpen = true;
+        try
         {
             await PhotoPreviewDialog.ShowAsync(this, proposal.Photo).ConfigureAwait(true);
+        }
+        catch (InvalidOperationException)
+        {
+            // Ein Dialog war bereits offen – für den Nutzer kein Fehler.
+        }
+        finally
+        {
+            _previewOpen = false;
         }
     }
 
