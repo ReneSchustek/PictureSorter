@@ -13,6 +13,13 @@
          AppWindow.SetIcon gesetzt. -->
     <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
     <Platforms>x86;x64;ARM64</Platforms>
+    <!-- Ohne aktive Plattform kann WindowsAppSDKSelfContained keine Architektur
+         aufloesen und der Build bricht ab ("requires a supported Windows
+         architecture"). Beim Bauen der Solution pinnt die .slnx x64; wird dagegen
+         nur dieses Projekt gebaut (etwa per 'dotnet run'), ist Platform leer bzw.
+         AnyCPU. Dann faellt die Wahl hier auf x64, damit der in der README
+         dokumentierte Startbefehl ohne zusaetzliche Parameter funktioniert. -->
+    <Platform Condition="'$(Platform)' == '' or '$(Platform)' == 'AnyCPU'">x64</Platform>
     <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
     <PublishProfile>win-$(Platform).pubxml</PublishProfile>
     <UseWinUI>true</UseWinUI>
