@@ -10,8 +10,8 @@
     <!-- Kein XAML-Host: die ViewModels sind UI-frei und laufen ohne WinUI-Laufzeit. -->
     <UseWinUI>false</UseWinUI>
     <!-- PictureSorter.App wird als x64 gebaut; das Testprojekt muss dieselbe
-         Architektur nutzen. Das WindowsAppSDK ist self-contained, daher muss auch
-         dieses Projekt self-contained sein (sonst greift der NETSDK1151-Check).
+         Architektur nutzen. Die App ist self-contained, daher muss auch dieses
+         Projekt self-contained sein (sonst greift der NETSDK1151-Check).
          'Platforms' muss x64 enthalten, sonst zeigt die .slnx auf eine Plattform,
          die das Projekt nicht kennt (Visual Studio meldet dann eine unbekannte
          Projektkonfigurationszuordnung). -->
@@ -19,6 +19,10 @@
     <PlatformTarget>x64</PlatformTarget>
     <SelfContained>true</SelfContained>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <!-- WindowsAppSDKSelfContained wird hier bewusst NICHT gesetzt: Die Eigenschaft
+         laesst das SDK seinen Auto-Initialisierer in die Kompilierung einschleusen. In
+         PictureSorter.App gehoert er hin, hier wuerde er dieselben Typen ein zweites Mal
+         definieren (CS0436). Die Laufzeit-DLLs kommen ohnehin aus der App-Ausgabe. -->
   </PropertyGroup>
 
   <ItemGroup>
