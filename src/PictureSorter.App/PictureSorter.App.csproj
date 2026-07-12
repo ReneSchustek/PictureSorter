@@ -5,7 +5,8 @@
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <RootNamespace>PictureSorter.App</RootNamespace>
     <AssemblyName>PictureSorter</AssemblyName>
-    <Version>1.2.0</Version>
+    <!-- Die Version kommt zentral aus Directory.Build.props (siehe VERSION). -->
+
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <!-- Bettet das Icon in die EXE ein (Explorer, Taskleiste, gepinnte
          Verknüpfung). Das Laufzeit-Fenstericon wird zusätzlich über
@@ -17,9 +18,20 @@
     <UseWinUI>true</UseWinUI>
     <WinUISDKReferences>false</WinUISDKReferences>
     <Nullable>enable</Nullable>
+    <!-- Nötig für [LibraryImport]: Der Quellgenerator erzeugt den Marshalling-Code
+         für die Windows-Signaturprüfung (WinVerifyTrust) mit unsicheren Zeigern.
+         Eigener unsicherer Code wird nicht geschrieben. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <!-- Standardmaessig unpackaged: F5/Run und die portable Variante laufen ohne
          Deploy. Fuer ein MSIX-Paket explizit mit -p:WindowsPackageType=MSIX bauen. -->
     <WindowsPackageType Condition="'$(WindowsPackageType)' == ''">None</WindowsPackageType>
+    <!-- Die App bringt die Windows App Runtime selbst mit, statt eine installierte zu
+         suchen. Ohne das kompiliert das SDK einen Auto-Initialisierer in die Assembly,
+         der beim Laden nach einer installierten Runtime sucht und, wenn er keine
+         findet, einen MODALEN Dialog zeigt. Auf einem Rechner ohne Runtime (CI-Runner,
+         frisch aufgesetztes Windows) blockiert der fuer immer: die portable App startet
+         nie, und der Testhost haengt, sobald er eine Klasse aus diesem Projekt laedt. -->
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <EnableMsixTooling Condition="'$(WindowsPackageType)' != 'None'">true</EnableMsixTooling>
   </PropertyGroup>
 
@@ -82,6 +94,11 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.5" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="*" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="*" />
+  </ItemGroup>
+
+  <!-- Die ViewModels sind intern (CA1515); das Testprojekt braucht Zugriff. -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="PictureSorter.App.Tests" />
   </ItemGroup>
 
   <ItemGroup>

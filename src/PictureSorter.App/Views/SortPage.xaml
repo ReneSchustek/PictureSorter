@@ -6,8 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:PictureSorter.App.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:vm="using:PictureSorter.Application.ViewModels"
-    xmlns:vo="using:PictureSorter.Core.ValueObjects"
+    xmlns:vm="using:PictureSorter.App.ViewModels"
     Loaded="OnPageLoaded"
     mc:Ignorable="d">
 
@@ -32,16 +31,26 @@
                 </InfoBar.ActionButton>
             </InfoBar>
 
+            <Border Style="{StaticResource HeroBorderStyle}">
+                <Grid ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel VerticalAlignment="Center" Spacing="4">
+                        <TextBlock Style="{StaticResource HeroTitleStyle}" Text="Fotos sortieren" />
+                        <TextBlock
+                            Style="{StaticResource HeroSubtitleStyle}"
+                            Text="Beschreibe eine Gruppe, bestätige ein paar Beispiele – den Rest übernimmt PictureSorter." />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
             <Grid ColumnSpacing="12">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <TextBlock
-                    VerticalAlignment="Center"
-                    FontSize="22"
-                    FontWeight="SemiBold"
-                    Text="Fotos sortieren" />
                 <StackPanel
                     Grid.Column="1"
                     VerticalAlignment="Center"
@@ -300,36 +309,91 @@
                         <TextBlock FontWeight="SemiBold" Text="5. Vorschau und sortieren" />
                         <TextBlock
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Text="Prüfe die Vorschläge. Mit „Sortieren“ werden die Dateien in den Zielordner verschoben."
+                            Text="Prüfe die Vorschläge. Bilder, die du nicht möchtest, einfach abhaken – sie werden nicht verschoben und nicht erneut vorgeschlagen. Klicke auf ein Bild, um es groß anzusehen."
                             TextWrapping="Wrap" />
-                        <Button
-                            Command="{x:Bind ViewModel.ApplyCommand}"
-                            Content="Sortieren"
-                            Style="{ThemeResource AccentButtonStyle}"
-                            Visibility="{x:Bind ViewModel.Wizard.ShowStandardActions, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+                        <Grid ColumnSpacing="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Button
+                                Command="{x:Bind ViewModel.ToggleAllCommand}"
+                                Content="Alle aus-/abwählen" />
+                            <TextBlock
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Text="{x:Bind ViewModel.SelectionSummary, Mode=OneWay}" />
+                            <Button
+                                Grid.Column="2"
+                                Command="{x:Bind ViewModel.ApplyCommand}"
+                                Content="Sortieren"
+                                Style="{ThemeResource AccentButtonStyle}"
+                                Visibility="{x:Bind ViewModel.Wizard.ShowStandardActions, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                        </Grid>
+
                         <ListView
                             MaxHeight="360"
                             ItemsSource="{x:Bind ViewModel.Proposals}"
                             SelectionMode="None">
                             <ListView.ItemTemplate>
-                                <DataTemplate x:DataType="vo:SortProposal">
-                                    <Grid Padding="0,6" ColumnSpacing="12">
+                                <DataTemplate x:DataType="vm:ProposalViewModel">
+                                    <Grid
+                                        Padding="0,6"
+                                        AutomationProperties.Name="{x:Bind AutomationName}"
+                                        ColumnSpacing="12">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
                                             <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
-                                        <Image
-                                            Width="56"
-                                            Height="56"
-                                            AutomationProperties.Name="{x:Bind Photo.FileName}"
-                                            Source="{x:Bind Photo.FullPath, Converter={StaticResource ThumbnailConverter}}"
-                                            Stretch="UniformToFill"
-                                            ToolTipService.ToolTip="{x:Bind Photo.ToDetailedInfo()}" />
-                                        <StackPanel Grid.Column="1" Spacing="2">
-                                            <TextBlock FontWeight="SemiBold" Text="{x:Bind Photo.FileName}" />
+                                        <CheckBox
+                                            VerticalAlignment="Center"
+                                            AutomationProperties.Name="Diesen Vorschlag übernehmen"
+                                            IsChecked="{x:Bind IsSelected, Mode=TwoWay}"
+                                            ToolTipService.ToolTip="Abhaken heißt: nicht verschieben und künftig nicht mehr vorschlagen." />
+                                        <!-- Klick auf das Bild öffnet die Großansicht. -->
+                                        <Button
+                                            Grid.Column="1"
+                                            Padding="0"
+                                            AutomationProperties.Name="Bild groß ansehen"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            Click="OnProposalImageClick"
+                                            Tag="{x:Bind}">
+                                            <Image
+                                                Width="56"
+                                                Height="56"
+                                                AutomationProperties.Name="{x:Bind FileName}"
+                                                Source="{x:Bind FilePath, Converter={StaticResource ThumbnailConverter}}"
+                                                Stretch="UniformToFill"
+                                                ToolTipService.ToolTip="{x:Bind InfoTooltip}" />
+                                        </Button>
+                                        <StackPanel
+                                            Grid.Column="2"
+                                            VerticalAlignment="Center"
+                                            Spacing="2">
+                                            <TextBlock FontWeight="SemiBold" Text="{x:Bind FileName}" />
                                             <TextBlock
                                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                Text="{x:Bind TargetFolderPath}" />
+                                                Text="{x:Bind TargetFolderName}" />
+                                        </StackPanel>
+                                        <StackPanel
+                                            Grid.Column="3"
+                                            VerticalAlignment="Center"
+                                            HorizontalAlignment="Right">
+                                            <TextBlock
+                                                HorizontalAlignment="Right"
+                                                FontWeight="SemiBold"
+                                                Text="{x:Bind ConfidenceText}" />
+                                            <TextBlock
+                                                HorizontalAlignment="Right"
+                                                FontSize="12"
+                                                Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                                Text="{x:Bind MethodText}" />
                                         </StackPanel>
                                     </Grid>
                                 </DataTemplate>

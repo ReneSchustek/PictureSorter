@@ -16,6 +16,7 @@
             <converters:StatusSeverityToInfoBarSeverityConverter x:Key="StatusSeverityConverter" />
             <converters:BoolToFontWeightConverter x:Key="BoolToFontWeightConverter" />
             <converters:StepReachedConverter x:Key="StepReachedConverter" />
+            <converters:BoolToInfoBarSeverityConverter x:Key="BoolToInfoBarSeverityConverter" />
 
             <!-- Karten-Optik: weiße (bzw. dunkle) abgerundete Fläche mit Rahmen,
                  abgesetzt von der Arbeitsfläche. Wird auf der Einstellungsseite und
@@ -26,6 +27,57 @@
                 <Setter Property="BorderThickness" Value="1" />
                 <Setter Property="CornerRadius" Value="8" />
                 <Setter Property="Padding" Value="20" />
+            </Style>
+
+            <!-- Kopfbereich einer Seite: Akzentfläche mit Titel und Kurzerklärung.
+                 Gibt jeder Seite in einem Blick zu erkennen, worum es geht. -->
+            <Style x:Key="HeroBorderStyle" TargetType="Border">
+                <Setter Property="Background" Value="{ThemeResource AppHeroBrush}" />
+                <Setter Property="CornerRadius" Value="10" />
+                <Setter Property="Padding" Value="20,16" />
+            </Style>
+            <Style x:Key="HeroTitleStyle" TargetType="TextBlock">
+                <Setter Property="Foreground" Value="{ThemeResource AppHeroForegroundBrush}" />
+                <Setter Property="FontSize" Value="22" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+            </Style>
+            <Style x:Key="HeroSubtitleStyle" TargetType="TextBlock">
+                <Setter Property="Foreground" Value="{ThemeResource AppHeroForegroundBrush}" />
+                <Setter Property="Opacity" Value="0.85" />
+                <Setter Property="TextWrapping" Value="Wrap" />
+            </Style>
+
+            <!-- Anklickbare Kachel des Dashboards. -->
+            <Style x:Key="TileButtonStyle" TargetType="Button">
+                <Setter Property="Background" Value="{ThemeResource AppCardBackgroundBrush}" />
+                <Setter Property="BorderBrush" Value="{ThemeResource AppCardBorderBrush}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="CornerRadius" Value="10" />
+                <Setter Property="Padding" Value="20" />
+                <Setter Property="MinWidth" Value="240" />
+                <Setter Property="MinHeight" Value="130" />
+                <Setter Property="HorizontalContentAlignment" Value="Left" />
+                <Setter Property="VerticalContentAlignment" Value="Top" />
+            </Style>
+
+            <!-- Bildkacheln: abgerundet, damit Fotos ruhiger wirken. -->
+            <Style x:Key="PhotoTileStyle" TargetType="Border">
+                <Setter Property="CornerRadius" Value="6" />
+                <Setter Property="Background" Value="{ThemeResource AppCardBorderBrush}" />
+            </Style>
+
+            <!-- Leerzustand: erklärt, was als Nächstes zu tun ist, statt leerer Fläche. -->
+            <Style x:Key="EmptyStateTitleStyle" TargetType="TextBlock">
+                <Setter Property="HorizontalAlignment" Value="Center" />
+                <Setter Property="FontSize" Value="16" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+            </Style>
+            <Style x:Key="EmptyStateTextStyle" TargetType="TextBlock">
+                <Setter Property="HorizontalAlignment" Value="Center" />
+                <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+                <Setter Property="TextAlignment" Value="Center" />
+                <Setter Property="TextWrapping" Value="Wrap" />
+                <Setter Property="MaxWidth" Value="420" />
             </Style>
         </ResourceDictionary>
     </Application.Resources>

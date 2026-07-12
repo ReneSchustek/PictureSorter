@@ -16,13 +16,15 @@ jobs:
   build-test:
     name: Build, Test & Audit
     runs-on: windows-latest
+    # Ohne Deckel läuft ein hängender Test bis zum GitHub-Limit von 6 Stunden.
+    timeout-minutes: 30
 
     steps:
       - name: Quellcode auschecken
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: .NET SDK einrichten
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '10.0.x'
 
@@ -35,8 +37,26 @@ jobs:
       - name: Zeilenenden/Whitespace prüfen
         run: dotnet format whitespace PictureSorter.slnx --verify-no-changes
 
+      # `--blame-hang` bricht einen blockierten Testhost nach der Frist ab und nennt
+      # den Test, der zuletzt lief. Ohne das meldet ein Hänger gar nichts und der Job
+      # läuft ins Timeout, ohne dass die Ursache im Log steht.
       - name: Tests ausführen
-        run: dotnet test PictureSorter.slnx -c Release --no-build
+        run: >-
+          dotnet test PictureSorter.slnx -c Release --no-build
+          --blame-hang --blame-hang-timeout 5m --blame-hang-dump-type none
+          --logger "console;verbosity=normal"
 
+      # `dotnet list package --vulnerable` meldet Funde nur im Text und endet immer
+      # mit Exit-Code 0. Ohne die Auswertung unten wäre dieser Schritt ein Gate, das
+      # niemals rot werden kann. Deshalb wird die Ausgabe geprüft und der Lauf bei
+      # einem Treffer hart abgebrochen.
       - name: Sicherheits-Audit (anfällige Pakete)
-        run: dotnet list PictureSorter.slnx package --vulnerable --include-transitive
+        shell: pwsh
+        run: |
+          $ausgabe = dotnet list PictureSorter.slnx package --vulnerable --include-transitive | Out-String
+          Write-Output $ausgabe
+          if ($ausgabe -match '(?m)^\s*>\s') {
+            Write-Error 'Anfällige Pakete gefunden – siehe Ausgabe oben.'
+            exit 1
+          }
+          Write-Output 'Keine anfälligen Pakete.'

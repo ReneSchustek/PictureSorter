@@ -2,6 +2,7 @@ using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PictureSorter.App.Services;
+using PictureSorter.App.ViewModels;
 using PictureSorter.Application.Services;
 using PictureSorter.Core.Interfaces;
 
@@ -9,12 +10,12 @@ namespace PictureSorter.App.DependencyInjection;
 
 /// <summary>
 /// Registriert die UI-nahen Dienste der App-Schicht (Fensterkontext,
-/// Ordnerauswahl, Bestätigungsdialoge).
+/// Ordnerauswahl, Bestätigungsdialoge) sowie die ViewModels.
 /// </summary>
 internal static class AppServiceCollectionExtensions
 {
     /// <summary>
-    /// Fügt die App-Dienste hinzu.
+    /// Fügt die App-Dienste und ViewModels hinzu.
     /// </summary>
     /// <param name="services">Die Service-Sammlung.</param>
     /// <param name="dataDirectory">Ordner für persistente UI-Einstellungen.</param>
@@ -39,6 +40,23 @@ internal static class AppServiceCollectionExtensions
             provider.GetRequiredService<IUpdateChecker>(),
             provider.GetRequiredService<IHttpClientFactory>(),
             provider.GetRequiredService<ILogger<UpdateService>>()));
+
+        return services.AddPictureSorterViewModels();
+    }
+
+    // Gemeinsame Statusleiste und Update-Hinweis sind Singletons, weil sie den
+    // Zustand seitenübergreifend im Hauptfenster anzeigen. Seiten-ViewModels sind
+    // transient und hängen an den transienten KI-Providern.
+    private static IServiceCollection AddPictureSorterViewModels(this IServiceCollection services)
+    {
+        _ = services.AddSingleton<StatusBarViewModel>();
+        _ = services.AddSingleton<UpdateViewModel>();
+
+        _ = services.AddTransient<DashboardViewModel>();
+        _ = services.AddTransient<SortViewModel>();
+        _ = services.AddTransient<DuplicatesViewModel>();
+        _ = services.AddTransient<MemoryViewModel>();
+        _ = services.AddTransient<ModelHintViewModel>();
 
         return services;
     }
