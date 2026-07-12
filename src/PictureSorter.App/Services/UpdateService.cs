@@ -164,7 +164,8 @@ internal sealed class UpdateService
     // erlaubten Host auf einen Fremdhost ungeprüft verfolgt. Gibt false zurück (und
     // protokolliert), wenn ein Ziel nicht vertrauenswürdig ist, zu viele Sprünge
     // auftreten oder die Antwort das Größenlimit überschreitet.
-    private async Task<bool> DownloadToAsync(HttpClient client, Uri url, string targetPath, CancellationToken cancellationToken)
+    // Intern (nicht privat) für den Test der Redirect-/Allowlist-/Größen-Logik.
+    internal async Task<bool> DownloadToAsync(HttpClient client, Uri url, string targetPath, CancellationToken cancellationToken)
     {
         Uri current = url;
         for (int hop = 0; hop <= MaxRedirects; hop++)
@@ -229,8 +230,8 @@ internal sealed class UpdateService
         }
     }
 
-    // Nur HTTPS und nur die Auslieferungs-Hosts von GitHub.
-    private static bool IsTrustedDownloadSource(Uri url) =>
+    // Nur HTTPS und nur die Auslieferungs-Hosts von GitHub. Intern für den Test.
+    internal static bool IsTrustedDownloadSource(Uri url) =>
         url.Scheme == Uri.UriSchemeHttps
         && Array.Exists(
             AllowedDownloadHosts,
