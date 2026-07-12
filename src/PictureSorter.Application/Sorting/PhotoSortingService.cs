@@ -299,11 +299,21 @@ public sealed class PhotoSortingService : IPhotoSorter
         return Path.Combine(sourceFolder, folderName);
     }
 
-    private static string SanitizeFolderName(string name)
+    // Intern (nicht privat) für den gezielten Randfall-Test der Pfad-Sicherheit.
+    internal static string SanitizeFolderName(string name)
     {
         char[] invalid = Path.GetInvalidFileNameChars();
         IEnumerable<char> cleaned = name.Select(character => invalid.Contains(character) ? '_' : character);
-        return new string([.. cleaned]).Trim();
+        string result = new string([.. cleaned]).Trim();
+
+        // Namen, die leer sind oder nur aus Punkten bestehen ("." / ".."), zeigen auf
+        // den Quell- bzw. Elternordner. Path.GetInvalidFileNameChars() enthält den
+        // Punkt nicht, daher überlebt so ein Name die Bereinigung und würde Fotos aus
+        // dem gewählten Ordner heraus (in den Elternordner) verschieben. Hier wird
+        // deshalb auf einen neutralen Namen ausgewichen.
+        return result.Length == 0 || result.All(character => character == '.')
+            ? "Sonstige"
+            : result;
     }
 
     /// <summary>
