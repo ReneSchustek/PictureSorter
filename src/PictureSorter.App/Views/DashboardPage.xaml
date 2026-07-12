@@ -18,8 +18,12 @@
             <!-- Hero-Kopf -->
             <Border Style="{StaticResource HeroBorderStyle}">
                 <StackPanel Spacing="6">
-                    <TextBlock Style="{StaticResource HeroTitleStyle}" Text="Willkommen bei PictureSorter" />
                     <TextBlock
+                        x:Uid="DashboardPage_HeroTitle"
+                        Style="{StaticResource HeroTitleStyle}"
+                        Text="Willkommen bei PictureSorter" />
+                    <TextBlock
+                        x:Uid="DashboardPage_HeroSubtitle"
                         Style="{StaticResource HeroSubtitleStyle}"
                         Text="Ordne deine Fotos in wenigen Schritten. Alles läuft auf deinem Rechner – nichts wird ins Internet geladen." />
                 </StackPanel>
@@ -27,6 +31,7 @@
 
             <!-- Zustand der lokalen KI -->
             <InfoBar
+                x:Uid="DashboardPage_AiStatusInfoBar"
                 IsClosable="False"
                 IsOpen="True"
                 Message="{x:Bind ViewModel.AiStatusText, Mode=OneWay}"
@@ -34,6 +39,7 @@
                 Title="Lokale KI" />
 
             <TextBlock
+                x:Uid="DashboardPage_ActionsPrompt"
                 FontSize="16"
                 FontWeight="SemiBold"
                 Text="Was möchtest du tun?" />
@@ -53,8 +59,12 @@
                             FontSize="26"
                             Foreground="{ThemeResource AccentFillColorDefaultBrush}"
                             Glyph="&#xE8B7;" />
-                        <TextBlock FontWeight="SemiBold" Text="Fotos sortieren" />
                         <TextBlock
+                            x:Uid="DashboardPage_SortTileTitle"
+                            FontWeight="SemiBold"
+                            Text="Fotos sortieren" />
+                        <TextBlock
+                            x:Uid="DashboardPage_SortTileDescription"
                             MaxWidth="220"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             Text="Beschreibe eine Gruppe, bestätige ein paar Beispiele – der Rest passiert automatisch."
@@ -73,8 +83,12 @@
                             FontSize="26"
                             Foreground="{ThemeResource AccentFillColorDefaultBrush}"
                             Glyph="&#xE8C8;" />
-                        <TextBlock FontWeight="SemiBold" Text="Duplikate finden" />
                         <TextBlock
+                            x:Uid="DashboardPage_DuplicatesTileTitle"
+                            FontWeight="SemiBold"
+                            Text="Duplikate finden" />
+                        <TextBlock
+                            x:Uid="DashboardPage_DuplicatesTileDescription"
                             MaxWidth="220"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             Text="Doppelte und sehr ähnliche Bilder aufspüren und in den Papierkorb legen."
@@ -93,8 +107,12 @@
                             FontSize="26"
                             Foreground="{ThemeResource AccentFillColorDefaultBrush}"
                             Glyph="&#xE81C;" />
-                        <TextBlock FontWeight="SemiBold" Text="Gedächtnis" />
                         <TextBlock
+                            x:Uid="DashboardPage_MemoryTileTitle"
+                            FontWeight="SemiBold"
+                            Text="Gedächtnis" />
+                        <TextBlock
+                            x:Uid="DashboardPage_MemoryTileDescription"
                             MaxWidth="220"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             Text="Sieh nach, was sich PictureSorter gemerkt hat – und vergiss, was nicht stimmt."
