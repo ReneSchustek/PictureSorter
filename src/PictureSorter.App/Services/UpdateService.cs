@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using PictureSorter.Core.Diagnostics;
 using PictureSorter.Core.Interfaces;
 using PictureSorter.Core.ValueObjects;
 
@@ -20,7 +21,20 @@ namespace PictureSorter.App.Services;
 /// </summary>
 internal sealed class UpdateService
 {
+    /// <summary>
+    /// Name des benannten HttpClients, der Weiterleitungen NICHT automatisch folgt
+    /// (siehe DI-Registrierung und <see cref="DownloadToAsync"/>).
+    /// </summary>
+    public const string DownloadClientName = "updater-download";
+
     private static readonly TimeSpan DownloadTimeout = TimeSpan.FromMinutes(5);
+
+    // Obergrenze der Weiterleitungen. GitHub leitet den Asset-Download i. d. R. einmal
+    // um; mehr als eine Handvoll Sprünge deutet auf eine Umleitungsschleife hin.
+    private const int MaxRedirects = 5;
+
+    // Deckel gegen eine Speicher-/Platz-DoS durch eine riesige Antwort.
+    private const long MaxUpdaterBytes = 300L * 1024 * 1024;
 
     // Auslieferungs-Hosts von GitHub. Eine Adresse außerhalb dieser Liste wird nicht
     // heruntergeladen, egal was die Release-Antwort behauptet.
@@ -91,15 +105,6 @@ internal sealed class UpdateService
             return false;
         }
 
-        // Erste Schranke: Die Adresse stammt aus einer JSON-Antwort und darf nicht
-        // blind übernommen werden. Nur verschlüsselte Verbindungen zu den
-        // Auslieferungs-Hosts von GitHub sind zulässig.
-        if (!IsTrustedDownloadSource(downloadUrl))
-        {
-            UpdateServiceLog.UntrustedSource(_logger, downloadUrl.Host);
-            return false;
-        }
-
         // In einen eigenen, frisch angelegten Ordner laden. Ein fester Pfad im
         // gemeinsamen Temp-Verzeichnis wäre für andere Prozesse beschreibbar – die
         // Datei könnte zwischen Prüfung und Start ausgetauscht werden.
@@ -110,26 +115,35 @@ internal sealed class UpdateService
         {
             _ = Directory.CreateDirectory(workingDirectory);
 
-            using (HttpClient client = _httpClientFactory.CreateClient())
+            using (HttpClient client = _httpClientFactory.CreateClient(DownloadClientName))
             {
                 client.Timeout = DownloadTimeout;
-                using Stream remote = await client.GetStreamAsync(downloadUrl, cancellationToken).ConfigureAwait(true);
-                using FileStream file = File.Create(targetPath);
-                await remote.CopyToAsync(file, cancellationToken).ConfigureAwait(true);
+                if (!await DownloadToAsync(client, downloadUrl, targetPath, cancellationToken).ConfigureAwait(true))
+                {
+                    TryCleanUp(workingDirectory);
+                    return false;
+                }
             }
 
             // Zweite Schranke: Nur eine von Windows als vertrauenswürdig eingestufte,
             // unversehrte Signatur wird ausgeführt. Alles andere wird verworfen.
+            // Hinweis: Diese Prüfung bindet noch KEINEN bestimmten Herausgeber (jede
+            // gültige Authenticode-Signatur wird akzeptiert). Ein Zertifikat-Pinning
+            // gehört ergänzt, sobald ein eigenes Code-Signing-Zertifikat existiert –
+            // bis dahin bleibt die Auto-Update-Funktion bewusst ruhend (leerer
+            // GitHubOwner).
             if (!AuthenticodeVerifier.IsTrusted(targetPath))
             {
-                UpdateServiceLog.SignatureRejected(_logger, targetPath);
+                string redactedRejected = LogPaths.Redact(targetPath);
+                UpdateServiceLog.SignatureRejected(_logger, redactedRejected);
                 TryCleanUp(workingDirectory);
                 return false;
             }
 
             // UseShellExecute, damit eine evtl. nötige UAC-Abfrage des Updaters greift.
             _ = Process.Start(new ProcessStartInfo { FileName = targetPath, UseShellExecute = true });
-            UpdateServiceLog.UpdaterLaunched(_logger, targetPath);
+            string redactedLaunched = LogPaths.Redact(targetPath);
+            UpdateServiceLog.UpdaterLaunched(_logger, redactedLaunched);
             return true;
         }
         catch (Exception ex) when (ex is IOException
@@ -142,6 +156,76 @@ internal sealed class UpdateService
             UpdateServiceLog.UpdateFailed(_logger, ex);
             TryCleanUp(workingDirectory);
             return false;
+        }
+    }
+
+    // Folgt Weiterleitungen SELBST und prüft jeden Sprung erneut gegen die Allowlist.
+    // Der benannte Client hat AllowAutoRedirect=false; sonst würde ein 3xx von einem
+    // erlaubten Host auf einen Fremdhost ungeprüft verfolgt. Gibt false zurück (und
+    // protokolliert), wenn ein Ziel nicht vertrauenswürdig ist, zu viele Sprünge
+    // auftreten oder die Antwort das Größenlimit überschreitet.
+    private async Task<bool> DownloadToAsync(HttpClient client, Uri url, string targetPath, CancellationToken cancellationToken)
+    {
+        Uri current = url;
+        for (int hop = 0; hop <= MaxRedirects; hop++)
+        {
+            if (!IsTrustedDownloadSource(current))
+            {
+                UpdateServiceLog.UntrustedSource(_logger, current.Host);
+                return false;
+            }
+
+            using HttpResponseMessage response = await client
+                .GetAsync(current, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+                .ConfigureAwait(true);
+
+            if (IsRedirect(response.StatusCode))
+            {
+                if (response.Headers.Location is not { } location)
+                {
+                    return false;
+                }
+
+                current = location.IsAbsoluteUri ? location : new Uri(current, location);
+                continue;
+            }
+
+            _ = response.EnsureSuccessStatusCode();
+
+            if (response.Content.Headers.ContentLength is > MaxUpdaterBytes)
+            {
+                UpdateServiceLog.TooLarge(_logger, response.Content.Headers.ContentLength.Value);
+                return false;
+            }
+
+            using Stream remote = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(true);
+            using FileStream file = File.Create(targetPath);
+            await CopyWithLimitAsync(remote, file, cancellationToken).ConfigureAwait(true);
+            return true;
+        }
+
+        UpdateServiceLog.TooManyRedirects(_logger);
+        return false;
+    }
+
+    private static bool IsRedirect(System.Net.HttpStatusCode status) =>
+        (int)status is >= 300 and < 400;
+
+    // Kopiert höchstens MaxUpdaterBytes, auch wenn kein Content-Length gemeldet wird.
+    private static async Task CopyWithLimitAsync(Stream source, Stream destination, CancellationToken cancellationToken)
+    {
+        byte[] buffer = new byte[81920];
+        long total = 0;
+        int read;
+        while ((read = await source.ReadAsync(buffer, cancellationToken).ConfigureAwait(true)) > 0)
+        {
+            total += read;
+            if (total > MaxUpdaterBytes)
+            {
+                throw new IOException("Die heruntergeladene Datei überschreitet die zulässige Größe.");
+            }
+
+            await destination.WriteAsync(buffer.AsMemory(0, read), cancellationToken).ConfigureAwait(true);
         }
     }
 
@@ -184,4 +268,10 @@ internal static partial class UpdateServiceLog
 
     [LoggerMessage(EventId = 5103, Level = LogLevel.Error, Message = "Aktualisierung abgebrochen: Die heruntergeladene Datei ist nicht gültig signiert ({Path}).")]
     public static partial void SignatureRejected(ILogger logger, string path);
+
+    [LoggerMessage(EventId = 5104, Level = LogLevel.Error, Message = "Aktualisierung abgebrochen: zu viele Weiterleitungen.")]
+    public static partial void TooManyRedirects(ILogger logger);
+
+    [LoggerMessage(EventId = 5105, Level = LogLevel.Error, Message = "Aktualisierung abgebrochen: Die Download-Größe ({Bytes} Byte) überschreitet das Limit.")]
+    public static partial void TooLarge(ILogger logger, long bytes);
 }

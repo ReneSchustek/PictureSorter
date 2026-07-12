@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using PictureSorter.Core.Diagnostics;
 using PictureSorter.Core.Entities;
 using PictureSorter.Core.Interfaces;
 using PictureSorter.Core.ValueObjects;
@@ -56,7 +57,8 @@ public sealed class FileSystemPhotoSource : IPhotoSource
             photos.Add(await ReadPhotoAsync(path, cancellationToken).ConfigureAwait(false));
         }
 
-        PhotoSourceLog.Scanned(_logger, photos.Count, fullFolderPath);
+        string redactedFolder = LogPaths.Redact(fullFolderPath);
+        PhotoSourceLog.Scanned(_logger, photos.Count, redactedFolder);
         return photos;
     }
 

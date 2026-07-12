@@ -37,6 +37,11 @@ public static class OllamaServiceCollectionExtensions
             OllamaOptions options = provider.GetRequiredService<IOptions<OllamaOptions>>().Value;
             client.BaseAddress = options.BaseUrl;
             client.Timeout = TimeSpan.FromSeconds(options.RequestTimeoutSeconds);
+
+            // Deckel gegen eine Speicher-DoS: Die BaseUrl ist frei konfigurierbar, und
+            // ein fremder Dienst am Port könnte eine riesige Antwort liefern. Embeddings
+            // und Klassifikationen sind klein; 64 MB sind großzügig bemessen.
+            client.MaxResponseContentBufferSize = 64L * 1024 * 1024;
         });
 
         // KI-Provider hängen am transienten HttpClient und sind daher selbst transient
