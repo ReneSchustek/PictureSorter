@@ -392,7 +392,7 @@
                                             <TextBlock
                                                 HorizontalAlignment="Right"
                                                 FontSize="12"
-                                                Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                 Text="{x:Bind MethodText}" />
                                         </StackPanel>
                                     </Grid>
