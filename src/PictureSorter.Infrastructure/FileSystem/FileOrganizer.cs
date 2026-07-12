@@ -33,9 +33,18 @@ public sealed class FileOrganizer : IFileOrganizer
 
         string sourcePath = Path.GetFullPath(proposal.Photo.FullPath);
         string targetFolder = Path.GetFullPath(proposal.TargetFolderPath);
-        string targetPath = ResolveCollisionFreePath(targetFolder, proposal.Photo.FileName);
+        string targetPath = ResolveCollisionFreePath(targetFolder, proposal.Photo.FileName, sourcePath);
 
         if (dryRun)
+        {
+            return targetPath;
+        }
+
+        // Liegt das Foto bereits an seinem Zielpfad, ist nichts zu tun. Ohne diese
+        // Prüfung würde File.Move die Datei auf sich selbst verschieben und – da der
+        // Zielname dann als „belegt" gilt – bei jedem Lauf eine weitere „ (n)"-Stufe
+        // anhängen (a.jpg → a (1).jpg → a (1) (1).jpg …).
+        if (string.Equals(sourcePath, targetPath, StringComparison.OrdinalIgnoreCase))
         {
             return targetPath;
         }
@@ -52,11 +61,13 @@ public sealed class FileOrganizer : IFileOrganizer
         return targetPath;
     }
 
-    // Hängt bei Namenskollision „ (n)" an, statt zu überschreiben.
-    private static string ResolveCollisionFreePath(string targetFolder, string fileName)
+    // Hängt bei Namenskollision „ (n)" an, statt zu überschreiben. Die Quelldatei
+    // selbst zählt dabei nicht als Kollision: Ein bereits am Zielort liegendes Foto
+    // soll seinen eigenen Namen behalten und nicht gegen sich selbst ausweichen.
+    private static string ResolveCollisionFreePath(string targetFolder, string fileName, string sourcePath)
     {
         string candidate = Path.Combine(targetFolder, fileName);
-        if (!File.Exists(candidate))
+        if (!File.Exists(candidate) || IsSameFile(candidate, sourcePath))
         {
             return candidate;
         }
@@ -70,7 +81,7 @@ public sealed class FileOrganizer : IFileOrganizer
                 CultureInfo.InvariantCulture,
                 $"{stem} ({index}){extension}");
             candidate = Path.Combine(targetFolder, numbered);
-            if (!File.Exists(candidate))
+            if (!File.Exists(candidate) || IsSameFile(candidate, sourcePath))
             {
                 return candidate;
             }
@@ -78,6 +89,12 @@ public sealed class FileOrganizer : IFileOrganizer
 
         throw new IOException($"Kein freier Zielname für „{fileName}\" in „{targetFolder}\" gefunden.");
     }
+
+    // Beide Pfade sind bereits über Path.GetFullPath bzw. Path.Combine mit einem
+    // absoluten Ordner normalisiert. Der Vergleich ist unter Windows (case-insensitiv)
+    // ausreichend, um „dieselbe Datei" von einer echten Namenskollision zu trennen.
+    private static bool IsSameFile(string left, string right) =>
+        string.Equals(left, right, StringComparison.OrdinalIgnoreCase);
 }
 
 /// <summary>
