@@ -85,12 +85,17 @@ public sealed class DuplicatesViewModelTests
     private static DuplicatesViewModel CreateViewModel(
         IReadOnlyList<DuplicateGroup> groups,
         FakeFileDeleter deleter,
-        bool confirmed = true) =>
-        new(
+        bool confirmed = true)
+    {
+        ReswLocalizer localizer = new();
+
+        return new DuplicatesViewModel(
             new FakeDuplicateScanner(groups),
             deleter,
             new FakeFolderPicker(@"C:\fotos"),
             new StubConfirmationService(confirmed),
-            new StatusBarViewModel(),
+            new StatusBarViewModel(localizer),
+            localizer,
             NullLogger<DuplicatesViewModel>.Instance);
+    }
 }

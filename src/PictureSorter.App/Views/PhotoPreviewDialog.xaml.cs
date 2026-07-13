@@ -1,8 +1,10 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
+using PictureSorter.App.Services;
 using PictureSorter.Core.Entities;
 
 namespace PictureSorter.App.Views;
@@ -20,7 +22,7 @@ internal sealed partial class PhotoPreviewDialog : ContentDialog
 
         Title = photo.FileName;
         PreviewImage.Source = new BitmapImage(new Uri(photo.FullPath));
-        InfoText.Text = photo.ToDetailedInfo();
+        InfoText.Text = PhotoTextFormatter.ToDetails(photo, App.Services.GetRequiredService<ILocalizer>());
     }
 
     /// <summary>

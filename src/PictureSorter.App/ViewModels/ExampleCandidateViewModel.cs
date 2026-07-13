@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using PictureSorter.App.Services;
 using PictureSorter.Core.Entities;
 
 namespace PictureSorter.App.ViewModels;
@@ -10,14 +11,20 @@ namespace PictureSorter.App.ViewModels;
 /// </summary>
 internal sealed partial class ExampleCandidateViewModel : ObservableObject
 {
+    private readonly ILocalizer _localizer;
+
     /// <summary>
     /// Initialisiert den Beispiel-Kandidaten.
     /// </summary>
     /// <param name="photo">Das Beispielfoto.</param>
-    public ExampleCandidateViewModel(Photo photo)
+    /// <param name="localizer">Die Textquelle.</param>
+    public ExampleCandidateViewModel(Photo photo, ILocalizer localizer)
     {
         ArgumentNullException.ThrowIfNull(photo);
+        ArgumentNullException.ThrowIfNull(localizer);
+
         Photo = photo;
+        _localizer = localizer;
     }
 
     /// <summary>
@@ -38,7 +45,7 @@ internal sealed partial class ExampleCandidateViewModel : ObservableObject
     /// <summary>
     /// Mehrzeilige Übersicht aller Bildinformationen für das Mouse-Over.
     /// </summary>
-    public string InfoTooltip => Photo.ToDetailedInfo();
+    public string InfoTooltip => PhotoTextFormatter.ToDetails(Photo, _localizer);
 
     /// <summary>
     /// <see langword="true"/>, wenn das Foto zur Kategorie gehört.

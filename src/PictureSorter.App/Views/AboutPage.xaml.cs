@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.Reflection;
 using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,6 +27,7 @@ internal sealed partial class AboutPage : Page
     private readonly FileLoggerProvider _fileLogger;
     private readonly UpdateService _updateService;
     private readonly WindowContext _windowContext;
+    private readonly ILocalizer _localizer;
     private bool _isInitializing = true;
 
     /// <summary>
@@ -41,6 +41,7 @@ internal sealed partial class AboutPage : Page
         _fileLogger = App.Services.GetRequiredService<FileLoggerProvider>();
         _updateService = App.Services.GetRequiredService<UpdateService>();
         _windowContext = App.Services.GetRequiredService<WindowContext>();
+        _localizer = App.Services.GetRequiredService<ILocalizer>();
 
         InitializeComponent();
 
@@ -49,9 +50,9 @@ internal sealed partial class AboutPage : Page
         AutoUpdateToggle.IsOn = _themeService.AutoInstallUpdates;
         _isInitializing = false;
 
-        VersionText.Text = string.Create(
-            CultureInfo.InvariantCulture,
-            $"Version {Assembly.GetEntryAssembly()?.GetName().Version?.ToString(3) ?? "1.0.0"}");
+        VersionText.Text = _localizer.Format(
+            "Common_Version",
+            Assembly.GetEntryAssembly()?.GetName().Version?.ToString(3) ?? "1.0.0");
     }
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
@@ -84,7 +85,7 @@ internal sealed partial class AboutPage : Page
     {
         IReadOnlyList<string> lines = _fileLogger.ReadRecent(LogViewLineCount);
         LogView.Text = lines.Count == 0
-            ? "Noch keine Protokolleinträge vorhanden."
+            ? _localizer.Get("About_LogEmpty")
             : string.Join(Environment.NewLine, lines);
     }
 
@@ -121,28 +122,27 @@ internal sealed partial class AboutPage : Page
     private async void OnCheckUpdatesClick(object sender, RoutedEventArgs e)
     {
         UpdateStatusBar.Severity = InfoBarSeverity.Informational;
-        UpdateStatusBar.Message = "Suche nach Updates…";
+        UpdateStatusBar.Message = _localizer.Get("About_UpdateSearching");
         InstallUpdateButton.Visibility = Visibility.Collapsed;
 
         UpdateInfo? info = await _updateService.CheckAsync(CancellationToken.None).ConfigureAwait(true);
         if (info is null)
         {
             UpdateStatusBar.Severity = InfoBarSeverity.Warning;
-            UpdateStatusBar.Message =
-                "Update-Prüfung nicht möglich (offline oder keine Update-Quelle hinterlegt).";
+            UpdateStatusBar.Message = _localizer.Get("About_UpdateCheckFailed");
             return;
         }
 
         if (info.IsUpdateAvailable)
         {
             UpdateStatusBar.Severity = InfoBarSeverity.Success;
-            UpdateStatusBar.Message = $"Version {info.LatestVersion} ist verfügbar (installiert: {info.CurrentVersion}).";
+            UpdateStatusBar.Message = _localizer.Format("About_UpdateAvailable", info.LatestVersion, info.CurrentVersion);
             InstallUpdateButton.Visibility = Visibility.Visible;
         }
         else
         {
             UpdateStatusBar.Severity = InfoBarSeverity.Success;
-            UpdateStatusBar.Message = $"Die Anwendung ist aktuell (Version {info.CurrentVersion}).";
+            UpdateStatusBar.Message = _localizer.Format("About_UpToDate", info.CurrentVersion);
         }
     }
 
@@ -151,7 +151,7 @@ internal sealed partial class AboutPage : Page
     private async void OnInstallUpdateClick(object sender, RoutedEventArgs e)
     {
         UpdateStatusBar.Severity = InfoBarSeverity.Informational;
-        UpdateStatusBar.Message = "Aktualisierung wird vorbereitet…";
+        UpdateStatusBar.Message = _localizer.Get("Update_Preparing");
 
         bool started = await _updateService.DownloadAndLaunchUpdaterAsync(CancellationToken.None).ConfigureAwait(true);
         if (started)
@@ -161,7 +161,7 @@ internal sealed partial class AboutPage : Page
         else
         {
             UpdateStatusBar.Severity = InfoBarSeverity.Error;
-            UpdateStatusBar.Message = "Aktualisierung nicht möglich. Bitte später erneut versuchen.";
+            UpdateStatusBar.Message = _localizer.Get("Update_Failed");
         }
     }
 
@@ -171,16 +171,12 @@ internal sealed partial class AboutPage : Page
         {
             _setupService.LaunchSetup();
             KiStatusBar.Severity = InfoBarSeverity.Informational;
-            KiStatusBar.Message =
-                "Die Einrichtung läuft jetzt in einem separaten Fenster. Bitte folge den "
-                + "Anweisungen dort. Klicke anschließend auf „Status prüfen“.";
+            KiStatusBar.Message = _localizer.Get("About_SetupRunning");
         }
         catch (Exception ex) when (ex is System.IO.FileNotFoundException or InvalidOperationException)
         {
             KiStatusBar.Severity = InfoBarSeverity.Error;
-            KiStatusBar.Message =
-                "Die Einrichtung konnte nicht gestartet werden. Bitte installiere Ollama "
-                + "manuell von https://ollama.com/download";
+            KiStatusBar.Message = _localizer.Get("About_SetupFailed");
         }
     }
 
@@ -189,20 +185,19 @@ internal sealed partial class AboutPage : Page
     private async System.Threading.Tasks.Task CheckKiStatusAsync()
     {
         KiStatusBar.Severity = InfoBarSeverity.Informational;
-        KiStatusBar.Message = "Status wird geprüft…";
+        KiStatusBar.Message = _localizer.Get("About_KiChecking");
 
         ModelAvailability availability = await _modelChecker.CheckAsync(CancellationToken.None).ConfigureAwait(true);
         if (availability.IsReady)
         {
             KiStatusBar.Severity = InfoBarSeverity.Success;
-            KiStatusBar.Message = "Die KI ist einsatzbereit. Du kannst Fotos sortieren.";
+            KiStatusBar.Message = _localizer.Get("About_KiReady");
             return;
         }
 
         KiStatusBar.Severity = InfoBarSeverity.Warning;
         KiStatusBar.Message = availability.IsReachable
-            ? $"Es fehlen noch KI-Modelle: {string.Join(", ", availability.MissingModels)}. "
-                + "Klicke auf „Jetzt einrichten“."
-            : "Die KI (Ollama) ist noch nicht eingerichtet. Klicke auf „Jetzt einrichten“.";
+            ? _localizer.Format("About_KiModelsMissing", string.Join(", ", availability.MissingModels))
+            : _localizer.Get("About_KiNotSetUp");
     }
 }

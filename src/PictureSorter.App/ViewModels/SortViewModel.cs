@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using PictureSorter.App.Services;
 using PictureSorter.Application.Services;
 using PictureSorter.Application.Sorting;
 using PictureSorter.Core.Entities;
@@ -34,6 +35,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     private readonly IConfirmationService _confirmationService;
     private readonly StatusBarViewModel _status;
     private readonly SortingOptions _options;
+    private readonly ILocalizer _localizer;
     private readonly ILogger<SortViewModel> _logger;
 
     private Category? _category;
@@ -83,6 +85,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     /// <param name="confirmationService">Die Rückfrage bei großen Mengen.</param>
     /// <param name="status">Die gemeinsame Statusleiste der Anwendung.</param>
     /// <param name="options">Schwellwerte der Sortierlogik.</param>
+    /// <param name="localizer">Die Textquelle.</param>
     /// <param name="logger">Der Logger.</param>
     public SortViewModel(
         IPhotoSorter sorter,
@@ -93,6 +96,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         IConfirmationService confirmationService,
         StatusBarViewModel status,
         IOptions<SortingOptions> options,
+        ILocalizer localizer,
         ILogger<SortViewModel> logger)
     {
         ArgumentNullException.ThrowIfNull(sorter);
@@ -103,6 +107,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         ArgumentNullException.ThrowIfNull(confirmationService);
         ArgumentNullException.ThrowIfNull(status);
         ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(localizer);
         ArgumentNullException.ThrowIfNull(logger);
 
         _sorter = sorter;
@@ -113,6 +118,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         _confirmationService = confirmationService;
         _status = status;
         _options = options.Value;
+        _localizer = localizer;
         _logger = logger;
 
         // Der Assistent kennt die Use-Cases nur über diese Delegaten (SRP). Er muss
@@ -124,7 +130,8 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
             CanRunWizardStep,
             RunWizardStepAsync,
             ResetForRestart,
-            OnWizardStepEntered);
+            OnWizardStepEntered,
+            localizer);
 
         State = SortState.Idle;
         SourceFolder = string.Empty;
@@ -158,7 +165,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     /// </summary>
     public string SelectionSummary => Proposals.Count == 0
         ? string.Empty
-        : $"{SelectedProposalCount} von {Proposals.Count} ausgewählt";
+        : _localizer.Format("Sort_SelectionSummary", SelectedProposalCount, Proposals.Count);
 
     /// <summary>
     /// <see langword="true"/>, wenn mindestens ein Vorschlag abgewählt ist (steuert
@@ -305,7 +312,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         ApplyCommand.NotifyCanExecuteChanged();
         LearnCommand.NotifyCanExecuteChanged();
         AnalyzeCommand.NotifyCanExecuteChanged();
-        _status.Report("Neu gestartet. Bitte mit Schritt 1 beginnen.");
+        _status.Report(_localizer.Get("Sort_Restarted"));
     }
 
     // ── Use-Cases ──────────────────────────────────────────────────────────────
@@ -323,7 +330,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     [RelayCommand(CanExecute = nameof(CanLoadExamples))]
     private async Task LoadExamplesAsync()
     {
-        _status.Report("Beispiele werden geladen…");
+        _status.Report(_localizer.Get("Sort_LoadingExamples"));
         try
         {
             IReadOnlyList<Photo> photos = await _photoSource
@@ -333,7 +340,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
             ClearCandidates();
             foreach (Photo photo in photos.Take(ExampleLimit))
             {
-                ExampleCandidateViewModel candidate = new(photo);
+                ExampleCandidateViewModel candidate = new(photo, _localizer);
                 candidate.PropertyChanged += OnCandidateChanged;
                 ExampleCandidates.Add(candidate);
             }
@@ -342,24 +349,22 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
             Wizard.NotifyStateChanged();
             if (ExampleCandidates.Count == 0)
             {
-                _status.Report(
-                    "Im Ordner wurden keine Bilder gefunden. Bitte wähle in Schritt 1 einen anderen Ordner.",
-                    StatusSeverity.Warning);
+                _status.Report(_localizer.Get("Sort_NoImagesInFolder"), StatusSeverity.Warning);
             }
             else
             {
-                _status.Report($"{ExampleCandidates.Count} Beispiele geladen — markiere passende Bilder mit „Gehört dazu“.");
+                _status.Report(_localizer.Format("Sort_ExamplesLoaded", ExampleCandidates.Count));
             }
         }
         catch (DirectoryNotFoundException ex)
         {
             SortViewModelLog.LoadExamplesFailed(_logger, ex);
-            _status.Report("Der Ordner wurde nicht gefunden. Bitte prüfe den Pfad in Schritt 1.", StatusSeverity.Error);
+            _status.Report(_localizer.Get("Sort_FolderNotFound"), StatusSeverity.Error);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             SortViewModelLog.LoadExamplesFailed(_logger, ex);
-            _status.Report("Der Ordner konnte nicht gelesen werden.", StatusSeverity.Error);
+            _status.Report(_localizer.Get("Sort_FolderUnreadable"), StatusSeverity.Error);
         }
     }
 
@@ -368,7 +373,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     {
         using IDisposable? logScope = _logger.BeginScope("Lernen {CorrelationId}", NewCorrelationId());
         State = SortState.Learning;
-        _status.Begin("Kategorie-Profil wird gelernt…", Cancel);
+        _status.Begin(_localizer.Get("Sort_Learning"), Cancel);
         _cancellation = new CancellationTokenSource();
 
         try
@@ -385,18 +390,18 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
             await PersistCategoryAsync(category, _cancellation.Token).ConfigureAwait(true);
             SetActiveCategory(category);
             State = SortState.Idle;
-            _status.Finish($"Kategorie „{category.Name}“ gelernt. Jetzt analysieren.", StatusSeverity.Success);
+            _status.Finish(_localizer.Format("Sort_CategoryLearned", category.Name), StatusSeverity.Success);
         }
         catch (OperationCanceledException)
         {
             State = SortState.Idle;
-            _status.Finish("Lernen abgebrochen.", StatusSeverity.Warning);
+            _status.Finish(_localizer.Get("Sort_LearnCanceled"), StatusSeverity.Warning);
         }
         catch (AiUnavailableException ex)
         {
             SortViewModelLog.LearnFailed(_logger, ex);
             State = SortState.Error;
-            _status.Finish("Die KI (Ollama) ist nicht erreichbar. Beispiele konnten nicht gelernt werden.", StatusSeverity.Error);
+            _status.Finish(_localizer.Get("Sort_AiUnavailable"), StatusSeverity.Error);
         }
         finally
         {
@@ -409,7 +414,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     {
         using IDisposable? logScope = _logger.BeginScope("Analyse {CorrelationId}", NewCorrelationId());
         State = SortState.Analyzing;
-        _status.Begin("Fotos werden analysiert…", Cancel);
+        _status.Begin(_localizer.Get("Sort_Analyzing"), Cancel);
         _cancellation = new CancellationTokenSource();
 
         try
@@ -423,20 +428,20 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
             State = SortState.Preview;
             _status.Finish(
                 proposals.Count == 0
-                    ? "Keine passenden Fotos gefunden."
-                    : $"{proposals.Count} Vorschläge gefunden.",
+                    ? _localizer.Get("Sort_NoMatchingPhotos")
+                    : _localizer.Format("Sort_ProposalsFound", proposals.Count),
                 proposals.Count == 0 ? StatusSeverity.Warning : StatusSeverity.Success);
         }
         catch (OperationCanceledException)
         {
             State = SortState.Idle;
-            _status.Finish("Analyse abgebrochen.", StatusSeverity.Warning);
+            _status.Finish(_localizer.Get("Sort_AnalyzeCanceled"), StatusSeverity.Warning);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             SortViewModelLog.AnalyzeFailed(_logger, ex);
             State = SortState.Error;
-            _status.Finish("Die Analyse ist fehlgeschlagen.", StatusSeverity.Error);
+            _status.Finish(_localizer.Get("Sort_AnalyzeFailed"), StatusSeverity.Error);
         }
         finally
         {
@@ -450,12 +455,12 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         using IDisposable? logScope = _logger.BeginScope("Sortieren {CorrelationId}", NewCorrelationId());
         if (!await ConfirmBulkAsync().ConfigureAwait(true))
         {
-            _status.Report("Sortierung abgebrochen.");
+            _status.Report(_localizer.Get("Sort_ApplyCanceled"));
             return;
         }
 
         State = SortState.Sorting;
-        _status.Begin("Dateien werden sortiert…", Cancel);
+        _status.Begin(_localizer.Get("Sort_Sorting"), Cancel);
         _cancellation = new CancellationTokenSource();
 
         try
@@ -479,20 +484,20 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
             State = SortState.Completed;
             _status.Finish(
                 rejected.Count == 0
-                    ? $"{moved} Dateien sortiert."
-                    : $"{moved} Dateien sortiert, {rejected.Count} abgewählt und gemerkt.",
+                    ? _localizer.Format("Sort_FilesSorted", moved)
+                    : _localizer.Format("Sort_FilesSortedWithRejected", moved, rejected.Count),
                 StatusSeverity.Success);
         }
         catch (OperationCanceledException)
         {
             State = SortState.Preview;
-            _status.Finish("Sortierung abgebrochen.", StatusSeverity.Warning);
+            _status.Finish(_localizer.Get("Sort_ApplyCanceled"), StatusSeverity.Warning);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             SortViewModelLog.ApplyFailed(_logger, ex);
             State = SortState.Error;
-            _status.Finish("Die Sortierung ist fehlgeschlagen.", StatusSeverity.Error);
+            _status.Finish(_localizer.Get("Sort_ApplyFailed"), StatusSeverity.Error);
         }
         finally
         {
@@ -504,7 +509,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     private void Cancel()
     {
         _cancellation?.Cancel();
-        _status.Report("Abbruch angefordert…");
+        _status.Report(_localizer.Get("Common_CancelRequested"));
     }
 
     // ── Hilfsfunktionen ────────────────────────────────────────────────────────
@@ -512,7 +517,9 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     private void OnAnalyzeProgress(SortProgress progress)
     {
         double percent = progress.Total > 0 ? progress.Processed * 100.0 / progress.Total : 0;
-        _status.ReportProgress($"{progress.Processed} von {progress.Total} Fotos analysiert…", percent);
+        _status.ReportProgress(
+            _localizer.Format("Sort_AnalyzeProgress", progress.Processed, progress.Total),
+            percent);
     }
 
     // Kurze Korrelations-ID je Vorgang. Als Logging-Scope geöffnet, verknüpft sie
@@ -527,10 +534,10 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         }
 
         return await _confirmationService.ConfirmAsync(
-            "Viele Dateien verschieben",
-            $"{Proposals.Count} Dateien werden verschoben. Fortfahren?",
-            "Verschieben",
-            "Abbrechen").ConfigureAwait(true);
+            _localizer.Get("Sort_BulkConfirmTitle"),
+            _localizer.Format("Sort_BulkConfirmMessage", Proposals.Count),
+            _localizer.Get("Sort_BulkConfirmPrimary"),
+            _localizer.Get("Common_Cancel")).ConfigureAwait(true);
     }
 
     private async Task PersistCategoryAsync(Category category, CancellationToken cancellationToken)
@@ -567,7 +574,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         ClearProposals();
         foreach (SortProposal proposal in proposals)
         {
-            ProposalViewModel viewModel = new(proposal);
+            ProposalViewModel viewModel = new(proposal, _localizer);
             viewModel.PropertyChanged += OnProposalChanged;
             Proposals.Add(viewModel);
         }
