@@ -51,7 +51,7 @@
                 <Button
                     Margin="0,0,12,12"
                     AutomationProperties.Name="Fotos sortieren"
-                    Click="OnSortClick"
+                    Command="{x:Bind ViewModel.OpenSortCommand}"
                     Style="{StaticResource TileButtonStyle}">
                     <StackPanel Spacing="8">
                         <FontIcon
@@ -75,7 +75,7 @@
                 <Button
                     Margin="0,0,12,12"
                     AutomationProperties.Name="Duplikate finden"
-                    Click="OnDuplicatesClick"
+                    Command="{x:Bind ViewModel.OpenDuplicatesCommand}"
                     Style="{StaticResource TileButtonStyle}">
                     <StackPanel Spacing="8">
                         <FontIcon
@@ -99,7 +99,7 @@
                 <Button
                     Margin="0,0,12,12"
                     AutomationProperties.Name="Gedächtnis verwalten"
-                    Click="OnMemoryClick"
+                    Command="{x:Bind ViewModel.OpenMemoryCommand}"
                     Style="{StaticResource TileButtonStyle}">
                     <StackPanel Spacing="8">
                         <FontIcon

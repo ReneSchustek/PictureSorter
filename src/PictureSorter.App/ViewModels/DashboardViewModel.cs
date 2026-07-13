@@ -13,6 +13,7 @@ namespace PictureSorter.App.ViewModels;
 internal sealed partial class DashboardViewModel : ObservableObject
 {
     private readonly IModelAvailabilityChecker _modelChecker;
+    private readonly INavigationService _navigation;
     private readonly ILocalizer _localizer;
 
     /// <summary>Kurztext zum Zustand der lokalen KI.</summary>
@@ -31,16 +32,34 @@ internal sealed partial class DashboardViewModel : ObservableObject
     /// Initialisiert das ViewModel.
     /// </summary>
     /// <param name="modelChecker">Prüft die Verfügbarkeit der KI-Modelle.</param>
+    /// <param name="navigation">Der Wechsel in die Bereiche der Anwendung.</param>
     /// <param name="localizer">Die Textquelle.</param>
-    public DashboardViewModel(IModelAvailabilityChecker modelChecker, ILocalizer localizer)
+    public DashboardViewModel(
+        IModelAvailabilityChecker modelChecker,
+        INavigationService navigation,
+        ILocalizer localizer)
     {
         ArgumentNullException.ThrowIfNull(modelChecker);
+        ArgumentNullException.ThrowIfNull(navigation);
         ArgumentNullException.ThrowIfNull(localizer);
 
         _modelChecker = modelChecker;
+        _navigation = navigation;
         _localizer = localizer;
         AiStatusText = localizer.Get("Dashboard_AiChecking");
     }
+
+    /// <summary>Wechselt zur Sortier-Ansicht.</summary>
+    [RelayCommand]
+    private void OpenSort() => _navigation.NavigateTo(AppSection.Sort);
+
+    /// <summary>Wechselt zur Duplikat-Suche.</summary>
+    [RelayCommand]
+    private void OpenDuplicates() => _navigation.NavigateTo(AppSection.Duplicates);
+
+    /// <summary>Wechselt zur Gedächtnis-Verwaltung.</summary>
+    [RelayCommand]
+    private void OpenMemory() => _navigation.NavigateTo(AppSection.Memory);
 
     /// <summary>
     /// Prüft, ob die lokale KI erreichbar und vollständig eingerichtet ist.

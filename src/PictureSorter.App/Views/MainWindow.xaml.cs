@@ -23,6 +23,7 @@ internal sealed partial class MainWindow : Window
 
     private readonly UpdateViewModel _update;
     private readonly UpdateService _updateService;
+    private readonly NavigationService _navigation;
 
     /// <summary>
     /// Initialisiert das Hauptfenster.
@@ -32,6 +33,7 @@ internal sealed partial class MainWindow : Window
         Status = App.Services.GetRequiredService<StatusBarViewModel>();
         _update = App.Services.GetRequiredService<UpdateViewModel>();
         _updateService = App.Services.GetRequiredService<UpdateService>();
+        _navigation = App.Services.GetRequiredService<NavigationService>();
         InitializeComponent();
 
         // {Binding} auflösen (x:Bind wird im Window-Root nicht unterstützt; daher
@@ -44,27 +46,9 @@ internal sealed partial class MainWindow : Window
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
         AppWindow.SetIcon("Assets/AppIcon.ico");
 
-        _ = NavFrame.Navigate(typeof(DashboardPage));
-    }
-
-    /// <summary>
-    /// Wechselt zu einem Bereich und markiert den passenden Eintrag in der
-    /// Navigationsleiste. Die Kacheln der Startseite laufen hierüber, damit Menü und
-    /// Inhalt nicht auseinanderlaufen.
-    /// </summary>
-    /// <param name="tag">Die Kennung des Zielbereichs (z. B. „sort").</param>
-    public void NavigateTo(string tag)
-    {
-        foreach (object item in NavView.MenuItems)
-        {
-            if (item is NavigationViewItem navigationItem
-                && string.Equals(navigationItem.Tag as string, tag, StringComparison.Ordinal))
-            {
-                // Das Setzen der Auswahl löst SelectionChanged aus – dort wird navigiert.
-                NavView.SelectedItem = navigationItem;
-                return;
-            }
-        }
+        // Ab hier gehört die Navigation dem Dienst: Er hört auf die Leiste, füllt den
+        // Rahmen und zeigt die Startseite.
+        _navigation.Initialize(NavView, NavFrame);
     }
 
     private void TitleBar_PaneToggleRequested(TitleBar sender, object args)
@@ -86,32 +70,4 @@ internal sealed partial class MainWindow : Window
         }
     }
 
-    private void NavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
-    {
-        if (args.SelectedItem is not NavigationViewItem item)
-        {
-            return;
-        }
-
-        switch (item.Tag)
-        {
-            case "dashboard":
-                _ = NavFrame.Navigate(typeof(DashboardPage));
-                break;
-            case "sort":
-                _ = NavFrame.Navigate(typeof(SortPage));
-                break;
-            case "duplicates":
-                _ = NavFrame.Navigate(typeof(DuplicatesPage));
-                break;
-            case "memory":
-                _ = NavFrame.Navigate(typeof(MemoryPage));
-                break;
-            case "about":
-                _ = NavFrame.Navigate(typeof(AboutPage));
-                break;
-            default:
-                throw new InvalidOperationException($"Unbekanntes Navigationsziel: {item.Tag}");
-        }
-    }
 }
