@@ -8,8 +8,8 @@ using System.Diagnostics.CodeAnalysis;
 //
 // Die Datei stammt aus dem SDK-Paket und darf nicht geändert werden ("DO NOT MODIFY.
 // Changes ... will be lost on updates"). Die Regel wird deshalb ausschließlich für diese
-// eine Methode ausgesetzt, nicht projektweit: Für eigene P/Invokes – allen voran die
-// Signaturprüfung in AuthenticodeVerifier – muss CA5392 ein Fehler bleiben.
+// eine Methode ausgesetzt, nicht projektweit: Für eigene P/Invokes muss CA5392 ein
+// Fehler bleiben.
 //
 // Vertretbar ist das, weil die geladene Microsoft.WindowsAppRuntime.dll im
 // Anwendungsverzeichnis der self-contained App liegt und .NET native Bibliotheken

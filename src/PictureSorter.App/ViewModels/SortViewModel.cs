@@ -1,9 +1,11 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using PictureSorter.App.Services;
 using PictureSorter.Application.Services;
 using PictureSorter.Application.Sorting;
 using PictureSorter.Core.Entities;
@@ -27,6 +29,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     private const int ExampleLimit = 30;
 
     private readonly IPhotoSorter _sorter;
+    private readonly ISortUndoService _undo;
     private readonly IPhotoSource _photoSource;
     private readonly ICategoryTrainer _trainer;
     private readonly ICategoryRepository _categoryRepository;
@@ -34,6 +37,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     private readonly IConfirmationService _confirmationService;
     private readonly StatusBarViewModel _status;
     private readonly SortingOptions _options;
+    private readonly ILocalizer _localizer;
     private readonly ILogger<SortViewModel> _logger;
 
     private Category? _category;
@@ -73,9 +77,24 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     public partial bool IsEventCategory { get; set; }
 
     /// <summary>
+    /// Zusammenfassung des Laufs, der zurückgenommen werden kann (leer, wenn keiner
+    /// vorliegt).
+    /// </summary>
+    [ObservableProperty]
+    public partial string UndoSummary { get; set; }
+
+    /// <summary>
+    /// <see langword="true"/>, wenn ein Sortierlauf zurückgenommen werden kann.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(UndoCommand))]
+    public partial bool HasUndoableRun { get; set; }
+
+    /// <summary>
     /// Initialisiert das ViewModel.
     /// </summary>
     /// <param name="sorter">Der Sortierdienst.</param>
+    /// <param name="undo">Nimmt den letzten Sortierlauf zurück.</param>
     /// <param name="photoSource">Quelle der Beispielfotos.</param>
     /// <param name="trainer">Lernt das Kategorie-Profil aus Beispielen.</param>
     /// <param name="categoryRepository">Persistiert die gelernten Kategorien.</param>
@@ -83,9 +102,11 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     /// <param name="confirmationService">Die Rückfrage bei großen Mengen.</param>
     /// <param name="status">Die gemeinsame Statusleiste der Anwendung.</param>
     /// <param name="options">Schwellwerte der Sortierlogik.</param>
+    /// <param name="localizer">Die Textquelle.</param>
     /// <param name="logger">Der Logger.</param>
     public SortViewModel(
         IPhotoSorter sorter,
+        ISortUndoService undo,
         IPhotoSource photoSource,
         ICategoryTrainer trainer,
         ICategoryRepository categoryRepository,
@@ -93,9 +114,11 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         IConfirmationService confirmationService,
         StatusBarViewModel status,
         IOptions<SortingOptions> options,
+        ILocalizer localizer,
         ILogger<SortViewModel> logger)
     {
         ArgumentNullException.ThrowIfNull(sorter);
+        ArgumentNullException.ThrowIfNull(undo);
         ArgumentNullException.ThrowIfNull(photoSource);
         ArgumentNullException.ThrowIfNull(trainer);
         ArgumentNullException.ThrowIfNull(categoryRepository);
@@ -103,9 +126,11 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         ArgumentNullException.ThrowIfNull(confirmationService);
         ArgumentNullException.ThrowIfNull(status);
         ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(localizer);
         ArgumentNullException.ThrowIfNull(logger);
 
         _sorter = sorter;
+        _undo = undo;
         _photoSource = photoSource;
         _trainer = trainer;
         _categoryRepository = categoryRepository;
@@ -113,6 +138,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         _confirmationService = confirmationService;
         _status = status;
         _options = options.Value;
+        _localizer = localizer;
         _logger = logger;
 
         // Der Assistent kennt die Use-Cases nur über diese Delegaten (SRP). Er muss
@@ -124,12 +150,14 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
             CanRunWizardStep,
             RunWizardStepAsync,
             ResetForRestart,
-            OnWizardStepEntered);
+            OnWizardStepEntered,
+            localizer);
 
         State = SortState.Idle;
         SourceFolder = string.Empty;
         CategoryName = string.Empty;
         CategoryDescription = string.Empty;
+        UndoSummary = string.Empty;
     }
 
     /// <summary>
@@ -158,7 +186,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     /// </summary>
     public string SelectionSummary => Proposals.Count == 0
         ? string.Empty
-        : $"{SelectedProposalCount} von {Proposals.Count} ausgewählt";
+        : _localizer.Format("Sort_SelectionSummary", SelectedProposalCount, Proposals.Count);
 
     /// <summary>
     /// <see langword="true"/>, wenn mindestens ein Vorschlag abgewählt ist (steuert
@@ -209,7 +237,16 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     /// <summary>
     /// Abbrechen ist möglich, solange ein Vorgang läuft.
     /// </summary>
-    public bool CanCancel => State is SortState.Analyzing or SortState.Sorting or SortState.Learning;
+    public bool CanCancel => State is SortState.Analyzing
+        or SortState.Sorting
+        or SortState.Learning
+        or SortState.Undoing;
+
+    /// <summary>
+    /// Rückgängig ist möglich, wenn ein protokollierter Lauf vorliegt und gerade
+    /// nichts läuft.
+    /// </summary>
+    public bool CanUndo => IsInteractive && HasUndoableRun;
 
     /// <summary>
     /// Eine Ordnerwahl ist möglich, solange kein Vorgang läuft.
@@ -219,8 +256,12 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     partial void OnStateChanged(SortState value)
     {
         OnPropertyChanged(nameof(IsInteractive));
+        OnPropertyChanged(nameof(CanUndo));
+        UndoCommand.NotifyCanExecuteChanged();
         Wizard.NotifyStateChanged();
     }
+
+    partial void OnHasUndoableRunChanged(bool value) => OnPropertyChanged(nameof(CanUndo));
 
     partial void OnSourceFolderChanged(string value)
     {
@@ -305,7 +346,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         ApplyCommand.NotifyCanExecuteChanged();
         LearnCommand.NotifyCanExecuteChanged();
         AnalyzeCommand.NotifyCanExecuteChanged();
-        _status.Report("Neu gestartet. Bitte mit Schritt 1 beginnen.");
+        _status.Report(_localizer.Get("Sort_Restarted"));
     }
 
     // ── Use-Cases ──────────────────────────────────────────────────────────────
@@ -323,7 +364,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     [RelayCommand(CanExecute = nameof(CanLoadExamples))]
     private async Task LoadExamplesAsync()
     {
-        _status.Report("Beispiele werden geladen…");
+        _status.Report(_localizer.Get("Sort_LoadingExamples"));
         try
         {
             IReadOnlyList<Photo> photos = await _photoSource
@@ -333,7 +374,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
             ClearCandidates();
             foreach (Photo photo in photos.Take(ExampleLimit))
             {
-                ExampleCandidateViewModel candidate = new(photo);
+                ExampleCandidateViewModel candidate = new(photo, _localizer);
                 candidate.PropertyChanged += OnCandidateChanged;
                 ExampleCandidates.Add(candidate);
             }
@@ -342,24 +383,22 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
             Wizard.NotifyStateChanged();
             if (ExampleCandidates.Count == 0)
             {
-                _status.Report(
-                    "Im Ordner wurden keine Bilder gefunden. Bitte wähle in Schritt 1 einen anderen Ordner.",
-                    StatusSeverity.Warning);
+                _status.Report(_localizer.Get("Sort_NoImagesInFolder"), StatusSeverity.Warning);
             }
             else
             {
-                _status.Report($"{ExampleCandidates.Count} Beispiele geladen — markiere passende Bilder mit „Gehört dazu“.");
+                _status.Report(_localizer.Format("Sort_ExamplesLoaded", ExampleCandidates.Count));
             }
         }
         catch (DirectoryNotFoundException ex)
         {
             SortViewModelLog.LoadExamplesFailed(_logger, ex);
-            _status.Report("Der Ordner wurde nicht gefunden. Bitte prüfe den Pfad in Schritt 1.", StatusSeverity.Error);
+            _status.Report(_localizer.Get("Sort_FolderNotFound"), StatusSeverity.Error);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             SortViewModelLog.LoadExamplesFailed(_logger, ex);
-            _status.Report("Der Ordner konnte nicht gelesen werden.", StatusSeverity.Error);
+            _status.Report(_localizer.Get("Sort_FolderUnreadable"), StatusSeverity.Error);
         }
     }
 
@@ -368,7 +407,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     {
         using IDisposable? logScope = _logger.BeginScope("Lernen {CorrelationId}", NewCorrelationId());
         State = SortState.Learning;
-        _status.Begin("Kategorie-Profil wird gelernt…", Cancel);
+        _status.Begin(_localizer.Get("Sort_Learning"), Cancel);
         _cancellation = new CancellationTokenSource();
 
         try
@@ -385,18 +424,18 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
             await PersistCategoryAsync(category, _cancellation.Token).ConfigureAwait(true);
             SetActiveCategory(category);
             State = SortState.Idle;
-            _status.Finish($"Kategorie „{category.Name}“ gelernt. Jetzt analysieren.", StatusSeverity.Success);
+            _status.Finish(_localizer.Format("Sort_CategoryLearned", category.Name), StatusSeverity.Success);
         }
         catch (OperationCanceledException)
         {
             State = SortState.Idle;
-            _status.Finish("Lernen abgebrochen.", StatusSeverity.Warning);
+            _status.Finish(_localizer.Get("Sort_LearnCanceled"), StatusSeverity.Warning);
         }
         catch (AiUnavailableException ex)
         {
             SortViewModelLog.LearnFailed(_logger, ex);
             State = SortState.Error;
-            _status.Finish("Die KI (Ollama) ist nicht erreichbar. Beispiele konnten nicht gelernt werden.", StatusSeverity.Error);
+            _status.Finish(_localizer.Get("Sort_AiUnavailable"), StatusSeverity.Error);
         }
         finally
         {
@@ -409,7 +448,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     {
         using IDisposable? logScope = _logger.BeginScope("Analyse {CorrelationId}", NewCorrelationId());
         State = SortState.Analyzing;
-        _status.Begin("Fotos werden analysiert…", Cancel);
+        _status.Begin(_localizer.Get("Sort_Analyzing"), Cancel);
         _cancellation = new CancellationTokenSource();
 
         try
@@ -423,20 +462,20 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
             State = SortState.Preview;
             _status.Finish(
                 proposals.Count == 0
-                    ? "Keine passenden Fotos gefunden."
-                    : $"{proposals.Count} Vorschläge gefunden.",
+                    ? _localizer.Get("Sort_NoMatchingPhotos")
+                    : _localizer.Format("Sort_ProposalsFound", proposals.Count),
                 proposals.Count == 0 ? StatusSeverity.Warning : StatusSeverity.Success);
         }
         catch (OperationCanceledException)
         {
             State = SortState.Idle;
-            _status.Finish("Analyse abgebrochen.", StatusSeverity.Warning);
+            _status.Finish(_localizer.Get("Sort_AnalyzeCanceled"), StatusSeverity.Warning);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             SortViewModelLog.AnalyzeFailed(_logger, ex);
             State = SortState.Error;
-            _status.Finish("Die Analyse ist fehlgeschlagen.", StatusSeverity.Error);
+            _status.Finish(_localizer.Get("Sort_AnalyzeFailed"), StatusSeverity.Error);
         }
         finally
         {
@@ -450,12 +489,12 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         using IDisposable? logScope = _logger.BeginScope("Sortieren {CorrelationId}", NewCorrelationId());
         if (!await ConfirmBulkAsync().ConfigureAwait(true))
         {
-            _status.Report("Sortierung abgebrochen.");
+            _status.Report(_localizer.Get("Sort_ApplyCanceled"));
             return;
         }
 
         State = SortState.Sorting;
-        _status.Begin("Dateien werden sortiert…", Cancel);
+        _status.Begin(_localizer.Get("Sort_Sorting"), Cancel);
         _cancellation = new CancellationTokenSource();
 
         try
@@ -479,24 +518,28 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
             State = SortState.Completed;
             _status.Finish(
                 rejected.Count == 0
-                    ? $"{moved} Dateien sortiert."
-                    : $"{moved} Dateien sortiert, {rejected.Count} abgewählt und gemerkt.",
+                    ? _localizer.Format("Sort_FilesSorted", moved)
+                    : _localizer.Format("Sort_FilesSortedWithRejected", moved, rejected.Count),
                 StatusSeverity.Success);
         }
         catch (OperationCanceledException)
         {
             State = SortState.Preview;
-            _status.Finish("Sortierung abgebrochen.", StatusSeverity.Warning);
+            _status.Finish(_localizer.Get("Sort_ApplyCanceled"), StatusSeverity.Warning);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             SortViewModelLog.ApplyFailed(_logger, ex);
             State = SortState.Error;
-            _status.Finish("Die Sortierung ist fehlgeschlagen.", StatusSeverity.Error);
+            _status.Finish(_localizer.Get("Sort_ApplyFailed"), StatusSeverity.Error);
         }
         finally
         {
             DisposeCancellation();
+
+            // Erst jetzt steht der Lauf im Protokoll – der Hinweis „rückgängig machen"
+            // erscheint unmittelbar nach dem Sortieren.
+            await RefreshUndoStateAsync().ConfigureAwait(true);
         }
     }
 
@@ -504,7 +547,94 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     private void Cancel()
     {
         _cancellation?.Cancel();
-        _status.Report("Abbruch angefordert…");
+        _status.Report(_localizer.Get("Common_CancelRequested"));
+    }
+
+    /// <summary>
+    /// Prüft, ob ein Sortierlauf zurückgenommen werden kann, und beschriftet den
+    /// Hinweis entsprechend. Das Protokoll ist dauerhaft: Auch ein Lauf von gestern
+    /// lässt sich nach einem Neustart noch zurücknehmen.
+    /// </summary>
+    [RelayCommand]
+    private async Task RefreshUndoStateAsync()
+    {
+        SortRun? run = await _undo.GetUndoableRunAsync(CancellationToken.None).ConfigureAwait(true);
+        if (run is null)
+        {
+            HasUndoableRun = false;
+            UndoSummary = string.Empty;
+            return;
+        }
+
+        UndoSummary = _localizer.Format(
+            "Sort_UndoSummary",
+            run.Items.Count,
+            run.CategoryName,
+            run.StartedAt.ToLocalTime().ToString("g", CultureInfo.CurrentCulture));
+        HasUndoableRun = true;
+    }
+
+    /// <summary>
+    /// Holt die Fotos des letzten Sortierlaufs an ihren Ursprungsort zurück.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanUndo))]
+    private async Task UndoAsync()
+    {
+        using IDisposable? logScope = _logger.BeginScope("Rückgängig {CorrelationId}", NewCorrelationId());
+
+        SortRun? run = await _undo.GetUndoableRunAsync(CancellationToken.None).ConfigureAwait(true);
+        if (run is null)
+        {
+            await RefreshUndoStateAsync().ConfigureAwait(true);
+            _status.Report(_localizer.Get("Sort_UndoNothing"), StatusSeverity.Warning);
+            return;
+        }
+
+        bool confirmed = await _confirmationService.ConfirmAsync(
+            _localizer.Get("Sort_UndoTitle"),
+            _localizer.Format("Sort_UndoMessage", run.Items.Count),
+            _localizer.Get("Sort_UndoPrimary"),
+            _localizer.Get("Common_Cancel")).ConfigureAwait(true);
+        if (!confirmed)
+        {
+            return;
+        }
+
+        State = SortState.Undoing;
+        _status.Begin(_localizer.Get("Sort_Undoing"), Cancel);
+        _cancellation = new CancellationTokenSource();
+
+        try
+        {
+            UndoResult? result = await _undo.UndoLastRunAsync(_cancellation.Token).ConfigureAwait(true);
+            State = SortState.Idle;
+
+            // Nicht zurückgeholte Fotos werden ausgewiesen statt verschwiegen: Sie
+            // liegen weiterhin im Kategorie-Ordner, und die Nutzerin muss das erfahren.
+            _status.Finish(
+                result is null || result.Skipped == 0
+                    ? _localizer.Format("Sort_UndoDone", result?.Restored ?? 0)
+                    : _localizer.Format("Sort_UndoDoneWithSkipped", result.Restored, result.Skipped),
+                result is { Skipped: > 0 } ? StatusSeverity.Warning : StatusSeverity.Success);
+        }
+        catch (OperationCanceledException)
+        {
+            // Bereits zurückgeholte Fotos bleiben zurückgeholt; der Lauf gilt weiter
+            // als offen und kann erneut zurückgenommen werden.
+            State = SortState.Idle;
+            _status.Finish(_localizer.Get("Sort_UndoCanceled"), StatusSeverity.Warning);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            SortViewModelLog.UndoFailed(_logger, ex);
+            State = SortState.Error;
+            _status.Finish(_localizer.Get("Sort_UndoFailed"), StatusSeverity.Error);
+        }
+        finally
+        {
+            DisposeCancellation();
+            await RefreshUndoStateAsync().ConfigureAwait(true);
+        }
     }
 
     // ── Hilfsfunktionen ────────────────────────────────────────────────────────
@@ -512,7 +642,9 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     private void OnAnalyzeProgress(SortProgress progress)
     {
         double percent = progress.Total > 0 ? progress.Processed * 100.0 / progress.Total : 0;
-        _status.ReportProgress($"{progress.Processed} von {progress.Total} Fotos analysiert…", percent);
+        _status.ReportProgress(
+            _localizer.Format("Sort_AnalyzeProgress", progress.Processed, progress.Total),
+            percent);
     }
 
     // Kurze Korrelations-ID je Vorgang. Als Logging-Scope geöffnet, verknüpft sie
@@ -527,10 +659,10 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         }
 
         return await _confirmationService.ConfirmAsync(
-            "Viele Dateien verschieben",
-            $"{Proposals.Count} Dateien werden verschoben. Fortfahren?",
-            "Verschieben",
-            "Abbrechen").ConfigureAwait(true);
+            _localizer.Get("Sort_BulkConfirmTitle"),
+            _localizer.Format("Sort_BulkConfirmMessage", Proposals.Count),
+            _localizer.Get("Sort_BulkConfirmPrimary"),
+            _localizer.Get("Common_Cancel")).ConfigureAwait(true);
     }
 
     private async Task PersistCategoryAsync(Category category, CancellationToken cancellationToken)
@@ -567,7 +699,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         ClearProposals();
         foreach (SortProposal proposal in proposals)
         {
-            ProposalViewModel viewModel = new(proposal);
+            ProposalViewModel viewModel = new(proposal, _localizer);
             viewModel.PropertyChanged += OnProposalChanged;
             Proposals.Add(viewModel);
         }
@@ -657,4 +789,7 @@ internal static partial class SortViewModelLog
 
     [LoggerMessage(EventId = 3103, Level = LogLevel.Error, Message = "Lernen des Kategorie-Profils fehlgeschlagen.")]
     public static partial void LearnFailed(ILogger logger, Exception exception);
+
+    [LoggerMessage(EventId = 3104, Level = LogLevel.Error, Message = "Das Zurückholen der Fotos ist fehlgeschlagen.")]
+    public static partial void UndoFailed(ILogger logger, Exception exception);
 }

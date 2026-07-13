@@ -1,9 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <!-- net10.0-windows wegen Windows-spezifischer APIs der Desktop-Anwendung;
-         Cross-Platform der Application-Schicht ist nicht Ziel. -->
-    <TargetFramework>net10.0-windows</TargetFramework>
+    <!-- Reine Orchestrierungsschicht ohne Windows-/WinRT-Abhängigkeit; daher das
+         plattformneutrale TFM (wie Core/Data/Ollama). So bleibt die Use-Case-Logik
+         ohne Windows-Targeting-Pack baubar und testbar. -->
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>

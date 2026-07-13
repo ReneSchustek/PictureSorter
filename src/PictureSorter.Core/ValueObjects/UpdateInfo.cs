@@ -23,9 +23,16 @@ public sealed record UpdateInfo
     public required bool IsUpdateAvailable { get; init; }
 
     /// <summary>
-    /// Direkter Download-Link des Updater-Programms (Release-Asset), falls vorhanden.
+    /// Das Update-Paket (ZIP) für die laufende Architektur, falls das Release eines
+    /// enthält.
     /// </summary>
-    public Uri? UpdaterDownloadUrl { get; init; }
+    public Uri? PackageDownloadUrl { get; init; }
+
+    /// <summary>
+    /// Die losgelöste Signatur des Pakets. Ohne sie wird nichts eingespielt: Sie ist
+    /// der einzige Beleg dafür, dass das Paket aus der richtigen Hand stammt.
+    /// </summary>
+    public Uri? SignatureDownloadUrl { get; init; }
 
     /// <summary>
     /// Verweis auf die Release-Seite (für „Details anzeigen"), falls vorhanden.

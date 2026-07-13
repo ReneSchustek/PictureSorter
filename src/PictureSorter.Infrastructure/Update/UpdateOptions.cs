@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+
 namespace PictureSorter.Infrastructure.Update;
 
 /// <summary>
@@ -17,8 +19,10 @@ public sealed class UpdateOptions
     public string GitHubRepo { get; init; } = string.Empty;
 
     /// <summary>
-    /// Dateiname des Updater-Programms unter den Release-Assets, z. B.
-    /// „PictureSorter-Updater.exe". Wird beim Aktualisieren heruntergeladen und gestartet.
+    /// Architektur-Kennung des passenden Release-Pakets (z. B. „win-x64"). Ein Release
+    /// trägt je eine Datei für x64, x86 und ARM64; gesucht wird das Paket, dessen Name
+    /// auf <c>-{RuntimeIdentifier}.zip</c> endet. Standard ist die Architektur, unter
+    /// der die Anwendung gerade läuft.
     /// </summary>
-    public string UpdaterAssetName { get; init; } = "PictureSorter-Updater.exe";
+    public string RuntimeIdentifier { get; init; } = RuntimeInformation.RuntimeIdentifier;
 }

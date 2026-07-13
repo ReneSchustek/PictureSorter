@@ -23,6 +23,8 @@ public sealed class PhotoSortingService : IPhotoSorter
     private readonly IImageClassifier _imageClassifier;
     private readonly IFileOrganizer _fileOrganizer;
     private readonly SortMemoryGateway _memory;
+    private readonly SortJournalGateway _journal;
+    private readonly IClock _clock;
     private readonly SortingOptions _options;
     private readonly ILogger<PhotoSortingService> _logger;
 
@@ -34,6 +36,8 @@ public sealed class PhotoSortingService : IPhotoSorter
     /// <param name="imageClassifier">Vision-Prüfung für Grenzfälle.</param>
     /// <param name="fileOrganizer">Datei-Verschiebung.</param>
     /// <param name="memory">Zugriff auf das Sortier-Gedächtnis.</param>
+    /// <param name="journal">Protokoll der Sortierläufe (Grundlage des Rückgängigmachens).</param>
+    /// <param name="clock">Testbare Zeitquelle für den Zeitstempel des Laufs.</param>
     /// <param name="options">Schwellwerte der Sortierlogik.</param>
     /// <param name="logger">Der Logger.</param>
     public PhotoSortingService(
@@ -42,6 +46,8 @@ public sealed class PhotoSortingService : IPhotoSorter
         IImageClassifier imageClassifier,
         IFileOrganizer fileOrganizer,
         SortMemoryGateway memory,
+        SortJournalGateway journal,
+        IClock clock,
         IOptions<SortingOptions> options,
         ILogger<PhotoSortingService> logger)
     {
@@ -50,6 +56,8 @@ public sealed class PhotoSortingService : IPhotoSorter
         ArgumentNullException.ThrowIfNull(imageClassifier);
         ArgumentNullException.ThrowIfNull(fileOrganizer);
         ArgumentNullException.ThrowIfNull(memory);
+        ArgumentNullException.ThrowIfNull(journal);
+        ArgumentNullException.ThrowIfNull(clock);
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(logger);
 
@@ -58,6 +66,8 @@ public sealed class PhotoSortingService : IPhotoSorter
         _imageClassifier = imageClassifier;
         _fileOrganizer = fileOrganizer;
         _memory = memory;
+        _journal = journal;
+        _clock = clock;
         _options = options.Value;
         _logger = logger;
     }
@@ -145,13 +155,21 @@ public sealed class PhotoSortingService : IPhotoSorter
         int applied = 0;
         int failed = 0;
 
+        // Jede Verschiebung wird mitgeschrieben: Quelle und tatsächliches Ziel. Der
+        // Zielpfad ist nicht vorhersagbar (bei Namenskonflikt hängt der Organizer eine
+        // Nummer an) – ohne ihn ließe sich der Lauf später nicht zurücknehmen.
+        List<SortRunItem> moved = [];
+
         foreach (SortProposal proposal in proposals)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
+            string targetPath;
             try
             {
-                _ = await _fileOrganizer.ApplyAsync(proposal, dryRun, cancellationToken).ConfigureAwait(false);
+                targetPath = await _fileOrganizer
+                    .ApplyAsync(proposal, dryRun, cancellationToken)
+                    .ConfigureAwait(false);
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
@@ -165,13 +183,31 @@ public sealed class PhotoSortingService : IPhotoSorter
             }
 
             // Im Probelauf wird nichts verschoben – dann darf auch nichts als
-            // erledigt gemerkt werden.
+            // erledigt gemerkt oder protokolliert werden.
             if (!dryRun)
             {
                 await _memory.MarkSortedAsync(proposal, cancellationToken).ConfigureAwait(false);
+
+                // Lag das Foto schon am Ziel, hat sich nichts bewegt – es gäbe nichts
+                // zurückzuholen, und ein Rückgängig würde die Datei sonst an einen Ort
+                // „zurück" schieben, an dem sie nie war.
+                if (!string.Equals(proposal.Photo.FullPath, targetPath, StringComparison.OrdinalIgnoreCase))
+                {
+                    moved.Add(new SortRunItem
+                    {
+                        SourcePath = proposal.Photo.FullPath,
+                        TargetPath = targetPath,
+                        FileSignature = proposal.Photo.ComputeSignature(),
+                    });
+                }
             }
 
             applied++;
+        }
+
+        if (moved.Count > 0)
+        {
+            await RecordRunAsync(proposals[0], moved, cancellationToken).ConfigureAwait(false);
         }
 
         SortingLog.ProposalsApplied(_logger, applied, dryRun);
@@ -181,6 +217,25 @@ public sealed class PhotoSortingService : IPhotoSorter
         }
 
         return applied;
+    }
+
+    // Alle Vorschläge eines Laufs stammen aus demselben Quellordner und derselben
+    // Kategorie; der erste Vorschlag liefert daher beides für den Lauf.
+    private Task RecordRunAsync(
+        SortProposal first,
+        IReadOnlyList<SortRunItem> moved,
+        CancellationToken cancellationToken)
+    {
+        SortRun run = new()
+        {
+            Id = Guid.NewGuid(),
+            StartedAt = _clock.UtcNow,
+            SourceFolder = first.SourceFolder,
+            CategoryName = first.CategoryName,
+            Items = moved,
+        };
+
+        return _journal.RecordAsync(run, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -299,11 +354,21 @@ public sealed class PhotoSortingService : IPhotoSorter
         return Path.Combine(sourceFolder, folderName);
     }
 
-    private static string SanitizeFolderName(string name)
+    // Intern (nicht privat) für den gezielten Randfall-Test der Pfad-Sicherheit.
+    internal static string SanitizeFolderName(string name)
     {
         char[] invalid = Path.GetInvalidFileNameChars();
         IEnumerable<char> cleaned = name.Select(character => invalid.Contains(character) ? '_' : character);
-        return new string([.. cleaned]).Trim();
+        string result = new string([.. cleaned]).Trim();
+
+        // Namen, die leer sind oder nur aus Punkten bestehen ("." / ".."), zeigen auf
+        // den Quell- bzw. Elternordner. Path.GetInvalidFileNameChars() enthält den
+        // Punkt nicht, daher überlebt so ein Name die Bereinigung und würde Fotos aus
+        // dem gewählten Ordner heraus (in den Elternordner) verschieben. Hier wird
+        // deshalb auf einen neutralen Namen ausgewichen.
+        return result.Length == 0 || result.All(character => character == '.')
+            ? "Sonstige"
+            : result;
     }
 
     /// <summary>

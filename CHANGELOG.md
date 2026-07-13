@@ -4,7 +4,27 @@ Alle nennenswerten Änderungen an diesem Projekt werden hier dokumentiert.
 Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/),
 die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
-## [1.3.0]
+## [Unveröffentlicht]
+
+### Behoben
+
+- **Datenverlust beim Verschieben**: Ein bereits einsortiertes Foto sah sich bei
+  erneutem Lauf (mit „Unterordner einschließen") als Kollision mit sich selbst und
+  wurde fortlaufend umbenannt (`a.jpg` → `a (1).jpg` → `a (1) (1).jpg`). Der
+  Datei-Organizer erkennt jetzt „Quelle == Ziel" und lässt die Datei unangetastet.
+- **Absturzsicherheit**: Prozessweite und nicht beobachtete Task-Ausnahmen werden
+  jetzt protokolliert (bisher nur UI-Dispatcher); der Startvorgang ist abgesichert.
+  Ein zweiter Klick auf ein Vorschau-Bild löst keinen Absturz mehr aus.
+- **Barrierefreiheit**: Screenreader-Bezug an der Duplikat-Löschauswahl, höhere
+  Textkontraste, angesagte Statusmeldungen und laienverständlicher KI-Hinweis.
+
+### Geändert
+
+- Die App bringt die Windows App Runtime jetzt selbst mit (self-contained); sie
+  startet damit auf Rechnern ohne vorinstallierte Runtime.
+- Die Application-Schicht ist plattformneutral (`net10.0`).
+
+## [1.3.0] - 2026-07-11
 
 ### Hinzugefügt
 

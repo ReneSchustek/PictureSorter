@@ -5,9 +5,10 @@ using PictureSorter.Data.Entities;
 namespace PictureSorter.Data.Context;
 
 /// <summary>
-/// Datenbank-Kontext der Anwendung. Hält ausschließlich das Sortier-Gedächtnis;
-/// alle übrigen Daten (Kategorien, Embedding-Cache) liegen bewusst als Dateien in
-/// der Infrastructure-Schicht.
+/// Datenbank-Kontext der Anwendung. Hält das Sortier-Gedächtnis und das Protokoll
+/// der Sortierläufe (Grundlage des Rückgängigmachens); alle übrigen Daten
+/// (Kategorien, Embedding-Cache) liegen bewusst als Dateien in der
+/// Infrastructure-Schicht.
 /// </summary>
 public sealed class PictureSorterDbContext : DbContext
 {
@@ -24,6 +25,16 @@ public sealed class PictureSorterDbContext : DbContext
     /// Die gemerkten Sortier-Entscheidungen.
     /// </summary>
     internal DbSet<SortMemoryEntity> SortMemory => Set<SortMemoryEntity>();
+
+    /// <summary>
+    /// Die protokollierten Sortierläufe.
+    /// </summary>
+    internal DbSet<SortRunEntity> SortRuns => Set<SortRunEntity>();
+
+    /// <summary>
+    /// Die einzelnen Verschiebungen der Sortierläufe.
+    /// </summary>
+    internal DbSet<SortRunItemEntity> SortRunItems => Set<SortRunItemEntity>();
 
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -16,14 +16,28 @@ public sealed class WindowsImageMetadataReader : IImageMetadataReader
 {
     private const string DateTakenKey = "System.Photo.DateTaken";
     private const string CameraModelKey = "System.Photo.CameraModel";
-    private const string LatitudeKey = "System.GPS.Latitude";
+
+    // EXIF legt eine Koordinate als drei Brüche ab (Grad, Minuten, Sekunden). Die
+    // Bild-API gibt Zähler und Nenner getrennt heraus; die zusammengesetzte
+    // Eigenschaft „System.GPS.Latitude" liefert sie nicht – die berechnet erst der
+    // Explorer. Wer nach ihr fragt, bekommt nie einen Ort zu sehen.
+    private const string LatitudeNumeratorKey = "System.GPS.LatitudeNumerator";
+    private const string LatitudeDenominatorKey = "System.GPS.LatitudeDenominator";
     private const string LatitudeRefKey = "System.GPS.LatitudeRef";
-    private const string LongitudeKey = "System.GPS.Longitude";
+    private const string LongitudeNumeratorKey = "System.GPS.LongitudeNumerator";
+    private const string LongitudeDenominatorKey = "System.GPS.LongitudeDenominator";
     private const string LongitudeRefKey = "System.GPS.LongitudeRef";
 
     private static readonly string[] PropertyKeys =
     [
-        DateTakenKey, CameraModelKey, LatitudeKey, LatitudeRefKey, LongitudeKey, LongitudeRefKey,
+        DateTakenKey,
+        CameraModelKey,
+        LatitudeNumeratorKey,
+        LatitudeDenominatorKey,
+        LatitudeRefKey,
+        LongitudeNumeratorKey,
+        LongitudeDenominatorKey,
+        LongitudeRefKey,
     ];
 
     private readonly ILogger<WindowsImageMetadataReader> _logger;
@@ -88,8 +102,10 @@ public sealed class WindowsImageMetadataReader : IImageMetadataReader
 
         DateTimeOffset? capturedAt = ReadDate(properties, DateTakenKey);
         string? cameraModel = ReadString(properties, CameraModelKey);
-        double? latitude = ReadCoordinate(properties, LatitudeKey, LatitudeRefKey, "S");
-        double? longitude = ReadCoordinate(properties, LongitudeKey, LongitudeRefKey, "W");
+        double? latitude = ReadCoordinate(
+            properties, LatitudeNumeratorKey, LatitudeDenominatorKey, LatitudeRefKey, "S");
+        double? longitude = ReadCoordinate(
+            properties, LongitudeNumeratorKey, LongitudeDenominatorKey, LongitudeRefKey, "W");
         return (capturedAt, cameraModel, latitude, longitude);
     }
 
@@ -102,19 +118,37 @@ public sealed class WindowsImageMetadataReader : IImageMetadataReader
         return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
     }
 
-    // GPS wird als Bruch (Grad/Minuten/Sekunden) plus Himmelsrichtung gespeichert.
+    // GPS wird als drei Brüche (Grad, Minuten, Sekunden) plus Himmelsrichtung
+    // gespeichert. Südlich des Äquators bzw. westlich von Greenwich ist das
+    // Vorzeichen negativ.
     private static double? ReadCoordinate(
         BitmapPropertySet properties,
-        string valueKey,
+        string numeratorKey,
+        string denominatorKey,
         string referenceKey,
         string negativeReference)
     {
-        if (TryGetValue(properties, valueKey) is not double[] parts || parts.Length < 3)
+        if (TryGetValue(properties, numeratorKey) is not uint[] numerators || numerators.Length < 3)
         {
             return null;
         }
 
-        double degrees = parts[0] + (parts[1] / 60.0) + (parts[2] / 3600.0);
+        // Fehlen die Nenner, sind es ganze Zahlen (Nenner 1).
+        uint[] denominators = TryGetValue(properties, denominatorKey) as uint[] ?? [];
+
+        double degrees = 0.0;
+        double[] weights = [1.0, 1.0 / 60.0, 1.0 / 3600.0];
+        for (int index = 0; index < 3; index++)
+        {
+            uint denominator = index < denominators.Length ? denominators[index] : 1u;
+            if (denominator == 0)
+            {
+                return null;
+            }
+
+            degrees += numerators[index] / (double)denominator * weights[index];
+        }
+
         string? reference = TryGetValue(properties, referenceKey) as string;
         if (string.Equals(reference?.Trim(), negativeReference, StringComparison.OrdinalIgnoreCase))
         {

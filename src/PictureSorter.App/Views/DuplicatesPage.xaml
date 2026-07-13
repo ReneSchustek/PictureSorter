@@ -21,8 +21,12 @@
         <StackPanel Spacing="16">
             <Border Style="{StaticResource HeroBorderStyle}">
                 <StackPanel Spacing="4">
-                    <TextBlock Style="{StaticResource HeroTitleStyle}" Text="Duplikate finden" />
                     <TextBlock
+                        x:Uid="DuplicatesPage_HeroTitle"
+                        Style="{StaticResource HeroTitleStyle}"
+                        Text="Duplikate finden" />
+                    <TextBlock
+                        x:Uid="DuplicatesPage_HeroSubtitle"
                         Style="{StaticResource HeroSubtitleStyle}"
                         Text="Findet gleiche und sehr ähnliche Bilder. Gelöschte Dateien landen im Papierkorb und bleiben wiederherstellbar." />
                 </StackPanel>
@@ -34,16 +38,19 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <TextBox
+                    x:Uid="DuplicatesPage_FolderTextBox"
                     Header="Ordner"
                     PlaceholderText="z. B. C:\Fotos"
                     Text="{x:Bind ViewModel.SourceFolder, Mode=TwoWay}" />
                 <Button
+                    x:Uid="DuplicatesPage_BrowseButton"
                     Grid.Column="1"
                     VerticalAlignment="Bottom"
                     Command="{x:Bind ViewModel.BrowseCommand}"
                     Content="Durchsuchen…" />
             </Grid>
             <CheckBox
+                x:Uid="DuplicatesPage_IncludeSubfoldersCheckBox"
                 Content="Unterordner einbeziehen"
                 IsChecked="{x:Bind ViewModel.IncludeSubfolders, Mode=TwoWay}" />
 
@@ -52,10 +59,14 @@
                 Orientation="Horizontal"
                 Spacing="8">
                 <Button
+                    x:Uid="DuplicatesPage_ScanButton"
                     Command="{x:Bind ViewModel.ScanCommand}"
                     Content="Duplikate suchen"
                     Style="{ThemeResource AccentButtonStyle}" />
-                <Button Command="{x:Bind ViewModel.DeleteSelectedCommand}" Content="Ausgewählte in den Papierkorb" />
+                <Button
+                    x:Uid="DuplicatesPage_DeleteSelectedButton"
+                    Command="{x:Bind ViewModel.DeleteSelectedCommand}"
+                    Content="Ausgewählte in den Papierkorb" />
             </StackPanel>
         </StackPanel>
 
@@ -99,7 +110,9 @@
                                                 Text="{x:Bind MetadataText}"
                                                 TextTrimming="CharacterEllipsis" />
                                             <CheckBox
+                                                x:Uid="DuplicatesPage_DeleteCheckBox"
                                                 Content="Löschen"
+                                                AutomationProperties.Name="{x:Bind DeletionLabel}"
                                                 IsChecked="{x:Bind IsMarkedForDeletion, Mode=TwoWay}" />
                                         </StackPanel>
                                     </DataTemplate>

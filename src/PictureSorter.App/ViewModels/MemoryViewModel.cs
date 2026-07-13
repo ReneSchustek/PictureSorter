@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using PictureSorter.App.Services;
 using PictureSorter.Application.Services;
 using PictureSorter.Core.Interfaces;
 using PictureSorter.Core.ValueObjects;
@@ -16,12 +17,16 @@ namespace PictureSorter.App.ViewModels;
 /// </summary>
 internal sealed partial class MemoryViewModel : ObservableObject
 {
-    private const string AllFilter = "Alle";
-
     private readonly ISortMemory _memory;
     private readonly IConfirmationService _confirmationService;
     private readonly StatusBarViewModel _status;
+    private readonly ILocalizer _localizer;
     private readonly ILogger<MemoryViewModel> _logger;
+
+    // Der Eintrag „Alle" ist zugleich Anzeigetext und Filterwert. Er ist übersetzt und
+    // steht deshalb nicht mehr als Konstante fest, sondern wird einmal je Instanz
+    // aufgelöst und überall gegen ihn verglichen.
+    private readonly string _allFilter;
 
     // Ungefilterter Gesamtbestand; die angezeigte Liste ist eine Sicht darauf.
     private readonly List<SortMemoryRecord> _allRecords = [];
@@ -47,36 +52,44 @@ internal sealed partial class MemoryViewModel : ObservableObject
     /// <param name="memory">Das dauerhafte Sortier-Gedächtnis.</param>
     /// <param name="confirmationService">Die Rückfrage vor dem Löschen.</param>
     /// <param name="status">Die gemeinsame Statusleiste der Anwendung.</param>
+    /// <param name="localizer">Die Textquelle.</param>
     /// <param name="logger">Der Logger.</param>
     public MemoryViewModel(
         ISortMemory memory,
         IConfirmationService confirmationService,
         StatusBarViewModel status,
+        ILocalizer localizer,
         ILogger<MemoryViewModel> logger)
     {
         ArgumentNullException.ThrowIfNull(memory);
         ArgumentNullException.ThrowIfNull(confirmationService);
         ArgumentNullException.ThrowIfNull(status);
+        ArgumentNullException.ThrowIfNull(localizer);
         ArgumentNullException.ThrowIfNull(logger);
 
         _memory = memory;
         _confirmationService = confirmationService;
         _status = status;
+        _localizer = localizer;
         _logger = logger;
+        _allFilter = localizer.Get("Memory_FilterAll");
+
+        Folders.Add(_allFilter);
+        Categories.Add(_allFilter);
 
         State = MemoryState.Idle;
-        SelectedFolder = AllFilter;
-        SelectedCategory = AllFilter;
+        SelectedFolder = _allFilter;
+        SelectedCategory = _allFilter;
     }
 
     /// <summary>Die angezeigten (gefilterten) Einträge.</summary>
     public ObservableCollection<SortMemoryItemViewModel> Items { get; } = [];
 
     /// <summary>Auswählbare Ordner-Filter.</summary>
-    public ObservableCollection<string> Folders { get; } = [AllFilter];
+    public ObservableCollection<string> Folders { get; } = [];
 
     /// <summary>Auswählbare Kategorie-Filter.</summary>
-    public ObservableCollection<string> Categories { get; } = [AllFilter];
+    public ObservableCollection<string> Categories { get; } = [];
 
     /// <summary><see langword="true"/>, wenn gerade kein Vorgang läuft.</summary>
     public bool IsInteractive => State is MemoryState.Idle
@@ -89,7 +102,7 @@ internal sealed partial class MemoryViewModel : ObservableObject
 
     /// <summary>Ein konkreter Ordner ist gewählt und kann geleert werden.</summary>
     public bool CanClearFolder =>
-        IsInteractive && !string.Equals(SelectedFolder, AllFilter, StringComparison.Ordinal);
+        IsInteractive && !string.Equals(SelectedFolder, _allFilter, StringComparison.Ordinal);
 
     /// <summary>Neu laden ist möglich, solange kein Vorgang läuft.</summary>
     public bool CanRefresh => IsInteractive;
@@ -114,14 +127,14 @@ internal sealed partial class MemoryViewModel : ObservableObject
 
             State = _allRecords.Count == 0 ? MemoryState.Empty : MemoryState.Review;
             _status.Report(_allRecords.Count == 0
-                ? "Es ist noch nichts gemerkt. Nach dem ersten Sortieren erscheinen hier die Entscheidungen."
-                : $"{_allRecords.Count} gemerkte Entscheidungen geladen.");
+                ? _localizer.Get("Memory_Empty")
+                : _localizer.Format("Memory_Loaded", _allRecords.Count));
         }
         catch (Exception ex) when (ex is IOException or InvalidOperationException or TimeoutException)
         {
             MemoryViewLog.LoadFailed(_logger, ex);
             State = MemoryState.Error;
-            _status.Report("Das Gedächtnis konnte nicht geladen werden.", StatusSeverity.Error);
+            _status.Report(_localizer.Get("Memory_LoadFailed"), StatusSeverity.Error);
         }
     }
 
@@ -138,11 +151,10 @@ internal sealed partial class MemoryViewModel : ObservableObject
         }
 
         bool confirmed = await _confirmationService.ConfirmAsync(
-            "Eintrag vergessen",
-            $"Die gemerkte Entscheidung zu „{item.FileName}“ (Kategorie „{item.CategoryName}“) wird verworfen. "
-                + "Das Foto wird beim nächsten Lauf wieder bewertet. Fortfahren?",
-            "Vergessen",
-            "Abbrechen").ConfigureAwait(true);
+            _localizer.Get("Memory_ForgetTitle"),
+            _localizer.Format("Memory_ForgetMessage", item.FileName, item.CategoryName),
+            _localizer.Get("Memory_ForgetPrimary"),
+            _localizer.Get("Common_Cancel")).ConfigureAwait(true);
         if (!confirmed)
         {
             return;
@@ -162,13 +174,13 @@ internal sealed partial class MemoryViewModel : ObservableObject
             RebuildFilters();
 
             State = _allRecords.Count == 0 ? MemoryState.Empty : MemoryState.Review;
-            _status.Report("Eintrag vergessen.", StatusSeverity.Success);
+            _status.Report(_localizer.Get("Memory_Forgotten"), StatusSeverity.Success);
         }
         catch (Exception ex) when (ex is IOException or InvalidOperationException or TimeoutException)
         {
             MemoryViewLog.DeleteFailed(_logger, ex);
             State = MemoryState.Error;
-            _status.Report("Der Eintrag konnte nicht entfernt werden.", StatusSeverity.Error);
+            _status.Report(_localizer.Get("Memory_ForgetFailed"), StatusSeverity.Error);
         }
     }
 
@@ -182,11 +194,10 @@ internal sealed partial class MemoryViewModel : ObservableObject
         int affected = _allRecords.Count(record => string.Equals(record.FolderPath, folder, StringComparison.Ordinal));
 
         bool confirmed = await _confirmationService.ConfirmAsync(
-            "Ordner-Gedächtnis leeren",
-            $"Alle {affected} gemerkten Entscheidungen für „{folder}“ werden verworfen. "
-                + "Die Fotos werden beim nächsten Lauf wieder bewertet. Fortfahren?",
-            "Leeren",
-            "Abbrechen").ConfigureAwait(true);
+            _localizer.Get("Memory_ClearFolderTitle"),
+            _localizer.Format("Memory_ClearFolderMessage", affected, folder),
+            _localizer.Get("Memory_ClearFolderPrimary"),
+            _localizer.Get("Common_Cancel")).ConfigureAwait(true);
         if (!confirmed)
         {
             return;
@@ -198,18 +209,18 @@ internal sealed partial class MemoryViewModel : ObservableObject
             await _memory.ClearFolderAsync(folder, CancellationToken.None).ConfigureAwait(true);
             _ = _allRecords.RemoveAll(record => string.Equals(record.FolderPath, folder, StringComparison.Ordinal));
 
-            SelectedFolder = AllFilter;
+            SelectedFolder = _allFilter;
             RebuildFilters();
             ApplyFilter();
 
             State = _allRecords.Count == 0 ? MemoryState.Empty : MemoryState.Review;
-            _status.Report($"{affected} Einträge für „{folder}“ vergessen.", StatusSeverity.Success);
+            _status.Report(_localizer.Format("Memory_FolderCleared", affected, folder), StatusSeverity.Success);
         }
         catch (Exception ex) when (ex is IOException or InvalidOperationException or TimeoutException)
         {
             MemoryViewLog.DeleteFailed(_logger, ex);
             State = MemoryState.Error;
-            _status.Report("Das Ordner-Gedächtnis konnte nicht geleert werden.", StatusSeverity.Error);
+            _status.Report(_localizer.Get("Memory_ClearFolderFailed"), StatusSeverity.Error);
         }
     }
 
@@ -230,15 +241,15 @@ internal sealed partial class MemoryViewModel : ObservableObject
         Items.Clear();
         foreach (SortMemoryRecord record in _allRecords.Where(Matches))
         {
-            Items.Add(new SortMemoryItemViewModel(record));
+            Items.Add(new SortMemoryItemViewModel(record, _localizer));
         }
     }
 
     private bool Matches(SortMemoryRecord record)
     {
-        bool folderMatches = string.Equals(SelectedFolder, AllFilter, StringComparison.Ordinal)
+        bool folderMatches = string.Equals(SelectedFolder, _allFilter, StringComparison.Ordinal)
             || string.Equals(record.FolderPath, SelectedFolder, StringComparison.Ordinal);
-        bool categoryMatches = string.Equals(SelectedCategory, AllFilter, StringComparison.Ordinal)
+        bool categoryMatches = string.Equals(SelectedCategory, _allFilter, StringComparison.Ordinal)
             || string.Equals(record.CategoryName, SelectedCategory, StringComparison.Ordinal);
 
         return folderMatches && categoryMatches;
@@ -252,12 +263,12 @@ internal sealed partial class MemoryViewModel : ObservableObject
         SelectedCategory = FillFilter(Categories, _allRecords.Select(record => record.CategoryName), SelectedCategory);
     }
 
-    private static string FillFilter(
+    private string FillFilter(
         ObservableCollection<string> target,
         IEnumerable<string> values,
         string selected)
     {
-        List<string> distinct = [AllFilter, .. values.Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal)];
+        List<string> distinct = [_allFilter, .. values.Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal)];
 
         target.Clear();
         foreach (string value in distinct)
@@ -265,7 +276,7 @@ internal sealed partial class MemoryViewModel : ObservableObject
             target.Add(value);
         }
 
-        return distinct.Contains(selected, StringComparer.Ordinal) ? selected : AllFilter;
+        return distinct.Contains(selected, StringComparer.Ordinal) ? selected : _allFilter;
     }
 }
 

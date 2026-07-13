@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using PictureSorter.App.Services;
 using PictureSorter.Core.Interfaces;
 using PictureSorter.Core.ValueObjects;
 
@@ -8,13 +9,14 @@ namespace PictureSorter.App.ViewModels;
 /// <summary>
 /// Hält den Hinweis zur Verfügbarkeit der lokalen KI (Ollama). Prüft auf Anfrage,
 /// ob Ollama erreichbar ist und die benötigten Modelle installiert sind, und stellt
-/// bei Bedarf eine erklärende Meldung samt passendem <c>ollama pull</c>-Befehl bereit.
-/// Eigenes ViewModel, damit die Sortierseite frei von dieser Nebenverantwortung
-/// bleibt (Separation of Concerns).
+/// bei Bedarf eine laienverständliche Meldung bereit, die auf die geführte
+/// Einrichtung verweist (ohne Kommandozeilen-Befehle). Eigenes ViewModel, damit die
+/// Sortierseite frei von dieser Nebenverantwortung bleibt (Separation of Concerns).
 /// </summary>
 internal sealed partial class ModelHintViewModel : ObservableObject
 {
     private readonly IModelAvailabilityChecker _modelChecker;
+    private readonly ILocalizer _localizer;
 
     /// <summary>
     /// <see langword="true"/>, wenn der KI-Hinweis angezeigt werden soll.
@@ -32,10 +34,14 @@ internal sealed partial class ModelHintViewModel : ObservableObject
     /// Initialisiert das ViewModel.
     /// </summary>
     /// <param name="modelChecker">Prüft die Verfügbarkeit der KI-Modelle.</param>
-    public ModelHintViewModel(IModelAvailabilityChecker modelChecker)
+    /// <param name="localizer">Die Textquelle.</param>
+    public ModelHintViewModel(IModelAvailabilityChecker modelChecker, ILocalizer localizer)
     {
         ArgumentNullException.ThrowIfNull(modelChecker);
+        ArgumentNullException.ThrowIfNull(localizer);
+
         _modelChecker = modelChecker;
+        _localizer = localizer;
         Message = string.Empty;
     }
 
@@ -56,18 +62,11 @@ internal sealed partial class ModelHintViewModel : ObservableObject
         IsHintVisible = true;
     }
 
-    private static string BuildHint(ModelAvailability availability)
-    {
-        if (!availability.IsReachable)
-        {
-            return "Ollama ist nicht erreichbar. Bitte Ollama starten "
-                + "(Standard: http://localhost:11434) und diese Modelle laden: "
-                + $"{string.Join(", ", availability.RequiredModels)}. "
-                + $"Befehl: ollama pull {string.Join(" && ollama pull ", availability.RequiredModels)}";
-        }
-
-        return "Es fehlen Ollama-Modelle: "
-            + $"{string.Join(", ", availability.MissingModels)}. "
-            + $"Bitte laden mit: ollama pull {string.Join(" && ollama pull ", availability.MissingModels)}";
-    }
+    // Bewusst ohne Kommandozeilen-Befehl (kein „ollama pull …"): Die Zielnutzerin
+    // hat wenig PC-Erfahrung. Die Einrichtung übernimmt der Knopf „Jetzt einrichten";
+    // die Meldung erklärt nur, was zu tun ist, nicht wie es technisch geht.
+    private string BuildHint(ModelAvailability availability) =>
+        availability.IsReachable
+            ? _localizer.Get("ModelHint_Incomplete")
+            : _localizer.Get("ModelHint_NotReady");
 }

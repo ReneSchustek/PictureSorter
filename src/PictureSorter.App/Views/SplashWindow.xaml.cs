@@ -2,9 +2,11 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media.Imaging;
+using PictureSorter.App.Services;
 using Windows.Graphics;
 using Windows.Storage.Streams;
 
@@ -28,7 +30,9 @@ internal sealed partial class SplashWindow : Window
     {
         InitializeComponent();
         ConfigurePresenter();
-        VersionText.Text = $"Version {GetVersion()}";
+
+        ILocalizer localizer = App.Services.GetRequiredService<ILocalizer>();
+        VersionText.Text = localizer.Format("Common_Version", GetVersion());
     }
 
     /// <summary>

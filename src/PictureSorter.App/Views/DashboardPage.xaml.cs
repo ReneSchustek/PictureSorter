@@ -8,8 +8,13 @@ namespace PictureSorter.App.Views;
 
 /// <summary>
 /// Startseite: zeigt den Zustand der lokalen KI und führt über Kacheln in die drei
-/// Bereiche der Anwendung. Die Navigation läuft über das Hauptfenster, damit die
-/// Auswahl in der Navigationsleiste mitwandert.
+/// Bereiche der Anwendung. Wohin eine Kachel führt, entscheidet das ViewModel über
+/// den Navigationsdienst – die Seite selbst weiß davon nichts mehr.
+///
+/// Das ViewModel wird hier aus dem Container geholt, weil WinUI die Seite über
+/// <c>Frame.Navigate(typeof(…))</c> parameterlos erzeugt und ihr nichts übergeben
+/// kann. Die <c>ViewModel</c>-Eigenschaft ist zugleich das Ziel der
+/// <c>x:Bind</c>-Ausdrücke im XAML.
 /// </summary>
 internal sealed partial class DashboardPage : Page
 {
@@ -31,20 +36,4 @@ internal sealed partial class DashboardPage : Page
 
     private void OnPageLoaded(object sender, RoutedEventArgs e)
         => ViewModel.CheckAiCommand.Execute(parameter: null);
-
-    private void OnSortClick(object sender, RoutedEventArgs e) => Navigate("sort");
-
-    private void OnDuplicatesClick(object sender, RoutedEventArgs e) => Navigate("duplicates");
-
-    private void OnMemoryClick(object sender, RoutedEventArgs e) => Navigate("memory");
-
-    // Über das Hauptfenster navigieren, damit die Navigationsleiste den Wechsel
-    // mitbekommt und den passenden Eintrag markiert.
-    private static void Navigate(string tag)
-    {
-        if (App.Services.GetRequiredService<Services.WindowContext>().MainWindow is MainWindow main)
-        {
-            main.NavigateTo(tag);
-        }
-    }
 }

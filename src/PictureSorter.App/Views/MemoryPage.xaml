@@ -20,8 +20,12 @@
         <!-- Kopf: Titel und Erklärung -->
         <Border Margin="24,16,24,8" Style="{StaticResource HeroBorderStyle}">
             <StackPanel Spacing="4">
-                <TextBlock Style="{StaticResource HeroTitleStyle}" Text="Gedächtnis" />
                 <TextBlock
+                    x:Uid="MemoryPage_HeroTitle"
+                    Style="{StaticResource HeroTitleStyle}"
+                    Text="Gedächtnis" />
+                <TextBlock
+                    x:Uid="MemoryPage_HeroSubtitle"
                     Style="{StaticResource HeroSubtitleStyle}"
                     Text="Was sich PictureSorter gemerkt hat. Gemerkte Fotos werden beim nächsten Sortieren übersprungen – vergisst du einen Eintrag, wird das Foto wieder neu bewertet." />
             </StackPanel>
@@ -41,12 +45,14 @@
             </Grid.ColumnDefinitions>
 
             <ComboBox
+                x:Uid="MemoryPage_FolderFilter"
                 MinWidth="220"
                 AutomationProperties.Name="Nach Ordner filtern"
                 Header="Ordner"
                 ItemsSource="{x:Bind ViewModel.Folders}"
                 SelectedItem="{x:Bind ViewModel.SelectedFolder, Mode=TwoWay}" />
             <ComboBox
+                x:Uid="MemoryPage_CategoryFilter"
                 Grid.Column="1"
                 MinWidth="180"
                 AutomationProperties.Name="Nach Kategorie filtern"
@@ -55,12 +61,14 @@
                 SelectedItem="{x:Bind ViewModel.SelectedCategory, Mode=TwoWay}" />
 
             <Button
+                x:Uid="MemoryPage_ClearFolderButton"
                 Grid.Column="3"
                 VerticalAlignment="Bottom"
                 Command="{x:Bind ViewModel.ClearFolderCommand}"
                 Content="Ordner vergessen"
                 ToolTipService.ToolTip="Verwirft alle gemerkten Entscheidungen des oben gewählten Ordners." />
             <Button
+                x:Uid="MemoryPage_RefreshButton"
                 Grid.Column="4"
                 VerticalAlignment="Bottom"
                 Command="{x:Bind ViewModel.RefreshCommand}"
@@ -75,8 +83,12 @@
             VerticalAlignment="Center"
             Spacing="8"
             Visibility="{x:Bind ViewModel.IsEmpty, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-            <TextBlock Style="{StaticResource EmptyStateTitleStyle}" Text="Noch nichts gemerkt" />
             <TextBlock
+                x:Uid="MemoryPage_EmptyStateTitle"
+                Style="{StaticResource EmptyStateTitleStyle}"
+                Text="Noch nichts gemerkt" />
+            <TextBlock
+                x:Uid="MemoryPage_EmptyStateText"
                 Style="{StaticResource EmptyStateTextStyle}"
                 Text="Sobald du zum ersten Mal sortierst, erscheinen hier die Entscheidungen." />
         </StackPanel>
@@ -111,7 +123,7 @@
                             <TextBlock FontWeight="SemiBold" Text="{x:Bind FileName}" />
                             <TextBlock
                                 FontSize="12"
-                                Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 Text="{x:Bind FolderPath}"
                                 TextTrimming="CharacterEllipsis" />
                         </StackPanel>
@@ -128,12 +140,13 @@
                                 Text="{x:Bind StatusText}" />
                             <TextBlock
                                 HorizontalAlignment="Right"
-                                FontSize="11"
-                                Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                FontSize="12"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 Text="{x:Bind UpdatedText}" />
                         </StackPanel>
 
                         <Button
+                            x:Uid="MemoryPage_ForgetItemButton"
                             Grid.Column="3"
                             VerticalAlignment="Center"
                             AutomationProperties.Name="Diesen Eintrag vergessen"

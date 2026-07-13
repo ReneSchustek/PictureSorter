@@ -19,6 +19,9 @@ namespace PictureSorter.Infrastructure.Update;
 /// </summary>
 public sealed class GitHubUpdateChecker : IUpdateChecker
 {
+    /// <summary>Endung der losgelösten Signatur neben dem Paket.</summary>
+    public const string SignatureSuffix = ".sig";
+
     private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
 
     private readonly HttpClient _httpClient;
@@ -80,12 +83,15 @@ public sealed class GitHubUpdateChecker : IUpdateChecker
             bool updateAvailable = latest > current;
             UpdateCheckerLog.Checked(_logger, currentVersion, tag, updateAvailable);
 
+            (Uri? package, Uri? signature) = FindPackage(release);
+
             return new UpdateInfo
             {
                 CurrentVersion = current.ToString(),
                 LatestVersion = latest.ToString(),
                 IsUpdateAvailable = updateAvailable,
-                UpdaterDownloadUrl = FindUpdaterAsset(release),
+                PackageDownloadUrl = package,
+                SignatureDownloadUrl = signature,
                 ReleaseUrl = ToAbsoluteUri(release.HtmlUrl),
             };
         }
@@ -97,17 +103,41 @@ public sealed class GitHubUpdateChecker : IUpdateChecker
         }
     }
 
-    // Sucht unter den Release-Assets das konfigurierte Updater-Programm.
-    private Uri? FindUpdaterAsset(GitHubRelease release)
+    // Sucht das Paket für die laufende Architektur und die zugehörige Signatur. Ein
+    // Release trägt je eine Datei für x64, x86 und ARM64; ein Paket der falschen
+    // Architektur wäre unbrauchbar. Fehlt die Signatur, bleibt das Paket ungenannt –
+    // ohne sie würde es ohnehin abgelehnt, und die Anwendung soll gar nicht erst
+    // anfangen, es herunterzuladen.
+    private (Uri? Package, Uri? Signature) FindPackage(GitHubRelease release)
     {
         if (release.Assets is null)
         {
-            return null;
+            return (null, null);
         }
+
+        string suffix = string.Create(
+            CultureInfo.InvariantCulture,
+            $"-{_options.RuntimeIdentifier}.zip");
 
         foreach (GitHubAsset asset in release.Assets)
         {
-            if (string.Equals(asset.Name, _options.UpdaterAssetName, StringComparison.OrdinalIgnoreCase))
+            if (asset.Name is not { } name || !name.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            Uri? signature = FindAssetUrl(release, name + SignatureSuffix);
+            return signature is null ? (null, null) : (ToAbsoluteUri(asset.DownloadUrl), signature);
+        }
+
+        return (null, null);
+    }
+
+    private static Uri? FindAssetUrl(GitHubRelease release, string assetName)
+    {
+        foreach (GitHubAsset asset in release.Assets!)
+        {
+            if (string.Equals(asset.Name, assetName, StringComparison.OrdinalIgnoreCase))
             {
                 return ToAbsoluteUri(asset.DownloadUrl);
             }

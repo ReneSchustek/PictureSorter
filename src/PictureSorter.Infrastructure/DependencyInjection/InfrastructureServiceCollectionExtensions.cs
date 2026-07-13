@@ -49,6 +49,9 @@ public static class InfrastructureServiceCollectionExtensions
             client.DefaultRequestHeaders.UserAgent.ParseAdd("PictureSorter-UpdateChecker");
             client.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github+json");
             client.Timeout = TimeSpan.FromSeconds(15);
+
+            // Deckel gegen eine übergroße Antwort: Die Release-JSON ist klein.
+            client.MaxResponseContentBufferSize = 16L * 1024 * 1024;
         });
 
         // Zustandslose Dateisystem-Infrastruktur: Singleton.

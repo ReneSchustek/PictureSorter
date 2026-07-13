@@ -1,6 +1,7 @@
 using System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using PictureSorter.App.Services;
 
 namespace PictureSorter.App.ViewModels;
 
@@ -70,9 +71,12 @@ internal sealed partial class StatusBarViewModel : ObservableObject
     /// <summary>
     /// Initialisiert die Statusleiste im Ruhezustand.
     /// </summary>
-    public StatusBarViewModel()
+    /// <param name="localizer">Die Textquelle.</param>
+    public StatusBarViewModel(ILocalizer localizer)
     {
-        Message = "Bereit.";
+        ArgumentNullException.ThrowIfNull(localizer);
+
+        Message = localizer.Get("StatusBar_Ready");
         Severity = StatusSeverity.Informational;
         IsIndeterminate = true;
     }

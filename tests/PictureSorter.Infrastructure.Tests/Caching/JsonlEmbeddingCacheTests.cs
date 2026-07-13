@@ -77,6 +77,58 @@ public sealed class JsonlEmbeddingCacheTests : IDisposable
         _ = Assert.Single(afterCompaction);
     }
 
+    [Fact]
+    public async Task Get_WithCorruptedLine_SkipsItAndKeepsTheRest()
+    {
+        // Ein abgebrochener Schreibvorgang hinterlässt eine halbe Zeile. Der Cache ist
+        // nur eine Beschleunigung: Eine kaputte Zeile darf ihn nicht unbrauchbar
+        // machen und schon gar nicht die Analyse abbrechen.
+        using (JsonlEmbeddingCache writer = CreateCache())
+        {
+            await writer.SetAsync("heil", new ImageEmbedding([1.0f], "m"), CancellationToken.None);
+        }
+
+        string path = Path.Combine(_directory, "embedding-cache.jsonl");
+        await File.AppendAllTextAsync(path, "{\"k\":\"kaputt\",\"m\":" + Environment.NewLine, CancellationToken.None);
+
+        using JsonlEmbeddingCache reader = CreateCache();
+
+        Assert.NotNull(await reader.GetAsync("heil", CancellationToken.None));
+        Assert.Null(await reader.GetAsync("kaputt", CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task Get_ForUnknownKey_ReturnsNull()
+    {
+        using JsonlEmbeddingCache cache = CreateCache();
+
+        Assert.Null(await cache.GetAsync("nie-gespeichert", CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task Set_WithSameKeyTwice_KeepsTheLatestValue()
+    {
+        using (JsonlEmbeddingCache writer = CreateCache())
+        {
+            await writer.SetAsync("k", new ImageEmbedding([1.0f], "m"), CancellationToken.None);
+            await writer.SetAsync("k", new ImageEmbedding([2.0f], "m"), CancellationToken.None);
+        }
+
+        using JsonlEmbeddingCache reader = CreateCache();
+        ImageEmbedding? loaded = await reader.GetAsync("k", CancellationToken.None);
+
+        Assert.Equal([2.0f], loaded!.Values);
+    }
+
+    [Fact]
+    public async Task Get_WithoutKey_IsRejected()
+    {
+        using JsonlEmbeddingCache cache = CreateCache();
+
+        _ = await Assert.ThrowsAsync<ArgumentException>(
+            () => cache.GetAsync(" ", CancellationToken.None));
+    }
+
     private JsonlEmbeddingCache CreateCache() =>
         new(_directory, NullLogger<JsonlEmbeddingCache>.Instance);
 

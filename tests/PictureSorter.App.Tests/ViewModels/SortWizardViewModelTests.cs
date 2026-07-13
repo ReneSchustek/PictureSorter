@@ -1,3 +1,4 @@
+using PictureSorter.App.Tests.Fakes;
 using PictureSorter.App.ViewModels;
 
 namespace PictureSorter.App.Tests.ViewModels;
@@ -122,5 +123,6 @@ public sealed class SortWizardViewModelTests
             canRun ?? (static _ => true),
             run ?? (static _ => Task.FromResult(true)),
             reset ?? (static () => { }),
-            onStepEntered ?? (static _ => { }));
+            onStepEntered ?? (static _ => { }),
+            new ReswLocalizer());
 }

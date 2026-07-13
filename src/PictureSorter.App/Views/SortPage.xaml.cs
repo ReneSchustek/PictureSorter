@@ -20,6 +20,7 @@ internal sealed partial class SortPage : Page
     private readonly OllamaSetupService _setupService;
     private readonly ThemeService _themeService;
     private bool _initializing = true;
+    private bool _previewOpen;
 
     /// <summary>
     /// Das an die Oberfläche gebundene ViewModel.
@@ -53,10 +54,13 @@ internal sealed partial class SortPage : Page
         _initializing = false;
     }
 
-    // Prüft beim Anzeigen der Seite die Verfügbarkeit der KI-Modelle und blendet
-    // bei Bedarf den Hinweis ein.
+    // Prüft beim Anzeigen der Seite die Verfügbarkeit der KI-Modelle und ob noch ein
+    // Sortierlauf zurückzunehmen ist (das Protokoll überlebt den Neustart).
     private void OnPageLoaded(object sender, RoutedEventArgs e)
-        => ModelHint.CheckCommand.Execute(parameter: null);
+    {
+        ModelHint.CheckCommand.Execute(parameter: null);
+        ViewModel.RefreshUndoStateCommand.Execute(parameter: null);
+    }
 
     // Wechselt zwischen geführter und Standard-Ansicht und merkt sich die Wahl.
     private void OnViewModeChanged(object sender, SelectionChangedEventArgs e)
@@ -86,9 +90,26 @@ internal sealed partial class SortPage : Page
     // zu beurteilen; hier sieht der Nutzer das Bild in voller Größe.
     private async void OnProposalImageClick(object sender, RoutedEventArgs e)
     {
-        if (sender is FrameworkElement { Tag: ProposalViewModel proposal })
+        // Wiedereintritt verhindern: WinUI lässt nur einen ContentDialog gleichzeitig
+        // zu; ein zweiter, fast gleichzeitiger Klick würde sonst eine unbehandelte
+        // InvalidOperationException im async-void-Handler auslösen (= Prozessabbruch).
+        if (_previewOpen || sender is not FrameworkElement { Tag: ProposalViewModel proposal })
+        {
+            return;
+        }
+
+        _previewOpen = true;
+        try
         {
             await PhotoPreviewDialog.ShowAsync(this, proposal.Photo).ConfigureAwait(true);
+        }
+        catch (InvalidOperationException)
+        {
+            // Ein Dialog war bereits offen – für den Nutzer kein Fehler.
+        }
+        finally
+        {
+            _previewOpen = false;
         }
     }
 
