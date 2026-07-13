@@ -1,5 +1,5 @@
 using System.Collections.ObjectModel;
-using System.Globalization;
+using PictureSorter.App.Services;
 using PictureSorter.Core.Enums;
 using PictureSorter.Core.ValueObjects;
 
@@ -15,17 +15,19 @@ internal sealed class DuplicateGroupViewModel
     /// Erzeugt das Gruppen-ViewModel aus einer erkannten Duplikat-Gruppe.
     /// </summary>
     /// <param name="group">Die zugrunde liegende Gruppe.</param>
-    public DuplicateGroupViewModel(DuplicateGroup group)
+    /// <param name="localizer">Die Textquelle.</param>
+    public DuplicateGroupViewModel(DuplicateGroup group, ILocalizer localizer)
     {
         ArgumentNullException.ThrowIfNull(group);
+        ArgumentNullException.ThrowIfNull(localizer);
 
         Kind = group.Kind;
-        Header = BuildHeader(group);
+        Header = BuildHeader(group, localizer);
 
         // Das erste (beste) Bild behalten, die restlichen vormerken.
         for (int index = 0; index < group.Photos.Count; index++)
         {
-            Photos.Add(new DuplicatePhotoViewModel(group.Photos[index], isMarkedForDeletion: index > 0));
+            Photos.Add(new DuplicatePhotoViewModel(group.Photos[index], isMarkedForDeletion: index > 0, localizer));
         }
     }
 
@@ -44,9 +46,12 @@ internal sealed class DuplicateGroupViewModel
     /// </summary>
     public ObservableCollection<DuplicatePhotoViewModel> Photos { get; } = [];
 
-    private static string BuildHeader(DuplicateGroup group)
+    private static string BuildHeader(DuplicateGroup group, ILocalizer localizer)
     {
-        string kind = group.Kind == DuplicateKind.Exact ? "Identisch" : "Ähnlich";
-        return string.Create(CultureInfo.GetCultureInfo("de-DE"), $"{kind} · {group.Photos.Count} Bilder");
+        string kind = group.Kind == DuplicateKind.Exact
+            ? localizer.Get("DuplicateGroup_KindExact")
+            : localizer.Get("DuplicateGroup_KindSimilar");
+
+        return localizer.Format("DuplicateGroup_Header", kind, group.Photos.Count);
     }
 }

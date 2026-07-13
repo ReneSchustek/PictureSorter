@@ -27,7 +27,15 @@ internal static class AppServiceCollectionExtensions
 
         // Explizite Factories (statt Typ-Registrierung), damit der Analyzer die
         // Instanziierung dieser internen Klassen erkennt (CA1812).
+        _ = services.AddSingleton<ILocalizer>(static _ => new ResourceLocalizer());
         _ = services.AddSingleton(static _ => new WindowContext());
+
+        // Der Navigationsdienst wird unter beiden Typen registriert: Das Hauptfenster
+        // reicht ihm Leiste und Rahmen (konkreter Typ), die ViewModels navigieren nur
+        // über das WinUI-freie Interface.
+        _ = services.AddSingleton(static _ => new NavigationService());
+        _ = services.AddSingleton<INavigationService>(static provider =>
+            provider.GetRequiredService<NavigationService>());
         _ = services.AddSingleton<IFolderPicker>(static provider =>
             new WindowsFolderPicker(provider.GetRequiredService<WindowContext>()));
         _ = services.AddSingleton<IConfirmationService>(static provider =>
@@ -36,9 +44,18 @@ internal static class AppServiceCollectionExtensions
             new ThemeService(provider.GetRequiredService<WindowContext>(), dataDirectory));
         _ = services.AddSingleton(provider =>
             new OllamaSetupService(provider.GetRequiredService<ILogger<OllamaSetupService>>()));
+
+        // Eigener Download-Client OHNE automatische Weiterleitung. Der Standard-Client
+        // folgt 3xx-Antworten selbsttätig – eine Umleitung von einem erlaubten
+        // GitHub-Host auf einen Fremdhost würde damit die Host-Allowlist umgehen. Der
+        // UpdateService folgt Weiterleitungen deshalb selbst und prüft jeden Sprung.
+        _ = services.AddHttpClient(UpdateService.DownloadClientName)
+            .ConfigurePrimaryHttpMessageHandler(static () => new HttpClientHandler { AllowAutoRedirect = false });
+
         _ = services.AddSingleton(provider => new UpdateService(
             provider.GetRequiredService<IUpdateChecker>(),
             provider.GetRequiredService<IHttpClientFactory>(),
+            dataDirectory,
             provider.GetRequiredService<ILogger<UpdateService>>()));
 
         return services.AddPictureSorterViewModels();

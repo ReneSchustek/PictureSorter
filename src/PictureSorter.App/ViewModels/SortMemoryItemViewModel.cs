@@ -1,4 +1,5 @@
 using System.Globalization;
+using PictureSorter.App.Services;
 using PictureSorter.Core.Enums;
 using PictureSorter.Core.ValueObjects;
 
@@ -10,14 +11,20 @@ namespace PictureSorter.App.ViewModels;
 /// </summary>
 internal sealed class SortMemoryItemViewModel
 {
+    private readonly ILocalizer _localizer;
+
     /// <summary>
     /// Erzeugt das Anzeige-Modell aus einem Gedächtnis-Eintrag.
     /// </summary>
     /// <param name="record">Der zugrunde liegende Eintrag.</param>
-    public SortMemoryItemViewModel(SortMemoryRecord record)
+    /// <param name="localizer">Die Textquelle.</param>
+    public SortMemoryItemViewModel(SortMemoryRecord record, ILocalizer localizer)
     {
         ArgumentNullException.ThrowIfNull(record);
+        ArgumentNullException.ThrowIfNull(localizer);
+
         Record = record;
+        _localizer = localizer;
     }
 
     /// <summary>
@@ -37,20 +44,20 @@ internal sealed class SortMemoryItemViewModel
     /// <summary>Der Quellordner der Entscheidung.</summary>
     public string FolderPath => Record.FolderPath;
 
-    /// <summary>Der Status in verständlichem Deutsch.</summary>
+    /// <summary>Der Status in verständlicher Sprache.</summary>
     public string StatusText => Record.Status switch
     {
-        SortMemoryStatus.Sorted => "Einsortiert",
-        SortMemoryStatus.Ignored => "Abgewählt",
-        SortMemoryStatus.Rejected => "Passt nicht",
-        _ => "Vorgeschlagen",
+        SortMemoryStatus.Sorted => _localizer.Get("MemoryItem_StatusSorted"),
+        SortMemoryStatus.Ignored => _localizer.Get("MemoryItem_StatusIgnored"),
+        SortMemoryStatus.Rejected => _localizer.Get("MemoryItem_StatusRejected"),
+        _ => _localizer.Get("MemoryItem_StatusProposed"),
     };
 
     /// <summary>Zeitpunkt der letzten Änderung in lokaler Schreibweise.</summary>
     public string UpdatedText => Record.UpdatedAt
         .ToLocalTime()
-        .ToString("dd.MM.yyyy HH:mm", CultureInfo.GetCultureInfo("de-DE"));
+        .ToString("g", CultureInfo.CurrentCulture);
 
     /// <summary>Konfidenz als Prozentwert.</summary>
-    public string ConfidenceText => Record.Confidence.ToString("P0", CultureInfo.GetCultureInfo("de-DE"));
+    public string ConfidenceText => Record.Confidence.ToString("P0", CultureInfo.CurrentCulture);
 }

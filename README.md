@@ -36,6 +36,53 @@ Bildanalysen laufen vollständig offline auf dem eigenen Rechner.
 
 ## Installation
 
+**Zum Benutzen** (Weitergabe): `PictureSorter-Setup-v<Version>.exe` aus dem
+[neuesten Release](https://github.com/ReneSchustek/PictureSorter/releases) ausführen –
+keine Adminrechte nötig. Wer nichts installieren will, entpackt stattdessen das ZIP der
+passenden Architektur und startet `PictureSorter.exe`; ein vorinstalliertes .NET oder
+eine Windows App Runtime braucht es nicht (self-contained).
+
+Selbst bauen – Programmordner **und** Setup.exe in einem Schritt:
+
+```pwsh
+./tools/publish.ps1        # -> F:\Entwicklung\publish\PictureSorter
+```
+
+> Hinweis: Die Builds tragen keine Signatur einer Zertifizierungsstelle; Windows
+> SmartScreen kann beim ersten Start warnen. Für die **Echtheit der Updates** ist das
+> ohne Belang: Die Anwendung spielt ein Update nur ein, wenn es mit dem privaten
+> Schlüssel des Herausgebers unterschrieben ist (siehe „Aktualisierung").
+
+## Aktualisierung
+
+Die Anwendung prüft beim Start auf eine neuere Version und kann sie auf Wunsch selbst
+einspielen. Der Vertrauensanker ist eine **losgelöste ECDSA-Signatur** über das
+Release-Paket, geprüft gegen den in der Anwendung einkompilierten öffentlichen
+Schlüssel (`ReleaseSignatureVerifier`):
+
+* **Fail-closed** – ohne gültige Signatur wird nichts entpackt und nichts gestartet.
+* Selbst wer den Release-Kanal übernimmt, kommt nicht durch: Ohne den privaten
+  Schlüssel entsteht keine gültige Signatur. Eine Authenticode-Signatur leistet das
+  *nicht* – sie bestätigt nur, dass *irgendein* Zertifikat unterschrieben hat, und ein
+  Zertifikat kann sich jeder besorgen.
+* Ein eigenes Updater-Programm gibt es nicht: Die geprüfte neue Fassung startet sich
+  selbst im Helfer-Modus (`--apply-update`), ersetzt die Installation (mit Sicherung
+  und Rollback) und startet sie neu. Der Helfer traut seinen Aufrufparametern nicht,
+  sondern gleicht sie gegen einen Vermerk des geprüften Hauptprozesses ab.
+
+Schlüssel erzeugen (einmalig, privat halten – er gehört als Secret
+`PICTURESORTER_SIGNING_KEY` in die CI, nicht ins Repository):
+
+```pwsh
+./tools/new-signing-key.ps1 -KeyPath ..\PictureSorter-signing\private-key.pem
+```
+
+Der ausgegebene öffentliche Schlüssel gehört in
+`ReleaseSignatureVerifier.PublicKeySpkiBase64`. **Eine Rotation macht ausgelieferte
+Anwendungen update-unfähig** – sie kennen nur den alten Schlüssel.
+
+## Aus dem Quellcode bauen
+
 1. Repository klonen oder entpacken.
 2. Ollama starten und die oben genannten Modelle laden.
 3. Im Projektverzeichnis die Solution wiederherstellen und bauen:
@@ -54,10 +101,17 @@ Bildanalysen laufen vollständig offline auf dem eigenen Rechner.
 ## Entwicklung
 
 - Solution-Datei: `PictureSorter.slnx` (Visual Studio 2022/2026 oder `dotnet`).
-- Schichten: `src/PictureSorter.App` (WinUI 3), `src/PictureSorter.Application`
-  (Use Cases, ViewModels), `src/PictureSorter.Core` (Domäne), `src/PictureSorter.Data`
-  (Persistenz, Ollama-Anbindung).
-- Tests: `tests/PictureSorter.Tests.Unit`, `tests/PictureSorter.Tests.Integration`.
+- Schichten (sieben Projekte, Abhängigkeiten stets nach innen zur Domäne `Core`):
+  - `src/PictureSorter.App` — WinUI 3, Views **und** ViewModels, Composition Root
+  - `src/PictureSorter.Application` — Use Cases / Sortierlogik, UI-frei
+  - `src/PictureSorter.Core` — Domäne (Entitäten, Wertobjekte, Schnittstellen)
+  - `src/PictureSorter.Data` — Persistenz (EF Core / SQLite, Sortier-Gedächtnis)
+  - `src/PictureSorter.Imaging` — EXIF-Auslesen und Wahrnehmungs-Hash (WinRT)
+  - `src/PictureSorter.Infrastructure` — Dateisystem, Update, Cache, JSON
+  - `src/PictureSorter.Ollama` — HTTP-Anbindung der lokalen KI
+- Tests: je `src`-Projekt ein Testprojekt unter `tests/` (`PictureSorter.App.Tests`,
+  `.Application.Tests`, `.Core.Tests`, `.Data.Tests`, `.Infrastructure.Tests`,
+  `.Ollama.Tests`).
 - Qualitäts-Gate vor jedem Abschluss:
 
   ```pwsh
@@ -65,9 +119,6 @@ Bildanalysen laufen vollständig offline auf dem eigenen Rechner.
   dotnet format PictureSorter.slnx --verify-no-changes
   dotnet test PictureSorter.slnx
   ```
-
-- Die Schichten sind oben unter „Entwicklung" beschrieben; Abhängigkeiten zeigen
-  stets nach innen zur Domäne (`Core`).
 
 ## MSIX-Paket erstellen (Sideload)
 

@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using PictureSorter.App.Services;
 using PictureSorter.Core.Entities;
 
 namespace PictureSorter.App.ViewModels;
@@ -9,15 +10,21 @@ namespace PictureSorter.App.ViewModels;
 /// </summary>
 internal sealed partial class DuplicatePhotoViewModel : ObservableObject
 {
+    private readonly ILocalizer _localizer;
+
     /// <summary>
     /// Initialisiert das Foto-ViewModel.
     /// </summary>
     /// <param name="photo">Das zugrunde liegende Foto.</param>
     /// <param name="isMarkedForDeletion">Anfangszustand der Löschauswahl.</param>
-    public DuplicatePhotoViewModel(Photo photo, bool isMarkedForDeletion)
+    /// <param name="localizer">Die Textquelle.</param>
+    public DuplicatePhotoViewModel(Photo photo, bool isMarkedForDeletion, ILocalizer localizer)
     {
         ArgumentNullException.ThrowIfNull(photo);
+        ArgumentNullException.ThrowIfNull(localizer);
+
         Photo = photo;
+        _localizer = localizer;
         IsMarkedForDeletion = isMarkedForDeletion;
     }
 
@@ -39,17 +46,24 @@ internal sealed partial class DuplicatePhotoViewModel : ObservableObject
     /// <summary>
     /// Kurztext mit Abmessungen, Aufnahmedatum und Ort.
     /// </summary>
-    public string MetadataText => Photo.ToDisplaySummary();
+    public string MetadataText => PhotoTextFormatter.ToSummary(Photo, _localizer);
 
     /// <summary>
     /// Menschlich lesbare Dateigröße (z. B. „2,4 MB").
     /// </summary>
-    public string SizeText => Photo.FormattedSize;
+    public string SizeText => PhotoTextFormatter.FormatSize(Photo.SizeBytes);
 
     /// <summary>
     /// Mehrzeilige Übersicht aller Bildinformationen für das Mouse-Over.
     /// </summary>
-    public string InfoTooltip => Photo.ToDetailedInfo();
+    public string InfoTooltip => PhotoTextFormatter.ToDetails(Photo, _localizer);
+
+    /// <summary>
+    /// Barrierefreier Name der Lösch-Auswahl. Ohne den Dateibezug hörte ein
+    /// Screenreader in einer Gruppe nur wiederholt „Löschen"; hier wird klar,
+    /// welches Foto betroffen ist.
+    /// </summary>
+    public string DeletionLabel => _localizer.Format("DuplicatePhoto_DeletionLabel", FileName);
 
     /// <summary>
     /// <see langword="true"/>, wenn dieses Foto zum Löschen vorgemerkt ist.

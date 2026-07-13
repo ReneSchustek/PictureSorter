@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using PictureSorter.App.Services;
 
 namespace PictureSorter.App.ViewModels;
 
@@ -10,6 +11,8 @@ namespace PictureSorter.App.ViewModels;
 /// </summary>
 internal sealed partial class UpdateViewModel : ObservableObject
 {
+    private readonly ILocalizer _localizer;
+
     /// <summary>
     /// <see langword="true"/>, wenn eine neuere Version verfügbar ist.
     /// </summary>
@@ -25,7 +28,14 @@ internal sealed partial class UpdateViewModel : ObservableObject
     /// <summary>
     /// Initialisiert den Hinweis im Ausgangszustand (keine Aktualisierung gemeldet).
     /// </summary>
-    public UpdateViewModel() => Message = string.Empty;
+    /// <param name="localizer">Die Textquelle.</param>
+    public UpdateViewModel(ILocalizer localizer)
+    {
+        ArgumentNullException.ThrowIfNull(localizer);
+
+        _localizer = localizer;
+        Message = string.Empty;
+    }
 
     /// <summary>
     /// Meldet eine verfügbare Aktualisierung an die Oberfläche.
@@ -33,7 +43,17 @@ internal sealed partial class UpdateViewModel : ObservableObject
     /// <param name="latestVersion">Die neueste verfügbare Version.</param>
     public void SetAvailable(string latestVersion)
     {
-        Message = $"Version {latestVersion} ist verfügbar.";
+        Message = _localizer.Format("Update_Available", latestVersion);
         IsUpdateAvailable = true;
     }
+
+    /// <summary>
+    /// Meldet, dass die Aktualisierung vorbereitet wird.
+    /// </summary>
+    public void ReportPreparing() => Message = _localizer.Get("Update_Preparing");
+
+    /// <summary>
+    /// Meldet, dass die Aktualisierung nicht möglich war.
+    /// </summary>
+    public void ReportFailed() => Message = _localizer.Get("Update_Failed");
 }
