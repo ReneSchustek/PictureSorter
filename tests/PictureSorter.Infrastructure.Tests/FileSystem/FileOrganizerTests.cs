@@ -112,6 +112,71 @@ public sealed class FileOrganizerTests : IDisposable
         Assert.False(Directory.Exists(targetFolder));
     }
 
+    [Fact]
+    public async Task RestoreAsync_MovesTheFileBackToItsOriginalPath()
+    {
+        string source = CreateFile(_root, "urlaub.jpg", "inhalt");
+        string targetFolder = Path.Combine(_root, "Urlaub");
+        string target = await _organizer.ApplyAsync(
+            ProposalFor(source, targetFolder),
+            dryRun: false,
+            CancellationToken.None);
+
+        bool restored = await _organizer.RestoreAsync(target, source, CancellationToken.None);
+
+        Assert.True(restored);
+        Assert.True(File.Exists(source));
+        Assert.False(File.Exists(target));
+        Assert.Equal("inhalt", await File.ReadAllTextAsync(source));
+    }
+
+    [Fact]
+    public async Task RestoreAsync_WhenSomethingIsBackAtTheOriginalPath_DoesNotOverwriteIt()
+    {
+        // Das ist der Kern der Zusage: Beim Zurückholen darf nichts überschrieben
+        // werden. Sonst wäre ausgerechnet das Rückgängig die Stelle, an der die
+        // Nutzerin Daten verliert.
+        string source = CreateFile(_root, "urlaub.jpg", "das alte Foto");
+        string targetFolder = Path.Combine(_root, "Urlaub");
+        string target = await _organizer.ApplyAsync(
+            ProposalFor(source, targetFolder),
+            dryRun: false,
+            CancellationToken.None);
+
+        // Inzwischen liegt am Ursprungsort wieder eine – andere – Datei gleichen Namens.
+        _ = CreateFile(_root, "urlaub.jpg", "ein neues Foto");
+
+        bool restored = await _organizer.RestoreAsync(target, source, CancellationToken.None);
+
+        Assert.False(restored);
+        Assert.Equal("ein neues Foto", await File.ReadAllTextAsync(source));
+        Assert.True(File.Exists(target));
+    }
+
+    [Fact]
+    public async Task RestoreAsync_WhenTheFileIsGone_ReportsFailureInsteadOfGuessing()
+    {
+        string source = Path.Combine(_root, "urlaub.jpg");
+        string target = Path.Combine(_root, "Urlaub", "urlaub.jpg");
+
+        Assert.False(await _organizer.RestoreAsync(target, source, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task RemoveFolderIfEmptyAsync_RemovesOnlyTheEmptyFolder()
+    {
+        string empty = Path.Combine(_root, "Leer");
+        _ = Directory.CreateDirectory(empty);
+        string filled = Path.Combine(_root, "Voll");
+        _ = CreateFile(filled, "foto.jpg", "inhalt");
+
+        await _organizer.RemoveFolderIfEmptyAsync(empty, CancellationToken.None);
+        await _organizer.RemoveFolderIfEmptyAsync(filled, CancellationToken.None);
+
+        Assert.False(Directory.Exists(empty));
+        Assert.True(Directory.Exists(filled));
+    }
+
     private static string CreateFile(string folder, string name, string content)
     {
         _ = Directory.CreateDirectory(folder);

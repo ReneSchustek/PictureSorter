@@ -32,6 +32,11 @@ internal enum SortState
     Sorting,
 
     /// <summary>
+    /// Ein Sortierlauf wird zurückgenommen (Dateien werden zurückgeholt).
+    /// </summary>
+    Undoing,
+
+    /// <summary>
     /// Vorgang erfolgreich abgeschlossen.
     /// </summary>
     Completed,
