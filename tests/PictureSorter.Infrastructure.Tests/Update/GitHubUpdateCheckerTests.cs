@@ -15,13 +15,18 @@ namespace PictureSorter.Infrastructure.Tests.Update;
 /// </summary>
 public sealed class GitHubUpdateCheckerTests : IDisposable
 {
+    private const string Base = "https://github.com/ReneSchustek/PictureSorter/releases/download/v1.4.0/";
+
+    // Ein Release traegt je ein Paket fuer x64, x86 und ARM64, jedes mit seiner Signatur.
     private const string Release = """
         {
           "tag_name": "v1.4.0",
           "html_url": "https://github.com/ReneSchustek/PictureSorter/releases/tag/v1.4.0",
           "assets": [
-            { "name": "irgendwas-anderes.zip", "browser_download_url": "https://example.invalid/x.zip" },
-            { "name": "PictureSorter-Updater.exe", "browser_download_url": "https://github.com/ReneSchustek/PictureSorter/releases/download/v1.4.0/PictureSorter-Updater.exe" }
+            { "name": "PictureSorter-v1.4.0-win-x86.zip", "browser_download_url": "https://github.com/ReneSchustek/PictureSorter/releases/download/v1.4.0/PictureSorter-v1.4.0-win-x86.zip" },
+            { "name": "PictureSorter-v1.4.0-win-x86.zip.sig", "browser_download_url": "https://github.com/ReneSchustek/PictureSorter/releases/download/v1.4.0/PictureSorter-v1.4.0-win-x86.zip.sig" },
+            { "name": "PictureSorter-v1.4.0-win-x64.zip", "browser_download_url": "https://github.com/ReneSchustek/PictureSorter/releases/download/v1.4.0/PictureSorter-v1.4.0-win-x64.zip" },
+            { "name": "PictureSorter-v1.4.0-win-x64.zip.sig", "browser_download_url": "https://github.com/ReneSchustek/PictureSorter/releases/download/v1.4.0/PictureSorter-v1.4.0-win-x64.zip.sig" }
           ]
         }
         """;
@@ -43,31 +48,44 @@ public sealed class GitHubUpdateCheckerTests : IDisposable
     }
 
     [Fact]
-    public async Task CheckAsync_PicksTheConfiguredUpdaterAsset()
+    public async Task CheckAsync_PicksThePackageForTheRunningArchitecture()
     {
-        // Ein Release trägt mehrere Anhänge. Greift der Checker den falschen, lädt
-        // die Anwendung später die falsche Datei herunter und führt sie aus.
+        // Ein Release traegt je ein Paket fuer x64, x86 und ARM64. Greift der Checker
+        // das falsche, laedt die Anwendung ein Programm, das auf diesem Rechner nicht
+        // laeuft - und ersetzt sich damit selbst.
         GitHubUpdateChecker sut = CreateSut(StubHttpMessageHandler.Json(Release));
 
         UpdateInfo? info = await sut.CheckAsync("1.3.0", CancellationToken.None);
 
-        Assert.Equal(
-            new Uri("https://github.com/ReneSchustek/PictureSorter/releases/download/v1.4.0/PictureSorter-Updater.exe"),
-            info!.UpdaterDownloadUrl);
+        Assert.Equal(new Uri(Base + "PictureSorter-v1.4.0-win-x64.zip"), info!.PackageDownloadUrl);
+        Assert.Equal(new Uri(Base + "PictureSorter-v1.4.0-win-x64.zip.sig"), info.SignatureDownloadUrl);
     }
 
     [Fact]
-    public async Task CheckAsync_WithoutMatchingAsset_ReportsUpdateWithoutDownloadUrl()
+    public async Task CheckAsync_WithoutSignatureAsset_OffersNoPackage()
     {
-        // Ohne passenden Anhang gibt es nichts zu installieren – der Hinweis auf die
-        // neue Version darf trotzdem erscheinen.
+        // Ohne Signatur wuerde das Paket ohnehin abgelehnt. Dann soll die Anwendung
+        // es gar nicht erst herunterladen - der Hinweis auf die neue Version bleibt.
         GitHubUpdateChecker sut = CreateSut(StubHttpMessageHandler.Json(
-            """{"tag_name":"v1.4.0","assets":[{"name":"quellcode.zip","browser_download_url":"https://example.invalid/s.zip"}]}"""));
+            """{"tag_name":"v1.4.0","assets":[{"name":"PictureSorter-v1.4.0-win-x64.zip","browser_download_url":"https://github.com/x.zip"}]}"""));
 
         UpdateInfo? info = await sut.CheckAsync("1.3.0", CancellationToken.None);
 
         Assert.True(info!.IsUpdateAvailable);
-        Assert.Null(info.UpdaterDownloadUrl);
+        Assert.Null(info.PackageDownloadUrl);
+        Assert.Null(info.SignatureDownloadUrl);
+    }
+
+    [Fact]
+    public async Task CheckAsync_WithoutAPackageForThisArchitecture_OffersNoPackage()
+    {
+        GitHubUpdateChecker sut = CreateSut(StubHttpMessageHandler.Json(
+            """{"tag_name":"v1.4.0","assets":[{"name":"PictureSorter-v1.4.0-win-arm64.zip","browser_download_url":"https://github.com/a.zip"}]}"""));
+
+        UpdateInfo? info = await sut.CheckAsync("1.3.0", CancellationToken.None);
+
+        Assert.True(info!.IsUpdateAvailable);
+        Assert.Null(info.PackageDownloadUrl);
     }
 
     [Theory]
@@ -131,14 +149,14 @@ public sealed class GitHubUpdateCheckerTests : IDisposable
     [Fact]
     public async Task CheckAsync_WithRelativeDownloadUrl_DropsIt()
     {
-        // Nur absolute Adressen sind brauchbar; alles andere wäre später ein
+        // Nur absolute Adressen sind brauchbar; alles andere waere spaeter ein
         // unbrauchbarer oder mehrdeutiger Download.
         GitHubUpdateChecker sut = CreateSut(StubHttpMessageHandler.Json(
-            """{"tag_name":"v1.4.0","assets":[{"name":"PictureSorter-Updater.exe","browser_download_url":"/relativ/pfad.exe"}]}"""));
+            """{"tag_name":"v1.4.0","assets":[{"name":"PictureSorter-v1.4.0-win-x64.zip","browser_download_url":"/relativ/p.zip"},{"name":"PictureSorter-v1.4.0-win-x64.zip.sig","browser_download_url":"/relativ/p.zip.sig"}]}"""));
 
         UpdateInfo? info = await sut.CheckAsync("1.3.0", CancellationToken.None);
 
-        Assert.Null(info!.UpdaterDownloadUrl);
+        Assert.Null(info!.PackageDownloadUrl);
     }
 
     [Fact]
@@ -160,7 +178,7 @@ public sealed class GitHubUpdateCheckerTests : IDisposable
         {
             GitHubOwner = owner,
             GitHubRepo = "PictureSorter",
-            UpdaterAssetName = "PictureSorter-Updater.exe",
+            RuntimeIdentifier = "win-x64",
         };
 
         return new GitHubUpdateChecker(_client, Options.Create(options), NullLogger<GitHubUpdateChecker>.Instance);

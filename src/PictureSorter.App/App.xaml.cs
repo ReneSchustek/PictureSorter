@@ -1,6 +1,8 @@
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -74,8 +76,67 @@ public partial class App : Microsoft.UI.Xaml.Application
     /// <param name="args">Vom System gelieferte Startparameter.</param>
     protected override void OnLaunched(LaunchActivatedEventArgs args) => _ = StartAsync();
 
+    // Der Helfer-Modus: Diese Instanz ist die frisch entpackte, bereits geprüfte neue
+    // Fassung. Sie ersetzt die alte Installation und startet sie neu – ein eigenes
+    // Updater-Programm gibt es nicht, die neue Fassung ist ihr eigener Installateur.
+    // Es wird KEIN Fenster geöffnet.
+    private async Task RunUpdateHelperAsync(UpdateApplyArgs apply)
+    {
+        string dataDirectory = GetDataDirectory();
+
+        // Der Helfer traut seinen Aufrufparametern nicht. Ohne diesen Abgleich könnte
+        // jemand die Anwendung mit einem beliebigen Quellordner starten und damit die
+        // Installation überschreiben. Nur was der geprüfte Hauptprozess vermerkt hat,
+        // wird eingespielt.
+        if (!UpdateInstaller.IsTrustedStaging(dataDirectory, apply.SourceDirectory))
+        {
+            AppLog.UpdateApplyRejected(_logger!);
+            UpdateInstaller.RemovePendingNote(dataDirectory);
+            Exit();
+            return;
+        }
+
+        _ = await UpdateInstaller
+            .WaitForExitAsync(apply.ProcessId, TimeSpan.FromSeconds(30), CancellationToken.None)
+            .ConfigureAwait(true);
+
+        bool applied = UpdateInstaller.ApplyStagedFiles(apply.SourceDirectory, apply.TargetDirectory);
+        UpdateInstaller.RemovePendingNote(dataDirectory);
+        AppLog.UpdateApplied(_logger!, applied);
+
+        // Die Anwendung wieder aus dem Programmordner starten – nicht aus dem
+        // Staging-Ordner, aus dem dieser Helfer läuft.
+        try
+        {
+            _ = Process.Start(new ProcessStartInfo
+            {
+                FileName = Path.Combine(apply.TargetDirectory, UpdateInstaller.ExecutableName),
+                WorkingDirectory = apply.TargetDirectory,
+                UseShellExecute = true,
+            });
+        }
+        catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException)
+        {
+            AppLog.StartupFailed(_logger!, ex);
+        }
+
+        Exit();
+    }
+
+    private static string GetDataDirectory() => Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        DataFolderName);
+
     private async Task StartAsync()
     {
+        // Läuft diese Instanz als Helfer eines Updates, gibt es keine Oberfläche: Sie
+        // ersetzt die alte Installation und beendet sich.
+        if (UpdateApplyArgs.TryParse(Environment.GetCommandLineArgs(), out UpdateApplyArgs? apply))
+        {
+            await RunUpdateHelperAsync(apply!).ConfigureAwait(true);
+            return;
+        }
+
         // OnLaunched ruft StartAsync als Fire-and-Forget auf. Ohne dieses try/catch
         // würde eine Ausnahme hier zu einer nicht beobachteten Task-Ausnahme, die erst
         // beim Garbage-Collector und ohne klaren Bezug auftauchte. Der Start-Fehler
@@ -246,6 +307,12 @@ internal static partial class AppLog
 
     [LoggerMessage(EventId = 1002, Level = LogLevel.Warning, Message = "KI beim Start nicht einsatzbereit. Fehlende/erforderliche Modelle: {Models}.")]
     public static partial void ModelsNotReady(ILogger logger, string models);
+
+    [LoggerMessage(EventId = 1004, Level = LogLevel.Error, Message = "Update-Helfer abgewiesen: Der Quellordner passt nicht zum geprüften Vermerk.")]
+    public static partial void UpdateApplyRejected(ILogger logger);
+
+    [LoggerMessage(EventId = 1005, Level = LogLevel.Information, Message = "Update eingespielt: {Applied}.")]
+    public static partial void UpdateApplied(ILogger logger, bool applied);
 
     [LoggerMessage(EventId = 1003, Level = LogLevel.Information, Message = "Neue Version verfügbar: {Version}.")]
     public static partial void UpdateAvailable(ILogger logger, string version);

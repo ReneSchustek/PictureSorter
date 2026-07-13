@@ -75,6 +75,10 @@ bld/
 
 # Publish
 publish/
+dist/
+
+# Signaturschluessel: gehoert niemals ins Repository.
+*.pem
 AppPackages/
 
 # NuGet

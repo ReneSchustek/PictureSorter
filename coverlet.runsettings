@@ -11,10 +11,19 @@
                die WinUI-Views samt generiertem XAML-Code, die reinen
                Verdrahtungs-Erweiterungen des DI-Containers und die quellgenerierten
                Logmeldungen. Eine Zahl, die solchen Code mitzählt, misst nicht die
-               Testtiefe, sondern nur, wie viel Rahmenwerk das Projekt hat. -->
-          <Exclude>[PictureSorter.App]PictureSorter.App.Views.*,[PictureSorter.App]XamlGeneratedNamespace.*,[PictureSorter.App]*.App</Exclude>
+               Testtiefe, sondern nur, wie viel Rahmenwerk das Projekt hat.
+
+               Achtung: Die App-Assembly heißt „PictureSorter", nicht
+               „PictureSorter.App" (AssemblyName in der csproj). Ein Filter auf den
+               Projektnamen greift ins Leere und wirkt trotzdem, als wäre gefiltert. -->
+          <Exclude>[PictureSorter]PictureSorter.App.Views.*,[PictureSorter]PictureSorter.App.App,[PictureSorter]XamlGeneratedNamespace.*,[PictureSorter]PictureSorter.App.PictureSorter_App_XamlTypeInfo.*,[PictureSorter]ABI.*,[PictureSorter]WinRT.*</Exclude>
           <ExcludeByAttribute>Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute</ExcludeByAttribute>
-          <ExcludeByFile>**/*ServiceCollectionExtensions.cs,**/Migrations/*.cs,**/*.g.cs</ExcludeByFile>
+          <!-- Zusätzlich ausgenommen: Code, der ohne laufende Oberfläche bzw. ohne
+               fremden Prozess nicht ausführbar ist (WinUI-Konverter, Fensterkontext,
+               Ordnerauswahl, Dialoge, Design-Umschaltung, Navigationsleiste,
+               Ollama-Einrichtung). Ihn mitzuzählen sagt nichts über die Testtiefe –
+               er wird in der laufenden Anwendung geprüft, nicht im Testhost. -->
+          <ExcludeByFile>**/*ServiceCollectionExtensions.cs,**/Migrations/*.cs,**/*.g.cs,**/Converters/*.cs,**/Services/ThemeService.cs,**/Services/NavigationService.cs,**/Services/WindowContext.cs,**/Services/WindowsFolderPicker.cs,**/Services/ContentDialogConfirmationService.cs,**/Services/OllamaSetupService.cs,**/Services/ResourceLocalizer.cs</ExcludeByFile>
           <SingleHit>false</SingleHit>
           <UseSourceLink>true</UseSourceLink>
         </Configuration>

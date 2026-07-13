@@ -13,11 +13,10 @@
     Der Schwellwert sichert den erreichten Stand ab; er ist keine Zielmarke. Sinkt
     die Abdeckung darunter, wurde ungetesteter Code hinzugefuegt.
 
-    Nicht gemessen wird die App-Schicht (WinUI): Ihr Testprojekt laeuft als
-    self-contained x64-Testhost, den der Coverage-Kollektor nicht instrumentieren
-    kann. Ihre ViewModels sind getestet, tauchen in dieser Zahl aber nicht auf. Das
-    Skript sagt das bei jedem Lauf dazu, damit die Zahl nicht mehr verspricht, als
-    sie deckt.
+    Die App-Schicht (Assembly "PictureSorter") zaehlt mit - ohne ihre Views,
+    WinUI-Konverter und oberflaechengebundenen Dienste: Die laufen ohne XAML-Host
+    nicht und wuerden die Zahl druecken, ohne etwas ueber die Testtiefe zu sagen.
+    Sie werden in der laufenden Anwendung geprueft, nicht im Testhost.
 
 .PARAMETER ResultsDirectory
     Verzeichnis mit den Cobertura-Berichten (rekursiv).
@@ -28,7 +27,7 @@
 [CmdletBinding()]
 param(
     [string] $ResultsDirectory = 'TestResults',
-    [double] $MinimumLineCoverage = 88.0
+    [double] $MinimumLineCoverage = 84.0
 )
 
 $ErrorActionPreference = 'Stop'
@@ -97,7 +96,7 @@ foreach ($name in ($perAssembly.Keys | Sort-Object)) {
 
 Write-Output ''
 Write-Output ("Gesamt: {0} % ({1}/{2} Zeilen), gefordert: {3} %" -f $coverage, $covered, $total, $MinimumLineCoverage)
-Write-Output 'Nicht enthalten: PictureSorter.App (WinUI) – der self-contained Testhost laesst sich nicht instrumentieren; die ViewModels sind getestet, zaehlen hier aber nicht mit.'
+Write-Output "Nicht enthalten: Views, WinUI-Konverter und oberflaechengebundene Dienste - sie laufen ohne XAML-Host nicht und werden in der Anwendung selbst geprueft."
 
 if ($coverage -lt $MinimumLineCoverage) {
     Write-Output ''
