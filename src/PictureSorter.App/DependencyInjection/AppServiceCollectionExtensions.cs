@@ -27,6 +27,7 @@ internal static class AppServiceCollectionExtensions
 
         // Explizite Factories (statt Typ-Registrierung), damit der Analyzer die
         // Instanziierung dieser internen Klassen erkennt (CA1812).
+        _ = services.AddSingleton<ILocalizer>(static _ => new ResourceLocalizer());
         _ = services.AddSingleton(static _ => new WindowContext());
         _ = services.AddSingleton<IFolderPicker>(static provider =>
             new WindowsFolderPicker(provider.GetRequiredService<WindowContext>()));

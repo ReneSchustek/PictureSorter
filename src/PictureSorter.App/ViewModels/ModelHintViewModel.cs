@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using PictureSorter.App.Services;
 using PictureSorter.Core.Interfaces;
 using PictureSorter.Core.ValueObjects;
 
@@ -15,6 +16,7 @@ namespace PictureSorter.App.ViewModels;
 internal sealed partial class ModelHintViewModel : ObservableObject
 {
     private readonly IModelAvailabilityChecker _modelChecker;
+    private readonly ILocalizer _localizer;
 
     /// <summary>
     /// <see langword="true"/>, wenn der KI-Hinweis angezeigt werden soll.
@@ -32,10 +34,14 @@ internal sealed partial class ModelHintViewModel : ObservableObject
     /// Initialisiert das ViewModel.
     /// </summary>
     /// <param name="modelChecker">Prüft die Verfügbarkeit der KI-Modelle.</param>
-    public ModelHintViewModel(IModelAvailabilityChecker modelChecker)
+    /// <param name="localizer">Die Textquelle.</param>
+    public ModelHintViewModel(IModelAvailabilityChecker modelChecker, ILocalizer localizer)
     {
         ArgumentNullException.ThrowIfNull(modelChecker);
+        ArgumentNullException.ThrowIfNull(localizer);
+
         _modelChecker = modelChecker;
+        _localizer = localizer;
         Message = string.Empty;
     }
 
@@ -59,10 +65,8 @@ internal sealed partial class ModelHintViewModel : ObservableObject
     // Bewusst ohne Kommandozeilen-Befehl (kein „ollama pull …"): Die Zielnutzerin
     // hat wenig PC-Erfahrung. Die Einrichtung übernimmt der Knopf „Jetzt einrichten";
     // die Meldung erklärt nur, was zu tun ist, nicht wie es technisch geht.
-    private static string BuildHint(ModelAvailability availability) =>
+    private string BuildHint(ModelAvailability availability) =>
         availability.IsReachable
-            ? "Die KI ist noch nicht vollständig eingerichtet. Bitte auf „Jetzt einrichten\" "
-                + "klicken – die fehlenden Bestandteile werden dann automatisch geladen."
-            : "Die lokale KI ist noch nicht bereit. Bitte auf „Jetzt einrichten\" klicken; "
-                + "der Assistent installiert und startet sie für dich.";
+            ? _localizer.Get("ModelHint_Incomplete")
+            : _localizer.Get("ModelHint_NotReady");
 }

@@ -74,7 +74,7 @@ internal sealed partial class MainWindow : Window
     // Dateien ersetzen kann. Fehler sind im UpdateService bereits abgefangen.
     private async void OnUpdateNowClick(object sender, RoutedEventArgs e)
     {
-        _update.Message = "Aktualisierung wird vorbereitet…";
+        _update.ReportPreparing();
         bool started = await _updateService.DownloadAndLaunchUpdaterAsync(CancellationToken.None).ConfigureAwait(true);
         if (started)
         {
@@ -82,7 +82,7 @@ internal sealed partial class MainWindow : Window
         }
         else
         {
-            _update.Message = "Aktualisierung nicht möglich. Bitte später erneut versuchen.";
+            _update.ReportFailed();
         }
     }
 

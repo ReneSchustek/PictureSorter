@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using PictureSorter.App.Services;
 
 namespace PictureSorter.App.ViewModels;
 
@@ -25,6 +26,7 @@ internal sealed partial class SortWizardViewModel : ObservableObject
     private readonly Func<int, Task<bool>> _runStep;
     private readonly Action _resetData;
     private readonly Action<int> _onStepEntered;
+    private readonly ILocalizer _localizer;
 
     /// <summary>Der aktuell aktive Schritt (0-basiert).</summary>
     [ObservableProperty]
@@ -52,24 +54,28 @@ internal sealed partial class SortWizardViewModel : ObservableObject
     /// <param name="runStep">Führt die Aktion eines Schritts aus; <see langword="true"/> = danach weiterblättern.</param>
     /// <param name="resetData">Setzt die fachlichen Daten beim Neustart zurück.</param>
     /// <param name="onStepEntered">Wird beim Betreten eines Schritts aufgerufen (z. B. Beispiele laden).</param>
+    /// <param name="localizer">Die Textquelle.</param>
     public SortWizardViewModel(
         Func<bool> isInteractive,
         Func<int, bool> canRunStep,
         Func<int, Task<bool>> runStep,
         Action resetData,
-        Action<int> onStepEntered)
+        Action<int> onStepEntered,
+        ILocalizer localizer)
     {
         ArgumentNullException.ThrowIfNull(isInteractive);
         ArgumentNullException.ThrowIfNull(canRunStep);
         ArgumentNullException.ThrowIfNull(runStep);
         ArgumentNullException.ThrowIfNull(resetData);
         ArgumentNullException.ThrowIfNull(onStepEntered);
+        ArgumentNullException.ThrowIfNull(localizer);
 
         _isInteractive = isInteractive;
         _canRunStep = canRunStep;
         _runStep = runStep;
         _resetData = resetData;
         _onStepEntered = onStepEntered;
+        _localizer = localizer;
         IsGuided = true;
     }
 
@@ -93,11 +99,11 @@ internal sealed partial class SortWizardViewModel : ObservableObject
     /// <summary>Überschrift des aktuellen Schritts, z. B. „Schritt 2 von 5: …“.</summary>
     public string StepTitle => CurrentStep switch
     {
-        0 => "Schritt 1 von 5: Ordner mit Fotos wählen",
-        1 => "Schritt 2 von 5: Kategorie beschreiben",
-        2 => "Schritt 3 von 5: Beispiele auswählen",
-        3 => "Schritt 4 von 5: Analyse starten",
-        _ => "Schritt 5 von 5: Sortieren",
+        0 => _localizer.Get("Wizard_Step1Title"),
+        1 => _localizer.Get("Wizard_Step2Title"),
+        2 => _localizer.Get("Wizard_Step3Title"),
+        3 => _localizer.Get("Wizard_Step4Title"),
+        _ => _localizer.Get("Wizard_Step5Title"),
     };
 
     /// <summary>
@@ -106,11 +112,11 @@ internal sealed partial class SortWizardViewModel : ObservableObject
     /// </summary>
     public string PrimaryActionLabel => CurrentStep switch
     {
-        0 => "Weiter ▶",
-        1 => "Weiter ▶",
-        2 => "Profil lernen ▶",
-        3 => "Analyse starten ▶",
-        _ => "Sortieren",
+        0 => _localizer.Get("Wizard_ActionNext"),
+        1 => _localizer.Get("Wizard_ActionNext"),
+        2 => _localizer.Get("Wizard_ActionLearn"),
+        3 => _localizer.Get("Wizard_ActionAnalyze"),
+        _ => _localizer.Get("Wizard_ActionSort"),
     };
 
     // Sichtbarkeit der Schritt-Karten: im geführten Modus nur die aktive Karte,
