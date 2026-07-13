@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat code coverage">
+        <Configuration>
+          <Format>cobertura</Format>
+
+          <!-- Gemessen wird der Code, der eine Entscheidung trifft. Ausgenommen ist,
+               was ohne laufende Oberfläche nicht ausführbar ist oder keine Logik trägt:
+               die WinUI-Views samt generiertem XAML-Code, die reinen
+               Verdrahtungs-Erweiterungen des DI-Containers und die quellgenerierten
+               Logmeldungen. Eine Zahl, die solchen Code mitzählt, misst nicht die
+               Testtiefe, sondern nur, wie viel Rahmenwerk das Projekt hat. -->
+          <Exclude>[PictureSorter.App]PictureSorter.App.Views.*,[PictureSorter.App]XamlGeneratedNamespace.*,[PictureSorter.App]*.App</Exclude>
+          <ExcludeByAttribute>Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute</ExcludeByAttribute>
+          <ExcludeByFile>**/*ServiceCollectionExtensions.cs,**/Migrations/*.cs</ExcludeByFile>
+          <SingleHit>false</SingleHit>
+          <UseSourceLink>true</UseSourceLink>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>

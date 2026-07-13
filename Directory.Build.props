@@ -35,7 +35,11 @@
 
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <Optimize>true</Optimize>
-    <DebugType>none</DebugType>
-    <DebugSymbols>false</DebugSymbols>
+    <!-- Symboldateien auch im Release: Ohne sie kann die Coverage-Messung den
+         ausgeführten Code keiner Quellzeile zuordnen (sie meldete schlicht null),
+         und die Stapelüberwachungen im Absturzprotokoll hätten keine Zeilennummern –
+         genau dann, wenn man sie braucht. Die Optimierung bleibt davon unberührt. -->
+    <DebugType>portable</DebugType>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
 </Project>
