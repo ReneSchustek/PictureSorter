@@ -1,0 +1,724 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AboutPage_UpdateCheckToggle.Header" xml:space="preserve">
+    <value>Beim Start nach Updates suchen</value>
+  </data>
+  <data name="AboutPage_CheckUpdatesButton.Content" xml:space="preserve">
+    <value>Nach Updates suchen</value>
+  </data>
+  <data name="MainWindow_UpdateBar.Title" xml:space="preserve">
+    <value>Aktualisierung verfügbar</value>
+  </data>
+  <data name="MainWindow_UpdateNowButton.Content" xml:space="preserve">
+    <value>Aktualisieren</value>
+  </data>
+  <data name="MainWindow_DashboardNavItem.Content" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="MainWindow_SortNavItem.Content" xml:space="preserve">
+    <value>Sortieren</value>
+  </data>
+  <data name="MainWindow_DuplicatesNavItem.Content" xml:space="preserve">
+    <value>Duplikate</value>
+  </data>
+  <data name="MainWindow_MemoryNavItem.Content" xml:space="preserve">
+    <value>Gedächtnis</value>
+  </data>
+  <data name="MainWindow_SettingsNavItem.Content" xml:space="preserve">
+    <value>Einstellungen</value>
+  </data>
+  <data name="MainWindow_StopButton.Content" xml:space="preserve">
+    <value>Stopp</value>
+  </data>
+  <data name="DashboardPage_HeroTitle.Text" xml:space="preserve">
+    <value>Willkommen bei PictureSorter</value>
+  </data>
+  <data name="DashboardPage_HeroSubtitle.Text" xml:space="preserve">
+    <value>Ordne deine Fotos in wenigen Schritten. Alles läuft auf deinem Rechner – nichts wird ins Internet geladen.</value>
+  </data>
+  <data name="DashboardPage_AiStatusInfoBar.Title" xml:space="preserve">
+    <value>Lokale KI</value>
+  </data>
+  <data name="DashboardPage_ActionsPrompt.Text" xml:space="preserve">
+    <value>Was möchtest du tun?</value>
+  </data>
+  <data name="DashboardPage_SortTileTitle.Text" xml:space="preserve">
+    <value>Fotos sortieren</value>
+  </data>
+  <data name="DashboardPage_SortTileDescription.Text" xml:space="preserve">
+    <value>Beschreibe eine Gruppe, bestätige ein paar Beispiele – der Rest passiert automatisch.</value>
+  </data>
+  <data name="DashboardPage_DuplicatesTileTitle.Text" xml:space="preserve">
+    <value>Duplikate finden</value>
+  </data>
+  <data name="DashboardPage_DuplicatesTileDescription.Text" xml:space="preserve">
+    <value>Doppelte und sehr ähnliche Bilder aufspüren und in den Papierkorb legen.</value>
+  </data>
+  <data name="DashboardPage_MemoryTileTitle.Text" xml:space="preserve">
+    <value>Gedächtnis</value>
+  </data>
+  <data name="DashboardPage_MemoryTileDescription.Text" xml:space="preserve">
+    <value>Sieh nach, was sich PictureSorter gemerkt hat – und vergiss, was nicht stimmt.</value>
+  </data>
+  <data name="DuplicatesPage_HeroTitle.Text" xml:space="preserve">
+    <value>Duplikate finden</value>
+  </data>
+  <data name="DuplicatesPage_HeroSubtitle.Text" xml:space="preserve">
+    <value>Findet gleiche und sehr ähnliche Bilder. Gelöschte Dateien landen im Papierkorb und bleiben wiederherstellbar.</value>
+  </data>
+  <data name="DuplicatesPage_FolderTextBox.Header" xml:space="preserve">
+    <value>Ordner</value>
+  </data>
+  <data name="DuplicatesPage_FolderTextBox.PlaceholderText" xml:space="preserve">
+    <value>z. B. C:\Fotos</value>
+  </data>
+  <data name="DuplicatesPage_BrowseButton.Content" xml:space="preserve">
+    <value>Durchsuchen…</value>
+  </data>
+  <data name="DuplicatesPage_IncludeSubfoldersCheckBox.Content" xml:space="preserve">
+    <value>Unterordner einbeziehen</value>
+  </data>
+  <data name="DuplicatesPage_ScanButton.Content" xml:space="preserve">
+    <value>Duplikate suchen</value>
+  </data>
+  <data name="DuplicatesPage_DeleteSelectedButton.Content" xml:space="preserve">
+    <value>Ausgewählte in den Papierkorb</value>
+  </data>
+  <data name="DuplicatesPage_DeleteCheckBox.Content" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="MemoryPage_HeroTitle.Text" xml:space="preserve">
+    <value>Gedächtnis</value>
+  </data>
+  <data name="MemoryPage_HeroSubtitle.Text" xml:space="preserve">
+    <value>Was sich PictureSorter gemerkt hat. Gemerkte Fotos werden beim nächsten Sortieren übersprungen – vergisst du einen Eintrag, wird das Foto wieder neu bewertet.</value>
+  </data>
+  <data name="MemoryPage_FolderFilter.Header" xml:space="preserve">
+    <value>Ordner</value>
+  </data>
+  <data name="MemoryPage_CategoryFilter.Header" xml:space="preserve">
+    <value>Kategorie</value>
+  </data>
+  <data name="MemoryPage_ClearFolderButton.Content" xml:space="preserve">
+    <value>Ordner vergessen</value>
+  </data>
+  <data name="MemoryPage_ClearFolderButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Verwirft alle gemerkten Entscheidungen des oben gewählten Ordners.</value>
+  </data>
+  <data name="MemoryPage_RefreshButton.Content" xml:space="preserve">
+    <value>Aktualisieren</value>
+  </data>
+  <data name="MemoryPage_EmptyStateTitle.Text" xml:space="preserve">
+    <value>Noch nichts gemerkt</value>
+  </data>
+  <data name="MemoryPage_EmptyStateText.Text" xml:space="preserve">
+    <value>Sobald du zum ersten Mal sortierst, erscheinen hier die Entscheidungen.</value>
+  </data>
+  <data name="MemoryPage_ForgetItemButton.Content" xml:space="preserve">
+    <value>Vergessen</value>
+  </data>
+  <data name="PhotoPreviewDialog_Close.CloseButtonText" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
+  <data name="AboutPage_SettingsTitle.Text" xml:space="preserve">
+    <value>Einstellungen</value>
+  </data>
+  <data name="AboutPage_AppearanceHeader.Text" xml:space="preserve">
+    <value>Darstellung</value>
+  </data>
+  <data name="AboutPage_AppearanceDescription.Text" xml:space="preserve">
+    <value>Wähle zwischen hellem und dunklem Design.</value>
+  </data>
+  <data name="AboutPage_DarkToggle.Header" xml:space="preserve">
+    <value>Dunkles Design</value>
+  </data>
+  <data name="AboutPage_DarkToggle.OffContent" xml:space="preserve">
+    <value>Aus</value>
+  </data>
+  <data name="AboutPage_DarkToggle.OnContent" xml:space="preserve">
+    <value>An</value>
+  </data>
+  <data name="AboutPage_UpdatesHeader.Text" xml:space="preserve">
+    <value>Updates</value>
+  </data>
+  <data name="AboutPage_UpdatesDescription.Text" xml:space="preserve">
+    <value>PictureSorter kann beim Start nach einer neueren Version suchen und sie auf Wunsch automatisch installieren.</value>
+  </data>
+  <data name="AboutPage_AutoUpdateToggle.Header" xml:space="preserve">
+    <value>Updates automatisch installieren</value>
+  </data>
+  <data name="AboutPage_AutoUpdateToggle.OffContent" xml:space="preserve">
+    <value>Aus</value>
+  </data>
+  <data name="AboutPage_AutoUpdateToggle.OnContent" xml:space="preserve">
+    <value>An</value>
+  </data>
+  <data name="AboutPage_InstallUpdateButton.Content" xml:space="preserve">
+    <value>Jetzt aktualisieren</value>
+  </data>
+  <data name="AboutPage_LocalAiHeader.Text" xml:space="preserve">
+    <value>Lokale KI (Ollama)</value>
+  </data>
+  <data name="AboutPage_LocalAiDescription.Text" xml:space="preserve">
+    <value>PictureSorter erkennt Bildinhalte mit einer KI, die vollständig auf diesem PC läuft – deine Fotos verlassen den Rechner nicht. Falls das Sortieren nicht startet, richte die KI hier mit einem Klick ein. Der Download kann beim ersten Mal einige Minuten dauern.</value>
+  </data>
+  <data name="AboutPage_SetupButton.Content" xml:space="preserve">
+    <value>Jetzt einrichten</value>
+  </data>
+  <data name="AboutPage_CheckStatusButton.Content" xml:space="preserve">
+    <value>Status prüfen</value>
+  </data>
+  <data name="AboutPage_LogHeader.Text" xml:space="preserve">
+    <value>Protokoll (Fehlerdiagnose)</value>
+  </data>
+  <data name="AboutPage_LogDescription.Text" xml:space="preserve">
+    <value>Hier siehst du die jüngsten Programmmeldungen. Wenn etwas nicht funktioniert, hilft dieser Verlauf bei der Ursachensuche. Die vollständigen, täglichen Protokolldateien liegen im Log-Ordner.</value>
+  </data>
+  <data name="AboutPage_RefreshLogButton.Content" xml:space="preserve">
+    <value>Aktualisieren</value>
+  </data>
+  <data name="AboutPage_OpenLogFolderButton.Content" xml:space="preserve">
+    <value>Log-Ordner öffnen</value>
+  </data>
+  <data name="AboutPage_AboutHeader.Text" xml:space="preserve">
+    <value>Über PictureSorter</value>
+  </data>
+  <data name="AboutPage_AboutDescription.Text" xml:space="preserve">
+    <value>PictureSorter sortiert Fotos mithilfe einer lokal laufenden KI (Ollama) lernfähig in Unterordner. Alle Bildanalysen geschehen offline auf diesem Rechner.</value>
+  </data>
+  <data name="SortPage_ModelHintBar.Title" xml:space="preserve">
+    <value>KI noch nicht einsatzbereit</value>
+  </data>
+  <data name="SortPage_SetupOllamaButton.Content" xml:space="preserve">
+    <value>Jetzt einrichten</value>
+  </data>
+  <data name="SortPage_HeroTitle.Text" xml:space="preserve">
+    <value>Fotos sortieren</value>
+  </data>
+  <data name="SortPage_HeroSubtitle.Text" xml:space="preserve">
+    <value>Beschreibe eine Gruppe, bestätige ein paar Beispiele – den Rest übernimmt PictureSorter.</value>
+  </data>
+  <data name="SortPage_ViewModeLabel.Text" xml:space="preserve">
+    <value>Ansicht:</value>
+  </data>
+  <data name="SortPage_ViewModeStepByStep.Content" xml:space="preserve">
+    <value>Schritt für Schritt</value>
+  </data>
+  <data name="SortPage_ViewModeStandard.Content" xml:space="preserve">
+    <value>Standard</value>
+  </data>
+  <data name="SortPage_Step1Link.Content" xml:space="preserve">
+    <value>1. Ordner</value>
+  </data>
+  <data name="SortPage_Step2Link.Content" xml:space="preserve">
+    <value>2. Kategorie</value>
+  </data>
+  <data name="SortPage_Step3Link.Content" xml:space="preserve">
+    <value>3. Beispiele</value>
+  </data>
+  <data name="SortPage_Step4Link.Content" xml:space="preserve">
+    <value>4. Analyse</value>
+  </data>
+  <data name="SortPage_Step5Link.Content" xml:space="preserve">
+    <value>5. Sortieren</value>
+  </data>
+  <data name="SortPage_RestartButton.Content" xml:space="preserve">
+    <value>↺ Neu starten</value>
+  </data>
+  <data name="SortPage_Step1Heading.Text" xml:space="preserve">
+    <value>1. Ordner mit Fotos wählen</value>
+  </data>
+  <data name="SortPage_Step1Description.Text" xml:space="preserve">
+    <value>Wähle den Ordner, in dem deine Fotos liegen. PictureSorter sieht sie sich an und hilft dir, sie zu ordnen.</value>
+  </data>
+  <data name="SortPage_SourceFolderBox.Header" xml:space="preserve">
+    <value>Ordner mit Fotos</value>
+  </data>
+  <data name="SortPage_SourceFolderBox.PlaceholderText" xml:space="preserve">
+    <value>z. B. C:\Fotos</value>
+  </data>
+  <data name="SortPage_BrowseButton.Content" xml:space="preserve">
+    <value>Durchsuchen…</value>
+  </data>
+  <data name="SortPage_IncludeSubfoldersCheck.Content" xml:space="preserve">
+    <value>Auch Unterordner einbeziehen</value>
+  </data>
+  <data name="SortPage_Step2Heading.Text" xml:space="preserve">
+    <value>2. Kategorie beschreiben</value>
+  </data>
+  <data name="SortPage_Step2Description.Text" xml:space="preserve">
+    <value>Was sollen wir heraussuchen? Gib der Gruppe einen Namen und beschreibe in eigenen Worten, was darauf zu sehen ist.</value>
+  </data>
+  <data name="SortPage_CategoryNameBox.Header" xml:space="preserve">
+    <value>Name der Gruppe</value>
+  </data>
+  <data name="SortPage_CategoryNameBox.PlaceholderText" xml:space="preserve">
+    <value>z. B. Familie</value>
+  </data>
+  <data name="SortPage_CategoryDescriptionBox.Header" xml:space="preserve">
+    <value>Beschreibung (in eigenen Worten)</value>
+  </data>
+  <data name="SortPage_CategoryDescriptionBox.PlaceholderText" xml:space="preserve">
+    <value>z. B. Bilder, auf denen meine Familie zu sehen ist</value>
+  </data>
+  <data name="SortPage_EventCategoryCheck.Content" xml:space="preserve">
+    <value>Ereignis-Gruppe (Ordnername erhält das Aufnahmedatum, z. B. „Urlaub 14.07.25")</value>
+  </data>
+  <data name="SortPage_Step3Heading.Text" xml:space="preserve">
+    <value>3. Beispiele auswählen</value>
+  </data>
+  <data name="SortPage_Step3Description.Text" xml:space="preserve">
+    <value>Die Beispielbilder werden automatisch geladen. Markiere, ob sie zur Gruppe „dazu" gehören oder „nicht".</value>
+  </data>
+  <data name="SortPage_ReloadExamplesButton.Content" xml:space="preserve">
+    <value>Beispiele neu laden</value>
+  </data>
+  <data name="SortPage_ReloadExamplesButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Lädt die Beispielbilder erneut – nützlich, falls das automatische Laden nicht geklappt hat.</value>
+  </data>
+  <data name="SortPage_LearnButton.Content" xml:space="preserve">
+    <value>Profil lernen</value>
+  </data>
+  <data name="SortPage_ExamplePositiveToggle.Content" xml:space="preserve">
+    <value>✓ dazu</value>
+  </data>
+  <data name="SortPage_ExampleNegativeToggle.Content" xml:space="preserve">
+    <value>✗ nicht</value>
+  </data>
+  <data name="SortPage_ActiveGroupLabel.Text" xml:space="preserve">
+    <value>Aktive Gruppe:</value>
+  </data>
+  <data name="SortPage_Step4Heading.Text" xml:space="preserve">
+    <value>4. Analyse starten</value>
+  </data>
+  <data name="SortPage_Step4Description.Text" xml:space="preserve">
+    <value>Jetzt sieht sich PictureSorter alle Fotos im Ordner an und schlägt vor, welche zur Gruppe passen. Das kann je nach Anzahl etwas dauern.</value>
+  </data>
+  <data name="SortPage_AnalyzeButton.Content" xml:space="preserve">
+    <value>Analysieren</value>
+  </data>
+  <data name="SortPage_Step5Heading.Text" xml:space="preserve">
+    <value>5. Vorschau und sortieren</value>
+  </data>
+  <data name="SortPage_Step5Description.Text" xml:space="preserve">
+    <value>Prüfe die Vorschläge. Bilder, die du nicht möchtest, einfach abhaken – sie werden nicht verschoben und nicht erneut vorgeschlagen. Klicke auf ein Bild, um es groß anzusehen.</value>
+  </data>
+  <data name="SortPage_ToggleAllButton.Content" xml:space="preserve">
+    <value>Alle aus-/abwählen</value>
+  </data>
+  <data name="SortPage_ApplyButton.Content" xml:space="preserve">
+    <value>Sortieren</value>
+  </data>
+  <data name="SortPage_ProposalSelectCheck.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Abhaken heißt: nicht verschieben und künftig nicht mehr vorschlagen.</value>
+  </data>
+  <data name="SortPage_BackButton.Content" xml:space="preserve">
+    <value>◀ Zurück</value>
+  </data>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="Common_CancelRequested" xml:space="preserve">
+    <value>Abbruch angefordert…</value>
+  </data>
+  <data name="Common_Version" xml:space="preserve">
+    <value>Version {0}</value>
+  </data>
+  <data name="StatusBar_Ready" xml:space="preserve">
+    <value>Bereit.</value>
+  </data>
+  <data name="Sort_SelectionSummary" xml:space="preserve">
+    <value>{0} von {1} ausgewählt</value>
+  </data>
+  <data name="Sort_Restarted" xml:space="preserve">
+    <value>Neu gestartet. Bitte mit Schritt 1 beginnen.</value>
+  </data>
+  <data name="Sort_LoadingExamples" xml:space="preserve">
+    <value>Beispiele werden geladen…</value>
+  </data>
+  <data name="Sort_NoImagesInFolder" xml:space="preserve">
+    <value>Im Ordner wurden keine Bilder gefunden. Bitte wähle in Schritt 1 einen anderen Ordner.</value>
+  </data>
+  <data name="Sort_ExamplesLoaded" xml:space="preserve">
+    <value>{0} Beispiele geladen — markiere passende Bilder mit „Gehört dazu“.</value>
+  </data>
+  <data name="Sort_FolderNotFound" xml:space="preserve">
+    <value>Der Ordner wurde nicht gefunden. Bitte prüfe den Pfad in Schritt 1.</value>
+  </data>
+  <data name="Sort_FolderUnreadable" xml:space="preserve">
+    <value>Der Ordner konnte nicht gelesen werden.</value>
+  </data>
+  <data name="Sort_Learning" xml:space="preserve">
+    <value>Kategorie-Profil wird gelernt…</value>
+  </data>
+  <data name="Sort_CategoryLearned" xml:space="preserve">
+    <value>Kategorie „{0}“ gelernt. Jetzt analysieren.</value>
+  </data>
+  <data name="Sort_LearnCanceled" xml:space="preserve">
+    <value>Lernen abgebrochen.</value>
+  </data>
+  <data name="Sort_AiUnavailable" xml:space="preserve">
+    <value>Die KI (Ollama) ist nicht erreichbar. Beispiele konnten nicht gelernt werden.</value>
+  </data>
+  <data name="Sort_Analyzing" xml:space="preserve">
+    <value>Fotos werden analysiert…</value>
+  </data>
+  <data name="Sort_AnalyzeProgress" xml:space="preserve">
+    <value>{0} von {1} Fotos analysiert…</value>
+  </data>
+  <data name="Sort_NoMatchingPhotos" xml:space="preserve">
+    <value>Keine passenden Fotos gefunden.</value>
+  </data>
+  <data name="Sort_ProposalsFound" xml:space="preserve">
+    <value>{0} Vorschläge gefunden.</value>
+  </data>
+  <data name="Sort_AnalyzeCanceled" xml:space="preserve">
+    <value>Analyse abgebrochen.</value>
+  </data>
+  <data name="Sort_AnalyzeFailed" xml:space="preserve">
+    <value>Die Analyse ist fehlgeschlagen.</value>
+  </data>
+  <data name="Sort_Sorting" xml:space="preserve">
+    <value>Dateien werden sortiert…</value>
+  </data>
+  <data name="Sort_FilesSorted" xml:space="preserve">
+    <value>{0} Dateien sortiert.</value>
+  </data>
+  <data name="Sort_FilesSortedWithRejected" xml:space="preserve">
+    <value>{0} Dateien sortiert, {1} abgewählt und gemerkt.</value>
+  </data>
+  <data name="Sort_ApplyCanceled" xml:space="preserve">
+    <value>Sortierung abgebrochen.</value>
+  </data>
+  <data name="Sort_ApplyFailed" xml:space="preserve">
+    <value>Die Sortierung ist fehlgeschlagen.</value>
+  </data>
+  <data name="Sort_BulkConfirmTitle" xml:space="preserve">
+    <value>Viele Dateien verschieben</value>
+  </data>
+  <data name="Sort_BulkConfirmMessage" xml:space="preserve">
+    <value>{0} Dateien werden verschoben. Fortfahren?</value>
+  </data>
+  <data name="Sort_BulkConfirmPrimary" xml:space="preserve">
+    <value>Verschieben</value>
+  </data>
+  <data name="Wizard_Step1Title" xml:space="preserve">
+    <value>Schritt 1 von 5: Ordner mit Fotos wählen</value>
+  </data>
+  <data name="Wizard_Step2Title" xml:space="preserve">
+    <value>Schritt 2 von 5: Kategorie beschreiben</value>
+  </data>
+  <data name="Wizard_Step3Title" xml:space="preserve">
+    <value>Schritt 3 von 5: Beispiele auswählen</value>
+  </data>
+  <data name="Wizard_Step4Title" xml:space="preserve">
+    <value>Schritt 4 von 5: Analyse starten</value>
+  </data>
+  <data name="Wizard_Step5Title" xml:space="preserve">
+    <value>Schritt 5 von 5: Sortieren</value>
+  </data>
+  <data name="Wizard_ActionNext" xml:space="preserve">
+    <value>Weiter ▶</value>
+  </data>
+  <data name="Wizard_ActionLearn" xml:space="preserve">
+    <value>Profil lernen ▶</value>
+  </data>
+  <data name="Wizard_ActionAnalyze" xml:space="preserve">
+    <value>Analyse starten ▶</value>
+  </data>
+  <data name="Wizard_ActionSort" xml:space="preserve">
+    <value>Sortieren</value>
+  </data>
+  <data name="Proposal_MethodEmbedding" xml:space="preserve">
+    <value>Ähnlichkeit</value>
+  </data>
+  <data name="Proposal_MethodVision" xml:space="preserve">
+    <value>Bildprüfung</value>
+  </data>
+  <data name="Proposal_MethodManual" xml:space="preserve">
+    <value>Manuell</value>
+  </data>
+  <data name="Proposal_MethodUnknown" xml:space="preserve">
+    <value>Unbewertet</value>
+  </data>
+  <data name="Proposal_AutomationName" xml:space="preserve">
+    <value>{0}, Ziel {1}, Sicherheit {2}</value>
+  </data>
+  <data name="Duplicates_Scanning" xml:space="preserve">
+    <value>Duplikate werden gesucht…</value>
+  </data>
+  <data name="Duplicates_ScanProgress" xml:space="preserve">
+    <value>Duplikate werden gesucht… {0}/{1}</value>
+  </data>
+  <data name="Duplicates_GroupsFound" xml:space="preserve">
+    <value>{0} Duplikat-Gruppen gefunden. {1} zum Löschen vorgemerkt.</value>
+  </data>
+  <data name="Duplicates_NoneFound" xml:space="preserve">
+    <value>Keine Duplikate gefunden.</value>
+  </data>
+  <data name="Duplicates_ScanCanceled" xml:space="preserve">
+    <value>Suche abgebrochen.</value>
+  </data>
+  <data name="Duplicates_FolderNotFound" xml:space="preserve">
+    <value>Der Ordner wurde nicht gefunden. Bitte prüfe den Pfad.</value>
+  </data>
+  <data name="Duplicates_ScanFailed" xml:space="preserve">
+    <value>Die Suche ist fehlgeschlagen.</value>
+  </data>
+  <data name="Duplicates_DeleteTitle" xml:space="preserve">
+    <value>Duplikate löschen</value>
+  </data>
+  <data name="Duplicates_DeleteMessage" xml:space="preserve">
+    <value>{0} Datei(en) werden in den Papierkorb verschoben. Fortfahren?</value>
+  </data>
+  <data name="Duplicates_DeletePrimary" xml:space="preserve">
+    <value>In Papierkorb</value>
+  </data>
+  <data name="Duplicates_Deleting" xml:space="preserve">
+    <value>Dateien werden in den Papierkorb verschoben…</value>
+  </data>
+  <data name="Duplicates_Deleted" xml:space="preserve">
+    <value>{0} Datei(en) in den Papierkorb verschoben. {1} Gruppen verbleiben.</value>
+  </data>
+  <data name="DuplicateGroup_KindExact" xml:space="preserve">
+    <value>Identisch</value>
+  </data>
+  <data name="DuplicateGroup_KindSimilar" xml:space="preserve">
+    <value>Ähnlich</value>
+  </data>
+  <data name="DuplicateGroup_Header" xml:space="preserve">
+    <value>{0} · {1} Bilder</value>
+  </data>
+  <data name="DuplicatePhoto_DeletionLabel" xml:space="preserve">
+    <value>„{0}“ zum Löschen vormerken</value>
+  </data>
+  <data name="Memory_FilterAll" xml:space="preserve">
+    <value>Alle</value>
+  </data>
+  <data name="Memory_Empty" xml:space="preserve">
+    <value>Es ist noch nichts gemerkt. Nach dem ersten Sortieren erscheinen hier die Entscheidungen.</value>
+  </data>
+  <data name="Memory_Loaded" xml:space="preserve">
+    <value>{0} gemerkte Entscheidungen geladen.</value>
+  </data>
+  <data name="Memory_LoadFailed" xml:space="preserve">
+    <value>Das Gedächtnis konnte nicht geladen werden.</value>
+  </data>
+  <data name="Memory_ForgetTitle" xml:space="preserve">
+    <value>Eintrag vergessen</value>
+  </data>
+  <data name="Memory_ForgetMessage" xml:space="preserve">
+    <value>Die gemerkte Entscheidung zu „{0}“ (Kategorie „{1}“) wird verworfen. Das Foto wird beim nächsten Lauf wieder bewertet. Fortfahren?</value>
+  </data>
+  <data name="Memory_ForgetPrimary" xml:space="preserve">
+    <value>Vergessen</value>
+  </data>
+  <data name="Memory_Forgotten" xml:space="preserve">
+    <value>Eintrag vergessen.</value>
+  </data>
+  <data name="Memory_ForgetFailed" xml:space="preserve">
+    <value>Der Eintrag konnte nicht entfernt werden.</value>
+  </data>
+  <data name="Memory_ClearFolderTitle" xml:space="preserve">
+    <value>Ordner-Gedächtnis leeren</value>
+  </data>
+  <data name="Memory_ClearFolderMessage" xml:space="preserve">
+    <value>Alle {0} gemerkten Entscheidungen für „{1}“ werden verworfen. Die Fotos werden beim nächsten Lauf wieder bewertet. Fortfahren?</value>
+  </data>
+  <data name="Memory_ClearFolderPrimary" xml:space="preserve">
+    <value>Leeren</value>
+  </data>
+  <data name="Memory_FolderCleared" xml:space="preserve">
+    <value>{0} Einträge für „{1}“ vergessen.</value>
+  </data>
+  <data name="Memory_ClearFolderFailed" xml:space="preserve">
+    <value>Das Ordner-Gedächtnis konnte nicht geleert werden.</value>
+  </data>
+  <data name="MemoryItem_StatusSorted" xml:space="preserve">
+    <value>Einsortiert</value>
+  </data>
+  <data name="MemoryItem_StatusIgnored" xml:space="preserve">
+    <value>Abgewählt</value>
+  </data>
+  <data name="MemoryItem_StatusRejected" xml:space="preserve">
+    <value>Passt nicht</value>
+  </data>
+  <data name="MemoryItem_StatusProposed" xml:space="preserve">
+    <value>Vorgeschlagen</value>
+  </data>
+  <data name="Dashboard_AiChecking" xml:space="preserve">
+    <value>Zustand der KI wird geprüft…</value>
+  </data>
+  <data name="Dashboard_AiReady" xml:space="preserve">
+    <value>Die KI ist einsatzbereit. Du kannst loslegen.</value>
+  </data>
+  <data name="Dashboard_AiModelsMissing" xml:space="preserve">
+    <value>Es fehlen noch KI-Modelle: {0}. Richte sie unter „Einstellungen“ ein.</value>
+  </data>
+  <data name="Dashboard_AiNotSetUp" xml:space="preserve">
+    <value>Die KI (Ollama) ist noch nicht eingerichtet. Öffne „Einstellungen“ und klicke auf „Jetzt einrichten“.</value>
+  </data>
+  <data name="ModelHint_Incomplete" xml:space="preserve">
+    <value>Die KI ist noch nicht vollständig eingerichtet. Bitte auf „Jetzt einrichten“ klicken – die fehlenden Bestandteile werden dann automatisch geladen.</value>
+  </data>
+  <data name="ModelHint_NotReady" xml:space="preserve">
+    <value>Die lokale KI ist noch nicht bereit. Bitte auf „Jetzt einrichten“ klicken; der Assistent installiert und startet sie für dich.</value>
+  </data>
+  <data name="Update_Available" xml:space="preserve">
+    <value>Version {0} ist verfügbar.</value>
+  </data>
+  <data name="Update_Preparing" xml:space="preserve">
+    <value>Aktualisierung wird vorbereitet…</value>
+  </data>
+  <data name="Update_Failed" xml:space="preserve">
+    <value>Aktualisierung nicht möglich. Bitte später erneut versuchen.</value>
+  </data>
+  <data name="About_LogEmpty" xml:space="preserve">
+    <value>Noch keine Protokolleinträge vorhanden.</value>
+  </data>
+  <data name="About_UpdateSearching" xml:space="preserve">
+    <value>Suche nach Updates…</value>
+  </data>
+  <data name="About_UpdateCheckFailed" xml:space="preserve">
+    <value>Update-Prüfung nicht möglich (offline oder keine Update-Quelle hinterlegt).</value>
+  </data>
+  <data name="About_UpdateAvailable" xml:space="preserve">
+    <value>Version {0} ist verfügbar (installiert: {1}).</value>
+  </data>
+  <data name="About_UpToDate" xml:space="preserve">
+    <value>Die Anwendung ist aktuell (Version {0}).</value>
+  </data>
+  <data name="About_SetupRunning" xml:space="preserve">
+    <value>Die Einrichtung läuft jetzt in einem separaten Fenster. Bitte folge den Anweisungen dort. Klicke anschließend auf „Status prüfen“.</value>
+  </data>
+  <data name="About_SetupFailed" xml:space="preserve">
+    <value>Die Einrichtung konnte nicht gestartet werden. Bitte installiere Ollama manuell von https://ollama.com/download</value>
+  </data>
+  <data name="About_KiChecking" xml:space="preserve">
+    <value>Status wird geprüft…</value>
+  </data>
+  <data name="About_KiReady" xml:space="preserve">
+    <value>Die KI ist einsatzbereit. Du kannst Fotos sortieren.</value>
+  </data>
+  <data name="About_KiModelsMissing" xml:space="preserve">
+    <value>Es fehlen noch KI-Modelle: {0}. Klicke auf „Jetzt einrichten“.</value>
+  </data>
+  <data name="About_KiNotSetUp" xml:space="preserve">
+    <value>Die KI (Ollama) ist noch nicht eingerichtet. Klicke auf „Jetzt einrichten“.</value>
+  </data>
+  <data name="Photo_WithLocation" xml:space="preserve">
+    <value>mit Ort</value>
+  </data>
+  <data name="Photo_Size" xml:space="preserve">
+    <value>Größe: {0}</value>
+  </data>
+  <data name="Photo_Dimensions" xml:space="preserve">
+    <value>Abmessungen: {0} × {1} Pixel</value>
+  </data>
+  <data name="Photo_CapturedAt" xml:space="preserve">
+    <value>Aufgenommen: {0}</value>
+  </data>
+  <data name="Photo_Camera" xml:space="preserve">
+    <value>Kamera: {0}</value>
+  </data>
+  <data name="Photo_Location" xml:space="preserve">
+    <value>Ort: {0}, {1}</value>
+  </data>
+  <data name="Photo_Path" xml:space="preserve">
+    <value>Pfad: {0}</value>
+  </data>
+  <data name="SortPage_UndoBar.Title" xml:space="preserve">
+    <value>Letzte Sortierung</value>
+  </data>
+  <data name="SortPage_UndoButton.Content" xml:space="preserve">
+    <value>Rückgängig machen</value>
+  </data>
+  <data name="Sort_UndoSummary" xml:space="preserve">
+    <value>{0} Fotos nach „{1}“ sortiert ({2}). Du kannst das rückgängig machen.</value>
+  </data>
+  <data name="Sort_UndoTitle" xml:space="preserve">
+    <value>Sortierung rückgängig machen</value>
+  </data>
+  <data name="Sort_UndoMessage" xml:space="preserve">
+    <value>{0} Fotos werden an ihren ursprünglichen Ort zurückgeholt. Fortfahren?</value>
+  </data>
+  <data name="Sort_UndoPrimary" xml:space="preserve">
+    <value>Zurückholen</value>
+  </data>
+  <data name="Sort_Undoing" xml:space="preserve">
+    <value>Fotos werden zurückgeholt…</value>
+  </data>
+  <data name="Sort_UndoDone" xml:space="preserve">
+    <value>{0} Fotos zurückgeholt.</value>
+  </data>
+  <data name="Sort_UndoDoneWithSkipped" xml:space="preserve">
+    <value>{0} Fotos zurückgeholt. {1} blieben liegen: Sie wurden inzwischen verschoben oder umbenannt, oder am Ursprungsort liegt bereits wieder eine Datei.</value>
+  </data>
+  <data name="Sort_UndoCanceled" xml:space="preserve">
+    <value>Zurückholen abgebrochen. Die bereits zurückgeholten Fotos bleiben, wo sie sind.</value>
+  </data>
+  <data name="Sort_UndoNothing" xml:space="preserve">
+    <value>Es gibt nichts rückgängig zu machen.</value>
+  </data>
+  <data name="Sort_UndoFailed" xml:space="preserve">
+    <value>Das Zurückholen ist fehlgeschlagen.</value>
+  </data>
+</root>

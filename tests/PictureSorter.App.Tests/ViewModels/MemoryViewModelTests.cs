@@ -117,8 +117,10 @@ public sealed class MemoryViewModelTests
         Assert.False(sut.ClearFolderCommand.CanExecute(parameter: null));
     }
 
+    // Die Texte stammen aus der echten de-DE-Ressource: Der Test deckt damit zugleich
+    // ab, dass für jeden Status ein übersetzter Eintrag hinterlegt ist.
     [Fact]
-    public async Task StatusText_TranslatesEveryStatusToGerman()
+    public async Task StatusText_ResolvesEveryStatusFromResources()
     {
         FakeSortMemory memory = Seed(
             CreateRecord(UrlaubFolder, "sig-1", "Urlaub", SortMemoryStatus.Sorted),
@@ -143,11 +145,17 @@ public sealed class MemoryViewModelTests
         return memory;
     }
 
-    private static MemoryViewModel CreateSut(FakeSortMemory memory, bool confirms = true) => new(
-        memory,
-        new StubConfirmationService(confirms),
-        new StatusBarViewModel(),
-        NullLogger<MemoryViewModel>.Instance);
+    private static MemoryViewModel CreateSut(FakeSortMemory memory, bool confirms = true)
+    {
+        ReswLocalizer localizer = new();
+
+        return new MemoryViewModel(
+            memory,
+            new StubConfirmationService(confirms),
+            new StatusBarViewModel(localizer),
+            localizer,
+            NullLogger<MemoryViewModel>.Instance);
+    }
 
     private static SortMemoryRecord CreateRecord(
         string folder,

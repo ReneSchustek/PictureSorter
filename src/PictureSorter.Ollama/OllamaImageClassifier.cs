@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -85,14 +86,8 @@ public sealed class OllamaImageClassifier : IImageClassifier
             using JsonDocument document = JsonDocument.Parse(json);
             JsonElement root = document.RootElement;
 
-            bool matches = root.TryGetProperty("matches", out JsonElement matchesElement)
-                && matchesElement.ValueKind is JsonValueKind.True or JsonValueKind.False
-                && matchesElement.GetBoolean();
-
-            double confidence = root.TryGetProperty("confidence", out JsonElement confidenceElement)
-                && confidenceElement.ValueKind == JsonValueKind.Number
-                    ? Math.Clamp(confidenceElement.GetDouble(), 0.0, 1.0)
-                    : 0.0;
+            bool matches = ReadBoolean(root, "matches");
+            double confidence = Math.Clamp(ReadNumber(root, "confidence"), 0.0, 1.0);
 
             string? reason = root.TryGetProperty("reason", out JsonElement reasonElement)
                 && reasonElement.ValueKind == JsonValueKind.String
@@ -108,18 +103,73 @@ public sealed class OllamaImageClassifier : IImageClassifier
         }
     }
 
-    // Modelle umrahmen das JSON gelegentlich mit Fließtext; das erste vollständige
-    // Objekt zwischen den äußersten geschweiften Klammern wird extrahiert.
+    // Sprachmodelle halten sich nur ungefähr an das geforderte Format: Der
+    // Wahrheitswert kommt mal als true, mal als "true" oder "yes". Wird das nicht
+    // verstanden, gilt das Foto still als „passt nicht" – ein Fehlurteil, das dem
+    // Nutzer nie auffiele. Alles, was nicht als Zustimmung lesbar ist, bleibt eine
+    // Ablehnung (die sichere Seite: das Foto bleibt liegen).
+    private static bool ReadBoolean(JsonElement root, string name)
+    {
+        if (!root.TryGetProperty(name, out JsonElement element))
+        {
+            return false;
+        }
+
+        return element.ValueKind switch
+        {
+            JsonValueKind.True => true,
+            JsonValueKind.String => element.GetString()?.Trim() is string text
+                && (text.Equals("true", StringComparison.OrdinalIgnoreCase)
+                    || text.Equals("yes", StringComparison.OrdinalIgnoreCase)
+                    || text.Equals("ja", StringComparison.OrdinalIgnoreCase)),
+            _ => false,
+        };
+    }
+
+    // Ebenso die Konfidenz: „0.9" als Zeichenkette ist häufig. Manche Modelle
+    // antworten auch in Prozent (95) – das Clamping des Aufrufers fängt das auf.
+    private static double ReadNumber(JsonElement root, string name)
+    {
+        if (!root.TryGetProperty(name, out JsonElement element))
+        {
+            return 0.0;
+        }
+
+        return element.ValueKind switch
+        {
+            JsonValueKind.Number => element.GetDouble(),
+            JsonValueKind.String => double.TryParse(
+                element.GetString(),
+                NumberStyles.Float,
+                CultureInfo.InvariantCulture,
+                out double value) ? value : 0.0,
+            _ => 0.0,
+        };
+    }
+
+    // Modelle umrahmen das JSON gelegentlich mit Fließtext. Gesucht wird das erste
+    // Objekt mit ausgeglichenen Klammern – nicht bis zur letzten Klammer im Text:
+    // Folgt dem Urteil noch ein zweites Objekt oder ein Satz mit Klammer, klebte
+    // sonst beides zu einem unlesbaren Bereich zusammen.
     private static string? ExtractJsonObject(string text)
     {
         int start = text.IndexOf('{', StringComparison.Ordinal);
-        int end = text.LastIndexOf('}');
-        if (start < 0 || end <= start)
+        if (start < 0)
         {
             return null;
         }
 
-        return text.Substring(start, end - start + 1);
+        int depth = 0;
+        for (int index = start; index < text.Length; index++)
+        {
+            depth += text[index] switch { '{' => 1, '}' => -1, _ => 0 };
+            if (depth == 0)
+            {
+                return text[start..(index + 1)];
+            }
+        }
+
+        return null;
     }
 }
 

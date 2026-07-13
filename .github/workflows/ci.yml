@@ -45,6 +45,41 @@ jobs:
           dotnet test PictureSorter.slnx -c Release --no-build
           --blame-hang --blame-hang-timeout 5m --blame-hang-dump-type none
           --logger "console;verbosity=normal"
+          --collect:"XPlat Code Coverage" --settings coverlet.runsettings
+          --results-directory TestResults
+
+      # Sichert den erreichten Stand der Zeilenabdeckung ab: Neuer Code ohne Test
+      # senkt sie und bricht den Lauf. Das Skript vereinigt die Berichte der
+      # Testprojekte, statt sie zu addieren – dieselbe Zeile wird sonst mehrfach
+      # gezählt, sobald zwei Projekte sie erreichen.
+      - name: Coverage-Gate
+        shell: pwsh
+        run: ./tools/coverage-gate.ps1 -MinimumLineCoverage 84
+
+      # Erzwingt, dass die Sprachressourcen deckungsgleich und vollständig sind:
+      # jeder Schlüssel muss in de-DE UND en-US existieren und darf nicht leer sein.
+      # Eine vergessene Übersetzung bricht den Lauf hart ab (der gleiche Test läuft
+      # zusätzlich in den Unit-Tests, hier als schnelles, eigenständiges Gate).
+      - name: i18n-Vollständigkeit prüfen
+        shell: pwsh
+        run: |
+          $base = 'src/PictureSorter.App/Strings'
+          function Keys($lang) {
+            [xml]$doc = Get-Content "$base/$lang/Resources.resw" -Raw
+            $doc.root.data | ForEach-Object { $_.name }
+          }
+          function Empty($lang) {
+            [xml]$doc = Get-Content "$base/$lang/Resources.resw" -Raw
+            $doc.root.data | Where-Object { [string]::IsNullOrWhiteSpace($_.value) } | ForEach-Object { $_.name }
+          }
+          $de = Keys 'de-DE'; $en = Keys 'en-US'
+          $onlyDe = $de | Where-Object { $_ -notin $en }
+          $onlyEn = $en | Where-Object { $_ -notin $de }
+          $leer = @(Empty 'de-DE') + @(Empty 'en-US')
+          if ($onlyDe) { Write-Error "Schluessel ohne englische Uebersetzung: $($onlyDe -join ', ')"; exit 1 }
+          if ($onlyEn) { Write-Error "Schluessel ohne deutsche Uebersetzung: $($onlyEn -join ', ')"; exit 1 }
+          if ($leer)   { Write-Error "Leere Ressourcenwerte: $($leer -join ', ')"; exit 1 }
+          Write-Output "i18n vollstaendig: $($de.Count) Schluessel, de/en deckungsgleich."
 
       # `dotnet list package --vulnerable` meldet Funde nur im Text und endet immer
       # mit Exit-Code 0. Ohne die Auswertung unten wäre dieser Schritt ein Gate, das

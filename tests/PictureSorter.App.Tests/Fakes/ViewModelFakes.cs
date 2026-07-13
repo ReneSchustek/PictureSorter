@@ -1,3 +1,4 @@
+using PictureSorter.App.Services;
 using PictureSorter.Application.Services;
 using PictureSorter.Core.Entities;
 using PictureSorter.Core.Enums;
@@ -30,6 +31,45 @@ internal sealed class FakeFileDeleter : IFileDeleter
         Deleted.Add(filePath);
         return Task.CompletedTask;
     }
+}
+
+/// <summary>Merkt sich, wohin navigiert wurde, ohne eine Oberfläche zu brauchen.</summary>
+internal sealed class FakeNavigationService : INavigationService
+{
+    public List<AppSection> Navigations { get; } = [];
+
+    public void NavigateTo(AppSection section) => Navigations.Add(section);
+}
+
+/// <summary>Meldet einen festen Zustand der lokalen KI.</summary>
+internal sealed class FakeModelAvailabilityChecker(ModelAvailability availability) : IModelAvailabilityChecker
+{
+    /// <summary>Alles vorhanden.</summary>
+    public static FakeModelAvailabilityChecker Ready() => new(new ModelAvailability
+    {
+        IsReachable = true,
+        RequiredModels = ["llava", "nomic-embed-text"],
+        MissingModels = [],
+    });
+
+    /// <summary>Ollama läuft, aber ein Modell fehlt.</summary>
+    public static FakeModelAvailabilityChecker Missing(string model) => new(new ModelAvailability
+    {
+        IsReachable = true,
+        RequiredModels = ["llava", "nomic-embed-text"],
+        MissingModels = [model],
+    });
+
+    /// <summary>Ollama ist gar nicht erreichbar.</summary>
+    public static FakeModelAvailabilityChecker Unreachable() => new(new ModelAvailability
+    {
+        IsReachable = false,
+        RequiredModels = ["llava", "nomic-embed-text"],
+        MissingModels = ["llava", "nomic-embed-text"],
+    });
+
+    public Task<ModelAvailability> CheckAsync(CancellationToken cancellationToken) =>
+        Task.FromResult(availability);
 }
 
 /// <summary>Liefert einen festen Ordnerpfad (oder <see langword="null"/>).</summary>
@@ -78,6 +118,59 @@ internal sealed class FakePhotoSorter(IReadOnlyList<SortProposal> proposals) : I
     {
         Ignored.AddRange(toIgnore);
         return Task.CompletedTask;
+    }
+}
+
+/// <summary>
+/// Hält einen zurücknehmbaren Lauf bereit und protokolliert, ob er zurückgenommen
+/// wurde. Ohne echtes Dateisystem.
+/// </summary>
+internal sealed class FakeSortUndoService : ISortUndoService
+{
+    private SortRun? _run;
+
+    /// <summary>Wie oft das Rückgängigmachen ausgeführt wurde.</summary>
+    public int UndoCount { get; private set; }
+
+    /// <summary>Das Ergebnis, das das Rückgängigmachen liefern soll.</summary>
+    public UndoResult Result { get; set; } = new() { Restored = 0, Skipped = 0 };
+
+    /// <summary>Legt einen zurücknehmbaren Lauf an.</summary>
+    /// <param name="fileCount">Zahl der verschobenen Fotos.</param>
+    public void SetUndoableRun(int fileCount)
+    {
+        _run = new SortRun
+        {
+            Id = Guid.NewGuid(),
+            StartedAt = new DateTimeOffset(2026, 7, 1, 8, 0, 0, TimeSpan.Zero),
+            SourceFolder = @"C:\fotos",
+            CategoryName = "Familie",
+            Items =
+            [
+                .. Enumerable.Range(0, fileCount).Select(index => new SortRunItem
+                {
+                    SourcePath = Path.Combine(@"C:\fotos", $"foto{index}.jpg"),
+                    TargetPath = Path.Combine(@"C:\fotos\Familie", $"foto{index}.jpg"),
+                    FileSignature = $"sig-{index}",
+                }),
+            ],
+        };
+
+        Result = new UndoResult { Restored = fileCount, Skipped = 0 };
+    }
+
+    public Task<SortRun?> GetUndoableRunAsync(CancellationToken cancellationToken) => Task.FromResult(_run);
+
+    public Task<UndoResult?> UndoLastRunAsync(CancellationToken cancellationToken)
+    {
+        if (_run is null)
+        {
+            return Task.FromResult<UndoResult?>(null);
+        }
+
+        UndoCount++;
+        _run = null;
+        return Task.FromResult<UndoResult?>(Result);
     }
 }
 

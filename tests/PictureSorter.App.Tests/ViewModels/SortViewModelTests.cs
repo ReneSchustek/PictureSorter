@@ -132,7 +132,83 @@ public sealed class SortViewModelTests
         Assert.Equal(SortState.Preview, sut.State);
     }
 
-    private static SortViewModel CreateSut(FakePhotoSorter sorter)
+    [Fact]
+    public async Task RefreshUndoState_WithoutAnyRun_OffersNoUndo()
+    {
+        using SortViewModel sut = CreateSut(new FakePhotoSorter(CreateProposals(1)), new FakeSortUndoService());
+
+        await sut.RefreshUndoStateCommand.ExecuteAsync(parameter: null);
+
+        Assert.False(sut.HasUndoableRun);
+        Assert.False(sut.UndoCommand.CanExecute(parameter: null));
+    }
+
+    [Fact]
+    public async Task RefreshUndoState_WithARecordedRun_OffersUndoAndNamesTheCategory()
+    {
+        // Der Lauf steht dauerhaft im Protokoll: Auch nach einem Neustart – wenn also
+        // keine Vorschläge mehr in der Ansicht liegen – muss der Hinweis erscheinen.
+        FakeSortUndoService undo = new();
+        undo.SetUndoableRun(fileCount: 3);
+        using SortViewModel sut = CreateSut(new FakePhotoSorter(CreateProposals(1)), undo);
+
+        await sut.RefreshUndoStateCommand.ExecuteAsync(parameter: null);
+
+        Assert.True(sut.HasUndoableRun);
+        Assert.True(sut.UndoCommand.CanExecute(parameter: null));
+        Assert.Contains("Familie", sut.UndoSummary, StringComparison.Ordinal);
+        Assert.Contains("3", sut.UndoSummary, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Apply_MakesTheRunUndoable()
+    {
+        FakeSortUndoService undo = new();
+        using SortViewModel sut = CreateSut(new FakePhotoSorter(CreateProposals(2)), undo);
+        await AnalyzeAsync(sut);
+
+        // Der Sortierdienst ist hier eine Attrappe; der Lauf entstünde in Wirklichkeit
+        // beim Verschieben. Entscheidend ist, dass die Ansicht danach nachsieht.
+        undo.SetUndoableRun(fileCount: 2);
+        await sut.ApplyCommand.ExecuteAsync(parameter: null);
+
+        Assert.True(sut.HasUndoableRun);
+    }
+
+    [Fact]
+    public async Task Undo_WhenConfirmed_RestoresAndClearsTheOffer()
+    {
+        FakeSortUndoService undo = new();
+        undo.SetUndoableRun(fileCount: 2);
+        using SortViewModel sut = CreateSut(new FakePhotoSorter(CreateProposals(1)), undo);
+        await sut.RefreshUndoStateCommand.ExecuteAsync(parameter: null);
+
+        await sut.UndoCommand.ExecuteAsync(parameter: null);
+
+        Assert.Equal(1, undo.UndoCount);
+        Assert.False(sut.HasUndoableRun);
+        Assert.Equal(SortState.Idle, sut.State);
+    }
+
+    [Fact]
+    public async Task Undo_WhenDeclined_ChangesNothing()
+    {
+        // Ohne Rückfrage würde ein Fehlklick alle Fotos zurückschieben.
+        FakeSortUndoService undo = new();
+        undo.SetUndoableRun(fileCount: 2);
+        using SortViewModel sut = CreateSut(new FakePhotoSorter(CreateProposals(1)), undo, confirms: false);
+        await sut.RefreshUndoStateCommand.ExecuteAsync(parameter: null);
+
+        await sut.UndoCommand.ExecuteAsync(parameter: null);
+
+        Assert.Equal(0, undo.UndoCount);
+        Assert.True(sut.HasUndoableRun);
+    }
+
+    private static SortViewModel CreateSut(
+        FakePhotoSorter sorter,
+        FakeSortUndoService? undo = null,
+        bool confirms = true)
     {
         Photo examplePhoto = new()
         {
@@ -140,15 +216,19 @@ public sealed class SortViewModelTests
             FileName = "beispiel.jpg",
         };
 
+        ReswLocalizer localizer = new();
+
         return new SortViewModel(
             sorter,
+            undo ?? new FakeSortUndoService(),
             new FakePhotoSource([examplePhoto]),
             new FakeCategoryTrainer(CreateCategory()),
             new FakeCategoryRepository(),
             new FakeFolderPicker(SourceFolder),
-            new StubConfirmationService(result: true),
-            new StatusBarViewModel(),
+            new StubConfirmationService(confirms),
+            new StatusBarViewModel(localizer),
             Options.Create(new SortingOptions()),
+            localizer,
             NullLogger<SortViewModel>.Instance);
     }
 

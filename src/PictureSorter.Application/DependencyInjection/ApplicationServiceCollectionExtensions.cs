@@ -21,13 +21,15 @@ public static class ApplicationServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        // Kapselt den fehlertoleranten Zugriff auf das Sortier-Gedächtnis.
+        // Kapseln den fehlertoleranten Zugriff auf Gedächtnis und Lauf-Protokoll.
         _ = services.AddTransient<SortMemoryGateway>();
+        _ = services.AddTransient<SortJournalGateway>();
 
         // Transient, da die Dienste an den transienten KI-Providern hängen.
         _ = services.AddTransient<IPhotoSorter, PhotoSortingService>();
         _ = services.AddTransient<ICategoryTrainer, CategoryLearningService>();
         _ = services.AddTransient<IDuplicateScanner, DuplicateScanService>();
+        _ = services.AddTransient<ISortUndoService, SortUndoService>();
 
         return services;
     }

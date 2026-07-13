@@ -97,47 +97,6 @@ public sealed record Photo
     }
 
     /// <summary>
-    /// Gibt eine kurze, für die Oberfläche geeignete Zusammenfassung der
-    /// Metadaten zurück (Datum, Ort, Auflösung).
-    /// </summary>
-    /// <returns>Ein einzeiliger Anzeigetext.</returns>
-    public string ToDisplaySummary()
-    {
-        StringBuilder builder = new();
-        if (CapturedAt is DateTimeOffset captured)
-        {
-            _ = builder.Append(captured.ToString("dd.MM.yyyy HH:mm", CultureInfo.GetCultureInfo("de-DE")));
-        }
-
-        if (Width is int width && Height is int height)
-        {
-            _ = AppendSeparated(builder, $"{width.ToString(CultureInfo.InvariantCulture)}×{height.ToString(CultureInfo.InvariantCulture)}");
-        }
-
-        if (HasLocation)
-        {
-            _ = AppendSeparated(builder, "mit Ort");
-        }
-
-        return builder.Length == 0 ? FileName : builder.ToString();
-    }
-
-    private static StringBuilder AppendSeparated(StringBuilder builder, string value)
-    {
-        if (builder.Length > 0)
-        {
-            _ = builder.Append(" · ");
-        }
-
-        return builder.Append(value);
-    }
-
-    /// <summary>
-    /// Menschlich lesbare Dateigröße (z. B. „2,4 MB").
-    /// </summary>
-    public string FormattedSize => FormatSize(SizeBytes);
-
-    /// <summary>
     /// Berechnet eine stabile Signatur des Fotos aus Pfad, Größe und Aufnahmezeit.
     /// Sie identifiziert das Foto im Sortier-Gedächtnis: Bleibt die Datei
     /// unverändert, bleibt die Signatur gleich und eine getroffene Entscheidung
@@ -153,62 +112,5 @@ public sealed record Photo
             $"{FullPath}|{SizeBytes}|{CapturedAt?.UtcTicks ?? 0}");
 
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(raw)));
-    }
-
-    /// <summary>
-    /// Baut eine mehrzeilige, für ein Tooltip bzw. Mouse-Over geeignete Übersicht
-    /// aller bekannten Bildinformationen (Name, Größe, Abmessungen, Aufnahmedatum,
-    /// Kamera, Ort, Pfad). Unbekannte Felder werden weggelassen. Wird überall dort
-    /// angezeigt, wo das Foto als Vorschau erscheint.
-    /// </summary>
-    /// <returns>Mehrzeiliger Anzeigetext.</returns>
-    public string ToDetailedInfo()
-    {
-        CultureInfo culture = CultureInfo.GetCultureInfo("de-DE");
-        List<string> lines =
-        [
-            FileName,
-            $"Größe: {FormattedSize}",
-        ];
-
-        if (Width is int width && Height is int height)
-        {
-            lines.Add($"Abmessungen: {width.ToString(CultureInfo.InvariantCulture)} × {height.ToString(CultureInfo.InvariantCulture)} Pixel");
-        }
-
-        if (CapturedAt is DateTimeOffset captured)
-        {
-            lines.Add($"Aufgenommen: {captured.ToString("dd.MM.yyyy HH:mm", culture)}");
-        }
-
-        if (!string.IsNullOrWhiteSpace(CameraModel))
-        {
-            lines.Add($"Kamera: {CameraModel.Trim()}");
-        }
-
-        if (HasLocation)
-        {
-            string latitude = Latitude!.Value.ToString("0.####", CultureInfo.InvariantCulture);
-            string longitude = Longitude!.Value.ToString("0.####", CultureInfo.InvariantCulture);
-            lines.Add($"Ort: {latitude}, {longitude}");
-        }
-
-        lines.Add($"Pfad: {FullPath}");
-
-        return string.Join(Environment.NewLine, lines);
-    }
-
-    private static string FormatSize(long bytes)
-    {
-        string[] units = ["B", "KB", "MB", "GB", "TB"];
-        double size = bytes;
-        int unit = 0;
-        while (size >= 1024.0 && unit < units.Length - 1)
-        {
-            size /= 1024.0;
-            unit++;
-        }
-
-        return string.Create(CultureInfo.GetCultureInfo("de-DE"), $"{size:0.#} {units[unit]}");
     }
 }

@@ -12,6 +12,7 @@
     <ScrollViewer Padding="24">
         <StackPanel MaxWidth="680" Spacing="16">
             <TextBlock
+                x:Uid="AboutPage_SettingsTitle"
                 FontSize="20"
                 FontWeight="SemiBold"
                 Text="Einstellungen" />
@@ -19,13 +20,15 @@
             <!-- Darstellung -->
             <Border Style="{StaticResource CardBorderStyle}">
                 <StackPanel Spacing="8">
-                    <TextBlock FontWeight="SemiBold" Text="Darstellung" />
+                    <TextBlock x:Uid="AboutPage_AppearanceHeader" FontWeight="SemiBold" Text="Darstellung" />
                     <TextBlock
+                        x:Uid="AboutPage_AppearanceDescription"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         Text="Wähle zwischen hellem und dunklem Design."
                         TextWrapping="Wrap" />
                     <ToggleSwitch
                         x:Name="DarkToggle"
+                        x:Uid="AboutPage_DarkToggle"
                         Header="Dunkles Design"
                         OffContent="Aus"
                         OnContent="An"
@@ -36,33 +39,41 @@
             <!-- Updates -->
             <Border Style="{StaticResource CardBorderStyle}">
                 <StackPanel Spacing="10">
-                    <TextBlock FontWeight="SemiBold" Text="Updates" />
+                    <TextBlock x:Uid="AboutPage_UpdatesHeader" FontWeight="SemiBold" Text="Updates" />
                     <TextBlock
+                        x:Uid="AboutPage_UpdatesDescription"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         Text="PictureSorter kann beim Start nach einer neueren Version suchen und sie auf Wunsch automatisch installieren."
                         TextWrapping="Wrap" />
                     <ToggleSwitch
                         x:Name="UpdateCheckToggle"
+                        x:Uid="AboutPage_UpdateCheckToggle"
                         Header="Beim Start nach Updates suchen"
                         OffContent="Aus"
                         OnContent="An"
                         Toggled="OnUpdateCheckToggled" />
                     <ToggleSwitch
                         x:Name="AutoUpdateToggle"
+                        x:Uid="AboutPage_AutoUpdateToggle"
                         Header="Updates automatisch installieren"
                         OffContent="Aus"
                         OnContent="An"
                         Toggled="OnAutoUpdateToggled" />
                     <InfoBar
                         x:Name="UpdateStatusBar"
+                        AutomationProperties.LiveSetting="Polite"
                         IsClosable="False"
                         IsOpen="True"
                         Message="Noch nicht geprüft."
                         Severity="Informational" />
                     <StackPanel Orientation="Horizontal" Spacing="8">
-                        <Button Click="OnCheckUpdatesClick" Content="Nach Updates suchen" />
+                        <Button
+                            x:Uid="AboutPage_CheckUpdatesButton"
+                            Click="OnCheckUpdatesClick"
+                            Content="Nach Updates suchen" />
                         <Button
                             x:Name="InstallUpdateButton"
+                            x:Uid="AboutPage_InstallUpdateButton"
                             Click="OnInstallUpdateClick"
                             Content="Jetzt aktualisieren"
                             Style="{ThemeResource AccentButtonStyle}"
@@ -74,8 +85,9 @@
             <!-- Lokale KI (Ollama) -->
             <Border Style="{StaticResource CardBorderStyle}">
                 <StackPanel Spacing="10">
-                    <TextBlock FontWeight="SemiBold" Text="Lokale KI (Ollama)" />
+                    <TextBlock x:Uid="AboutPage_LocalAiHeader" FontWeight="SemiBold" Text="Lokale KI (Ollama)" />
                     <TextBlock
+                        x:Uid="AboutPage_LocalAiDescription"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         TextWrapping="Wrap">
                         PictureSorter erkennt Bildinhalte mit einer KI, die vollständig auf
@@ -85,16 +97,21 @@
                     </TextBlock>
                     <InfoBar
                         x:Name="KiStatusBar"
+                        AutomationProperties.LiveSetting="Polite"
                         IsClosable="False"
                         IsOpen="True"
                         Message="Status wird geprüft…"
                         Severity="Informational" />
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <Button
+                            x:Uid="AboutPage_SetupButton"
                             Click="OnSetupClick"
                             Content="Jetzt einrichten"
                             Style="{ThemeResource AccentButtonStyle}" />
-                        <Button Click="OnCheckClick" Content="Status prüfen" />
+                        <Button
+                            x:Uid="AboutPage_CheckStatusButton"
+                            Click="OnCheckClick"
+                            Content="Status prüfen" />
                     </StackPanel>
                 </StackPanel>
             </Border>
@@ -102,8 +119,9 @@
             <!-- Protokoll (Fehlerdiagnose) -->
             <Border Style="{StaticResource CardBorderStyle}">
                 <StackPanel Spacing="10">
-                    <TextBlock FontWeight="SemiBold" Text="Protokoll (Fehlerdiagnose)" />
+                    <TextBlock x:Uid="AboutPage_LogHeader" FontWeight="SemiBold" Text="Protokoll (Fehlerdiagnose)" />
                     <TextBlock
+                        x:Uid="AboutPage_LogDescription"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         TextWrapping="Wrap">
                         Hier siehst du die jüngsten Programmmeldungen. Wenn etwas nicht
@@ -121,8 +139,14 @@
                         ScrollViewer.VerticalScrollBarVisibility="Auto"
                         TextWrapping="NoWrap" />
                     <StackPanel Orientation="Horizontal" Spacing="8">
-                        <Button Click="OnRefreshLogClick" Content="Aktualisieren" />
-                        <Button Click="OnOpenLogFolderClick" Content="Log-Ordner öffnen" />
+                        <Button
+                            x:Uid="AboutPage_RefreshLogButton"
+                            Click="OnRefreshLogClick"
+                            Content="Aktualisieren" />
+                        <Button
+                            x:Uid="AboutPage_OpenLogFolderButton"
+                            Click="OnOpenLogFolderClick"
+                            Content="Log-Ordner öffnen" />
                     </StackPanel>
                 </StackPanel>
             </Border>
@@ -130,8 +154,8 @@
             <!-- Über -->
             <Border Style="{StaticResource CardBorderStyle}">
                 <StackPanel Spacing="8">
-                    <TextBlock FontWeight="SemiBold" Text="Über PictureSorter" />
-                    <TextBlock TextWrapping="Wrap">
+                    <TextBlock x:Uid="AboutPage_AboutHeader" FontWeight="SemiBold" Text="Über PictureSorter" />
+                    <TextBlock x:Uid="AboutPage_AboutDescription" TextWrapping="Wrap">
                         PictureSorter sortiert Fotos mithilfe einer lokal laufenden KI (Ollama)
                         lernfähig in Unterordner. Alle Bildanalysen geschehen offline auf diesem Rechner.
                     </TextBlock>

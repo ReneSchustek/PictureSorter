@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using PictureSorter.App.Services;
 using PictureSorter.Core.Interfaces;
 using PictureSorter.Core.ValueObjects;
 
@@ -12,6 +13,8 @@ namespace PictureSorter.App.ViewModels;
 internal sealed partial class DashboardViewModel : ObservableObject
 {
     private readonly IModelAvailabilityChecker _modelChecker;
+    private readonly INavigationService _navigation;
+    private readonly ILocalizer _localizer;
 
     /// <summary>Kurztext zum Zustand der lokalen KI.</summary>
     [ObservableProperty]
@@ -29,12 +32,34 @@ internal sealed partial class DashboardViewModel : ObservableObject
     /// Initialisiert das ViewModel.
     /// </summary>
     /// <param name="modelChecker">Prüft die Verfügbarkeit der KI-Modelle.</param>
-    public DashboardViewModel(IModelAvailabilityChecker modelChecker)
+    /// <param name="navigation">Der Wechsel in die Bereiche der Anwendung.</param>
+    /// <param name="localizer">Die Textquelle.</param>
+    public DashboardViewModel(
+        IModelAvailabilityChecker modelChecker,
+        INavigationService navigation,
+        ILocalizer localizer)
     {
         ArgumentNullException.ThrowIfNull(modelChecker);
+        ArgumentNullException.ThrowIfNull(navigation);
+        ArgumentNullException.ThrowIfNull(localizer);
+
         _modelChecker = modelChecker;
-        AiStatusText = "Zustand der KI wird geprüft…";
+        _navigation = navigation;
+        _localizer = localizer;
+        AiStatusText = localizer.Get("Dashboard_AiChecking");
     }
+
+    /// <summary>Wechselt zur Sortier-Ansicht.</summary>
+    [RelayCommand]
+    private void OpenSort() => _navigation.NavigateTo(AppSection.Sort);
+
+    /// <summary>Wechselt zur Duplikat-Suche.</summary>
+    [RelayCommand]
+    private void OpenDuplicates() => _navigation.NavigateTo(AppSection.Duplicates);
+
+    /// <summary>Wechselt zur Gedächtnis-Verwaltung.</summary>
+    [RelayCommand]
+    private void OpenMemory() => _navigation.NavigateTo(AppSection.Memory);
 
     /// <summary>
     /// Prüft, ob die lokale KI erreichbar und vollständig eingerichtet ist.
@@ -58,16 +83,15 @@ internal sealed partial class DashboardViewModel : ObservableObject
         }
     }
 
-    private static string BuildStatusText(ModelAvailability availability)
+    private string BuildStatusText(ModelAvailability availability)
     {
         if (availability.IsReady)
         {
-            return "Die KI ist einsatzbereit. Du kannst loslegen.";
+            return _localizer.Get("Dashboard_AiReady");
         }
 
         return availability.IsReachable
-            ? $"Es fehlen noch KI-Modelle: {string.Join(", ", availability.MissingModels)}. "
-                + "Richte sie unter „Einstellungen“ ein."
-            : "Die KI (Ollama) ist noch nicht eingerichtet. Öffne „Einstellungen“ und klicke auf „Jetzt einrichten“.";
+            ? _localizer.Format("Dashboard_AiModelsMissing", string.Join(", ", availability.MissingModels))
+            : _localizer.Get("Dashboard_AiNotSetUp");
     }
 }

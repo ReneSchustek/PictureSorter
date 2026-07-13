@@ -35,6 +35,7 @@
              Updater und startet ihn. Auto-Update steuert man in den Einstellungen. -->
         <InfoBar
             x:Name="UpdateBar"
+            x:Uid="MainWindow_UpdateBar"
             Grid.Row="1"
             IsClosable="True"
             IsOpen="{Binding IsUpdateAvailable, Mode=OneWay}"
@@ -43,6 +44,7 @@
             Title="Aktualisierung verfügbar">
             <InfoBar.ActionButton>
                 <Button
+                    x:Uid="MainWindow_UpdateNowButton"
                     VerticalAlignment="Center"
                     Click="OnUpdateNowClick"
                     Content="Aktualisieren" />
@@ -57,10 +59,10 @@
             IsPaneToggleButtonVisible="False"
             IsSettingsVisible="False"
             OpenPaneLength="220"
-            PaneDisplayMode="Left"
-            SelectionChanged="NavView_SelectionChanged">
+            PaneDisplayMode="Left">
             <NavigationView.MenuItems>
                 <NavigationViewItem
+                    x:Uid="MainWindow_DashboardNavItem"
                     Content="Start"
                     IsSelected="True"
                     Tag="dashboard">
@@ -68,22 +70,22 @@
                         <FontIcon Glyph="&#xE80F;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem Content="Sortieren" Tag="sort">
+                <NavigationViewItem x:Uid="MainWindow_SortNavItem" Content="Sortieren" Tag="sort">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE8B7;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem Content="Duplikate" Tag="duplicates">
+                <NavigationViewItem x:Uid="MainWindow_DuplicatesNavItem" Content="Duplikate" Tag="duplicates">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE8C8;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem Content="Gedächtnis" Tag="memory">
+                <NavigationViewItem x:Uid="MainWindow_MemoryNavItem" Content="Gedächtnis" Tag="memory">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE81C;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem Content="Einstellungen" Tag="about">
+                <NavigationViewItem x:Uid="MainWindow_SettingsNavItem" Content="Einstellungen" Tag="about">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE713;" />
                     </NavigationViewItem.Icon>
@@ -105,6 +107,7 @@
             Severity="{Binding Severity, Converter={StaticResource StatusSeverityConverter}}">
             <InfoBar.ActionButton>
                 <Button
+                    x:Uid="MainWindow_StopButton"
                     VerticalAlignment="Center"
                     Command="{Binding StopCommand}"
                     Content="Stopp"

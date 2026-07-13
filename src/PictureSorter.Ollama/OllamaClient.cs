@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -85,7 +86,12 @@ public sealed class OllamaClient : IOllamaClient
             request,
             cancellationToken).ConfigureAwait(false);
 
-        return response.Response ?? string.Empty;
+        // Ollama meldet Fehler auch mit Statuscode 200 und einem „error"-Feld statt
+        // eines „response"-Feldes. Ein leerer Text wäre für den Vision-Klassifikator
+        // nicht auswertbar und würde dort still zu „passt nicht" – ein Fehlurteil,
+        // das nirgends als Fehler auffiele.
+        return response.Response
+            ?? throw new AiUnavailableException("Ollama lieferte keine Antwort auf die Bildprüfung.");
     }
 
     /// <inheritdoc />
@@ -123,8 +129,7 @@ public sealed class OllamaClient : IOllamaClient
             {
                 return await send().ConfigureAwait(false);
             }
-            catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException
-                && !cancellationToken.IsCancellationRequested)
+            catch (Exception ex) when (IsTransient(ex) && !cancellationToken.IsCancellationRequested)
             {
                 if (attempt >= MaxAttempts)
                 {
@@ -136,8 +141,27 @@ public sealed class OllamaClient : IOllamaClient
                 TimeSpan delay = BaseRetryDelay * Math.Pow(2, attempt - 1);
                 await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
             }
+            catch (HttpRequestException ex)
+            {
+                // Permanenter Fehler (z. B. 404 „Modell nicht gefunden"): Wiederholen
+                // ändert nichts und lässt den Nutzer nur den Backoff mit abwarten.
+                OllamaLog.RequestRejected(_logger, path, (int?)ex.StatusCode ?? 0, ex);
+                throw new AiUnavailableException("Ollama hat die Anfrage abgelehnt.", ex);
+            }
         }
     }
+
+    // Vorübergehend sind Verbindungs- und Zeitfehler sowie Serverfehler (5xx) und
+    // die Drosselung (429). Alle übrigen 4xx sind Fehler der Anfrage selbst und
+    // damit dauerhaft.
+    private static bool IsTransient(Exception exception) => exception switch
+    {
+        TaskCanceledException => true,
+        HttpRequestException { StatusCode: null } => true,
+        HttpRequestException { StatusCode: HttpStatusCode.TooManyRequests or HttpStatusCode.RequestTimeout } => true,
+        HttpRequestException { StatusCode: HttpStatusCode status } => (int)status >= 500,
+        _ => false,
+    };
 
     private async Task<TResponse> GetAsync<TResponse>(string path, CancellationToken cancellationToken)
     {
@@ -166,11 +190,21 @@ public sealed class OllamaClient : IOllamaClient
             .ConfigureAwait(false);
         _ = message.EnsureSuccessStatusCode();
 
-        TResponse? result = await message.Content
-            .ReadFromJsonAsync<TResponse>(SerializerOptions, cancellationToken)
-            .ConfigureAwait(false);
+        try
+        {
+            TResponse? result = await message.Content
+                .ReadFromJsonAsync<TResponse>(SerializerOptions, cancellationToken)
+                .ConfigureAwait(false);
 
-        return result ?? throw new AiUnavailableException("Ollama lieferte keine verwertbare Antwort.");
+            return result ?? throw new AiUnavailableException("Ollama lieferte keine verwertbare Antwort.");
+        }
+        catch (Exception ex) when (ex is JsonException or NotSupportedException)
+        {
+            // Wie im GET-Pfad: Antwortet ein fremder Dienst auf dem Port, darf keine
+            // rohe JsonException nach außen dringen – der Vertrag der Schnittstelle
+            // sagt AiUnavailableException zu.
+            throw new AiUnavailableException("Ollama lieferte eine unerwartete Antwort.", ex);
+        }
     }
 
     private sealed record EmbeddingRequest(
@@ -208,4 +242,7 @@ internal static partial class OllamaLog
 
     [LoggerMessage(EventId = 2001, Level = LogLevel.Debug, Message = "Ollama-Anfrage an {Path} fehlgeschlagen (Versuch {Attempt}); neuer Versuch folgt.")]
     public static partial void RetryScheduled(ILogger logger, string path, int attempt, Exception exception);
+
+    [LoggerMessage(EventId = 2002, Level = LogLevel.Warning, Message = "Ollama hat die Anfrage an {Path} abgelehnt (Status {StatusCode}); keine Wiederholung.")]
+    public static partial void RequestRejected(ILogger logger, string path, int statusCode, Exception exception);
 }

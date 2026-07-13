@@ -58,6 +58,15 @@ internal sealed class FakeFileOrganizer : IFileOrganizer
 {
     public List<SortProposal> Applied { get; } = [];
 
+    /// <summary>Zurückgeholte Dateien als Paare (Ziel → Ursprung).</summary>
+    public List<(string CurrentPath, string OriginalPath)> Restored { get; } = [];
+
+    /// <summary>Ordner, deren Entfernung geprüft wurde.</summary>
+    public List<string> CheckedFolders { get; } = [];
+
+    /// <summary>Zielpfade, die beim Zurückholen als „nicht auffindbar" gelten sollen.</summary>
+    public HashSet<string> Unrestorable { get; } = new(StringComparer.OrdinalIgnoreCase);
+
     public bool LastDryRun { get; private set; }
 
     public Task<string> ApplyAsync(SortProposal proposal, bool dryRun, CancellationToken cancellationToken)
@@ -65,6 +74,23 @@ internal sealed class FakeFileOrganizer : IFileOrganizer
         Applied.Add(proposal);
         LastDryRun = dryRun;
         return Task.FromResult(Path.Combine(proposal.TargetFolderPath, proposal.Photo.FileName));
+    }
+
+    public Task<bool> RestoreAsync(string currentPath, string originalPath, CancellationToken cancellationToken)
+    {
+        if (Unrestorable.Contains(currentPath))
+        {
+            return Task.FromResult(false);
+        }
+
+        Restored.Add((currentPath, originalPath));
+        return Task.FromResult(true);
+    }
+
+    public Task RemoveFolderIfEmptyAsync(string folderPath, CancellationToken cancellationToken)
+    {
+        CheckedFolders.Add(folderPath);
+        return Task.CompletedTask;
     }
 }
 
@@ -85,6 +111,42 @@ internal sealed class FailingFileOrganizer(string failOn) : IFileOrganizer
 
         Applied.Add(proposal);
         return Task.FromResult(Path.Combine(proposal.TargetFolderPath, proposal.Photo.FileName));
+    }
+
+    public Task<bool> RestoreAsync(string currentPath, string originalPath, CancellationToken cancellationToken)
+    {
+        if (string.Equals(Path.GetFileName(currentPath), failOn, StringComparison.Ordinal))
+        {
+            throw new IOException($"Die Datei {failOn} wird von einem anderen Prozess verwendet.");
+        }
+
+        return Task.FromResult(true);
+    }
+
+    public Task RemoveFolderIfEmptyAsync(string folderPath, CancellationToken cancellationToken) =>
+        Task.CompletedTask;
+}
+
+/// <summary>Hält das Protokoll der Sortierläufe im Speicher.</summary>
+internal sealed class FakeSortJournal : ISortJournal
+{
+    public List<SortRun> Runs { get; } = [];
+
+    public HashSet<Guid> Undone { get; } = [];
+
+    public Task RecordAsync(SortRun run, CancellationToken cancellationToken)
+    {
+        Runs.Add(run);
+        return Task.CompletedTask;
+    }
+
+    public Task<SortRun?> GetLastUndoableAsync(CancellationToken cancellationToken) =>
+        Task.FromResult(Runs.FindLast(run => !Undone.Contains(run.Id)));
+
+    public Task MarkUndoneAsync(Guid runId, CancellationToken cancellationToken)
+    {
+        _ = Undone.Add(runId);
+        return Task.CompletedTask;
     }
 }
 

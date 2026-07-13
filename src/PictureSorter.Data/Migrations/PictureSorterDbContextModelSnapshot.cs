@@ -63,6 +63,91 @@ namespace PictureSorter.Data.Migrations
 
                     b.ToTable("SortMemory", (string)null);
                 });
+
+            modelBuilder.Entity("PictureSorter.Data.Entities.SortRunEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("CategoryName")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsUndone")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("RunId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SourceFolder")
+                        .IsRequired()
+                        .HasMaxLength(1024)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("StartedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RunId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_SortRun_RunId");
+
+                    b.HasIndex("IsUndone", "StartedAtUtc")
+                        .HasDatabaseName("IX_SortRun_IsUndone_StartedAtUtc");
+
+                    b.ToTable("SortRun", (string)null);
+                });
+
+            modelBuilder.Entity("PictureSorter.Data.Entities.SortRunItemEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("FileSignature")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SortRunId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("SourcePath")
+                        .IsRequired()
+                        .HasMaxLength(1024)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TargetPath")
+                        .IsRequired()
+                        .HasMaxLength(1024)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SortRunId")
+                        .HasDatabaseName("IX_SortRunItem_SortRunId");
+
+                    b.ToTable("SortRunItem", (string)null);
+                });
+
+            modelBuilder.Entity("PictureSorter.Data.Entities.SortRunItemEntity", b =>
+                {
+                    b.HasOne("PictureSorter.Data.Entities.SortRunEntity", "SortRun")
+                        .WithMany("Items")
+                        .HasForeignKey("SortRunId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("SortRun");
+                });
+
+            modelBuilder.Entity("PictureSorter.Data.Entities.SortRunEntity", b =>
+                {
+                    b.Navigation("Items");
+                });
 #pragma warning restore 612, 618
         }
     }

@@ -202,6 +202,67 @@ public sealed class PhotoSortingServiceTests
     }
 
     [Fact]
+    public async Task ApplyProposalsAsync_RecordsEveryMoveWithSourceAndTarget()
+    {
+        // Ohne dieses Protokoll wäre der Lauf nicht umkehrbar: Nach dem Verschieben
+        // ist nirgends mehr festgehalten, wo eine Datei vorher lag.
+        FakeSortJournal journal = new();
+        PhotoSortingService service = CreateService(
+            embedding: [1.0f, 0.0f, 0.0f],
+            classifier: new FakeImageClassifier(new VisionVerdict { Matches = false, Confidence = 0.0 }),
+            journal: journal);
+
+        _ = await service.ApplyProposalsAsync([CreateProposal()], dryRun: false, CancellationToken.None);
+
+        SortRun run = Assert.Single(journal.Runs);
+        Assert.Equal(SourceFolder, run.SourceFolder);
+        Assert.Equal("Familie", run.CategoryName);
+
+        SortRunItem item = Assert.Single(run.Items);
+        Assert.Equal(@"C:\fotos\a.jpg", item.SourcePath);
+        Assert.Equal(Path.Combine(SourceFolder, "Familie", "a.jpg"), item.TargetPath);
+        Assert.NotEmpty(item.FileSignature);
+    }
+
+    [Fact]
+    public async Task ApplyProposalsAsync_WithDryRun_RecordsNothing()
+    {
+        FakeSortJournal journal = new();
+        PhotoSortingService service = CreateService(
+            embedding: [1.0f, 0.0f, 0.0f],
+            classifier: new FakeImageClassifier(new VisionVerdict { Matches = false, Confidence = 0.0 }),
+            journal: journal);
+
+        _ = await service.ApplyProposalsAsync([CreateProposal()], dryRun: true, CancellationToken.None);
+
+        // Im Probelauf bewegt sich nichts – es gäbe nichts zurückzunehmen.
+        Assert.Empty(journal.Runs);
+    }
+
+    [Fact]
+    public async Task ApplyProposalsAsync_WhenOneFileFails_RecordsOnlyTheMovedOnes()
+    {
+        // Eine Datei, die gar nicht verschoben wurde, darf nicht im Protokoll landen –
+        // ein Rückgängig würde sonst versuchen, sie von einem Ort zurückzuholen, an
+        // dem sie nie war.
+        FakeSortJournal journal = new();
+        PhotoSortingService service = CreateService(
+            embedding: [1.0f, 0.0f, 0.0f],
+            classifier: new FakeImageClassifier(new VisionVerdict { Matches = false, Confidence = 0.0 }),
+            organizer: new FailingFileOrganizer(failOn: "foto1.jpg"),
+            journal: journal);
+
+        _ = await service.ApplyProposalsAsync(
+            [CreateProposal("foto0.jpg"), CreateProposal("foto1.jpg"), CreateProposal("foto2.jpg")],
+            dryRun: false,
+            CancellationToken.None);
+
+        SortRun run = Assert.Single(journal.Runs);
+        Assert.Equal(2, run.Items.Count);
+        Assert.DoesNotContain(run.Items, item => item.SourcePath.EndsWith("foto1.jpg", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public async Task ApplyProposalsAsync_WhenOneFileFails_ContinuesWithTheRest()
     {
         FakeSortMemory memory = new();
@@ -287,15 +348,21 @@ public sealed class PhotoSortingServiceTests
         FakeImageClassifier classifier,
         IFileOrganizer? organizer = null,
         FakeSortMemory? memory = null,
-        IEmbeddingProvider? embeddingProvider = null)
+        IEmbeddingProvider? embeddingProvider = null,
+        FakeSortJournal? journal = null)
     {
         FakePhotoSource photoSource = new([SamplePhoto]);
         IOptions<SortingOptions> options = Options.Create(new SortingOptions());
+        FakeClock clock = new(new DateTimeOffset(2026, 7, 1, 8, 0, 0, TimeSpan.Zero));
 
         SortMemoryGateway gateway = new(
             memory ?? new FakeSortMemory(),
-            new FakeClock(new DateTimeOffset(2026, 7, 1, 8, 0, 0, TimeSpan.Zero)),
+            clock,
             NullLogger<SortMemoryGateway>.Instance);
+
+        SortJournalGateway journalGateway = new(
+            journal ?? new FakeSortJournal(),
+            NullLogger<SortJournalGateway>.Instance);
 
         return new PhotoSortingService(
             photoSource,
@@ -303,6 +370,8 @@ public sealed class PhotoSortingServiceTests
             classifier,
             organizer ?? new FakeFileOrganizer(),
             gateway,
+            journalGateway,
+            clock,
             options,
             NullLogger<PhotoSortingService>.Instance);
     }
