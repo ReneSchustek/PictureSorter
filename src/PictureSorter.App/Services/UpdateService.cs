@@ -47,6 +47,7 @@ internal sealed class UpdateService
 
     private readonly IUpdateChecker _checker;
     private readonly IHttpClientFactory _httpClientFactory;
+    private readonly string _dataDirectory;
     private readonly ILogger<UpdateService> _logger;
 
     /// <summary>
@@ -54,18 +55,22 @@ internal sealed class UpdateService
     /// </summary>
     /// <param name="checker">Die Versionsprüfung.</param>
     /// <param name="httpClientFactory">Fabrik für den Download-Client.</param>
+    /// <param name="dataDirectory">Datenverzeichnis (für den Vertrauensvermerk).</param>
     /// <param name="logger">Der Logger.</param>
     public UpdateService(
         IUpdateChecker checker,
         IHttpClientFactory httpClientFactory,
+        string dataDirectory,
         ILogger<UpdateService> logger)
     {
         ArgumentNullException.ThrowIfNull(checker);
         ArgumentNullException.ThrowIfNull(httpClientFactory);
+        ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
         ArgumentNullException.ThrowIfNull(logger);
 
         _checker = checker;
         _httpClientFactory = httpClientFactory;
+        _dataDirectory = dataDirectory;
         _logger = logger;
     }
 
@@ -93,14 +98,17 @@ internal sealed class UpdateService
     }
 
     /// <summary>
-    /// Lädt das Updater-Programm herunter und startet es. Nach Erfolg sollte der
-    /// Aufrufer die Anwendung beenden, damit der Updater die Dateien ersetzen kann.
+    /// Lädt das Update-Paket samt Signatur, prüft dessen Echtheit, entpackt es und
+    /// startet die neue Fassung im Helfer-Modus. Nach Erfolg muss der Aufrufer die
+    /// Anwendung beenden – erst dann sind ihre Dateien nicht mehr gesperrt.
     /// </summary>
     /// <param name="cancellationToken">Token zum Abbrechen des Vorgangs.</param>
-    /// <returns><see langword="true"/>, wenn der Updater gestartet wurde.</returns>
+    /// <returns><see langword="true"/>, wenn der Helfer gestartet wurde.</returns>
     public async Task<bool> DownloadAndLaunchUpdaterAsync(CancellationToken cancellationToken)
     {
-        if (Available?.UpdaterDownloadUrl is not { } downloadUrl)
+        // Ohne Signatur wird gar nicht erst geladen. Das ist die Grundregel der
+        // Update-Kette: kein Beleg, kein Einspielen (fail-closed).
+        if (Available is not { PackageDownloadUrl: { } packageUrl, SignatureDownloadUrl: { } signatureUrl })
         {
             return false;
         }
@@ -109,7 +117,9 @@ internal sealed class UpdateService
         // gemeinsamen Temp-Verzeichnis wäre für andere Prozesse beschreibbar – die
         // Datei könnte zwischen Prüfung und Start ausgetauscht werden.
         string workingDirectory = Path.Combine(Path.GetTempPath(), "PictureSorter-Update-" + Guid.NewGuid().ToString("N"));
-        string targetPath = Path.Combine(workingDirectory, "PictureSorter-Updater.exe");
+        string packagePath = Path.Combine(workingDirectory, "package.zip");
+        string signaturePath = Path.Combine(workingDirectory, "package.zip.sig");
+        string stagingDirectory = Path.Combine(workingDirectory, "neu");
 
         try
         {
@@ -118,35 +128,59 @@ internal sealed class UpdateService
             using (HttpClient client = _httpClientFactory.CreateClient(DownloadClientName))
             {
                 client.Timeout = DownloadTimeout;
-                if (!await DownloadToAsync(client, downloadUrl, targetPath, cancellationToken).ConfigureAwait(true))
+                if (!await DownloadToAsync(client, packageUrl, packagePath, cancellationToken).ConfigureAwait(true)
+                    || !await DownloadToAsync(client, signatureUrl, signaturePath, cancellationToken).ConfigureAwait(true))
                 {
                     TryCleanUp(workingDirectory);
                     return false;
                 }
             }
 
-            // Zweite Schranke: Nur eine von Windows als vertrauenswürdig eingestufte,
-            // unversehrte Signatur wird ausgeführt. Alles andere wird verworfen.
-            // Hinweis: Diese Prüfung bindet noch KEINEN bestimmten Herausgeber (jede
-            // gültige Authenticode-Signatur wird akzeptiert). Ein Zertifikat-Pinning
-            // gehört ergänzt, sobald ein eigenes Code-Signing-Zertifikat existiert –
-            // bis dahin bleibt die Auto-Update-Funktion bewusst ruhend (leerer
-            // GitHubOwner).
-            if (!AuthenticodeVerifier.IsTrusted(targetPath))
+            // Der Vertrauensanker: genau ein zugelassener Unterzeichner. Wer den
+            // Release-Kanal übernimmt, kommt hier nicht vorbei – ohne den privaten
+            // Schlüssel entsteht keine gültige Signatur. Geprüft wird, bevor
+            // irgendetwas entpackt oder gestartet wird.
+            byte[] signature = await File.ReadAllBytesAsync(signaturePath, cancellationToken).ConfigureAwait(true);
+            if (!ReleaseSignatureVerifier.IsAuthentic(packagePath, signature))
             {
-                string redactedRejected = LogPaths.Redact(targetPath);
-                UpdateServiceLog.SignatureRejected(_logger, redactedRejected);
+                UpdateServiceLog.SignatureRejected(_logger, LogPaths.Redact(packagePath));
                 TryCleanUp(workingDirectory);
                 return false;
             }
 
-            // UseShellExecute, damit eine evtl. nötige UAC-Abfrage des Updaters greift.
-            _ = Process.Start(new ProcessStartInfo { FileName = targetPath, UseShellExecute = true });
-            string redactedLaunched = LogPaths.Redact(targetPath);
-            UpdateServiceLog.UpdaterLaunched(_logger, redactedLaunched);
+            UpdateInstaller.Extract(packagePath, stagingDirectory);
+            string stagedExecutable = Path.Combine(stagingDirectory, UpdateInstaller.ExecutableName);
+            if (!File.Exists(stagedExecutable))
+            {
+                UpdateServiceLog.PackageIncomplete(_logger);
+                TryCleanUp(workingDirectory);
+                return false;
+            }
+
+            // Der Vermerk ist die Brücke zum Helfer: Er startet gleich als eigener
+            // Prozess und darf seinen Aufrufparametern nicht glauben – er gleicht sie
+            // gegen diesen Vermerk ab, den nur der geprüfte Hauptprozess schreibt.
+            UpdateInstaller.WritePendingNote(_dataDirectory, stagingDirectory);
+
+            UpdateApplyArgs apply = new(
+                Environment.ProcessId,
+                stagingDirectory,
+                AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar));
+
+            _ = Process.Start(new ProcessStartInfo
+            {
+                FileName = stagedExecutable,
+                Arguments = apply.ToCommandLine(),
+                WorkingDirectory = stagingDirectory,
+                UseShellExecute = false,
+            });
+
+            string redactedExecutable = LogPaths.Redact(stagedExecutable);
+            UpdateServiceLog.UpdaterLaunched(_logger, redactedExecutable);
             return true;
         }
         catch (Exception ex) when (ex is IOException
+            or InvalidDataException
             or HttpRequestException
             or TaskCanceledException
             or UnauthorizedAccessException
@@ -154,6 +188,7 @@ internal sealed class UpdateService
             or InvalidOperationException)
         {
             UpdateServiceLog.UpdateFailed(_logger, ex);
+            UpdateInstaller.RemovePendingNote(_dataDirectory);
             TryCleanUp(workingDirectory);
             return false;
         }
@@ -267,8 +302,11 @@ internal static partial class UpdateServiceLog
     [LoggerMessage(EventId = 5102, Level = LogLevel.Error, Message = "Aktualisierung abgebrochen: Die Datei stammt aus einer nicht vertrauenswürdigen Quelle ({Host}).")]
     public static partial void UntrustedSource(ILogger logger, string host);
 
-    [LoggerMessage(EventId = 5103, Level = LogLevel.Error, Message = "Aktualisierung abgebrochen: Die heruntergeladene Datei ist nicht gültig signiert ({Path}).")]
+    [LoggerMessage(EventId = 5103, Level = LogLevel.Error, Message = "Aktualisierung abgebrochen: Das Paket trägt keine gültige Signatur des bekannten Herausgebers ({Path}).")]
     public static partial void SignatureRejected(ILogger logger, string path);
+
+    [LoggerMessage(EventId = 5106, Level = LogLevel.Error, Message = "Aktualisierung abgebrochen: Im Paket fehlt die ausführbare Datei.")]
+    public static partial void PackageIncomplete(ILogger logger);
 
     [LoggerMessage(EventId = 5104, Level = LogLevel.Error, Message = "Aktualisierung abgebrochen: zu viele Weiterleitungen.")]
     public static partial void TooManyRedirects(ILogger logger);
