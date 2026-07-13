@@ -1,3 +1,4 @@
+using PictureSorter.App.Tests.Fakes;
 using PictureSorter.App.ViewModels;
 
 namespace PictureSorter.App.Tests.ViewModels;
@@ -11,7 +12,7 @@ public sealed class StatusBarViewModelTests
     [Fact]
     public void Begin_SetsBusyIndeterminateAndMessage()
     {
-        StatusBarViewModel status = new();
+        StatusBarViewModel status = new(new ReswLocalizer());
 
         status.Begin("Läuft…", () => { });
 
@@ -26,7 +27,7 @@ public sealed class StatusBarViewModelTests
     [Fact]
     public void ReportProgress_SwitchesToDeterminateAndClampsValue()
     {
-        StatusBarViewModel status = new();
+        StatusBarViewModel status = new(new ReswLocalizer());
         status.Begin("Start", () => { });
 
         status.ReportProgress("3 von 4", 150.0);
@@ -39,7 +40,7 @@ public sealed class StatusBarViewModelTests
     [Fact]
     public void Stop_InvokesRegisteredCancelAction()
     {
-        StatusBarViewModel status = new();
+        StatusBarViewModel status = new(new ReswLocalizer());
         bool cancelled = false;
         status.Begin("Start", () => cancelled = true);
 
@@ -51,7 +52,7 @@ public sealed class StatusBarViewModelTests
     [Fact]
     public void Finish_ClearsBusyAndAppliesSeverity()
     {
-        StatusBarViewModel status = new();
+        StatusBarViewModel status = new(new ReswLocalizer());
         status.Begin("Start", () => { });
 
         status.Finish("Fehlgeschlagen.", StatusSeverity.Error);
@@ -66,7 +67,7 @@ public sealed class StatusBarViewModelTests
     [Fact]
     public void Stop_AfterFinish_DoesNotInvokeStaleCancelAction()
     {
-        StatusBarViewModel status = new();
+        StatusBarViewModel status = new(new ReswLocalizer());
         int cancelCount = 0;
         status.Begin("Start", () => cancelCount++);
         status.Finish("Fertig.");

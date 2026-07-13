@@ -140,6 +140,8 @@ public sealed class SortViewModelTests
             FileName = "beispiel.jpg",
         };
 
+        ReswLocalizer localizer = new();
+
         return new SortViewModel(
             sorter,
             new FakePhotoSource([examplePhoto]),
@@ -147,8 +149,9 @@ public sealed class SortViewModelTests
             new FakeCategoryRepository(),
             new FakeFolderPicker(SourceFolder),
             new StubConfirmationService(result: true),
-            new StatusBarViewModel(),
+            new StatusBarViewModel(localizer),
             Options.Create(new SortingOptions()),
+            localizer,
             NullLogger<SortViewModel>.Instance);
     }
 

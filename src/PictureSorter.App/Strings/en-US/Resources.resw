@@ -373,4 +373,316 @@
   <data name="SortPage_BackButton.Content" xml:space="preserve">
     <value>◀ Back</value>
   </data>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Common_CancelRequested" xml:space="preserve">
+    <value>Cancellation requested…</value>
+  </data>
+  <data name="Common_Version" xml:space="preserve">
+    <value>Version {0}</value>
+  </data>
+  <data name="StatusBar_Ready" xml:space="preserve">
+    <value>Ready.</value>
+  </data>
+  <data name="Sort_SelectionSummary" xml:space="preserve">
+    <value>{0} of {1} selected</value>
+  </data>
+  <data name="Sort_Restarted" xml:space="preserve">
+    <value>Restarted. Please begin with step 1.</value>
+  </data>
+  <data name="Sort_LoadingExamples" xml:space="preserve">
+    <value>Loading examples…</value>
+  </data>
+  <data name="Sort_NoImagesInFolder" xml:space="preserve">
+    <value>No images were found in the folder. Please choose a different folder in step 1.</value>
+  </data>
+  <data name="Sort_ExamplesLoaded" xml:space="preserve">
+    <value>{0} examples loaded — mark the matching images with “Belongs here”.</value>
+  </data>
+  <data name="Sort_FolderNotFound" xml:space="preserve">
+    <value>The folder was not found. Please check the path in step 1.</value>
+  </data>
+  <data name="Sort_FolderUnreadable" xml:space="preserve">
+    <value>The folder could not be read.</value>
+  </data>
+  <data name="Sort_Learning" xml:space="preserve">
+    <value>Learning the category profile…</value>
+  </data>
+  <data name="Sort_CategoryLearned" xml:space="preserve">
+    <value>Category “{0}” learned. Now analyse.</value>
+  </data>
+  <data name="Sort_LearnCanceled" xml:space="preserve">
+    <value>Learning cancelled.</value>
+  </data>
+  <data name="Sort_AiUnavailable" xml:space="preserve">
+    <value>The AI (Ollama) cannot be reached. The examples could not be learned.</value>
+  </data>
+  <data name="Sort_Analyzing" xml:space="preserve">
+    <value>Analysing photos…</value>
+  </data>
+  <data name="Sort_AnalyzeProgress" xml:space="preserve">
+    <value>{0} of {1} photos analysed…</value>
+  </data>
+  <data name="Sort_NoMatchingPhotos" xml:space="preserve">
+    <value>No matching photos found.</value>
+  </data>
+  <data name="Sort_ProposalsFound" xml:space="preserve">
+    <value>{0} suggestions found.</value>
+  </data>
+  <data name="Sort_AnalyzeCanceled" xml:space="preserve">
+    <value>Analysis cancelled.</value>
+  </data>
+  <data name="Sort_AnalyzeFailed" xml:space="preserve">
+    <value>The analysis failed.</value>
+  </data>
+  <data name="Sort_Sorting" xml:space="preserve">
+    <value>Sorting files…</value>
+  </data>
+  <data name="Sort_FilesSorted" xml:space="preserve">
+    <value>{0} files sorted.</value>
+  </data>
+  <data name="Sort_FilesSortedWithRejected" xml:space="preserve">
+    <value>{0} files sorted, {1} deselected and remembered.</value>
+  </data>
+  <data name="Sort_ApplyCanceled" xml:space="preserve">
+    <value>Sorting cancelled.</value>
+  </data>
+  <data name="Sort_ApplyFailed" xml:space="preserve">
+    <value>The sorting failed.</value>
+  </data>
+  <data name="Sort_BulkConfirmTitle" xml:space="preserve">
+    <value>Move many files</value>
+  </data>
+  <data name="Sort_BulkConfirmMessage" xml:space="preserve">
+    <value>{0} files will be moved. Continue?</value>
+  </data>
+  <data name="Sort_BulkConfirmPrimary" xml:space="preserve">
+    <value>Move</value>
+  </data>
+  <data name="Wizard_Step1Title" xml:space="preserve">
+    <value>Step 1 of 5: Choose the folder with your photos</value>
+  </data>
+  <data name="Wizard_Step2Title" xml:space="preserve">
+    <value>Step 2 of 5: Describe the category</value>
+  </data>
+  <data name="Wizard_Step3Title" xml:space="preserve">
+    <value>Step 3 of 5: Select examples</value>
+  </data>
+  <data name="Wizard_Step4Title" xml:space="preserve">
+    <value>Step 4 of 5: Start the analysis</value>
+  </data>
+  <data name="Wizard_Step5Title" xml:space="preserve">
+    <value>Step 5 of 5: Sort</value>
+  </data>
+  <data name="Wizard_ActionNext" xml:space="preserve">
+    <value>Next ▶</value>
+  </data>
+  <data name="Wizard_ActionLearn" xml:space="preserve">
+    <value>Learn profile ▶</value>
+  </data>
+  <data name="Wizard_ActionAnalyze" xml:space="preserve">
+    <value>Start analysis ▶</value>
+  </data>
+  <data name="Wizard_ActionSort" xml:space="preserve">
+    <value>Sort</value>
+  </data>
+  <data name="Proposal_MethodEmbedding" xml:space="preserve">
+    <value>Similarity</value>
+  </data>
+  <data name="Proposal_MethodVision" xml:space="preserve">
+    <value>Image check</value>
+  </data>
+  <data name="Proposal_MethodManual" xml:space="preserve">
+    <value>Manual</value>
+  </data>
+  <data name="Proposal_MethodUnknown" xml:space="preserve">
+    <value>Not rated</value>
+  </data>
+  <data name="Proposal_AutomationName" xml:space="preserve">
+    <value>{0}, target {1}, confidence {2}</value>
+  </data>
+  <data name="Duplicates_Scanning" xml:space="preserve">
+    <value>Searching for duplicates…</value>
+  </data>
+  <data name="Duplicates_ScanProgress" xml:space="preserve">
+    <value>Searching for duplicates… {0}/{1}</value>
+  </data>
+  <data name="Duplicates_GroupsFound" xml:space="preserve">
+    <value>{0} duplicate groups found. {1} marked for deletion.</value>
+  </data>
+  <data name="Duplicates_NoneFound" xml:space="preserve">
+    <value>No duplicates found.</value>
+  </data>
+  <data name="Duplicates_ScanCanceled" xml:space="preserve">
+    <value>Search cancelled.</value>
+  </data>
+  <data name="Duplicates_FolderNotFound" xml:space="preserve">
+    <value>The folder was not found. Please check the path.</value>
+  </data>
+  <data name="Duplicates_ScanFailed" xml:space="preserve">
+    <value>The search failed.</value>
+  </data>
+  <data name="Duplicates_DeleteTitle" xml:space="preserve">
+    <value>Delete duplicates</value>
+  </data>
+  <data name="Duplicates_DeleteMessage" xml:space="preserve">
+    <value>{0} file(s) will be moved to the recycle bin. Continue?</value>
+  </data>
+  <data name="Duplicates_DeletePrimary" xml:space="preserve">
+    <value>To recycle bin</value>
+  </data>
+  <data name="Duplicates_Deleting" xml:space="preserve">
+    <value>Moving files to the recycle bin…</value>
+  </data>
+  <data name="Duplicates_Deleted" xml:space="preserve">
+    <value>{0} file(s) moved to the recycle bin. {1} groups remain.</value>
+  </data>
+  <data name="DuplicateGroup_KindExact" xml:space="preserve">
+    <value>Identical</value>
+  </data>
+  <data name="DuplicateGroup_KindSimilar" xml:space="preserve">
+    <value>Similar</value>
+  </data>
+  <data name="DuplicateGroup_Header" xml:space="preserve">
+    <value>{0} · {1} images</value>
+  </data>
+  <data name="DuplicatePhoto_DeletionLabel" xml:space="preserve">
+    <value>Mark “{0}” for deletion</value>
+  </data>
+  <data name="Memory_FilterAll" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="Memory_Empty" xml:space="preserve">
+    <value>Nothing has been remembered yet. Your decisions will appear here after the first sorting run.</value>
+  </data>
+  <data name="Memory_Loaded" xml:space="preserve">
+    <value>{0} remembered decisions loaded.</value>
+  </data>
+  <data name="Memory_LoadFailed" xml:space="preserve">
+    <value>The memory could not be loaded.</value>
+  </data>
+  <data name="Memory_ForgetTitle" xml:space="preserve">
+    <value>Forget entry</value>
+  </data>
+  <data name="Memory_ForgetMessage" xml:space="preserve">
+    <value>The remembered decision for “{0}” (category “{1}”) will be discarded. The photo will be rated again on the next run. Continue?</value>
+  </data>
+  <data name="Memory_ForgetPrimary" xml:space="preserve">
+    <value>Forget</value>
+  </data>
+  <data name="Memory_Forgotten" xml:space="preserve">
+    <value>Entry forgotten.</value>
+  </data>
+  <data name="Memory_ForgetFailed" xml:space="preserve">
+    <value>The entry could not be removed.</value>
+  </data>
+  <data name="Memory_ClearFolderTitle" xml:space="preserve">
+    <value>Clear folder memory</value>
+  </data>
+  <data name="Memory_ClearFolderMessage" xml:space="preserve">
+    <value>All {0} remembered decisions for “{1}” will be discarded. The photos will be rated again on the next run. Continue?</value>
+  </data>
+  <data name="Memory_ClearFolderPrimary" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+  <data name="Memory_FolderCleared" xml:space="preserve">
+    <value>{0} entries for “{1}” forgotten.</value>
+  </data>
+  <data name="Memory_ClearFolderFailed" xml:space="preserve">
+    <value>The folder memory could not be cleared.</value>
+  </data>
+  <data name="MemoryItem_StatusSorted" xml:space="preserve">
+    <value>Sorted</value>
+  </data>
+  <data name="MemoryItem_StatusIgnored" xml:space="preserve">
+    <value>Deselected</value>
+  </data>
+  <data name="MemoryItem_StatusRejected" xml:space="preserve">
+    <value>Does not fit</value>
+  </data>
+  <data name="MemoryItem_StatusProposed" xml:space="preserve">
+    <value>Suggested</value>
+  </data>
+  <data name="Dashboard_AiChecking" xml:space="preserve">
+    <value>Checking the state of the AI…</value>
+  </data>
+  <data name="Dashboard_AiReady" xml:space="preserve">
+    <value>The AI is ready. You can get started.</value>
+  </data>
+  <data name="Dashboard_AiModelsMissing" xml:space="preserve">
+    <value>AI models are still missing: {0}. Set them up under “Settings”.</value>
+  </data>
+  <data name="Dashboard_AiNotSetUp" xml:space="preserve">
+    <value>The AI (Ollama) is not set up yet. Open “Settings” and click “Set up now”.</value>
+  </data>
+  <data name="ModelHint_Incomplete" xml:space="preserve">
+    <value>The AI is not fully set up yet. Please click “Set up now” – the missing parts will then be downloaded automatically.</value>
+  </data>
+  <data name="ModelHint_NotReady" xml:space="preserve">
+    <value>The local AI is not ready yet. Please click “Set up now”; the assistant will install and start it for you.</value>
+  </data>
+  <data name="Update_Available" xml:space="preserve">
+    <value>Version {0} is available.</value>
+  </data>
+  <data name="Update_Preparing" xml:space="preserve">
+    <value>Preparing the update…</value>
+  </data>
+  <data name="Update_Failed" xml:space="preserve">
+    <value>The update is not possible. Please try again later.</value>
+  </data>
+  <data name="About_LogEmpty" xml:space="preserve">
+    <value>No log entries yet.</value>
+  </data>
+  <data name="About_UpdateSearching" xml:space="preserve">
+    <value>Searching for updates…</value>
+  </data>
+  <data name="About_UpdateCheckFailed" xml:space="preserve">
+    <value>Update check not possible (offline or no update source configured).</value>
+  </data>
+  <data name="About_UpdateAvailable" xml:space="preserve">
+    <value>Version {0} is available (installed: {1}).</value>
+  </data>
+  <data name="About_UpToDate" xml:space="preserve">
+    <value>The application is up to date (version {0}).</value>
+  </data>
+  <data name="About_SetupRunning" xml:space="preserve">
+    <value>The setup is now running in a separate window. Please follow the instructions there. Afterwards click “Check status”.</value>
+  </data>
+  <data name="About_SetupFailed" xml:space="preserve">
+    <value>The setup could not be started. Please install Ollama manually from https://ollama.com/download</value>
+  </data>
+  <data name="About_KiChecking" xml:space="preserve">
+    <value>Checking status…</value>
+  </data>
+  <data name="About_KiReady" xml:space="preserve">
+    <value>The AI is ready. You can sort photos.</value>
+  </data>
+  <data name="About_KiModelsMissing" xml:space="preserve">
+    <value>AI models are still missing: {0}. Click “Set up now”.</value>
+  </data>
+  <data name="About_KiNotSetUp" xml:space="preserve">
+    <value>The AI (Ollama) is not set up yet. Click “Set up now”.</value>
+  </data>
+  <data name="Photo_WithLocation" xml:space="preserve">
+    <value>with location</value>
+  </data>
+  <data name="Photo_Size" xml:space="preserve">
+    <value>Size: {0}</value>
+  </data>
+  <data name="Photo_Dimensions" xml:space="preserve">
+    <value>Dimensions: {0} × {1} pixels</value>
+  </data>
+  <data name="Photo_CapturedAt" xml:space="preserve">
+    <value>Captured: {0}</value>
+  </data>
+  <data name="Photo_Camera" xml:space="preserve">
+    <value>Camera: {0}</value>
+  </data>
+  <data name="Photo_Location" xml:space="preserve">
+    <value>Location: {0}, {1}</value>
+  </data>
+  <data name="Photo_Path" xml:space="preserve">
+    <value>Path: {0}</value>
+  </data>
 </root>

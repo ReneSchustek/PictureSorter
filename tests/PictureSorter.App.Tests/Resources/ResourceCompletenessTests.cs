@@ -1,5 +1,3 @@
-using System.Xml.Linq;
-
 namespace PictureSorter.App.Tests.Resources;
 
 /// <summary>
@@ -13,8 +11,8 @@ public sealed class ResourceCompletenessTests
     [Fact]
     public void GermanAndEnglishResources_HaveIdenticalKeySets()
     {
-        Dictionary<string, string> de = LoadResources("de-DE");
-        Dictionary<string, string> en = LoadResources("en-US");
+        Dictionary<string, string> de = TestResources.Load("de-DE");
+        Dictionary<string, string> en = TestResources.Load("en-US");
 
         string[] onlyInGerman = [.. de.Keys.Except(en.Keys).Order()];
         string[] onlyInEnglish = [.. en.Keys.Except(de.Keys).Order()];
@@ -32,36 +30,38 @@ public sealed class ResourceCompletenessTests
     [InlineData("en-US")]
     public void Resources_HaveNoEmptyValues(string language)
     {
-        Dictionary<string, string> resources = LoadResources(language);
+        Dictionary<string, string> resources = TestResources.Load(language);
 
         string[] empty = [.. resources.Where(pair => string.IsNullOrWhiteSpace(pair.Value)).Select(pair => pair.Key).Order()];
 
         Assert.True(empty.Length == 0, $"Leere Ressourcenwerte ({language}): {string.Join(", ", empty)}");
     }
 
-    private static Dictionary<string, string> LoadResources(string language)
+    /// <summary>
+    /// Die Platzhalter eines Textes müssen in beiden Sprachen identisch sein. Fehlt
+    /// im Englischen ein <c>{1}</c>, verschwindet dort ein Wert wortlos; steht dort ein
+    /// <c>{2}</c> zu viel, wirft die Formatierung zur Laufzeit.
+    /// </summary>
+    [Fact]
+    public void Placeholders_MatchAcrossLanguages()
     {
-        string path = Path.Combine(FindResourceDirectory(), language, "Resources.resw");
-        XDocument document = XDocument.Load(path);
-        return document.Root!
-            .Elements("data")
-            .ToDictionary(
-                element => element.Attribute("name")!.Value,
-                element => element.Element("value")?.Value ?? string.Empty,
-                StringComparer.Ordinal);
+        Dictionary<string, string> de = TestResources.Load("de-DE");
+        Dictionary<string, string> en = TestResources.Load("en-US");
+
+        string[] mismatched =
+        [
+            .. de.Where(pair => en.TryGetValue(pair.Key, out string? english)
+                    && PlaceholderCount(pair.Value) != PlaceholderCount(english))
+                .Select(pair => pair.Key)
+                .Order(StringComparer.Ordinal),
+        ];
+
+        Assert.True(
+            mismatched.Length == 0,
+            $"Unterschiedliche Platzhalter in de/en: {string.Join(", ", mismatched)}");
     }
 
-    // Vom Testausgabeverzeichnis nach oben bis zur Solution laufen und von dort die
-    // Ressourcen im App-Projekt ansteuern.
-    private static string FindResourceDirectory()
-    {
-        DirectoryInfo? current = new(AppContext.BaseDirectory);
-        while (current is not null && !File.Exists(Path.Combine(current.FullName, "PictureSorter.slnx")))
-        {
-            current = current.Parent;
-        }
-
-        Assert.NotNull(current);
-        return Path.Combine(current!.FullName, "src", "PictureSorter.App", "Strings");
-    }
+    // Zählt die verschiedenen Platzhalter {0}, {1}, … eines Textes.
+    private static int PlaceholderCount(string value) =>
+        Enumerable.Range(0, 10).Count(index => value.Contains($"{{{index}}}", StringComparison.Ordinal));
 }

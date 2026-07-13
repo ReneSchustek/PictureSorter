@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using PictureSorter.App.Services;
 using PictureSorter.Core.Interfaces;
 using PictureSorter.Core.ValueObjects;
 
@@ -12,6 +13,7 @@ namespace PictureSorter.App.ViewModels;
 internal sealed partial class DashboardViewModel : ObservableObject
 {
     private readonly IModelAvailabilityChecker _modelChecker;
+    private readonly ILocalizer _localizer;
 
     /// <summary>Kurztext zum Zustand der lokalen KI.</summary>
     [ObservableProperty]
@@ -29,11 +31,15 @@ internal sealed partial class DashboardViewModel : ObservableObject
     /// Initialisiert das ViewModel.
     /// </summary>
     /// <param name="modelChecker">Prüft die Verfügbarkeit der KI-Modelle.</param>
-    public DashboardViewModel(IModelAvailabilityChecker modelChecker)
+    /// <param name="localizer">Die Textquelle.</param>
+    public DashboardViewModel(IModelAvailabilityChecker modelChecker, ILocalizer localizer)
     {
         ArgumentNullException.ThrowIfNull(modelChecker);
+        ArgumentNullException.ThrowIfNull(localizer);
+
         _modelChecker = modelChecker;
-        AiStatusText = "Zustand der KI wird geprüft…";
+        _localizer = localizer;
+        AiStatusText = localizer.Get("Dashboard_AiChecking");
     }
 
     /// <summary>
@@ -58,16 +64,15 @@ internal sealed partial class DashboardViewModel : ObservableObject
         }
     }
 
-    private static string BuildStatusText(ModelAvailability availability)
+    private string BuildStatusText(ModelAvailability availability)
     {
         if (availability.IsReady)
         {
-            return "Die KI ist einsatzbereit. Du kannst loslegen.";
+            return _localizer.Get("Dashboard_AiReady");
         }
 
         return availability.IsReachable
-            ? $"Es fehlen noch KI-Modelle: {string.Join(", ", availability.MissingModels)}. "
-                + "Richte sie unter „Einstellungen“ ein."
-            : "Die KI (Ollama) ist noch nicht eingerichtet. Öffne „Einstellungen“ und klicke auf „Jetzt einrichten“.";
+            ? _localizer.Format("Dashboard_AiModelsMissing", string.Join(", ", availability.MissingModels))
+            : _localizer.Get("Dashboard_AiNotSetUp");
     }
 }

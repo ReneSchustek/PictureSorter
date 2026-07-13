@@ -1,9 +1,9 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using PictureSorter.App.Services;
 using PictureSorter.Application.Services;
 using PictureSorter.Core.Interfaces;
 using PictureSorter.Core.ValueObjects;
@@ -22,6 +22,7 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
     private readonly IFolderPicker _folderPicker;
     private readonly IConfirmationService _confirmationService;
     private readonly StatusBarViewModel _status;
+    private readonly ILocalizer _localizer;
     private readonly ILogger<DuplicatesViewModel> _logger;
 
     private CancellationTokenSource? _cancellation;
@@ -55,6 +56,7 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
     /// <param name="folderPicker">Der Ordnerauswahl-Dialog.</param>
     /// <param name="confirmationService">Die Rückfrage vor dem Löschen.</param>
     /// <param name="status">Die gemeinsame Statusleiste der Anwendung.</param>
+    /// <param name="localizer">Die Textquelle.</param>
     /// <param name="logger">Der Logger.</param>
     public DuplicatesViewModel(
         IDuplicateScanner scanner,
@@ -62,6 +64,7 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
         IFolderPicker folderPicker,
         IConfirmationService confirmationService,
         StatusBarViewModel status,
+        ILocalizer localizer,
         ILogger<DuplicatesViewModel> logger)
     {
         ArgumentNullException.ThrowIfNull(scanner);
@@ -69,6 +72,7 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
         ArgumentNullException.ThrowIfNull(folderPicker);
         ArgumentNullException.ThrowIfNull(confirmationService);
         ArgumentNullException.ThrowIfNull(status);
+        ArgumentNullException.ThrowIfNull(localizer);
         ArgumentNullException.ThrowIfNull(logger);
 
         _scanner = scanner;
@@ -76,6 +80,7 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
         _folderPicker = folderPicker;
         _confirmationService = confirmationService;
         _status = status;
+        _localizer = localizer;
         _logger = logger;
 
         State = DuplicateState.Idle;
@@ -120,7 +125,7 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
     {
         using IDisposable? logScope = _logger.BeginScope("Duplikatsuche {CorrelationId}", NewCorrelationId());
         State = DuplicateState.Scanning;
-        _status.Begin("Duplikate werden gesucht…", Cancel);
+        _status.Begin(_localizer.Get("Duplicates_Scanning"), Cancel);
         ClearGroups();
         _cancellation = new CancellationTokenSource();
 
@@ -134,25 +139,25 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
             PopulateGroups(groups);
             State = Groups.Count > 0 ? DuplicateState.Review : DuplicateState.Completed;
             _status.Finish(Groups.Count > 0
-                ? $"{Groups.Count} Duplikat-Gruppen gefunden. {MarkedCount} zum Löschen vorgemerkt."
-                : "Keine Duplikate gefunden.");
+                ? _localizer.Format("Duplicates_GroupsFound", Groups.Count, MarkedCount)
+                : _localizer.Get("Duplicates_NoneFound"));
         }
         catch (OperationCanceledException)
         {
             State = DuplicateState.Idle;
-            _status.Finish("Suche abgebrochen.", StatusSeverity.Warning);
+            _status.Finish(_localizer.Get("Duplicates_ScanCanceled"), StatusSeverity.Warning);
         }
         catch (DirectoryNotFoundException ex)
         {
             DuplicatesLog.ScanFailed(_logger, ex);
             State = DuplicateState.Error;
-            _status.Finish("Der Ordner wurde nicht gefunden. Bitte prüfe den Pfad.", StatusSeverity.Error);
+            _status.Finish(_localizer.Get("Duplicates_FolderNotFound"), StatusSeverity.Error);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             DuplicatesLog.ScanFailed(_logger, ex);
             State = DuplicateState.Error;
-            _status.Finish("Die Suche ist fehlgeschlagen.", StatusSeverity.Error);
+            _status.Finish(_localizer.Get("Duplicates_ScanFailed"), StatusSeverity.Error);
         }
         finally
         {
@@ -170,10 +175,10 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
         }
 
         bool confirmed = await _confirmationService.ConfirmAsync(
-            "Duplikate löschen",
-            $"{marked.Count} Datei(en) werden in den Papierkorb verschoben. Fortfahren?",
-            "In Papierkorb",
-            "Abbrechen").ConfigureAwait(true);
+            _localizer.Get("Duplicates_DeleteTitle"),
+            _localizer.Format("Duplicates_DeleteMessage", marked.Count),
+            _localizer.Get("Duplicates_DeletePrimary"),
+            _localizer.Get("Common_Cancel")).ConfigureAwait(true);
         if (!confirmed)
         {
             return;
@@ -186,14 +191,14 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
     private void Cancel()
     {
         _cancellation?.Cancel();
-        _status.Report("Abbruch angefordert…");
+        _status.Report(_localizer.Get("Common_CancelRequested"));
     }
 
     private async Task DeleteMarkedAsync(IReadOnlyList<DuplicatePhotoViewModel> marked)
     {
         using IDisposable? logScope = _logger.BeginScope("Löschen {CorrelationId}", NewCorrelationId());
         State = DuplicateState.Deleting;
-        _status.Report("Dateien werden in den Papierkorb verschoben…");
+        _status.Report(_localizer.Get("Duplicates_Deleting"));
 
         int deleted = 0;
         foreach (DuplicatePhotoViewModel photo in marked)
@@ -213,16 +218,14 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
         PruneEmptyGroups();
         UpdateMarkedCount();
         State = Groups.Count > 0 ? DuplicateState.Review : DuplicateState.Completed;
-        _status.Report(string.Create(
-            CultureInfo.GetCultureInfo("de-DE"),
-            $"{deleted} Datei(en) in den Papierkorb verschoben. {Groups.Count} Gruppen verbleiben."));
+        _status.Report(_localizer.Format("Duplicates_Deleted", deleted, Groups.Count));
     }
 
     private void OnScanProgress(DuplicateScanProgress progress)
     {
         if (progress.Total > 0)
         {
-            _status.Report($"Duplikate werden gesucht… {progress.Processed}/{progress.Total}");
+            _status.Report(_localizer.Format("Duplicates_ScanProgress", progress.Processed, progress.Total));
         }
     }
 
@@ -230,7 +233,7 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
     {
         foreach (DuplicateGroup group in groups)
         {
-            DuplicateGroupViewModel groupViewModel = new(group);
+            DuplicateGroupViewModel groupViewModel = new(group, _localizer);
             foreach (DuplicatePhotoViewModel photo in groupViewModel.Photos)
             {
                 photo.PropertyChanged += OnPhotoPropertyChanged;
