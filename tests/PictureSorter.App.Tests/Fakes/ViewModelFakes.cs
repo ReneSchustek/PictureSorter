@@ -1,3 +1,4 @@
+using PictureSorter.App.Services;
 using PictureSorter.Application.Services;
 using PictureSorter.Core.Entities;
 using PictureSorter.Core.Enums;
@@ -30,6 +31,45 @@ internal sealed class FakeFileDeleter : IFileDeleter
         Deleted.Add(filePath);
         return Task.CompletedTask;
     }
+}
+
+/// <summary>Merkt sich, wohin navigiert wurde, ohne eine Oberfläche zu brauchen.</summary>
+internal sealed class FakeNavigationService : INavigationService
+{
+    public List<AppSection> Navigations { get; } = [];
+
+    public void NavigateTo(AppSection section) => Navigations.Add(section);
+}
+
+/// <summary>Meldet einen festen Zustand der lokalen KI.</summary>
+internal sealed class FakeModelAvailabilityChecker(ModelAvailability availability) : IModelAvailabilityChecker
+{
+    /// <summary>Alles vorhanden.</summary>
+    public static FakeModelAvailabilityChecker Ready() => new(new ModelAvailability
+    {
+        IsReachable = true,
+        RequiredModels = ["llava", "nomic-embed-text"],
+        MissingModels = [],
+    });
+
+    /// <summary>Ollama läuft, aber ein Modell fehlt.</summary>
+    public static FakeModelAvailabilityChecker Missing(string model) => new(new ModelAvailability
+    {
+        IsReachable = true,
+        RequiredModels = ["llava", "nomic-embed-text"],
+        MissingModels = [model],
+    });
+
+    /// <summary>Ollama ist gar nicht erreichbar.</summary>
+    public static FakeModelAvailabilityChecker Unreachable() => new(new ModelAvailability
+    {
+        IsReachable = false,
+        RequiredModels = ["llava", "nomic-embed-text"],
+        MissingModels = ["llava", "nomic-embed-text"],
+    });
+
+    public Task<ModelAvailability> CheckAsync(CancellationToken cancellationToken) =>
+        Task.FromResult(availability);
 }
 
 /// <summary>Liefert einen festen Ordnerpfad (oder <see langword="null"/>).</summary>

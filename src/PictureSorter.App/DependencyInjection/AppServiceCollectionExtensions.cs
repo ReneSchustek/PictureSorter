@@ -29,6 +29,13 @@ internal static class AppServiceCollectionExtensions
         // Instanziierung dieser internen Klassen erkennt (CA1812).
         _ = services.AddSingleton<ILocalizer>(static _ => new ResourceLocalizer());
         _ = services.AddSingleton(static _ => new WindowContext());
+
+        // Der Navigationsdienst wird unter beiden Typen registriert: Das Hauptfenster
+        // reicht ihm Leiste und Rahmen (konkreter Typ), die ViewModels navigieren nur
+        // über das WinUI-freie Interface.
+        _ = services.AddSingleton(static _ => new NavigationService());
+        _ = services.AddSingleton<INavigationService>(static provider =>
+            provider.GetRequiredService<NavigationService>());
         _ = services.AddSingleton<IFolderPicker>(static provider =>
             new WindowsFolderPicker(provider.GetRequiredService<WindowContext>()));
         _ = services.AddSingleton<IConfirmationService>(static provider =>
