@@ -1,3 +1,4 @@
+using System.Globalization;
 using PictureSorter.App.Services;
 using PictureSorter.App.Tests.Fakes;
 using PictureSorter.Core.Entities;
@@ -82,10 +83,17 @@ public sealed class PhotoTextFormatterTests
         Assert.Contains("mit Ort", summary, StringComparison.Ordinal);
     }
 
+    // Die Zahl folgt der Kultur des Nutzers (2,5 MB in Deutschland, 2.5 MB auf einem
+    // englischen System). Der Test darf deshalb kein Dezimaltrennzeichen festschreiben –
+    // sonst prüft er die Kultur des Rechners, nicht die Formatierung.
     [Theory]
-    [InlineData(512L, "512 B")]
-    [InlineData(2048L, "2 KB")]
-    [InlineData(2_621_440L, "2,5 MB")]
-    public void FormatSize_UsesTheFittingUnit(long bytes, string expected) =>
+    [InlineData(512L, 512.0, "B")]
+    [InlineData(2048L, 2.0, "KB")]
+    [InlineData(2_621_440L, 2.5, "MB")]
+    public void FormatSize_UsesTheFittingUnit(long bytes, double value, string unit)
+    {
+        string expected = string.Create(CultureInfo.CurrentCulture, $"{value:0.#} {unit}");
+
         Assert.Equal(expected, PhotoTextFormatter.FormatSize(bytes));
+    }
 }
