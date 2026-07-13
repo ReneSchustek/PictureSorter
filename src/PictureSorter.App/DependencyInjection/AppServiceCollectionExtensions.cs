@@ -55,6 +55,7 @@ internal static class AppServiceCollectionExtensions
         _ = services.AddSingleton(provider => new UpdateService(
             provider.GetRequiredService<IUpdateChecker>(),
             provider.GetRequiredService<IHttpClientFactory>(),
+            dataDirectory,
             provider.GetRequiredService<ILogger<UpdateService>>()));
 
         return services.AddPictureSorterViewModels();

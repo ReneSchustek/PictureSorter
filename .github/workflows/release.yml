@@ -1,11 +1,18 @@
 name: Release
 
-# Baut beim Push eines Versions-Tags (z. B. v1.3.0) die portable, self-contained
-# Variante je Architektur, packt sie als ZIP und haengt sie an ein GitHub-Release.
-# Die App bringt die Windows App Runtime selbst mit; die ZIPs laufen daher ohne
-# Vorinstallation. Signierung/MSIX ist bewusst nicht Teil dieses Workflows: dafuer
-# fehlt ein echtes Code-Signing-Zertifikat (siehe README). Solange die Update-Kette
-# ruht (leerer GitHubOwner), werden unsignierte Portable-ZIPs verteilt.
+# Baut beim Push eines Versions-Tags (z. B. v1.3.0) je Architektur die portable,
+# self-contained Variante, signiert sie und haengt sie an ein GitHub-Release; fuer
+# x64 zusaetzlich eine Setup.exe zur Weitergabe.
+#
+# Die Signatur ist der Vertrauensanker der Update-Kette: Die Anwendung spielt nur
+# ein Paket ein, das mit dem privaten Schluessel des Herausgebers unterschrieben
+# wurde (siehe ReleaseSignatureVerifier). Fehlt der Schluessel, bricht dieser
+# Workflow ab - ein unsigniertes Release waere fuer jeden Client wertlos, und das
+# soll auffallen, statt still zu passieren.
+#
+# Ein Code-Signing-Zertifikat einer CA gibt es weiterhin nicht: Windows SmartScreen
+# kann beim ersten Start warnen. Fuer die Echtheit der Updates ist das ohne Belang -
+# ein Zertifikat kann sich jeder besorgen, den privaten Schluessel hier nicht.
 
 on:
   push:
@@ -17,19 +24,22 @@ permissions:
 
 jobs:
   release:
-    name: Portable-Build & Release
+    name: Build & Release
     runs-on: windows-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
         include:
           - rid: win-x64
             platform: x64
+            setup: true
           - rid: win-x86
             platform: x86
+            setup: false
           - rid: win-arm64
             platform: ARM64
+            setup: false
 
     steps:
       - name: Quellcode auschecken
@@ -67,13 +77,55 @@ jobs:
           Compress-Archive -Path "publish/${{ matrix.rid }}/*" -DestinationPath $name -Force
           Write-Output "Erstellt: $name"
 
+      # Ohne Signatur laedt die Anwendung das Paket gar nicht erst herunter. Ein
+      # Release ohne Schluessel waere also ein Release, das niemand einspielen kann -
+      # deshalb bricht der Lauf hier hart ab statt still weiterzumachen.
+      - name: Paket signieren
+        shell: pwsh
+        env:
+          SIGNING_KEY: ${{ secrets.PICTURESORTER_SIGNING_KEY }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:SIGNING_KEY)) {
+            Write-Error 'Kein Signaturschluessel hinterlegt (Secret PICTURESORTER_SIGNING_KEY). Ohne Signatur kann kein Client das Update einspielen.'
+            exit 1
+          }
+          $keyPath = Join-Path $env:RUNNER_TEMP 'picturesorter-signing-key.pem'
+          Set-Content -LiteralPath $keyPath -Value $env:SIGNING_KEY -NoNewline
+          try {
+            ./tools/sign-release.ps1 -PackagePath "PictureSorter-${{ github.ref_name }}-${{ matrix.rid }}.zip" -KeyPath $keyPath
+          }
+          finally {
+            Remove-Item -LiteralPath $keyPath -Force -ErrorAction SilentlyContinue
+          }
+
+      - name: Setup.exe bauen (nur x64)
+        if: matrix.setup
+        shell: pwsh
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path -LiteralPath $iscc)) {
+            winget install --id JRSoftware.InnoSetup --silent --accept-source-agreements --accept-package-agreements
+          }
+          & $iscc "/DMyAppVersion=${{ steps.version.outputs.value }}" "/DPublishDir=$(Resolve-Path publish/win-x64)" "/O." installer/PictureSorter.iss
+          if ($LASTEXITCODE -ne 0) { throw "ISCC fehlgeschlagen ($LASTEXITCODE)." }
+          Get-ChildItem PictureSorter-Setup-*.exe | ForEach-Object { Write-Output "Erstellt: $($_.Name)" }
+
       - name: An GitHub-Release anhaengen
         uses: softprops/action-gh-release@v2
         with:
-          files: PictureSorter-${{ github.ref_name }}-${{ matrix.rid }}.zip
+          # Der Glob laedt das Paket UND seine .sig-Datei hoch.
+          files: |
+            PictureSorter-${{ github.ref_name }}-${{ matrix.rid }}.zip*
+            PictureSorter-Setup-v${{ steps.version.outputs.value }}.exe
           draft: true
-          fail_on_unmatched_files: true
+          fail_on_unmatched_files: false
           body: >-
-            Portable, self-contained Builds von PictureSorter ${{ github.ref_name }}.
-            Entpacken und PictureSorter.exe starten -- keine Installation, keine
-            vorinstallierte Windows App Runtime noetig.
+            PictureSorter ${{ github.ref_name }}.
+
+            Zum Installieren: PictureSorter-Setup-v${{ steps.version.outputs.value }}.exe
+            (keine Adminrechte noetig). Zum blossen Ausprobieren: das ZIP der passenden
+            Architektur entpacken und PictureSorter.exe starten -- kein vorinstalliertes
+            .NET, keine Windows App Runtime noetig.
+
+            Jedes ZIP traegt eine .sig-Datei: Die Anwendung spielt ein Update nur ein,
+            wenn diese Signatur zum Herausgeber passt.

@@ -89,7 +89,11 @@ public sealed class UpdateServiceTests : IDisposable
         HttpClient client = new(handler);
         _disposables.Add(handler);
         _disposables.Add(client);
-        UpdateService service = new(new NullChecker(), new SingleClientFactory(client), NullLogger<UpdateService>.Instance);
+        UpdateService service = new(
+            new NullChecker(),
+            new SingleClientFactory(client),
+            Path.GetDirectoryName(_target)!,
+            NullLogger<UpdateService>.Instance);
         return (service, client);
     }
 
