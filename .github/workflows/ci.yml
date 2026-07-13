@@ -45,6 +45,16 @@ jobs:
           dotnet test PictureSorter.slnx -c Release --no-build
           --blame-hang --blame-hang-timeout 5m --blame-hang-dump-type none
           --logger "console;verbosity=normal"
+          --collect:"XPlat Code Coverage" --settings coverlet.runsettings
+          --results-directory TestResults
+
+      # Sichert den erreichten Stand der Zeilenabdeckung ab: Neuer Code ohne Test
+      # senkt sie und bricht den Lauf. Das Skript vereinigt die Berichte der
+      # Testprojekte, statt sie zu addieren – dieselbe Zeile wird sonst mehrfach
+      # gezählt, sobald zwei Projekte sie erreichen.
+      - name: Coverage-Gate
+        shell: pwsh
+        run: ./tools/coverage-gate.ps1 -MinimumLineCoverage 75
 
       # Erzwingt, dass die Sprachressourcen deckungsgleich und vollständig sind:
       # jeder Schlüssel muss in de-DE UND en-US existieren und darf nicht leer sein.
