@@ -81,6 +81,59 @@ internal sealed class FakePhotoSorter(IReadOnlyList<SortProposal> proposals) : I
     }
 }
 
+/// <summary>
+/// Hält einen zurücknehmbaren Lauf bereit und protokolliert, ob er zurückgenommen
+/// wurde. Ohne echtes Dateisystem.
+/// </summary>
+internal sealed class FakeSortUndoService : ISortUndoService
+{
+    private SortRun? _run;
+
+    /// <summary>Wie oft das Rückgängigmachen ausgeführt wurde.</summary>
+    public int UndoCount { get; private set; }
+
+    /// <summary>Das Ergebnis, das das Rückgängigmachen liefern soll.</summary>
+    public UndoResult Result { get; set; } = new() { Restored = 0, Skipped = 0 };
+
+    /// <summary>Legt einen zurücknehmbaren Lauf an.</summary>
+    /// <param name="fileCount">Zahl der verschobenen Fotos.</param>
+    public void SetUndoableRun(int fileCount)
+    {
+        _run = new SortRun
+        {
+            Id = Guid.NewGuid(),
+            StartedAt = new DateTimeOffset(2026, 7, 1, 8, 0, 0, TimeSpan.Zero),
+            SourceFolder = @"C:\fotos",
+            CategoryName = "Familie",
+            Items =
+            [
+                .. Enumerable.Range(0, fileCount).Select(index => new SortRunItem
+                {
+                    SourcePath = Path.Combine(@"C:\fotos", $"foto{index}.jpg"),
+                    TargetPath = Path.Combine(@"C:\fotos\Familie", $"foto{index}.jpg"),
+                    FileSignature = $"sig-{index}",
+                }),
+            ],
+        };
+
+        Result = new UndoResult { Restored = fileCount, Skipped = 0 };
+    }
+
+    public Task<SortRun?> GetUndoableRunAsync(CancellationToken cancellationToken) => Task.FromResult(_run);
+
+    public Task<UndoResult?> UndoLastRunAsync(CancellationToken cancellationToken)
+    {
+        if (_run is null)
+        {
+            return Task.FromResult<UndoResult?>(null);
+        }
+
+        UndoCount++;
+        _run = null;
+        return Task.FromResult<UndoResult?>(Result);
+    }
+}
+
 /// <summary>Liefert eine feste Fotoliste.</summary>
 internal sealed class FakePhotoSource(IReadOnlyList<Photo> photos) : IPhotoSource
 {

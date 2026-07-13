@@ -685,4 +685,40 @@
   <data name="Photo_Path" xml:space="preserve">
     <value>Path: {0}</value>
   </data>
+  <data name="SortPage_UndoBar.Title" xml:space="preserve">
+    <value>Last sorting run</value>
+  </data>
+  <data name="SortPage_UndoButton.Content" xml:space="preserve">
+    <value>Undo</value>
+  </data>
+  <data name="Sort_UndoSummary" xml:space="preserve">
+    <value>{0} photos sorted into “{1}” ({2}). You can undo this.</value>
+  </data>
+  <data name="Sort_UndoTitle" xml:space="preserve">
+    <value>Undo the sorting</value>
+  </data>
+  <data name="Sort_UndoMessage" xml:space="preserve">
+    <value>{0} photos will be moved back to where they came from. Continue?</value>
+  </data>
+  <data name="Sort_UndoPrimary" xml:space="preserve">
+    <value>Move back</value>
+  </data>
+  <data name="Sort_Undoing" xml:space="preserve">
+    <value>Moving the photos back…</value>
+  </data>
+  <data name="Sort_UndoDone" xml:space="preserve">
+    <value>{0} photos moved back.</value>
+  </data>
+  <data name="Sort_UndoDoneWithSkipped" xml:space="preserve">
+    <value>{0} photos moved back. {1} stayed where they are: they have since been moved or renamed, or a file is back at their original place.</value>
+  </data>
+  <data name="Sort_UndoCanceled" xml:space="preserve">
+    <value>Undo cancelled. The photos already moved back stay where they are.</value>
+  </data>
+  <data name="Sort_UndoNothing" xml:space="preserve">
+    <value>There is nothing to undo.</value>
+  </data>
+  <data name="Sort_UndoFailed" xml:space="preserve">
+    <value>Moving the photos back failed.</value>
+  </data>
 </root>

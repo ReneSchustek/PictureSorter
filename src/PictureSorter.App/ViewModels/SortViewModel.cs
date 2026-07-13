@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -28,6 +29,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     private const int ExampleLimit = 30;
 
     private readonly IPhotoSorter _sorter;
+    private readonly ISortUndoService _undo;
     private readonly IPhotoSource _photoSource;
     private readonly ICategoryTrainer _trainer;
     private readonly ICategoryRepository _categoryRepository;
@@ -75,9 +77,24 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     public partial bool IsEventCategory { get; set; }
 
     /// <summary>
+    /// Zusammenfassung des Laufs, der zurückgenommen werden kann (leer, wenn keiner
+    /// vorliegt).
+    /// </summary>
+    [ObservableProperty]
+    public partial string UndoSummary { get; set; }
+
+    /// <summary>
+    /// <see langword="true"/>, wenn ein Sortierlauf zurückgenommen werden kann.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(UndoCommand))]
+    public partial bool HasUndoableRun { get; set; }
+
+    /// <summary>
     /// Initialisiert das ViewModel.
     /// </summary>
     /// <param name="sorter">Der Sortierdienst.</param>
+    /// <param name="undo">Nimmt den letzten Sortierlauf zurück.</param>
     /// <param name="photoSource">Quelle der Beispielfotos.</param>
     /// <param name="trainer">Lernt das Kategorie-Profil aus Beispielen.</param>
     /// <param name="categoryRepository">Persistiert die gelernten Kategorien.</param>
@@ -89,6 +106,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     /// <param name="logger">Der Logger.</param>
     public SortViewModel(
         IPhotoSorter sorter,
+        ISortUndoService undo,
         IPhotoSource photoSource,
         ICategoryTrainer trainer,
         ICategoryRepository categoryRepository,
@@ -100,6 +118,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         ILogger<SortViewModel> logger)
     {
         ArgumentNullException.ThrowIfNull(sorter);
+        ArgumentNullException.ThrowIfNull(undo);
         ArgumentNullException.ThrowIfNull(photoSource);
         ArgumentNullException.ThrowIfNull(trainer);
         ArgumentNullException.ThrowIfNull(categoryRepository);
@@ -111,6 +130,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         ArgumentNullException.ThrowIfNull(logger);
 
         _sorter = sorter;
+        _undo = undo;
         _photoSource = photoSource;
         _trainer = trainer;
         _categoryRepository = categoryRepository;
@@ -137,6 +157,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         SourceFolder = string.Empty;
         CategoryName = string.Empty;
         CategoryDescription = string.Empty;
+        UndoSummary = string.Empty;
     }
 
     /// <summary>
@@ -216,7 +237,16 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     /// <summary>
     /// Abbrechen ist möglich, solange ein Vorgang läuft.
     /// </summary>
-    public bool CanCancel => State is SortState.Analyzing or SortState.Sorting or SortState.Learning;
+    public bool CanCancel => State is SortState.Analyzing
+        or SortState.Sorting
+        or SortState.Learning
+        or SortState.Undoing;
+
+    /// <summary>
+    /// Rückgängig ist möglich, wenn ein protokollierter Lauf vorliegt und gerade
+    /// nichts läuft.
+    /// </summary>
+    public bool CanUndo => IsInteractive && HasUndoableRun;
 
     /// <summary>
     /// Eine Ordnerwahl ist möglich, solange kein Vorgang läuft.
@@ -226,8 +256,12 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     partial void OnStateChanged(SortState value)
     {
         OnPropertyChanged(nameof(IsInteractive));
+        OnPropertyChanged(nameof(CanUndo));
+        UndoCommand.NotifyCanExecuteChanged();
         Wizard.NotifyStateChanged();
     }
+
+    partial void OnHasUndoableRunChanged(bool value) => OnPropertyChanged(nameof(CanUndo));
 
     partial void OnSourceFolderChanged(string value)
     {
@@ -502,6 +536,10 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         finally
         {
             DisposeCancellation();
+
+            // Erst jetzt steht der Lauf im Protokoll – der Hinweis „rückgängig machen"
+            // erscheint unmittelbar nach dem Sortieren.
+            await RefreshUndoStateAsync().ConfigureAwait(true);
         }
     }
 
@@ -510,6 +548,93 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     {
         _cancellation?.Cancel();
         _status.Report(_localizer.Get("Common_CancelRequested"));
+    }
+
+    /// <summary>
+    /// Prüft, ob ein Sortierlauf zurückgenommen werden kann, und beschriftet den
+    /// Hinweis entsprechend. Das Protokoll ist dauerhaft: Auch ein Lauf von gestern
+    /// lässt sich nach einem Neustart noch zurücknehmen.
+    /// </summary>
+    [RelayCommand]
+    private async Task RefreshUndoStateAsync()
+    {
+        SortRun? run = await _undo.GetUndoableRunAsync(CancellationToken.None).ConfigureAwait(true);
+        if (run is null)
+        {
+            HasUndoableRun = false;
+            UndoSummary = string.Empty;
+            return;
+        }
+
+        UndoSummary = _localizer.Format(
+            "Sort_UndoSummary",
+            run.Items.Count,
+            run.CategoryName,
+            run.StartedAt.ToLocalTime().ToString("g", CultureInfo.CurrentCulture));
+        HasUndoableRun = true;
+    }
+
+    /// <summary>
+    /// Holt die Fotos des letzten Sortierlaufs an ihren Ursprungsort zurück.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanUndo))]
+    private async Task UndoAsync()
+    {
+        using IDisposable? logScope = _logger.BeginScope("Rückgängig {CorrelationId}", NewCorrelationId());
+
+        SortRun? run = await _undo.GetUndoableRunAsync(CancellationToken.None).ConfigureAwait(true);
+        if (run is null)
+        {
+            await RefreshUndoStateAsync().ConfigureAwait(true);
+            _status.Report(_localizer.Get("Sort_UndoNothing"), StatusSeverity.Warning);
+            return;
+        }
+
+        bool confirmed = await _confirmationService.ConfirmAsync(
+            _localizer.Get("Sort_UndoTitle"),
+            _localizer.Format("Sort_UndoMessage", run.Items.Count),
+            _localizer.Get("Sort_UndoPrimary"),
+            _localizer.Get("Common_Cancel")).ConfigureAwait(true);
+        if (!confirmed)
+        {
+            return;
+        }
+
+        State = SortState.Undoing;
+        _status.Begin(_localizer.Get("Sort_Undoing"), Cancel);
+        _cancellation = new CancellationTokenSource();
+
+        try
+        {
+            UndoResult? result = await _undo.UndoLastRunAsync(_cancellation.Token).ConfigureAwait(true);
+            State = SortState.Idle;
+
+            // Nicht zurückgeholte Fotos werden ausgewiesen statt verschwiegen: Sie
+            // liegen weiterhin im Kategorie-Ordner, und die Nutzerin muss das erfahren.
+            _status.Finish(
+                result is null || result.Skipped == 0
+                    ? _localizer.Format("Sort_UndoDone", result?.Restored ?? 0)
+                    : _localizer.Format("Sort_UndoDoneWithSkipped", result.Restored, result.Skipped),
+                result is { Skipped: > 0 } ? StatusSeverity.Warning : StatusSeverity.Success);
+        }
+        catch (OperationCanceledException)
+        {
+            // Bereits zurückgeholte Fotos bleiben zurückgeholt; der Lauf gilt weiter
+            // als offen und kann erneut zurückgenommen werden.
+            State = SortState.Idle;
+            _status.Finish(_localizer.Get("Sort_UndoCanceled"), StatusSeverity.Warning);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            SortViewModelLog.UndoFailed(_logger, ex);
+            State = SortState.Error;
+            _status.Finish(_localizer.Get("Sort_UndoFailed"), StatusSeverity.Error);
+        }
+        finally
+        {
+            DisposeCancellation();
+            await RefreshUndoStateAsync().ConfigureAwait(true);
+        }
     }
 
     // ── Hilfsfunktionen ────────────────────────────────────────────────────────
@@ -664,4 +789,7 @@ internal static partial class SortViewModelLog
 
     [LoggerMessage(EventId = 3103, Level = LogLevel.Error, Message = "Lernen des Kategorie-Profils fehlgeschlagen.")]
     public static partial void LearnFailed(ILogger logger, Exception exception);
+
+    [LoggerMessage(EventId = 3104, Level = LogLevel.Error, Message = "Das Zurückholen der Fotos ist fehlgeschlagen.")]
+    public static partial void UndoFailed(ILogger logger, Exception exception);
 }

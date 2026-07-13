@@ -63,6 +63,82 @@ public sealed class FileOrganizer : IFileOrganizer
         return targetPath;
     }
 
+    /// <inheritdoc />
+    public async Task<bool> RestoreAsync(string currentPath, string originalPath, CancellationToken cancellationToken)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(currentPath);
+        ArgumentException.ThrowIfNullOrWhiteSpace(originalPath);
+
+        string current = Path.GetFullPath(currentPath);
+        string original = Path.GetFullPath(originalPath);
+
+        string fileName = Path.GetFileName(original);
+
+        return await Task.Run(
+            () =>
+            {
+                // Die Datei ist nicht mehr da, wo der Sortierlauf sie hingelegt hat –
+                // jemand hat sie inzwischen verschoben, umbenannt oder gelöscht. Ein
+                // Rückgängig darf hier nichts erraten.
+                if (!File.Exists(current))
+                {
+                    OrganizerLog.RestoreSkipped(_logger, fileName);
+                    return false;
+                }
+
+                // Am Ursprungsort liegt wieder etwas. Das kann eine andere Datei
+                // gleichen Namens sein; sie zu überschreiben wäre genau der
+                // Datenverlust, den das Rückgängig verhindern soll.
+                if (File.Exists(original))
+                {
+                    OrganizerLog.RestoreBlocked(_logger, fileName);
+                    return false;
+                }
+
+                string? folder = Path.GetDirectoryName(original);
+                if (!string.IsNullOrEmpty(folder))
+                {
+                    _ = Directory.CreateDirectory(folder);
+                }
+
+                File.Move(current, original, overwrite: false);
+                OrganizerLog.Restored(_logger, fileName);
+                return true;
+            },
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task RemoveFolderIfEmptyAsync(string folderPath, CancellationToken cancellationToken)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(folderPath);
+
+        string folder = Path.GetFullPath(folderPath);
+        string redactedFolder = LogPaths.Redact(folder);
+
+        await Task.Run(
+            () =>
+            {
+                if (!Directory.Exists(folder) || Directory.EnumerateFileSystemEntries(folder).Any())
+                {
+                    return;
+                }
+
+                try
+                {
+                    Directory.Delete(folder);
+                    OrganizerLog.FolderRemoved(_logger, redactedFolder);
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    // Ein zurückgebliebener leerer Ordner ist unschön, aber harmlos –
+                    // er darf das Rückgängigmachen nicht scheitern lassen.
+                    OrganizerLog.FolderRemovalFailed(_logger, redactedFolder, ex);
+                }
+            },
+            cancellationToken).ConfigureAwait(false);
+    }
+
     // Hängt bei Namenskollision „ (n)" an, statt zu überschreiben. Die Quelldatei
     // selbst zählt dabei nicht als Kollision: Ein bereits am Zielort liegendes Foto
     // soll seinen eigenen Namen behalten und nicht gegen sich selbst ausweichen.
@@ -106,4 +182,19 @@ internal static partial class OrganizerLog
 {
     [LoggerMessage(EventId = 2400, Level = LogLevel.Information, Message = "{FileName} nach {TargetFolder} verschoben.")]
     public static partial void Moved(ILogger logger, string fileName, string targetFolder);
+
+    [LoggerMessage(EventId = 2401, Level = LogLevel.Information, Message = "{FileName} an den Ursprungsort zurückgeholt.")]
+    public static partial void Restored(ILogger logger, string fileName);
+
+    [LoggerMessage(EventId = 2402, Level = LogLevel.Warning, Message = "{FileName} liegt nicht mehr am Zielort und wurde nicht zurückgeholt.")]
+    public static partial void RestoreSkipped(ILogger logger, string fileName);
+
+    [LoggerMessage(EventId = 2403, Level = LogLevel.Warning, Message = "Am Ursprungsort von {FileName} liegt bereits wieder eine Datei; es wurde nicht überschrieben.")]
+    public static partial void RestoreBlocked(ILogger logger, string fileName);
+
+    [LoggerMessage(EventId = 2404, Level = LogLevel.Information, Message = "Leerer Ordner {Folder} entfernt.")]
+    public static partial void FolderRemoved(ILogger logger, string folder);
+
+    [LoggerMessage(EventId = 2405, Level = LogLevel.Debug, Message = "Leerer Ordner {Folder} konnte nicht entfernt werden.")]
+    public static partial void FolderRemovalFailed(ILogger logger, string folder, Exception exception);
 }

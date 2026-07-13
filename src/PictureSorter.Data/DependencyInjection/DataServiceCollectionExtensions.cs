@@ -34,6 +34,7 @@ public static class DataServiceCollectionExtensions
         });
 
         _ = services.AddSingleton<ISortMemory, SortMemoryRepository>();
+        _ = services.AddSingleton<ISortJournal, SortJournalRepository>();
         _ = services.AddSingleton<DatabaseInitializer>();
 
         return services;

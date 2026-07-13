@@ -32,6 +32,26 @@
                 </InfoBar.ActionButton>
             </InfoBar>
 
+            <!--
+                Rückgängig-Hinweis. Bewusst hier oben und nicht in der Schritt-5-Karte:
+                Der Lauf steht dauerhaft im Protokoll, also soll er auch nach einem
+                Neustart oder auf Schritt 1 noch zurückzunehmen sein.
+            -->
+            <InfoBar
+                x:Uid="SortPage_UndoBar"
+                IsClosable="False"
+                IsOpen="{x:Bind ViewModel.HasUndoableRun, Mode=OneWay}"
+                Message="{x:Bind ViewModel.UndoSummary, Mode=OneWay}"
+                Severity="Success"
+                Title="Letzte Sortierung">
+                <InfoBar.ActionButton>
+                    <Button
+                        x:Uid="SortPage_UndoButton"
+                        Command="{x:Bind ViewModel.UndoCommand}"
+                        Content="Rückgängig machen" />
+                </InfoBar.ActionButton>
+            </InfoBar>
+
             <Border Style="{StaticResource HeroBorderStyle}">
                 <Grid ColumnSpacing="12">
                     <Grid.ColumnDefinitions>
