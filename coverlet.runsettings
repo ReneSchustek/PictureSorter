@@ -14,7 +14,7 @@
                Testtiefe, sondern nur, wie viel Rahmenwerk das Projekt hat. -->
           <Exclude>[PictureSorter.App]PictureSorter.App.Views.*,[PictureSorter.App]XamlGeneratedNamespace.*,[PictureSorter.App]*.App</Exclude>
           <ExcludeByAttribute>Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute</ExcludeByAttribute>
-          <ExcludeByFile>**/*ServiceCollectionExtensions.cs,**/Migrations/*.cs</ExcludeByFile>
+          <ExcludeByFile>**/*ServiceCollectionExtensions.cs,**/Migrations/*.cs,**/*.g.cs</ExcludeByFile>
           <SingleHit>false</SingleHit>
           <UseSourceLink>true</UseSourceLink>
         </Configuration>
