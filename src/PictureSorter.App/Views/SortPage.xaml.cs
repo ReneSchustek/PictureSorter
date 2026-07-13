@@ -54,10 +54,13 @@ internal sealed partial class SortPage : Page
         _initializing = false;
     }
 
-    // Prüft beim Anzeigen der Seite die Verfügbarkeit der KI-Modelle und blendet
-    // bei Bedarf den Hinweis ein.
+    // Prüft beim Anzeigen der Seite die Verfügbarkeit der KI-Modelle und ob noch ein
+    // Sortierlauf zurückzunehmen ist (das Protokoll überlebt den Neustart).
     private void OnPageLoaded(object sender, RoutedEventArgs e)
-        => ModelHint.CheckCommand.Execute(parameter: null);
+    {
+        ModelHint.CheckCommand.Execute(parameter: null);
+        ViewModel.RefreshUndoStateCommand.Execute(parameter: null);
+    }
 
     // Wechselt zwischen geführter und Standard-Ansicht und merkt sich die Wahl.
     private void OnViewModeChanged(object sender, SelectionChangedEventArgs e)

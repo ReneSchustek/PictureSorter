@@ -18,6 +18,7 @@
     <Project Path="tests/PictureSorter.Core.Tests/PictureSorter.Core.Tests.csproj" />
     <Project Path="tests/PictureSorter.Data.Tests/PictureSorter.Data.Tests.csproj" />
     <Project Path="tests/PictureSorter.Imaging.Tests/PictureSorter.Imaging.Tests.csproj" />
+    <Project Path="tests/PictureSorter.Integration.Tests/PictureSorter.Integration.Tests.csproj" />
     <Project Path="tests/PictureSorter.Infrastructure.Tests/PictureSorter.Infrastructure.Tests.csproj" />
     <Project Path="tests/PictureSorter.Ollama.Tests/PictureSorter.Ollama.Tests.csproj" />
   </Folder>

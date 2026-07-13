@@ -137,6 +137,32 @@ public sealed class SortMemoryGateway
             cancellationToken);
     }
 
+    /// <summary>
+    /// Lässt eine gemerkte Entscheidung vergessen. Wird beim Rückgängigmachen eines
+    /// Sortierlaufs gebraucht: Liegt das Foto wieder im Quellordner, darf es nicht
+    /// weiter als „einsortiert" gelten – sonst würde es nie wieder vorgeschlagen.
+    /// </summary>
+    /// <param name="sourceFolder">Der Quellordner.</param>
+    /// <param name="fileSignature">Die Signatur des Fotos.</param>
+    /// <param name="categoryName">Die Kategorie.</param>
+    /// <param name="cancellationToken">Token zum Abbrechen des Vorgangs.</param>
+    public async Task ForgetAsync(
+        string sourceFolder,
+        string fileSignature,
+        string categoryName,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _memory.RemoveAsync(sourceFolder, fileSignature, categoryName, cancellationToken)
+                .ConfigureAwait(false);
+        }
+        catch (Exception ex) when (IsRecoverable(ex))
+        {
+            MemoryLog.ForgetFailed(_logger, ex);
+        }
+    }
+
     private async Task<SortMemoryRecord?> TryGetAsync(
         string sourceFolder,
         string signature,
@@ -201,4 +227,7 @@ internal static partial class MemoryLog
 
     [LoggerMessage(EventId = 3501, Level = LogLevel.Warning, Message = "Die Entscheidung zu {FileName} konnte nicht gemerkt werden.")]
     public static partial void WriteFailed(ILogger logger, string fileName, Exception exception);
+
+    [LoggerMessage(EventId = 3502, Level = LogLevel.Warning, Message = "Eine gemerkte Entscheidung konnte nicht verworfen werden; das Foto gilt weiter als einsortiert.")]
+    public static partial void ForgetFailed(ILogger logger, Exception exception);
 }

@@ -685,4 +685,40 @@
   <data name="Photo_Path" xml:space="preserve">
     <value>Pfad: {0}</value>
   </data>
+  <data name="SortPage_UndoBar.Title" xml:space="preserve">
+    <value>Letzte Sortierung</value>
+  </data>
+  <data name="SortPage_UndoButton.Content" xml:space="preserve">
+    <value>Rückgängig machen</value>
+  </data>
+  <data name="Sort_UndoSummary" xml:space="preserve">
+    <value>{0} Fotos nach „{1}“ sortiert ({2}). Du kannst das rückgängig machen.</value>
+  </data>
+  <data name="Sort_UndoTitle" xml:space="preserve">
+    <value>Sortierung rückgängig machen</value>
+  </data>
+  <data name="Sort_UndoMessage" xml:space="preserve">
+    <value>{0} Fotos werden an ihren ursprünglichen Ort zurückgeholt. Fortfahren?</value>
+  </data>
+  <data name="Sort_UndoPrimary" xml:space="preserve">
+    <value>Zurückholen</value>
+  </data>
+  <data name="Sort_Undoing" xml:space="preserve">
+    <value>Fotos werden zurückgeholt…</value>
+  </data>
+  <data name="Sort_UndoDone" xml:space="preserve">
+    <value>{0} Fotos zurückgeholt.</value>
+  </data>
+  <data name="Sort_UndoDoneWithSkipped" xml:space="preserve">
+    <value>{0} Fotos zurückgeholt. {1} blieben liegen: Sie wurden inzwischen verschoben oder umbenannt, oder am Ursprungsort liegt bereits wieder eine Datei.</value>
+  </data>
+  <data name="Sort_UndoCanceled" xml:space="preserve">
+    <value>Zurückholen abgebrochen. Die bereits zurückgeholten Fotos bleiben, wo sie sind.</value>
+  </data>
+  <data name="Sort_UndoNothing" xml:space="preserve">
+    <value>Es gibt nichts rückgängig zu machen.</value>
+  </data>
+  <data name="Sort_UndoFailed" xml:space="preserve">
+    <value>Das Zurückholen ist fehlgeschlagen.</value>
+  </data>
 </root>
