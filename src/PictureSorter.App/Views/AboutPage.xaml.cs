@@ -6,9 +6,8 @@ using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using PictureSorter.App.Logging;
 using PictureSorter.App.Services;
-using PictureSorter.Core.Interfaces;
+using PictureSorter.App.ViewModels;
 using PictureSorter.Core.ValueObjects;
 
 namespace PictureSorter.App.Views;
@@ -19,12 +18,9 @@ namespace PictureSorter.App.Views;
 /// </summary>
 internal sealed partial class AboutPage : Page
 {
-    private const int LogViewLineCount = 200;
-
     private readonly ThemeService _themeService;
     private readonly OllamaSetupService _setupService;
-    private readonly IModelAvailabilityChecker _modelChecker;
-    private readonly FileLoggerProvider _fileLogger;
+    private readonly SettingsViewModel _viewModel;
     private readonly UpdateService _updateService;
     private readonly WindowContext _windowContext;
     private readonly ILocalizer _localizer;
@@ -37,8 +33,7 @@ internal sealed partial class AboutPage : Page
     {
         _themeService = App.Services.GetRequiredService<ThemeService>();
         _setupService = App.Services.GetRequiredService<OllamaSetupService>();
-        _modelChecker = App.Services.GetRequiredService<IModelAvailabilityChecker>();
-        _fileLogger = App.Services.GetRequiredService<FileLoggerProvider>();
+        _viewModel = App.Services.GetRequiredService<SettingsViewModel>();
         _updateService = App.Services.GetRequiredService<UpdateService>();
         _windowContext = App.Services.GetRequiredService<WindowContext>();
         _localizer = App.Services.GetRequiredService<ILocalizer>();
@@ -63,6 +58,31 @@ internal sealed partial class AboutPage : Page
 
     private void OnRefreshLogClick(object sender, RoutedEventArgs e) => LoadLog();
 
+    private void OnLogSearchChanged(object sender, TextChangedEventArgs e)
+    {
+        // Während InitializeComponent stehen die weiter unten deklarierten Felder
+        // (LogView, LogSummaryText) noch nicht – ein hier durchgereichtes Ereignis
+        // liefe in eine NullReferenceException.
+        if (_isInitializing)
+        {
+            return;
+        }
+
+        _viewModel.SearchText = LogSearchBox.Text;
+        ShowLog();
+    }
+
+    private void OnProblemsOnlyToggled(object sender, RoutedEventArgs e)
+    {
+        if (_isInitializing)
+        {
+            return;
+        }
+
+        _viewModel.ProblemsOnly = ProblemsOnlyToggle.IsOn;
+        ShowLog();
+    }
+
     // Öffnet den Log-Ordner im Explorer, damit der Nutzer die vollständigen
     // Protokolldateien weitergeben kann (z. B. zur Fehlersuche).
     private void OnOpenLogFolderClick(object sender, RoutedEventArgs e)
@@ -71,7 +91,7 @@ internal sealed partial class AboutPage : Page
         {
             _ = Process.Start(new ProcessStartInfo
             {
-                FileName = _fileLogger.LogDirectory,
+                FileName = _viewModel.LogDirectory,
                 UseShellExecute = true,
             });
         }
@@ -83,10 +103,14 @@ internal sealed partial class AboutPage : Page
 
     private void LoadLog()
     {
-        IReadOnlyList<string> lines = _fileLogger.ReadRecent(LogViewLineCount);
-        LogView.Text = lines.Count == 0
-            ? _localizer.Get("About_LogEmpty")
-            : string.Join(Environment.NewLine, lines);
+        _viewModel.RefreshLog();
+        ShowLog();
+    }
+
+    private void ShowLog()
+    {
+        LogView.Text = _viewModel.LogText;
+        LogSummaryText.Text = _viewModel.LogSummary;
     }
 
     private void OnDarkToggled(object sender, RoutedEventArgs e)
@@ -185,19 +209,11 @@ internal sealed partial class AboutPage : Page
     private async System.Threading.Tasks.Task CheckKiStatusAsync()
     {
         KiStatusBar.Severity = InfoBarSeverity.Informational;
-        KiStatusBar.Message = _localizer.Get("About_KiChecking");
+        KiStatusBar.Message = _viewModel.AiStatusText;
 
-        ModelAvailability availability = await _modelChecker.CheckAsync(CancellationToken.None).ConfigureAwait(true);
-        if (availability.IsReady)
-        {
-            KiStatusBar.Severity = InfoBarSeverity.Success;
-            KiStatusBar.Message = _localizer.Get("About_KiReady");
-            return;
-        }
+        await _viewModel.CheckAiAsync().ConfigureAwait(true);
 
-        KiStatusBar.Severity = InfoBarSeverity.Warning;
-        KiStatusBar.Message = availability.IsReachable
-            ? _localizer.Format("About_KiModelsMissing", string.Join(", ", availability.MissingModels))
-            : _localizer.Get("About_KiNotSetUp");
+        KiStatusBar.Severity = _viewModel.IsAiReady ? InfoBarSeverity.Success : InfoBarSeverity.Warning;
+        KiStatusBar.Message = _viewModel.AiStatusText;
     }
 }
