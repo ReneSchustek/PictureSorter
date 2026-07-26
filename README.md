@@ -17,6 +17,11 @@ Bildanalysen laufen vollständig offline auf dem eigenen Rechner.
   die übrigen zum Löschen. Gelöschte Dateien wandern in den **Papierkorb**.
 - **Sicher**: Vorschau vor jeder Aktion, Rückfrage bei großen Mengen, Verschieben
   kollisionssicher, Löschen wiederherstellbar.
+- **Rückgängig**: Ein Sortierlauf lässt sich vollständig zurücknehmen – auch nach
+  einem Neustart und auch dann, wenn er mittendrin abgebrochen wurde. Am
+  Ursprungsort wird dabei nie überschrieben.
+- **Nachvollziehbar**: Ein Protokoll in der Anwendung (*Einstellungen*) zeigt, was
+  passiert ist; es lässt sich durchsuchen und auf Warnungen und Fehler eingrenzen.
 
 ## Voraussetzungen
 
@@ -164,6 +169,11 @@ sich per Doppelklick (App Installer) oder `Add-AppxPackage` installieren.
 
 Die Ollama-Anbindung wird über `appsettings.json` im App-Projekt konfiguriert
 (Basis-URL, Modellnamen, Zeitlimits).
+
+## Betrieb
+
+Wo die Daten liegen, wie man sie sichert und wie sich ein Sortierlauf oder ein
+Update zurücknehmen lässt, steht im [Betriebshandbuch](BETRIEB.md).
 
 ## Lizenz
 

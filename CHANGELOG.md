@@ -8,6 +8,14 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 ### Behoben
 
+- **Abgebrochener Sortierlauf war nicht mehr rücknehmbar**: Wurde das Verschieben
+  mittendrin abgebrochen, lagen die bis dahin verschobenen Fotos im Zielordner und
+  galten als einsortiert – protokolliert wurde der Lauf aber nie. „Rückgängig" bot
+  für sie nichts an. Der Lauf wird jetzt auch bei Abbruch mit dem bereits
+  Verschobenen protokolliert.
+- **Beschädigte Datenbank beendete den Programmstart**: Ein SQLite-Fehler beim
+  Initialisieren wurde nicht abgefangen. Die Anwendung läuft in diesem Fall jetzt
+  ohne Sortier-Gedächtnis weiter und schreibt den Grund ins Protokoll.
 - **Datenverlust beim Verschieben**: Ein bereits einsortiertes Foto sah sich bei
   erneutem Lauf (mit „Unterordner einschließen") als Kollision mit sich selbst und
   wurde fortlaufend umbenannt (`a.jpg` → `a (1).jpg` → `a (1) (1).jpg`). Der
@@ -20,6 +28,11 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 ### Geändert
 
+- Der Inhalts-Hash der Duplikat-Suche liest die Datei jetzt strömend, statt sie am
+  Stück in den Speicher zu holen. Bei tausenden großen Fotos sank damit der
+  Speicherbedarf von „Größe der jeweiligen Datei" auf einen festen Puffer.
+- Die Logik der Einstellungsseite liegt in einem `SettingsViewModel` und ist damit
+  ohne WinUI-Laufzeit testbar; das Code-Behind reicht nur noch durch.
 - Die App bringt die Windows App Runtime jetzt selbst mit (self-contained); sie
   startet damit auf Rechnern ohne vorinstallierte Runtime.
 - Die Application-Schicht ist plattformneutral (`net10.0`).
@@ -28,6 +41,18 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 ### Hinzugefügt
 
+- **Automatische Sicherung vor Schemaänderungen**: Steht beim Start eine Migration
+  an, legt die Anwendung vorher eine Kopie der Datenbank an
+  (`picturesorter.vor-<Migration>.bak`) – über die Online-Backup-Schnittstelle von
+  SQLite, damit auch noch nicht verdichtete Schreibvorgänge mitkommen. Eine
+  vorhandene Sicherung wird nie überschrieben. Lässt sich nicht sichern, unterbleibt
+  die Migration.
+- **Protokoll-Ansicht mit Filter und Suche**: Der Bereich *Einstellungen →
+  Protokoll* lässt sich auf Warnungen und Fehler eingrenzen und durchsuchen.
+  Mehrzeilige Einträge bleiben dabei zusammen – eine Stapelüberwachung erscheint
+  weder ohne ihre Fehlermeldung noch verschwindet sie mit ihr.
+- **Betriebshandbuch** (`BETRIEB.md`): Ablageorte, Sicherung und
+  Wiederherstellung, Rücknahme von Sortierlauf und Update, Schlüsselwechsel.
 - **Sortier-Gedächtnis**: PictureSorter merkt sich dauerhaft (SQLite), was zu welchem
   Foto entschieden wurde. Ein zweiter Lauf überspringt bereits einsortierte, abgewählte
   und von der KI abgelehnte Fotos – das spart die teuren KI-Aufrufe. Dasselbe Foto darf
