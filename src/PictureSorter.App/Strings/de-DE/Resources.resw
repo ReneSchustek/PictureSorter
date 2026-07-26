@@ -721,4 +721,25 @@
   <data name="Sort_UndoFailed" xml:space="preserve">
     <value>Das Zurückholen ist fehlgeschlagen.</value>
   </data>
+  <data name="About_LogNoMatch" xml:space="preserve">
+    <value>Kein Eintrag passt zur Auswahl.</value>
+  </data>
+  <data name="About_LogSummary" xml:space="preserve">
+    <value>{0} von {1} Zeilen angezeigt.</value>
+  </data>
+  <data name="AboutPage_LogSearch.PlaceholderText" xml:space="preserve">
+    <value>Im Protokoll suchen</value>
+  </data>
+  <data name="AboutPage_LogSearch.Header" xml:space="preserve">
+    <value>Suche</value>
+  </data>
+  <data name="AboutPage_ProblemsOnlyToggle.Header" xml:space="preserve">
+    <value>Nur Warnungen und Fehler</value>
+  </data>
+  <data name="AboutPage_ProblemsOnlyToggle.OnContent" xml:space="preserve">
+    <value>An</value>
+  </data>
+  <data name="AboutPage_ProblemsOnlyToggle.OffContent" xml:space="preserve">
+    <value>Aus</value>
+  </data>
 </root>

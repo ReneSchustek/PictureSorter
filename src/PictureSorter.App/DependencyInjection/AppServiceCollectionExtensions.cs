@@ -74,6 +74,7 @@ internal static class AppServiceCollectionExtensions
         _ = services.AddTransient<DuplicatesViewModel>();
         _ = services.AddTransient<MemoryViewModel>();
         _ = services.AddTransient<ModelHintViewModel>();
+        _ = services.AddTransient<SettingsViewModel>();
 
         return services;
     }
