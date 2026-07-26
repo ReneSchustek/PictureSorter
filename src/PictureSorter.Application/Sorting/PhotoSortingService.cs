@@ -160,54 +160,65 @@ public sealed class PhotoSortingService : IPhotoSorter
         // Nummer an) – ohne ihn ließe sich der Lauf später nicht zurücknehmen.
         List<SortRunItem> moved = [];
 
-        foreach (SortProposal proposal in proposals)
+        try
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            string targetPath;
-            try
+            foreach (SortProposal proposal in proposals)
             {
-                targetPath = await _fileOrganizer
-                    .ApplyAsync(proposal, dryRun, cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-            {
-                // Eine einzelne gesperrte oder verschwundene Datei darf den Lauf nicht
-                // abbrechen – sonst bliebe die Sortierung auf halber Strecke stehen.
-                // Das Foto wird nicht als erledigt gemerkt und beim nächsten Lauf
-                // erneut vorgeschlagen.
-                SortingLog.MoveFailed(_logger, proposal.Photo.FileName, ex);
-                failed++;
-                continue;
-            }
+                cancellationToken.ThrowIfCancellationRequested();
 
-            // Im Probelauf wird nichts verschoben – dann darf auch nichts als
-            // erledigt gemerkt oder protokolliert werden.
-            if (!dryRun)
-            {
-                await _memory.MarkSortedAsync(proposal, cancellationToken).ConfigureAwait(false);
-
-                // Lag das Foto schon am Ziel, hat sich nichts bewegt – es gäbe nichts
-                // zurückzuholen, und ein Rückgängig würde die Datei sonst an einen Ort
-                // „zurück" schieben, an dem sie nie war.
-                if (!string.Equals(proposal.Photo.FullPath, targetPath, StringComparison.OrdinalIgnoreCase))
+                string targetPath;
+                try
                 {
-                    moved.Add(new SortRunItem
-                    {
-                        SourcePath = proposal.Photo.FullPath,
-                        TargetPath = targetPath,
-                        FileSignature = proposal.Photo.ComputeSignature(),
-                    });
+                    targetPath = await _fileOrganizer
+                        .ApplyAsync(proposal, dryRun, cancellationToken)
+                        .ConfigureAwait(false);
                 }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    // Eine einzelne gesperrte oder verschwundene Datei darf den Lauf nicht
+                    // abbrechen – sonst bliebe die Sortierung auf halber Strecke stehen.
+                    // Das Foto wird nicht als erledigt gemerkt und beim nächsten Lauf
+                    // erneut vorgeschlagen.
+                    SortingLog.MoveFailed(_logger, proposal.Photo.FileName, ex);
+                    failed++;
+                    continue;
+                }
+
+                // Im Probelauf wird nichts verschoben – dann darf auch nichts als
+                // erledigt gemerkt oder protokolliert werden.
+                if (!dryRun)
+                {
+                    await _memory.MarkSortedAsync(proposal, cancellationToken).ConfigureAwait(false);
+
+                    // Lag das Foto schon am Ziel, hat sich nichts bewegt – es gäbe nichts
+                    // zurückzuholen, und ein Rückgängig würde die Datei sonst an einen Ort
+                    // „zurück" schieben, an dem sie nie war.
+                    if (!string.Equals(proposal.Photo.FullPath, targetPath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        moved.Add(new SortRunItem
+                        {
+                            SourcePath = proposal.Photo.FullPath,
+                            TargetPath = targetPath,
+                            FileSignature = proposal.Photo.ComputeSignature(),
+                        });
+                    }
+                }
+
+                applied++;
             }
-
-            applied++;
         }
-
-        if (moved.Count > 0)
+        finally
         {
-            await RecordRunAsync(proposals[0], moved, cancellationToken).ConfigureAwait(false);
+            // Auch ein abgebrochener Lauf muss protokolliert werden: Was bis zum Abbruch
+            // verschoben wurde, liegt bereits im Zielordner und ist im Gedächtnis als
+            // einsortiert vermerkt. Ohne Protokoll gäbe es dafür keinen Weg zurück –
+            // ausgerechnet nach einem Abbruch, wo die Nutzerin ihn am ehesten sucht.
+            // Der Abbruch-Token wird hier bewusst nicht durchgereicht: Er ist bereits
+            // ausgelöst und würde das Protokollieren sofort wieder abwürgen.
+            if (moved.Count > 0)
+            {
+                await RecordRunAsync(proposals[0], moved, CancellationToken.None).ConfigureAwait(false);
+            }
         }
 
         SortingLog.ProposalsApplied(_logger, applied, dryRun);
