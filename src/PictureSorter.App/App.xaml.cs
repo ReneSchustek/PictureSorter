@@ -308,7 +308,7 @@ internal static partial class AppLog
     [LoggerMessage(EventId = 1002, Level = LogLevel.Warning, Message = "KI beim Start nicht einsatzbereit. Fehlende/erforderliche Modelle: {Models}.")]
     public static partial void ModelsNotReady(ILogger logger, string models);
 
-    [LoggerMessage(EventId = 1004, Level = LogLevel.Error, Message = "Update-Helfer abgewiesen: Der Quellordner passt nicht zum geprüften Vermerk.")]
+    [LoggerMessage(EventId = 1006, Level = LogLevel.Error, Message = "Update-Helfer abgewiesen: Der Quellordner passt nicht zum geprüften Vermerk.")]
     public static partial void UpdateApplyRejected(ILogger logger);
 
     [LoggerMessage(EventId = 1005, Level = LogLevel.Information, Message = "Update eingespielt: {Applied}.")]

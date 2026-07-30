@@ -168,10 +168,21 @@ internal static class UpdateInstaller
     /// <param name="sourceDirectory">Der geprüfte Staging-Ordner.</param>
     /// <param name="targetDirectory">Der Programmordner.</param>
     /// <returns><see langword="true"/>, wenn alle Dateien ersetzt wurden.</returns>
-    public static bool ApplyStagedFiles(string sourceDirectory, string targetDirectory)
+    public static bool ApplyStagedFiles(string sourceDirectory, string targetDirectory) =>
+        ApplyStagedFiles(sourceDirectory, targetDirectory, CopyWithRetry);
+
+    // Der Kopierschritt ist herauslösbar, damit der Test genau den Fall herstellen kann,
+    // den ein Dateisystem nicht verlässlich erzeugt: Das Sichern gelingt, erst das
+    // Ersetzen scheitert. Eine gesperrte Datei scheitert schon beim Sichern und lässt
+    // den Rollback-Pfad der betroffenen Datei ungeprüft.
+    internal static bool ApplyStagedFiles(
+        string sourceDirectory,
+        string targetDirectory,
+        Action<string, string> copyFile)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(sourceDirectory);
         ArgumentException.ThrowIfNullOrWhiteSpace(targetDirectory);
+        ArgumentNullException.ThrowIfNull(copyFile);
 
         string source = Path.GetFullPath(sourceDirectory);
         string target = Path.GetFullPath(targetDirectory);
@@ -192,8 +203,13 @@ internal static class UpdateInstaller
                     File.Copy(destination, backup, overwrite: true);
                 }
 
-                CopyWithRetry(file, destination);
+                // Vor dem Kopieren vormerken, nicht danach: Scheitert CopyWithRetry,
+                // ist genau diese Datei die einzige, die halb geschrieben sein kann –
+                // sie gehört als Erste in den Rollback. Stand der Eintrag hinter dem
+                // Kopieren, holte die Rücknahme alle anderen Dateien zurück und ließ
+                // ausgerechnet die beschädigte liegen.
                 replaced.Add((destination, backup ?? string.Empty));
+                copyFile(file, destination);
             }
 
             // Erst wenn alles steht, die Sicherungen wegräumen.
