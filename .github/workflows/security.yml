@@ -14,6 +14,11 @@ jobs:
   codeql:
     name: CodeQL (SAST)
     runs-on: windows-latest
+    # Code-Scanning gibt es für private Repositories nur mit GitHub Advanced
+    # Security. Ohne die Bedingung scheitert der Job an "Code scanning is not
+    # enabled" und das Sicherheitsgate wäre dauerhaft rot, ohne je etwas geprüft
+    # zu haben. Wird das Repository öffentlich, läuft er von selbst an.
+    if: github.event.repository.visibility == 'public'
     permissions:
       actions: read
       contents: read
@@ -47,7 +52,9 @@ jobs:
   dependency-review:
     name: Dependency Review (SCA)
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+    # Wie bei CodeQL: Die Aktion verlangt für private Repositories den
+    # Abhängigkeitsgraphen samt Advanced Security und bricht sonst ab.
+    if: github.event_name == 'pull_request' && github.event.repository.visibility == 'public'
     permissions:
       contents: read
       pull-requests: write
