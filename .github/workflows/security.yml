@@ -9,6 +9,10 @@ on:
     # Wöchentlicher Security-Scan, damit neue CVEs in unveränderten Abhängigkeiten
     # auch ohne Push gefunden werden. Sonntag 04:00 UTC = außerhalb der Arbeitspaket-Arbeitszeit.
     - cron: '0 4 * * 0'
+  # Von Hand auslösbar: Ein Sicherheitsgate, das man nur durch einen Commit in Gang
+  # setzen kann, wird nach einer Änderung an den Voraussetzungen nicht nachgeprüft --
+  # etwa nachdem das Repository öffentlich wurde und CodeQL überhaupt erst laufen darf.
+  workflow_dispatch:
 
 jobs:
   codeql:
