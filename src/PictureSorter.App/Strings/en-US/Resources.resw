@@ -721,4 +721,25 @@
   <data name="Sort_UndoFailed" xml:space="preserve">
     <value>Moving the photos back failed.</value>
   </data>
+  <data name="About_LogNoMatch" xml:space="preserve">
+    <value>No entry matches the selection.</value>
+  </data>
+  <data name="About_LogSummary" xml:space="preserve">
+    <value>Showing {0} of {1} lines.</value>
+  </data>
+  <data name="AboutPage_LogSearch.PlaceholderText" xml:space="preserve">
+    <value>Search the log</value>
+  </data>
+  <data name="AboutPage_LogSearch.Header" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="AboutPage_ProblemsOnlyToggle.Header" xml:space="preserve">
+    <value>Warnings and errors only</value>
+  </data>
+  <data name="AboutPage_ProblemsOnlyToggle.OnContent" xml:space="preserve">
+    <value>On</value>
+  </data>
+  <data name="AboutPage_ProblemsOnlyToggle.OffContent" xml:space="preserve">
+    <value>Off</value>
+  </data>
 </root>
