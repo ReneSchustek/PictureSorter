@@ -178,6 +178,6 @@ public sealed class OllamaImageClassifier : IImageClassifier
 /// </summary>
 internal static partial class VisionLog
 {
-    [LoggerMessage(EventId = 2200, Level = LogLevel.Warning, Message = "Vision-Antwort für {FileName} war nicht auswertbar; als Ablehnung gewertet.")]
+    [LoggerMessage(EventId = 2620, Level = LogLevel.Warning, Message = "Vision-Antwort für {FileName} war nicht auswertbar; als Ablehnung gewertet.")]
     public static partial void Unparseable(ILogger logger, string fileName);
 }

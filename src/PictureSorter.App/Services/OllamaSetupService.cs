@@ -70,9 +70,11 @@ internal sealed class OllamaSetupService
 /// </summary>
 internal static partial class OllamaSetupLog
 {
-    [LoggerMessage(EventId = 4000, Level = LogLevel.Information, Message = "Ollama-Einrichtung gestartet: {Script}.")]
+    // 1100er-Band: Die Einrichtung gehört zur App-Schicht. Die zuvor vergebenen 4000/4001
+    // liegen im Band der Datenschicht und waren dort bereits belegt.
+    [LoggerMessage(EventId = 1100, Level = LogLevel.Information, Message = "Ollama-Einrichtung gestartet: {Script}.")]
     public static partial void SetupStarted(ILogger logger, string script);
 
-    [LoggerMessage(EventId = 4001, Level = LogLevel.Error, Message = "Ollama-Einrichtung konnte nicht gestartet werden.")]
+    [LoggerMessage(EventId = 1101, Level = LogLevel.Error, Message = "Ollama-Einrichtung konnte nicht gestartet werden.")]
     public static partial void SetupFailed(ILogger logger, Exception exception);
 }
