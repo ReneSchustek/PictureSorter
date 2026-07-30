@@ -36,8 +36,7 @@ public sealed class WindowsPerceptualHasher : IPerceptualHasher
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
 
-        byte[] bytes = await File.ReadAllBytesAsync(filePath, cancellationToken).ConfigureAwait(false);
-        string contentHash = Convert.ToHexString(SHA256.HashData(bytes));
+        string contentHash = await ComputeContentHashAsync(filePath, cancellationToken).ConfigureAwait(false);
         PerceptualHash? perceptual = await TryComputePerceptualAsync(filePath, cancellationToken).ConfigureAwait(false);
 
         return new ImageFingerprint
@@ -46,6 +45,20 @@ public sealed class WindowsPerceptualHasher : IPerceptualHasher
             ContentHash = contentHash,
             Perceptual = perceptual,
         };
+    }
+
+    // Aus dem Dateistrom lesen statt die Datei am Stück in den Speicher zu holen: Ein
+    // Duplikat-Lauf über 5000 Handyfotos ginge sonst dateiweise durch Puffer von je
+    // mehreren Megabyte – die landen auf dem Large Object Heap und treiben den
+    // Speicherbedarf hoch, obwohl der Hash sie nur einmal von vorn nach hinten liest.
+    private static async Task<string> ComputeContentHashAsync(string filePath, CancellationToken cancellationToken)
+    {
+        FileStream stream = new(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 81920, useAsync: true);
+        await using (stream.ConfigureAwait(false))
+        {
+            byte[] hash = await SHA256.HashDataAsync(stream, cancellationToken).ConfigureAwait(false);
+            return Convert.ToHexString(hash);
+        }
     }
 
     private async Task<PerceptualHash?> TryComputePerceptualAsync(string filePath, CancellationToken cancellationToken)

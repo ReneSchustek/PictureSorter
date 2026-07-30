@@ -75,3 +75,22 @@ internal sealed class FakeOllamaClient : IOllamaClient
             ? Task.FromException<IReadOnlyList<string>>(_failure)
             : Task.FromResult<IReadOnlyList<string>>([.. InstalledModels]);
 }
+
+/// <summary>
+/// Liefert feste JPEG-Daten, statt eine Datei zu dekodieren – die echte Aufbereitung
+/// braucht die Windows-Bild-API und damit ein Bild auf der Platte. Mit einem Fehler
+/// bestückt bildet sie den Fall ab, dass der Codec fehlt (etwa für HEIC).
+/// </summary>
+internal sealed class FakeVisionImageEncoder(Exception? failure = null) : IVisionImageEncoder
+{
+    /// <summary>Der Pfad, der zuletzt aufbereitet werden sollte.</summary>
+    public string? LastPath { get; private set; }
+
+    public Task<byte[]> EncodeAsync(string filePath, CancellationToken cancellationToken)
+    {
+        LastPath = filePath;
+        return failure is not null
+            ? Task.FromException<byte[]>(failure)
+            : Task.FromResult<byte[]>([0xFF, 0xD8, 0xFF, 0xE0]);
+    }
+}

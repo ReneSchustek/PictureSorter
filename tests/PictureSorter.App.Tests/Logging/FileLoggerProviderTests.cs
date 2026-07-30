@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using PictureSorter.App.Logging;
+using PictureSorter.App.Tests.Fakes;
 
 namespace PictureSorter.App.Tests.Logging;
 
@@ -21,7 +22,7 @@ public sealed class FileLoggerProviderTests : IDisposable
     [Fact]
     public void Log_WritesTheEntryToTodaysFile()
     {
-        using FileLoggerProvider provider = new(_directory);
+        using FileLoggerProvider provider = new(_directory, TestClock.Fixed);
         ILogger logger = provider.CreateLogger("Test");
 
         logger.LogInformation("Etwas ist passiert.");
@@ -37,7 +38,7 @@ public sealed class FileLoggerProviderTests : IDisposable
         // Die Korrelations-ID eines Sortierlaufs muss auch an den Zeilen der
         // nachgelagerten Aufrufe hängen – sonst lässt sich ein Lauf im Protokoll
         // nicht zusammensetzen.
-        using FileLoggerProvider provider = new(_directory);
+        using FileLoggerProvider provider = new(_directory, TestClock.Fixed);
         ILogger logger = provider.CreateLogger("Test");
 
         using (logger.BeginScope("Sortieren abc123"))
@@ -55,7 +56,7 @@ public sealed class FileLoggerProviderTests : IDisposable
     [Fact]
     public void ReadRecent_ReturnsOnlyTheLastLines()
     {
-        using FileLoggerProvider provider = new(_directory);
+        using FileLoggerProvider provider = new(_directory, TestClock.Fixed);
         ILogger logger = provider.CreateLogger("Test");
 
         string[] messages = [.. Enumerable.Range(0, 10).Select(index => $"Eintrag {index}")];
@@ -76,7 +77,7 @@ public sealed class FileLoggerProviderTests : IDisposable
     [Fact]
     public void ReadRecent_WithoutAnyLogFile_ReturnsNothing()
     {
-        using FileLoggerProvider provider = new(_directory);
+        using FileLoggerProvider provider = new(_directory, TestClock.Fixed);
 
         Assert.Empty(provider.ReadRecent(10));
     }
@@ -87,7 +88,7 @@ public sealed class FileLoggerProviderTests : IDisposable
         // Ein Protokoll, das die Anwendung abstürzen lässt, wäre eine Farce. Liegt das
         // Verzeichnis auf einem nicht existierenden Laufwerk, wird der Eintrag eben
         // verworfen.
-        using FileLoggerProvider provider = new(@"Q:\gibt-es-nicht\logs");
+        using FileLoggerProvider provider = new(@"Q:\gibt-es-nicht\logs", TestClock.Fixed);
         ILogger logger = provider.CreateLogger("Test");
 
         logger.LogInformation("Das geht ins Leere.");
@@ -107,10 +108,26 @@ public sealed class FileLoggerProviderTests : IDisposable
         string recent = Path.Combine(_directory, "picturesorter-2026-07-01.log");
         File.WriteAllText(recent, "frisch");
 
-        using FileLoggerProvider provider = new(_directory, retentionDays: 30);
+        using FileLoggerProvider provider = new(_directory, TestClock.Fixed, retentionDays: 30);
 
         Assert.False(File.Exists(old));
         Assert.True(File.Exists(recent));
+    }
+
+    [Fact]
+    public void Log_WritesToTheFileOfTheDayTheClockReports()
+    {
+        // Der Dateiname kam bisher aus DateTimeOffset.Now und hing damit am Kalender
+        // des Rechners; prüfbar war er nicht. Über die Zeitquelle ist er es.
+        TestClock silvester = new(new DateTimeOffset(2026, 12, 31, 23, 0, 0, TimeSpan.Zero));
+        using FileLoggerProvider provider = new(_directory, silvester);
+
+        provider.CreateLogger("Test").LogInformation("Kurz vor Mitternacht.");
+
+        string expected = Path.Combine(
+            _directory,
+            $"picturesorter-{silvester.UtcNow.ToLocalTime():yyyy-MM-dd}.log");
+        Assert.True(File.Exists(expected), $"Erwartet wurde {expected}.");
     }
 
     public void Dispose()

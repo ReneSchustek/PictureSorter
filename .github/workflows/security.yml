@@ -1,0 +1,125 @@
+name: Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Wöchentlicher Security-Scan, damit neue CVEs in unveränderten Abhängigkeiten
+    # auch ohne Push gefunden werden. Sonntag 04:00 UTC = außerhalb der Brief-Arbeitszeit.
+    - cron: '0 4 * * 0'
+
+jobs:
+  codeql:
+    name: CodeQL (SAST)
+    runs-on: windows-latest
+    # Code-Scanning gibt es für private Repositories nur mit GitHub Advanced
+    # Security. Ohne die Bedingung scheitert der Job an "Code scanning is not
+    # enabled" und das Sicherheitsgate wäre dauerhaft rot, ohne je etwas geprüft
+    # zu haben. Wird das Repository öffentlich, läuft er von selbst an.
+    if: github.event.repository.visibility == 'public'
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Quellcode auschecken
+        uses: actions/checkout@v5
+
+      - name: .NET 10 einrichten
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.x'
+
+      - name: CodeQL initialisieren
+        uses: github/codeql-action/init@v3
+        with:
+          languages: csharp
+          queries: security-extended,security-and-quality
+
+      - name: Solution bauen (App wird per Projekt-Mapping als x64 gebaut, damit CodeQL die Assemblies analysieren kann)
+        run: |
+          dotnet restore PictureSorter.slnx
+          dotnet build PictureSorter.slnx --no-restore
+
+      - name: CodeQL-Analyse durchführen
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: '/language:csharp'
+
+  dependency-review:
+    name: Dependency Review (SCA)
+    runs-on: ubuntu-latest
+    # Wie bei CodeQL: Die Aktion verlangt für private Repositories den
+    # Abhängigkeitsgraphen samt Advanced Security und bricht sonst ab.
+    if: github.event_name == 'pull_request' && github.event.repository.visibility == 'public'
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Quellcode auschecken
+        uses: actions/checkout@v5
+
+      - name: Abhängigkeiten gegen GitHub Advisory Database prüfen
+        uses: actions/dependency-review-action@v5
+        with:
+          fail-on-severity: moderate
+          comment-summary-in-pr: always
+
+  vulnerable-packages:
+    name: NuGet Vulnerability Audit (SCA)
+    runs-on: windows-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Quellcode auschecken
+        uses: actions/checkout@v5
+
+      - name: .NET 10 einrichten
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.x'
+
+      - name: Restore
+        run: dotnet restore PictureSorter.slnx
+
+      - name: Vulnerable-Packages-Check (transitives Schließen, hartes Gate)
+        shell: pwsh
+        run: |
+          $output = dotnet list PictureSorter.slnx package --vulnerable --include-transitive 2>&1 | Out-String
+          Write-Host $output
+          if ($output -match 'has the following vulnerable packages') {
+            Write-Host '::error::Vulnerable NuGet-Pakete gefunden — Build hart abgebrochen.'
+            exit 1
+          }
+
+      - name: Deprecated-Packages-Check (Warnung, kein Fail)
+        shell: pwsh
+        continue-on-error: true
+        run: dotnet list PictureSorter.slnx package --deprecated --include-transitive
+
+  secret-scan:
+    name: Secret Scan (gitleaks)
+    runs-on: ubuntu-latest
+    # gitleaks liest bei einem Pull Request dessen Commit-Liste und schreibt den
+    # Fund als Kommentar. Ohne diese beiden Rechte antwortet die API mit 403 und
+    # der Job bricht ab, ohne je einen Scan gemacht zu haben.
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Quellcode auschecken
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: gitleaks ausführen
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_COMMENTS: true
