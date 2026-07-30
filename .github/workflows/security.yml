@@ -65,6 +65,8 @@ jobs:
   vulnerable-packages:
     name: NuGet Vulnerability Audit (SCA)
     runs-on: windows-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Quellcode auschecken
@@ -96,6 +98,12 @@ jobs:
   secret-scan:
     name: Secret Scan (gitleaks)
     runs-on: ubuntu-latest
+    # gitleaks liest bei einem Pull Request dessen Commit-Liste und schreibt den
+    # Fund als Kommentar. Ohne diese beiden Rechte antwortet die API mit 403 und
+    # der Job bricht ab, ohne je einen Scan gemacht zu haben.
+    permissions:
+      contents: read
+      pull-requests: write
 
     steps:
       - name: Quellcode auschecken
