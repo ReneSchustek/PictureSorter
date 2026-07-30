@@ -132,6 +132,7 @@ public sealed class OllamaImageClassifierTests : IDisposable
 
     private static OllamaImageClassifier CreateSut(FakeOllamaClient client) => new(
         client,
+        new FakeVisionImageEncoder(),
         Options.Create(new OllamaOptions()),
         NullLogger<OllamaImageClassifier>.Instance);
 

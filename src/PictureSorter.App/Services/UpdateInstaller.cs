@@ -95,11 +95,13 @@ internal static class UpdateInstaller
     /// </summary>
     /// <param name="dataDirectory">Das Datenverzeichnis der Anwendung.</param>
     /// <param name="stagingDirectory">Der Ordner mit der entpackten neuen Fassung.</param>
-    public static void WritePendingNote(string dataDirectory, string stagingDirectory)
+    /// <param name="targetDirectory">Der Programmordner, der ersetzt werden soll.</param>
+    public static void WritePendingNote(string dataDirectory, string stagingDirectory, string targetDirectory)
     {
         PendingUpdate note = new(
             Path.GetFullPath(stagingDirectory),
-            ComputeHash(Path.Combine(stagingDirectory, ExecutableName)));
+            ComputeHash(Path.Combine(stagingDirectory, ExecutableName)),
+            Path.GetFullPath(targetDirectory));
 
         File.WriteAllText(
             Path.Combine(dataDirectory, PendingUpdateFileName),
@@ -113,8 +115,9 @@ internal static class UpdateInstaller
     /// </summary>
     /// <param name="dataDirectory">Das Datenverzeichnis der Anwendung.</param>
     /// <param name="stagingDirectory">Der behauptete Staging-Ordner.</param>
-    /// <returns><see langword="true"/>, wenn Ordner und Abdruck zum Vermerk passen.</returns>
-    public static bool IsTrustedStaging(string dataDirectory, string stagingDirectory)
+    /// <param name="targetDirectory">Der behauptete Programmordner.</param>
+    /// <returns><see langword="true"/>, wenn Ordner, Abdruck und Ziel zum Vermerk passen.</returns>
+    public static bool IsTrustedStaging(string dataDirectory, string stagingDirectory, string targetDirectory)
     {
         string notePath = Path.Combine(dataDirectory, PendingUpdateFileName);
         string executable = Path.Combine(stagingDirectory, ExecutableName);
@@ -131,7 +134,15 @@ internal static class UpdateInstaller
                     note.StagingDirectory,
                     Path.GetFullPath(stagingDirectory),
                     StringComparison.OrdinalIgnoreCase)
-                && string.Equals(note.ExecutableSha256, ComputeHash(executable), StringComparison.OrdinalIgnoreCase);
+                && string.Equals(note.ExecutableSha256, ComputeHash(executable), StringComparison.OrdinalIgnoreCase)
+
+                // Auch das Ziel muss aus dem Vermerk stammen. Sonst genügte ein Aufruf
+                // mit eigenem --target, um die geprüften Dateien an einen frei gewählten
+                // Ort zu schreiben – etwa in den Autostart-Ordner.
+                && string.Equals(
+                    note.TargetDirectory,
+                    Path.GetFullPath(targetDirectory),
+                    StringComparison.OrdinalIgnoreCase);
         }
         catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException)
         {
@@ -339,5 +350,9 @@ internal static class UpdateInstaller
     /// <summary>Der Vertrauensvermerk zum vorbereiteten Update.</summary>
     /// <param name="StagingDirectory">Der geprüfte Staging-Ordner.</param>
     /// <param name="ExecutableSha256">Abdruck der neuen ausführbaren Datei.</param>
-    internal sealed record PendingUpdate(string StagingDirectory, string ExecutableSha256);
+    /// <param name="TargetDirectory">Der Programmordner, der ersetzt werden soll.</param>
+    internal sealed record PendingUpdate(
+        string StagingDirectory,
+        string ExecutableSha256,
+        string TargetDirectory);
 }

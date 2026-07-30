@@ -43,4 +43,33 @@ public sealed class FolderNameSanitizationTests
 
         Assert.Equal(name, result);
     }
+
+    [Theory]
+    [InlineData("CON", "CON_")]
+    [InlineData("nul", "nul_")]
+    [InlineData("COM1", "COM1_")]
+    [InlineData("LPT9", "LPT9_")]
+    [InlineData("Prn.jpg", "Prn.jpg_")]
+    public void SanitizeFolderName_WindowsDeviceNames_AreMadeUsable(string name, string expected)
+    {
+        // Windows hält diese Namen für Geräte, unabhängig von Groß-/Kleinschreibung und
+        // Endung. Ein Ordner dieses Namens lässt sich nicht anlegen – die Nutzerin sähe
+        // eine Fehlermeldung, die ihr nichts sagt.
+        string result = PhotoSortingService.SanitizeFolderName(name);
+
+        Assert.Equal(expected, result);
+    }
+
+    [Theory]
+    [InlineData("Urlaub.", "Urlaub")]
+    [InlineData("Ostern..", "Ostern")]
+    public void SanitizeFolderName_TrailingDots_AreRemoved(string name, string expected)
+    {
+        // Windows schneidet Punkte am Ende beim Anlegen still ab. Bliebe der Punkt im
+        // Namen stehen, wiche der protokollierte Pfad vom tatsächlichen ab – und genau
+        // der Pfad ist die Grundlage des Rückgängigmachens.
+        string result = PhotoSortingService.SanitizeFolderName(name);
+
+        Assert.Equal(expected, result);
+    }
 }

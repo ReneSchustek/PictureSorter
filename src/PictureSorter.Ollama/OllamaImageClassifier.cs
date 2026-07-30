@@ -16,6 +16,7 @@ namespace PictureSorter.Ollama;
 public sealed class OllamaImageClassifier : IImageClassifier
 {
     private readonly IOllamaClient _client;
+    private readonly IVisionImageEncoder _encoder;
     private readonly OllamaOptions _options;
     private readonly ILogger<OllamaImageClassifier> _logger;
 
@@ -23,18 +24,22 @@ public sealed class OllamaImageClassifier : IImageClassifier
     /// Initialisiert den Klassifikator.
     /// </summary>
     /// <param name="client">Der Ollama-Client.</param>
+    /// <param name="encoder">Bereitet das Foto für das Bild-Modell auf.</param>
     /// <param name="options">Die Ollama-Konfiguration.</param>
     /// <param name="logger">Der Logger.</param>
     public OllamaImageClassifier(
         IOllamaClient client,
+        IVisionImageEncoder encoder,
         IOptions<OllamaOptions> options,
         ILogger<OllamaImageClassifier> logger)
     {
         ArgumentNullException.ThrowIfNull(client);
+        ArgumentNullException.ThrowIfNull(encoder);
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(logger);
 
         _client = client;
+        _encoder = encoder;
         _options = options.Value;
         _logger = logger;
     }
@@ -49,7 +54,11 @@ public sealed class OllamaImageClassifier : IImageClassifier
         ArgumentNullException.ThrowIfNull(category);
 
         string prompt = BuildPrompt(category.Description, photo.DescribeMetadata());
-        string imageBase64 = await ImagePayload.ToBase64Async(photo.FullPath, cancellationToken).ConfigureAwait(false);
+
+        // Aufbereitet statt roh: Das Modell liest kein HEIC, und ein Foto in voller
+        // Auflösung kostet nur Speicher und Übertragung.
+        byte[] jpeg = await _encoder.EncodeAsync(photo.FullPath, cancellationToken).ConfigureAwait(false);
+        string imageBase64 = Convert.ToBase64String(jpeg);
         string answer = await _client
             .GenerateAsync(_options.VisionModel, prompt, [imageBase64], cancellationToken)
             .ConfigureAwait(false);

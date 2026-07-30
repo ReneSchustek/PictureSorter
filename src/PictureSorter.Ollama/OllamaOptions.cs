@@ -41,10 +41,4 @@ public sealed class OllamaOptions
     /// Wie lange Ollama das Modell nach einer Anfrage im Speicher hält.
     /// </summary>
     public string KeepAlive { get; set; } = "30m";
-
-    /// <summary>
-    /// Maximale Anzahl gleichzeitiger KI-Anfragen (Backpressure).
-    /// </summary>
-    [Range(1, 16)]
-    public int MaxParallelRequests { get; set; } = 2;
 }

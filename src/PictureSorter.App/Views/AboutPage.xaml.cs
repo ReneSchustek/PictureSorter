@@ -1,9 +1,9 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using PictureSorter.App.Services;
@@ -18,11 +18,17 @@ namespace PictureSorter.App.Views;
 /// </summary>
 internal sealed partial class AboutPage : Page
 {
+    // Ereignishandler sind zwangsläufig `async void`. Was aus ihnen entkommt, landet
+    // nicht beim Aufrufer, sondern beendet den Prozess – ein letzter Fangblock ist hier
+    // also kein Verschlucken, sondern das Gegenteil: Er hält die Anwendung am Leben und
+    // schreibt den Grund ins Protokoll.
+    private const string LastResortJustification =
+        "Letzter Fangblock eines async-void-Ereignishandlers: Eine entkommende Ausnahme beendet den Prozess. Sie wird protokolliert.";
+
     private readonly ThemeService _themeService;
     private readonly OllamaSetupService _setupService;
     private readonly SettingsViewModel _viewModel;
-    private readonly UpdateService _updateService;
-    private readonly WindowContext _windowContext;
+    private readonly ILogger<AboutPage> _logger;
     private readonly ILocalizer _localizer;
     private bool _isInitializing = true;
 
@@ -34,8 +40,7 @@ internal sealed partial class AboutPage : Page
         _themeService = App.Services.GetRequiredService<ThemeService>();
         _setupService = App.Services.GetRequiredService<OllamaSetupService>();
         _viewModel = App.Services.GetRequiredService<SettingsViewModel>();
-        _updateService = App.Services.GetRequiredService<UpdateService>();
-        _windowContext = App.Services.GetRequiredService<WindowContext>();
+        _logger = App.Services.GetRequiredService<ILogger<AboutPage>>();
         _localizer = App.Services.GetRequiredService<ILocalizer>();
 
         InitializeComponent();
@@ -50,10 +55,18 @@ internal sealed partial class AboutPage : Page
             Assembly.GetEntryAssembly()?.GetName().Version?.ToString(3) ?? "1.0.0");
     }
 
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = LastResortJustification)]
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
     {
-        LoadLog();
-        await CheckKiStatusAsync().ConfigureAwait(true);
+        try
+        {
+            LoadLog();
+            await CheckKiStatusAsync().ConfigureAwait(true);
+        }
+        catch (Exception ex)
+        {
+            AboutPageLog.LoadFailed(_logger, ex);
+        }
     }
 
     private void OnRefreshLogClick(object sender, RoutedEventArgs e) => LoadLog();
@@ -143,50 +156,53 @@ internal sealed partial class AboutPage : Page
         _themeService.SetAutoInstallUpdates(AutoUpdateToggle.IsOn);
     }
 
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = LastResortJustification)]
     private async void OnCheckUpdatesClick(object sender, RoutedEventArgs e)
     {
-        UpdateStatusBar.Severity = InfoBarSeverity.Informational;
-        UpdateStatusBar.Message = _localizer.Get("About_UpdateSearching");
-        InstallUpdateButton.Visibility = Visibility.Collapsed;
-
-        UpdateInfo? info = await _updateService.CheckAsync(CancellationToken.None).ConfigureAwait(true);
-        if (info is null)
+        // async void ist bei Ereignishandlern unvermeidbar – eine Ausnahme, die hier
+        // entkommt, beendet den Prozess. Deshalb bleibt keine ohne Fangblock.
+        try
         {
-            UpdateStatusBar.Severity = InfoBarSeverity.Warning;
-            UpdateStatusBar.Message = _localizer.Get("About_UpdateCheckFailed");
-            return;
+            await _viewModel.CheckForUpdatesAsync().ConfigureAwait(true);
+        }
+        catch (Exception ex)
+        {
+            AboutPageLog.UpdateCheckFailed(_logger, ex);
         }
 
-        if (info.IsUpdateAvailable)
-        {
-            UpdateStatusBar.Severity = InfoBarSeverity.Success;
-            UpdateStatusBar.Message = _localizer.Format("About_UpdateAvailable", info.LatestVersion, info.CurrentVersion);
-            InstallUpdateButton.Visibility = Visibility.Visible;
-        }
-        else
-        {
-            UpdateStatusBar.Severity = InfoBarSeverity.Success;
-            UpdateStatusBar.Message = _localizer.Format("About_UpToDate", info.CurrentVersion);
-        }
+        ShowUpdateState();
     }
 
-    // Lädt den Updater und startet ihn; danach wird die App beendet, damit der
-    // Updater die Programmdateien ersetzen kann.
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = LastResortJustification)]
     private async void OnInstallUpdateClick(object sender, RoutedEventArgs e)
     {
-        UpdateStatusBar.Severity = InfoBarSeverity.Informational;
-        UpdateStatusBar.Message = _localizer.Get("Update_Preparing");
+        try
+        {
+            await _viewModel.InstallUpdateAsync().ConfigureAwait(true);
+        }
+        catch (Exception ex)
+        {
+            AboutPageLog.UpdateInstallFailed(_logger, ex);
+        }
 
-        bool started = await _updateService.DownloadAndLaunchUpdaterAsync(CancellationToken.None).ConfigureAwait(true);
-        if (started)
+        ShowUpdateState();
+    }
+
+    // Überträgt den Zustand des ViewModels auf die Steuerelemente.
+    private void ShowUpdateState()
+    {
+        UpdateStatusBar.Severity = _viewModel.UpdateSeverity switch
         {
-            _windowContext.MainWindow?.Close();
-        }
-        else
-        {
-            UpdateStatusBar.Severity = InfoBarSeverity.Error;
-            UpdateStatusBar.Message = _localizer.Get("Update_Failed");
-        }
+            StatusSeverity.Success => InfoBarSeverity.Success,
+            StatusSeverity.Warning => InfoBarSeverity.Warning,
+            StatusSeverity.Error => InfoBarSeverity.Error,
+            _ => InfoBarSeverity.Informational,
+        };
+
+        UpdateStatusBar.Message = _viewModel.UpdateStatusText;
+        InstallUpdateButton.Visibility = _viewModel.CanInstallUpdate
+            ? Visibility.Visible
+            : Visibility.Collapsed;
     }
 
     private void OnSetupClick(object sender, RoutedEventArgs e)
@@ -204,7 +220,18 @@ internal sealed partial class AboutPage : Page
         }
     }
 
-    private async void OnCheckClick(object sender, RoutedEventArgs e) => await CheckKiStatusAsync().ConfigureAwait(true);
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = LastResortJustification)]
+    private async void OnCheckClick(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            await CheckKiStatusAsync().ConfigureAwait(true);
+        }
+        catch (Exception ex)
+        {
+            AboutPageLog.LoadFailed(_logger, ex);
+        }
+    }
 
     private async System.Threading.Tasks.Task CheckKiStatusAsync()
     {
@@ -216,4 +243,19 @@ internal sealed partial class AboutPage : Page
         KiStatusBar.Severity = _viewModel.IsAiReady ? InfoBarSeverity.Success : InfoBarSeverity.Warning;
         KiStatusBar.Message = _viewModel.AiStatusText;
     }
+}
+
+/// <summary>
+/// Quellgenerierte Logmeldungen der Einstellungsseite.
+/// </summary>
+internal static partial class AboutPageLog
+{
+    [LoggerMessage(EventId = 3410, Level = LogLevel.Error, Message = "Die Einstellungsseite konnte nicht vollständig geladen werden.")]
+    public static partial void LoadFailed(ILogger logger, Exception exception);
+
+    [LoggerMessage(EventId = 3411, Level = LogLevel.Error, Message = "Die Update-Prüfung ist unerwartet fehlgeschlagen.")]
+    public static partial void UpdateCheckFailed(ILogger logger, Exception exception);
+
+    [LoggerMessage(EventId = 3412, Level = LogLevel.Error, Message = "Das Einspielen der neuen Fassung ist unerwartet fehlgeschlagen.")]
+    public static partial void UpdateInstallFailed(ILogger logger, Exception exception);
 }

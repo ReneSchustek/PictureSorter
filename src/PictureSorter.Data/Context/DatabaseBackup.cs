@@ -97,8 +97,10 @@ public sealed class DatabaseBackup
     // Sortierläufe.
     private static void CopyDatabase(string databasePath, string backupPath)
     {
-        string sourceConnectionString = $"Data Source={databasePath}";
-        string destinationConnectionString = $"Data Source={backupPath}";
+        // Über den Builder statt per Zeichenkette zusammengesetzt: Ein Semikolon oder
+        // Anführungszeichen im Pfad ergäbe sonst eine andere Verbindung als gemeint.
+        string sourceConnectionString = new SqliteConnectionStringBuilder { DataSource = databasePath }.ToString();
+        string destinationConnectionString = new SqliteConnectionStringBuilder { DataSource = backupPath }.ToString();
 
         try
         {

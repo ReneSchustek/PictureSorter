@@ -3,6 +3,7 @@ using PictureSorter.App.Logging;
 using PictureSorter.App.Tests.Fakes;
 using PictureSorter.App.ViewModels;
 using PictureSorter.Core.Interfaces;
+using PictureSorter.Core.ValueObjects;
 
 namespace PictureSorter.App.Tests.ViewModels;
 
@@ -20,7 +21,7 @@ public sealed class SettingsViewModelTests : IDisposable
     private readonly FileLoggerProvider _provider;
 
     /// <summary>Legt ein eigenes Protokollverzeichnis je Test an.</summary>
-    public SettingsViewModelTests() => _provider = new FileLoggerProvider(_directory);
+    public SettingsViewModelTests() => _provider = new FileLoggerProvider(_directory, TestClock.Fixed);
 
     /// <summary>Räumt Provider und Verzeichnis wieder ab.</summary>
     public void Dispose()
@@ -130,8 +131,75 @@ public sealed class SettingsViewModelTests : IDisposable
         Assert.Contains("llava", viewModel.AiStatusText, StringComparison.Ordinal);
     }
 
-    private SettingsViewModel CreateViewModel(IModelAvailabilityChecker? checker = null) =>
-        new(_provider, checker ?? FakeModelAvailabilityChecker.Ready(), new ReswLocalizer());
+    [Fact]
+    public async Task CheckForUpdatesAsync_WhenTheCheckIsNotPossible_SaysSoInsteadOfClaimingItIsUpToDate()
+    {
+        // „Aktuell" und „nicht nachsehbar" sind zweierlei. Wer offline ist, soll nicht
+        // in dem Glauben gelassen werden, er habe die neueste Fassung.
+        SettingsViewModel viewModel = CreateViewModel(updates: new FakeUpdateCoordinator(info: null));
+
+        await viewModel.CheckForUpdatesAsync();
+
+        Assert.Equal(StatusSeverity.Warning, viewModel.UpdateSeverity);
+        Assert.False(viewModel.CanInstallUpdate);
+    }
+
+    [Fact]
+    public async Task CheckForUpdatesAsync_WithANewerVersion_OffersTheInstallation()
+    {
+        UpdateInfo info = new()
+        {
+            CurrentVersion = "1.3.1",
+            LatestVersion = "1.4.0",
+            IsUpdateAvailable = true,
+        };
+        SettingsViewModel viewModel = CreateViewModel(updates: new FakeUpdateCoordinator(info));
+
+        await viewModel.CheckForUpdatesAsync();
+
+        Assert.True(viewModel.CanInstallUpdate);
+        Assert.Contains("1.4.0", viewModel.UpdateStatusText, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task InstallUpdateAsync_WhenTheHelperStarts_EndsTheApplication()
+    {
+        // Solange die Anwendung läuft, sind ihre Dateien gesperrt – ohne das Beenden
+        // käme das Update nie an.
+        FakeApplicationShutdown shutdown = new();
+        SettingsViewModel viewModel = CreateViewModel(
+            updates: new FakeUpdateCoordinator(launchSucceeds: true),
+            shutdown: shutdown);
+
+        await viewModel.InstallUpdateAsync();
+
+        Assert.True(shutdown.WasRequested);
+    }
+
+    [Fact]
+    public async Task InstallUpdateAsync_WhenTheHelperDoesNotStart_KeepsTheApplicationRunning()
+    {
+        FakeApplicationShutdown shutdown = new();
+        SettingsViewModel viewModel = CreateViewModel(
+            updates: new FakeUpdateCoordinator(launchSucceeds: false),
+            shutdown: shutdown);
+
+        await viewModel.InstallUpdateAsync();
+
+        Assert.False(shutdown.WasRequested);
+        Assert.Equal(StatusSeverity.Error, viewModel.UpdateSeverity);
+    }
+
+    private SettingsViewModel CreateViewModel(
+        IModelAvailabilityChecker? checker = null,
+        FakeUpdateCoordinator? updates = null,
+        FakeApplicationShutdown? shutdown = null) =>
+        new(
+            _provider,
+            checker ?? FakeModelAvailabilityChecker.Ready(),
+            updates ?? new FakeUpdateCoordinator(),
+            shutdown ?? new FakeApplicationShutdown(),
+            new ReswLocalizer());
 
     private void WriteLog()
     {
