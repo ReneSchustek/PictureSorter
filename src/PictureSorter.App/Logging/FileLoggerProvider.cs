@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using Microsoft.Extensions.Logging;
+using PictureSorter.Core.Interfaces;
 
 namespace PictureSorter.App.Logging;
 
@@ -36,6 +37,7 @@ internal sealed class FileLoggerProvider : ILoggerProvider
     private const long TailReadBytes = 512L * 1024;
 
     private readonly string _logDirectory;
+    private readonly IClock _clock;
     private readonly int _retentionDays;
     private readonly object _writeGate = new();
     private readonly ConcurrentDictionary<string, FileLogger> _loggers = new(StringComparer.Ordinal);
@@ -45,11 +47,14 @@ internal sealed class FileLoggerProvider : ILoggerProvider
     /// Initialisiert den Provider und bereitet das Log-Verzeichnis vor.
     /// </summary>
     /// <param name="logDirectory">Zielverzeichnis der Logdateien.</param>
+    /// <param name="clock">Zeitquelle für Dateinamen und Aufbewahrungsgrenze.</param>
     /// <param name="retentionDays">Aufbewahrungsdauer in Tagen; ältere Dateien werden gelöscht.</param>
-    public FileLoggerProvider(string logDirectory, int retentionDays = 30)
+    public FileLoggerProvider(string logDirectory, IClock clock, int retentionDays = 30)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(logDirectory);
+        ArgumentNullException.ThrowIfNull(clock);
         _logDirectory = logDirectory;
+        _clock = clock;
         _retentionDays = retentionDays;
         PrepareDirectory();
     }
@@ -193,9 +198,11 @@ internal sealed class FileLoggerProvider : ILoggerProvider
         File.Move(path, rolled);
     }
 
+    // Ortszeit, nicht UTC: Die Nutzerin sucht den Tag, an dem sie das Programm benutzt
+    // hat. IClock liefert UTC, die Umrechnung hält den Dateinamen wie bisher.
     private string CurrentLogPath() => Path.Combine(
         _logDirectory,
-        string.Create(CultureInfo.InvariantCulture, $"picturesorter-{DateTimeOffset.Now:yyyy-MM-dd}.log"));
+        string.Create(CultureInfo.InvariantCulture, $"picturesorter-{_clock.UtcNow.ToLocalTime():yyyy-MM-dd}.log"));
 
     private void PrepareDirectory()
     {
@@ -212,7 +219,7 @@ internal sealed class FileLoggerProvider : ILoggerProvider
 
     private void RemoveExpiredFiles()
     {
-        DateTime threshold = DateTimeOffset.Now.AddDays(-_retentionDays).LocalDateTime;
+        DateTime threshold = _clock.UtcNow.ToLocalTime().AddDays(-_retentionDays).LocalDateTime;
 
         // Das Muster erfasst auch die zur Seite gelegten Dateien („…​.log.1").
         foreach (string file in Directory.EnumerateFiles(_logDirectory, "picturesorter-*.log*"))

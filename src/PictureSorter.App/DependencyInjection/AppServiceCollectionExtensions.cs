@@ -40,6 +40,8 @@ internal static class AppServiceCollectionExtensions
             new WindowsFolderPicker(provider.GetRequiredService<WindowContext>()));
         _ = services.AddSingleton<IConfirmationService>(static provider =>
             new ContentDialogConfirmationService(provider.GetRequiredService<WindowContext>()));
+        _ = services.AddSingleton<IApplicationShutdown>(static provider =>
+            new WindowShutdown(provider.GetRequiredService<WindowContext>()));
         _ = services.AddSingleton(provider =>
             new ThemeService(provider.GetRequiredService<WindowContext>(), dataDirectory));
         _ = services.AddSingleton(provider =>
@@ -57,6 +59,8 @@ internal static class AppServiceCollectionExtensions
             provider.GetRequiredService<IHttpClientFactory>(),
             dataDirectory,
             provider.GetRequiredService<ILogger<UpdateService>>()));
+        _ = services.AddSingleton<IUpdateCoordinator>(static provider =>
+            provider.GetRequiredService<UpdateService>());
 
         return services.AddPictureSorterViewModels();
     }
