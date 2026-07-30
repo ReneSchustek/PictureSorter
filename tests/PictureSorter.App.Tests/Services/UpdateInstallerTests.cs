@@ -88,6 +88,36 @@ public sealed class UpdateInstallerTests : IDisposable
     }
 
     [Fact]
+    public void ApplyStagedFiles_WhenReplacingFailsAfterTheBackup_RollsBackTheFailedFileToo()
+    {
+        // Der Test oben sperrt die Zieldatei vollständig – dann scheitert bereits das
+        // Sichern, und die Datei bleibt unangetastet. Der gefährlichere Fall liegt einen
+        // Schritt später: Das Sichern gelingt, das Ersetzen scheitert mittendrin. Dann ist
+        // genau diese Datei halb geschrieben, und sie muss zurückkommen wie alle anderen.
+        string source = CreateDirectory("staging", ("a.txt", "neu-a"), ("b.txt", "neu-b"));
+        string target = CreateDirectory("programm", ("a.txt", "alt-a"), ("b.txt", "alt-b"));
+
+        void CopyButFailOnB(string from, string to)
+        {
+            if (Path.GetFileName(to) == "b.txt")
+            {
+                // So sieht ein abgebrochenes File.Copy aus: Das Ziel ist bereits
+                // angefasst, der Inhalt unvollständig.
+                File.WriteAllText(to, "halb");
+                throw new IOException("Das Ersetzen wurde abgebrochen.");
+            }
+
+            File.Copy(from, to, overwrite: true);
+        }
+
+        Assert.False(UpdateInstaller.ApplyStagedFiles(source, target, CopyButFailOnB));
+
+        Assert.Equal("alt-a", File.ReadAllText(Path.Combine(target, "a.txt")));
+        Assert.Equal("alt-b", File.ReadAllText(Path.Combine(target, "b.txt")));
+        Assert.Empty(Directory.GetFiles(target, "*.bak-update"));
+    }
+
+    [Fact]
     public void IsTrustedStaging_AcceptsOnlyTheFolderTheMainProcessPrepared()
     {
         // Der Helfer läuft als eigener Prozess und bekommt den Quellordner als
