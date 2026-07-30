@@ -4,7 +4,22 @@ Alle nennenswerten Änderungen an diesem Projekt werden hier dokumentiert.
 Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/),
 die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
-## [Unveröffentlicht]
+## [1.3.1] - 2026-07-30
+
+### Hinzugefügt
+
+- **Automatische Sicherung vor Schemaänderungen**: Steht beim Start eine Migration
+  an, legt die Anwendung vorher eine Kopie der Datenbank an
+  (`picturesorter.vor-<Migration>.bak`) – über die Online-Backup-Schnittstelle von
+  SQLite, damit auch noch nicht verdichtete Schreibvorgänge mitkommen. Eine
+  vorhandene Sicherung wird nie überschrieben. Lässt sich nicht sichern, unterbleibt
+  die Migration.
+- **Protokoll-Ansicht mit Filter und Suche**: Der Bereich *Einstellungen →
+  Protokoll* lässt sich auf Warnungen und Fehler eingrenzen und durchsuchen.
+  Mehrzeilige Einträge bleiben dabei zusammen – eine Stapelüberwachung erscheint
+  weder ohne ihre Fehlermeldung noch verschwindet sie mit ihr.
+- **Betriebshandbuch** (`BETRIEB.md`): Ablageorte, Sicherung und
+  Wiederherstellung, Rücknahme von Sortierlauf und Update, Schlüsselwechsel.
 
 ### Behoben
 
@@ -41,18 +56,6 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 ### Hinzugefügt
 
-- **Automatische Sicherung vor Schemaänderungen**: Steht beim Start eine Migration
-  an, legt die Anwendung vorher eine Kopie der Datenbank an
-  (`picturesorter.vor-<Migration>.bak`) – über die Online-Backup-Schnittstelle von
-  SQLite, damit auch noch nicht verdichtete Schreibvorgänge mitkommen. Eine
-  vorhandene Sicherung wird nie überschrieben. Lässt sich nicht sichern, unterbleibt
-  die Migration.
-- **Protokoll-Ansicht mit Filter und Suche**: Der Bereich *Einstellungen →
-  Protokoll* lässt sich auf Warnungen und Fehler eingrenzen und durchsuchen.
-  Mehrzeilige Einträge bleiben dabei zusammen – eine Stapelüberwachung erscheint
-  weder ohne ihre Fehlermeldung noch verschwindet sie mit ihr.
-- **Betriebshandbuch** (`BETRIEB.md`): Ablageorte, Sicherung und
-  Wiederherstellung, Rücknahme von Sortierlauf und Update, Schlüsselwechsel.
 - **Sortier-Gedächtnis**: PictureSorter merkt sich dauerhaft (SQLite), was zu welchem
   Foto entschieden wurde. Ein zweiter Lauf überspringt bereits einsortierte, abgewählte
   und von der KI abgelehnte Fotos – das spart die teuren KI-Aufrufe. Dasselbe Foto darf
