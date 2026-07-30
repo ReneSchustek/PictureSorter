@@ -88,7 +88,7 @@ public partial class App : Microsoft.UI.Xaml.Application
         // jemand die Anwendung mit einem beliebigen Quellordner starten und damit die
         // Installation überschreiben. Nur was der geprüfte Hauptprozess vermerkt hat,
         // wird eingespielt.
-        if (!UpdateInstaller.IsTrustedStaging(dataDirectory, apply.SourceDirectory))
+        if (!UpdateInstaller.IsTrustedStaging(dataDirectory, apply.SourceDirectory, apply.TargetDirectory))
         {
             AppLog.UpdateApplyRejected(_logger!);
             UpdateInstaller.RemovePendingNote(dataDirectory);
@@ -262,7 +262,9 @@ public partial class App : Microsoft.UI.Xaml.Application
         // Absturz nachvollziehbar sind. Die Instanz wird vom Container erzeugt und
         // verwaltet (Disposal), als Singleton für den In-App-Log-Viewer bereitgestellt
         // und der Logging-Infrastruktur als ILoggerProvider untergeschoben.
-        _ = services.AddSingleton(_ => new FileLoggerProvider(logDirectory));
+        _ = services.AddSingleton(provider => new FileLoggerProvider(
+            logDirectory,
+            provider.GetRequiredService<IClock>()));
         _ = services.AddSingleton<ILoggerProvider>(provider => provider.GetRequiredService<FileLoggerProvider>());
         _ = services.AddLogging(builder =>
         {

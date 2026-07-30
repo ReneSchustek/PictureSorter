@@ -20,6 +20,7 @@ public static class ImagingServiceCollectionExtensions
 
         _ = services.AddSingleton<IImageMetadataReader, WindowsImageMetadataReader>();
         _ = services.AddSingleton<IPerceptualHasher, WindowsPerceptualHasher>();
+        _ = services.AddSingleton<IVisionImageEncoder, WindowsVisionImageEncoder>();
 
         return services;
     }

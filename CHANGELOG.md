@@ -23,6 +23,23 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 ### Behoben
 
+- **iPhone-Fotos (HEIC) wurden nicht wirklich angesehen**: Die Bilder wurden zwar
+  gefunden und einsortiert, an die Bilderkennung ging aber die Originaldatei – und
+  die kann sie nicht öffnen. Beurteilt wurde damit nichts, obwohl ein Urteil
+  herauskam. Jeder Vorschlag beruhte auf einer Beschreibung ohne Bild. Fotos werden
+  jetzt vor der Beurteilung umgewandelt und dabei auf eine sinnvolle Größe gebracht;
+  das spart nebenbei Speicher und Wartezeit. Lässt sich ein Bild nicht öffnen – etwa
+  weil unter Windows die HEIF-/HEVC-Erweiterung fehlt –, wird es übersprungen und
+  nicht als beurteilt gemerkt, statt still falsch einsortiert zu werden.
+- **Update: Eine misslungene Ersetzung ließ eine Datei beschädigt zurück**: Schlug
+  das Ersetzen einer einzelnen Programmdatei fehl, wurden alle übrigen sauber
+  zurückgeholt – ausgerechnet die betroffene nicht. Jetzt kommt auch sie zurück.
+- **Update-Prüfung sagt jetzt, wenn sie nichts sagen kann**: Eine Prüfung ohne
+  Netz oder ohne erreichbare Quelle wurde wie „Sie sind auf dem neuesten Stand"
+  behandelt. Sie wird nun als solche gemeldet.
+- **Kategorienamen, die Windows für Geräte hält** (`CON`, `NUL`, `COM1` …), führten
+  beim Anlegen des Zielordners zu einer unverständlichen Fehlermeldung. Sie bekommen
+  jetzt einen Zusatz und funktionieren.
 - **Abgebrochener Sortierlauf war nicht mehr rücknehmbar**: Wurde das Verschieben
   mittendrin abgebrochen, lagen die bis dahin verschobenen Fotos im Zielordner und
   galten als einsortiert – protokolliert wurde der Lauf aber nie. „Rückgängig" bot
@@ -51,6 +68,10 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 - Die App bringt die Windows App Runtime jetzt selbst mit (self-contained); sie
   startet damit auf Rechnern ohne vorinstallierte Runtime.
 - Die Application-Schicht ist plattformneutral (`net10.0`).
+- Die Einstellung `Ollama.MaxParallelRequests` ist entfallen. Sie stand in der
+  Konfiguration, hatte aber keine Wirkung – die Bilder werden nacheinander bewertet.
+- Update-Prüfung und -Installation der Einstellungsseite liegen im ViewModel und sind
+  damit ohne laufende Oberfläche prüfbar.
 
 ## [1.3.0] - 2026-07-11
 

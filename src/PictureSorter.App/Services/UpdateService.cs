@@ -19,7 +19,7 @@ namespace PictureSorter.App.Services;
 /// Programmdateien; dazu beendet sich die laufende App (siehe Aufrufer).
 /// Alle Schritte sind fehlertolerant: Schlägt etwas fehl, läuft die App normal weiter.
 /// </summary>
-internal sealed class UpdateService
+internal sealed class UpdateService : IUpdateCoordinator
 {
     /// <summary>
     /// Name des benannten HttpClients, der Weiterleitungen NICHT automatisch folgt
@@ -160,12 +160,15 @@ internal sealed class UpdateService
             // Der Vermerk ist die Brücke zum Helfer: Er startet gleich als eigener
             // Prozess und darf seinen Aufrufparametern nicht glauben – er gleicht sie
             // gegen diesen Vermerk ab, den nur der geprüfte Hauptprozess schreibt.
-            UpdateInstaller.WritePendingNote(_dataDirectory, stagingDirectory);
+            // Vermerkt wird auch der Programmordner, sonst bestimmte der Aufruf allein,
+            // wohin die geprüften Dateien geschrieben werden.
+            string installationDirectory = AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar);
+            UpdateInstaller.WritePendingNote(_dataDirectory, stagingDirectory, installationDirectory);
 
             UpdateApplyArgs apply = new(
                 Environment.ProcessId,
                 stagingDirectory,
-                AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar));
+                installationDirectory);
 
             _ = Process.Start(new ProcessStartInfo
             {

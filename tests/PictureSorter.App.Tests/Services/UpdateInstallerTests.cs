@@ -126,11 +126,29 @@ public sealed class UpdateInstallerTests : IDisposable
         string data = CreateDirectory("daten");
         string staging = CreateDirectory("staging", ("PictureSorter.exe", "die geprüfte neue Fassung"));
         string fremd = CreateDirectory("fremd", ("PictureSorter.exe", "etwas ganz anderes"));
+        string programm = CreateDirectory("programm");
 
-        UpdateInstaller.WritePendingNote(data, staging);
+        UpdateInstaller.WritePendingNote(data, staging, programm);
 
-        Assert.True(UpdateInstaller.IsTrustedStaging(data, staging));
-        Assert.False(UpdateInstaller.IsTrustedStaging(data, fremd));
+        Assert.True(UpdateInstaller.IsTrustedStaging(data, staging, programm));
+        Assert.False(UpdateInstaller.IsTrustedStaging(data, fremd, programm));
+    }
+
+    [Fact]
+    public void IsTrustedStaging_WithADifferentTargetThanTheNote_RejectsIt()
+    {
+        // Der Quellordner allein genügt nicht: Stimmte nur er, könnte ein Aufruf mit
+        // eigenem --target die geprüften Dateien an einen frei gewählten Ort schreiben,
+        // etwa in den Autostart-Ordner. Auch das Ziel muss aus dem Vermerk stammen.
+        string data = CreateDirectory("daten");
+        string staging = CreateDirectory("staging", ("PictureSorter.exe", "die geprüfte neue Fassung"));
+        string programm = CreateDirectory("programm");
+        string autostart = CreateDirectory("autostart");
+
+        UpdateInstaller.WritePendingNote(data, staging, programm);
+
+        Assert.True(UpdateInstaller.IsTrustedStaging(data, staging, programm));
+        Assert.False(UpdateInstaller.IsTrustedStaging(data, staging, autostart));
     }
 
     [Fact]
@@ -138,11 +156,12 @@ public sealed class UpdateInstallerTests : IDisposable
     {
         string data = CreateDirectory("daten");
         string staging = CreateDirectory("staging", ("PictureSorter.exe", "die geprüfte neue Fassung"));
-        UpdateInstaller.WritePendingNote(data, staging);
+        string programm = CreateDirectory("programm");
+        UpdateInstaller.WritePendingNote(data, staging, programm);
 
         File.WriteAllText(Path.Combine(staging, "PictureSorter.exe"), "untergeschoben");
 
-        Assert.False(UpdateInstaller.IsTrustedStaging(data, staging));
+        Assert.False(UpdateInstaller.IsTrustedStaging(data, staging, programm));
     }
 
     [Fact]
@@ -151,7 +170,7 @@ public sealed class UpdateInstallerTests : IDisposable
         string data = CreateDirectory("daten");
         string staging = CreateDirectory("staging", ("PictureSorter.exe", "irgendwas"));
 
-        Assert.False(UpdateInstaller.IsTrustedStaging(data, staging));
+        Assert.False(UpdateInstaller.IsTrustedStaging(data, staging, CreateDirectory("programm")));
     }
 
     private string CreateZip(params (string Name, string Content)[] entries)

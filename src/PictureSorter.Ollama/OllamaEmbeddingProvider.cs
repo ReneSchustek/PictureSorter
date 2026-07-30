@@ -18,6 +18,7 @@ public sealed class OllamaEmbeddingProvider : IEmbeddingProvider
         + "Nenne Personen, Orte, Anlass und Stimmung, soweit erkennbar.";
 
     private readonly IOllamaClient _client;
+    private readonly IVisionImageEncoder _encoder;
     private readonly OllamaOptions _options;
     private readonly ILogger<OllamaEmbeddingProvider> _logger;
 
@@ -25,18 +26,22 @@ public sealed class OllamaEmbeddingProvider : IEmbeddingProvider
     /// Initialisiert den Provider.
     /// </summary>
     /// <param name="client">Der Ollama-Client.</param>
+    /// <param name="encoder">Bereitet das Foto für das Bild-Modell auf.</param>
     /// <param name="options">Die Ollama-Konfiguration.</param>
     /// <param name="logger">Der Logger.</param>
     public OllamaEmbeddingProvider(
         IOllamaClient client,
+        IVisionImageEncoder encoder,
         IOptions<OllamaOptions> options,
         ILogger<OllamaEmbeddingProvider> logger)
     {
         ArgumentNullException.ThrowIfNull(client);
+        ArgumentNullException.ThrowIfNull(encoder);
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(logger);
 
         _client = client;
+        _encoder = encoder;
         _options = options.Value;
         _logger = logger;
     }
@@ -48,7 +53,12 @@ public sealed class OllamaEmbeddingProvider : IEmbeddingProvider
 
         EmbeddingLog.Embedding(_logger, photo.FileName);
 
-        string imageBase64 = await ImagePayload.ToBase64Async(photo.FullPath, cancellationToken).ConfigureAwait(false);
+        // Auch die Vorsortierung sieht das Bild nur über das Bild-Modell. Ohne
+        // Aufbereitung bekäme es bei einem Handyfoto einen HEIC-Container, den es nicht
+        // öffnen kann – und der Vergleichsvektor entstünde aus einer Beschreibung, die
+        // auf keinem Bild beruht.
+        byte[] jpeg = await _encoder.EncodeAsync(photo.FullPath, cancellationToken).ConfigureAwait(false);
+        string imageBase64 = Convert.ToBase64String(jpeg);
         string description = await _client
             .GenerateAsync(_options.VisionModel, DescribePrompt, [imageBase64], cancellationToken)
             .ConfigureAwait(false);
