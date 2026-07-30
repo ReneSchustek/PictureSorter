@@ -160,54 +160,65 @@ public sealed class PhotoSortingService : IPhotoSorter
         // Nummer an) – ohne ihn ließe sich der Lauf später nicht zurücknehmen.
         List<SortRunItem> moved = [];
 
-        foreach (SortProposal proposal in proposals)
+        try
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            string targetPath;
-            try
+            foreach (SortProposal proposal in proposals)
             {
-                targetPath = await _fileOrganizer
-                    .ApplyAsync(proposal, dryRun, cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-            {
-                // Eine einzelne gesperrte oder verschwundene Datei darf den Lauf nicht
-                // abbrechen – sonst bliebe die Sortierung auf halber Strecke stehen.
-                // Das Foto wird nicht als erledigt gemerkt und beim nächsten Lauf
-                // erneut vorgeschlagen.
-                SortingLog.MoveFailed(_logger, proposal.Photo.FileName, ex);
-                failed++;
-                continue;
-            }
+                cancellationToken.ThrowIfCancellationRequested();
 
-            // Im Probelauf wird nichts verschoben – dann darf auch nichts als
-            // erledigt gemerkt oder protokolliert werden.
-            if (!dryRun)
-            {
-                await _memory.MarkSortedAsync(proposal, cancellationToken).ConfigureAwait(false);
-
-                // Lag das Foto schon am Ziel, hat sich nichts bewegt – es gäbe nichts
-                // zurückzuholen, und ein Rückgängig würde die Datei sonst an einen Ort
-                // „zurück" schieben, an dem sie nie war.
-                if (!string.Equals(proposal.Photo.FullPath, targetPath, StringComparison.OrdinalIgnoreCase))
+                string targetPath;
+                try
                 {
-                    moved.Add(new SortRunItem
-                    {
-                        SourcePath = proposal.Photo.FullPath,
-                        TargetPath = targetPath,
-                        FileSignature = proposal.Photo.ComputeSignature(),
-                    });
+                    targetPath = await _fileOrganizer
+                        .ApplyAsync(proposal, dryRun, cancellationToken)
+                        .ConfigureAwait(false);
                 }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    // Eine einzelne gesperrte oder verschwundene Datei darf den Lauf nicht
+                    // abbrechen – sonst bliebe die Sortierung auf halber Strecke stehen.
+                    // Das Foto wird nicht als erledigt gemerkt und beim nächsten Lauf
+                    // erneut vorgeschlagen.
+                    SortingLog.MoveFailed(_logger, proposal.Photo.FileName, ex);
+                    failed++;
+                    continue;
+                }
+
+                // Im Probelauf wird nichts verschoben – dann darf auch nichts als
+                // erledigt gemerkt oder protokolliert werden.
+                if (!dryRun)
+                {
+                    await _memory.MarkSortedAsync(proposal, cancellationToken).ConfigureAwait(false);
+
+                    // Lag das Foto schon am Ziel, hat sich nichts bewegt – es gäbe nichts
+                    // zurückzuholen, und ein Rückgängig würde die Datei sonst an einen Ort
+                    // „zurück" schieben, an dem sie nie war.
+                    if (!string.Equals(proposal.Photo.FullPath, targetPath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        moved.Add(new SortRunItem
+                        {
+                            SourcePath = proposal.Photo.FullPath,
+                            TargetPath = targetPath,
+                            FileSignature = proposal.Photo.ComputeSignature(),
+                        });
+                    }
+                }
+
+                applied++;
             }
-
-            applied++;
         }
-
-        if (moved.Count > 0)
+        finally
         {
-            await RecordRunAsync(proposals[0], moved, cancellationToken).ConfigureAwait(false);
+            // Auch ein abgebrochener Lauf muss protokolliert werden: Was bis zum Abbruch
+            // verschoben wurde, liegt bereits im Zielordner und ist im Gedächtnis als
+            // einsortiert vermerkt. Ohne Protokoll gäbe es dafür keinen Weg zurück –
+            // ausgerechnet nach einem Abbruch, wo die Nutzerin ihn am ehesten sucht.
+            // Der Abbruch-Token wird hier bewusst nicht durchgereicht: Er ist bereits
+            // ausgelöst und würde das Protokollieren sofort wieder abwürgen.
+            if (moved.Count > 0)
+            {
+                await RecordRunAsync(proposals[0], moved, CancellationToken.None).ConfigureAwait(false);
+            }
         }
 
         SortingLog.ProposalsApplied(_logger, applied, dryRun);
@@ -288,6 +299,14 @@ public sealed class PhotoSortingService : IPhotoSorter
             SortingLog.PhotoSkipped(_logger, photo.FileName, ex);
             return Evaluation.NotEvaluated();
         }
+        catch (ImageUnreadableException ex)
+        {
+            // Dieselbe Behandlung, anderer Grund: Nicht die KI fehlt, sondern die Datei
+            // ließ sich nicht lesen – meist ein fehlender Codec. Auch das ist kein
+            // Urteil über das Bild, es darf also nicht gemerkt werden.
+            SortingLog.PhotoUnreadable(_logger, photo.FileName, ex);
+            return Evaluation.NotEvaluated();
+        }
     }
 
     private async Task<Evaluation> ResolveBorderlineAsync(
@@ -354,20 +373,44 @@ public sealed class PhotoSortingService : IPhotoSorter
         return Path.Combine(sourceFolder, folderName);
     }
 
+    // Namen, die Windows für Geräte reserviert. Ein Ordner dieses Namens lässt sich
+    // nicht anlegen – unabhängig von der Endung und ohne Rücksicht auf Groß- und
+    // Kleinschreibung. Ohne Prüfung scheiterte eine Kategorie „Nul" mit einer
+    // Fehlermeldung, die der Nutzerin nichts sagt.
+    private static readonly string[] ReservedDeviceNames =
+    [
+        "CON", "PRN", "AUX", "NUL",
+        "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
+        "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
+    ];
+
     // Intern (nicht privat) für den gezielten Randfall-Test der Pfad-Sicherheit.
     internal static string SanitizeFolderName(string name)
     {
         char[] invalid = Path.GetInvalidFileNameChars();
         IEnumerable<char> cleaned = name.Select(character => invalid.Contains(character) ? '_' : character);
-        string result = new string([.. cleaned]).Trim();
+
+        // Auch Punkte am Ende fallen weg: Windows schneidet sie beim Anlegen still ab,
+        // der protokollierte Pfad wiche dann vom tatsächlichen ab.
+        string result = new string([.. cleaned]).Trim().TrimEnd('.').Trim();
 
         // Namen, die leer sind oder nur aus Punkten bestehen ("." / ".."), zeigen auf
         // den Quell- bzw. Elternordner. Path.GetInvalidFileNameChars() enthält den
         // Punkt nicht, daher überlebt so ein Name die Bereinigung und würde Fotos aus
         // dem gewählten Ordner heraus (in den Elternordner) verschieben. Hier wird
         // deshalb auf einen neutralen Namen ausgewichen.
-        return result.Length == 0 || result.All(character => character == '.')
-            ? "Sonstige"
+        if (result.Length == 0)
+        {
+            return "Sonstige";
+        }
+
+        // Der reservierte Name gilt auch mit Endung („CON.jpg"), deshalb wird der Teil
+        // vor dem ersten Punkt geprüft.
+        string stem = result.Split('.')[0];
+        return Array.Exists(
+            ReservedDeviceNames,
+            reserved => string.Equals(stem, reserved, StringComparison.OrdinalIgnoreCase))
+            ? result + "_"
             : result;
     }
 
@@ -402,6 +445,9 @@ internal static partial class SortingLog
 
     [LoggerMessage(EventId = 3003, Level = LogLevel.Warning, Message = "Foto {FileName} übersprungen (KI nicht verfügbar).")]
     public static partial void PhotoSkipped(ILogger logger, string fileName, Exception exception);
+
+    [LoggerMessage(EventId = 3008, Level = LogLevel.Warning, Message = "Foto {FileName} übersprungen: Die Datei konnte nicht gelesen werden (fehlt der Codec, etwa für HEIC?).")]
+    public static partial void PhotoUnreadable(ILogger logger, string fileName, Exception exception);
 
     [LoggerMessage(EventId = 3004, Level = LogLevel.Information, Message = "{Count} Fotos aus dem Gedächtnis übersprungen (bereits entschieden).")]
     public static partial void PhotosSkippedByMemory(ILogger logger, int count);

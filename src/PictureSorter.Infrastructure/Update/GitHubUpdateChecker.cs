@@ -174,6 +174,9 @@ internal static partial class UpdateCheckerLog
     [LoggerMessage(EventId = 5000, Level = LogLevel.Information, Message = "Update-Prüfung: laufend {Current}, neueste {Latest}, Update verfügbar: {Available}.")]
     public static partial void Checked(ILogger logger, string current, string latest, bool available);
 
-    [LoggerMessage(EventId = 5001, Level = LogLevel.Information, Message = "Update-Prüfung nicht möglich (offline oder Quelle nicht erreichbar).")]
+    // Warnung, nicht Information: „Prüfung nicht möglich" ist etwas anderes als „kein
+    // Update". Stand es auf Information, ging der Unterschied im Protokoll unter – und
+    // eine dauerhaft erfolglose Prüfung sah aus wie eine erfolgreiche ohne Fund.
+    [LoggerMessage(EventId = 5001, Level = LogLevel.Warning, Message = "Update-Prüfung nicht möglich (offline, Quelle nicht erreichbar oder Repository nicht öffentlich).")]
     public static partial void CheckFailed(ILogger logger, Exception exception);
 }

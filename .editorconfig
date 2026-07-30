@@ -123,6 +123,17 @@ dotnet_diagnostic.CA1822.severity = suggestion
 # Logger-Performance
 dotnet_diagnostic.CA1848.severity = suggestion
 
+# Explizite Typen statt var - Projektregel, vom Build erzwungen.
+# IDE0007/IDE0008 melden jede var-Deklaration, die drei csharp_style-Einstellungen
+# legen die Richtung fest. Vorlage: EchoPlay.
+# Gehört in den [*.cs]-Abschnitt: unterhalb des nächsten Abschnittskopfs wäre
+# die Regel wirkungslos, ohne dass es auffiele.
+csharp_style_var_for_built_in_types = false:error
+csharp_style_var_when_type_is_apparent = false:error
+csharp_style_var_elsewhere = false:error
+dotnet_diagnostic.IDE0007.severity = error
+dotnet_diagnostic.IDE0008.severity = error
+
 # Projekt- und Config-Dateien
 [*.{csproj,props,targets,xml}]
 indent_size = 2

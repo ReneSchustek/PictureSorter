@@ -127,6 +127,34 @@ internal sealed class FailingFileOrganizer(string failOn) : IFileOrganizer
         Task.CompletedTask;
 }
 
+/// <summary>
+/// Verschiebt wie der <see cref="FakeFileOrganizer"/>, fordert aber nach der
+/// angegebenen Anzahl Dateien den Abbruch an – so, wie die Nutzerin mitten im
+/// Sortierlauf auf „Abbrechen" klickt.
+/// </summary>
+internal sealed class CancellingFileOrganizer(CancellationTokenSource cancellation, int cancelAfter)
+    : IFileOrganizer
+{
+    public List<SortProposal> Applied { get; } = [];
+
+    public async Task<string> ApplyAsync(SortProposal proposal, bool dryRun, CancellationToken cancellationToken)
+    {
+        Applied.Add(proposal);
+        if (Applied.Count >= cancelAfter)
+        {
+            await cancellation.CancelAsync().ConfigureAwait(false);
+        }
+
+        return Path.Combine(proposal.TargetFolderPath, proposal.Photo.FileName);
+    }
+
+    public Task<bool> RestoreAsync(string currentPath, string originalPath, CancellationToken cancellationToken) =>
+        Task.FromResult(true);
+
+    public Task RemoveFolderIfEmptyAsync(string folderPath, CancellationToken cancellationToken) =>
+        Task.CompletedTask;
+}
+
 /// <summary>Hält das Protokoll der Sortierläufe im Speicher.</summary>
 internal sealed class FakeSortJournal : ISortJournal
 {

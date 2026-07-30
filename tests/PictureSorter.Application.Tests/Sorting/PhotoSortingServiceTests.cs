@@ -290,6 +290,31 @@ public sealed class PhotoSortingServiceTests
     }
 
     [Fact]
+    public async Task ApplyProposalsAsync_WhenCancelledMidRun_RecordsWhatWasAlreadyMoved()
+    {
+        // Bricht die Nutzerin ab, sind die bis dahin verschobenen Fotos längst im
+        // Zielordner und im Gedächtnis als einsortiert vermerkt. Ohne Protokoll gäbe
+        // es für sie keinen Weg zurück – ausgerechnet nach einem Abbruch, wo sie ihn
+        // am ehesten sucht.
+        using CancellationTokenSource cancellation = new();
+        FakeSortJournal journal = new();
+        PhotoSortingService service = CreateService(
+            embedding: [1.0f, 0.0f, 0.0f],
+            classifier: new FakeImageClassifier(new VisionVerdict { Matches = false, Confidence = 0.0 }),
+            organizer: new CancellingFileOrganizer(cancellation, cancelAfter: 2),
+            journal: journal);
+
+        _ = await Assert.ThrowsAnyAsync<OperationCanceledException>(() => service.ApplyProposalsAsync(
+            [CreateProposal("foto0.jpg"), CreateProposal("foto1.jpg"), CreateProposal("foto2.jpg")],
+            dryRun: false,
+            cancellation.Token));
+
+        SortRun run = Assert.Single(journal.Runs);
+        Assert.Equal(2, run.Items.Count);
+        Assert.DoesNotContain(run.Items, item => item.SourcePath.EndsWith("foto2.jpg", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public async Task IgnoreProposalsAsync_MarksProposalsAsIgnored()
     {
         FakeSortMemory memory = new();
