@@ -14,10 +14,14 @@ public sealed class OllamaOptions
     public const string SectionName = "Ollama";
 
     /// <summary>
-    /// Basis-URL der lokalen Ollama-Instanz.
+    /// Basis-URL der lokalen Ollama-Instanz. Bewusst als IP-Adresse und nicht als
+    /// „localhost": Unter Windows löst „localhost" zuerst nach der IPv6-Adresse „::1"
+    /// auf, Ollama lauscht aber nur auf 127.0.0.1. Blockt eine Sicherheitssoftware den
+    /// IPv6-Versuch stillschweigend, statt ihn abzulehnen, wartet die Verbindung ins
+    /// Leere – ein laufendes Ollama gälte dann als nicht vorhanden.
     /// </summary>
     [Required]
-    public Uri BaseUrl { get; set; } = new("http://localhost:11434");
+    public Uri BaseUrl { get; set; } = new("http://127.0.0.1:11434");
 
     /// <summary>
     /// Modell für Text-Embeddings (Ähnlichkeitslernen).
@@ -36,6 +40,14 @@ public sealed class OllamaOptions
     /// </summary>
     [Range(5, 600)]
     public int RequestTimeoutSeconds { get; set; } = 120;
+
+    /// <summary>
+    /// Zeitlimit in Sekunden für die reine Erreichbarkeitsprüfung. Bewusst viel kürzer
+    /// als <see cref="RequestTimeoutSeconds"/>: Die Prüfung beantwortet nur die Frage,
+    /// ob Ollama antwortet, und darf die Oberfläche nicht minutenlang hinhalten.
+    /// </summary>
+    [Range(1, 60)]
+    public int AvailabilityTimeoutSeconds { get; set; } = 5;
 
     /// <summary>
     /// Wie lange Ollama das Modell nach einer Anfrage im Speicher hält.

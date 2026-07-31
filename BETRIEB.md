@@ -151,7 +151,7 @@ meldet den Zustand auf der Startseite und unter *Einstellungen → Lokale KI*.
 
 | Meldung | Bedeutung | Abhilfe |
 |---|---|---|
-| „nicht eingerichtet" | Ollama antwortet nicht auf `localhost:11434` | Ollama installieren/starten, dann *Status prüfen* |
+| „nicht eingerichtet" | Ollama antwortet nicht auf `127.0.0.1:11434` | Ollama installieren/starten, dann *Status prüfen* |
 | „Modelle fehlen" | Ollama läuft, die benannten Modelle fehlen | *Jetzt einrichten* – lädt sie nach (dauert beim ersten Mal) |
 
 Fällt die KI **mitten im Lauf** aus, wird das betroffene Foto übersprungen und der

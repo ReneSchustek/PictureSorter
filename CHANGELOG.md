@@ -4,6 +4,35 @@ Alle nennenswerten Änderungen an diesem Projekt werden hier dokumentiert.
 Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/),
 die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
+## [Unveröffentlicht]
+
+### Behoben
+
+- **„Zustand der KI wird geprüft" blieb minutenlang oder dauerhaft stehen.** Die
+  Erreichbarkeitsprüfung lief mit demselben Zeitlimit wie eine vollständige
+  Bildbeschreibung und wurde zudem mehrfach wiederholt. Nahm die KI die Verbindung
+  zwar an, antwortete aber nicht – etwa während sie selbst gerade aktualisiert wurde –,
+  wartete die Anwendung über Minuten, ohne dass auf dem Bildschirm etwas darauf
+  hindeutete. Die Prüfung hat jetzt ein eigenes, kurzes Zeitlimit und endet immer mit
+  einer klaren Aussage statt im Ungewissen.
+- **Eine laufende KI wurde auf manchen Rechnern nicht gefunden.** Die Anwendung sprach
+  die KI über den Namen „localhost" an. Unter Windows führt dieser Weg zuerst über
+  IPv6, während die KI nur über IPv4 lauscht; blockt eine Sicherheitssoftware den
+  ersten Versuch stillschweigend, gilt eine einwandfrei laufende KI als nicht
+  vorhanden. Angesprochen wird jetzt direkt die IPv4-Adresse.
+- **„Jetzt einrichten" scheiterte in jeder ausgelieferten Fassung.** Das
+  Einrichtungsskript für die KI wurde nie mitgeliefert: Es lag nur auf dem
+  Entwicklungsrechner, weil die Vorgaben der Versionsverwaltung sämtliche Skripte
+  ausschlossen. Auf dem Entwicklungsrechner war deshalb nichts zu bemerken, während
+  jeder weitergegebene Stand nur „Die Einrichtung konnte nicht gestartet werden"
+  meldete. Das Skript gehört jetzt dazu, und die Veröffentlichung bricht ab, wenn es
+  einmal fehlen sollte. Die Ursache wird zusätzlich protokolliert, statt spurlos zu
+  verschwinden.
+- **Ein Proxy im System konnte die lokale KI unerreichbar machen.** Die Anfrage an den
+  eigenen Rechner folgte den Proxy-Einstellungen von Windows. Setzt eine Sicherheits-
+  oder VPN-Software dort einen Proxy ohne Ausnahme für lokale Adressen, lief sie ins
+  Leere. Der Weg zur lokalen KI umgeht den Proxy jetzt grundsätzlich.
+
 ## [1.4.1] - 2026-07-31
 
 ### Behoben
