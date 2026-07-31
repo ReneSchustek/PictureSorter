@@ -164,7 +164,7 @@ public sealed class PhotoSortingServiceTests
             classifier: new FakeImageClassifier(new VisionVerdict { Matches = false, Confidence = 0.0 }),
             organizer: organizer);
 
-        int applied = await service.ApplyProposalsAsync([CreateProposal()], dryRun: true, CancellationToken.None);
+        int applied = await service.ApplyProposalsAsync([CreateProposal()], FileOperationMode.Move, dryRun: true, CancellationToken.None);
 
         Assert.Equal(1, applied);
         _ = Assert.Single(organizer.Applied);
@@ -180,7 +180,7 @@ public sealed class PhotoSortingServiceTests
             classifier: new FakeImageClassifier(new VisionVerdict { Matches = false, Confidence = 0.0 }),
             memory: memory);
 
-        _ = await service.ApplyProposalsAsync([CreateProposal()], dryRun: true, CancellationToken.None);
+        _ = await service.ApplyProposalsAsync([CreateProposal()], FileOperationMode.Move, dryRun: true, CancellationToken.None);
 
         // Im Probelauf wird nichts verschoben, also darf auch nichts als erledigt gelten.
         Assert.Empty(memory.Records);
@@ -195,7 +195,7 @@ public sealed class PhotoSortingServiceTests
             classifier: new FakeImageClassifier(new VisionVerdict { Matches = false, Confidence = 0.0 }),
             memory: memory);
 
-        _ = await service.ApplyProposalsAsync([CreateProposal()], dryRun: false, CancellationToken.None);
+        _ = await service.ApplyProposalsAsync([CreateProposal()], FileOperationMode.Move, dryRun: false, CancellationToken.None);
 
         SortMemoryRecord remembered = Assert.Single(memory.Records);
         Assert.Equal(SortMemoryStatus.Sorted, remembered.Status);
@@ -212,7 +212,7 @@ public sealed class PhotoSortingServiceTests
             classifier: new FakeImageClassifier(new VisionVerdict { Matches = false, Confidence = 0.0 }),
             journal: journal);
 
-        _ = await service.ApplyProposalsAsync([CreateProposal()], dryRun: false, CancellationToken.None);
+        _ = await service.ApplyProposalsAsync([CreateProposal()], FileOperationMode.Move, dryRun: false, CancellationToken.None);
 
         SortRun run = Assert.Single(journal.Runs);
         Assert.Equal(SourceFolder, run.SourceFolder);
@@ -225,6 +225,37 @@ public sealed class PhotoSortingServiceTests
     }
 
     [Fact]
+    public async Task ApplyProposalsAsync_RecordsTheOperationOfTheRun()
+    {
+        // Ohne die Betriebsart wüsste das Rückgängigmachen nicht, ob es die Datei
+        // zurückholen oder eine Kopie entfernen muss – und träfe im Zweifel die
+        // gefährliche Annahme.
+        FakeSortJournal journal = new();
+        PhotoSortingService service = CreateService(
+            embedding: [1.0f, 0.0f, 0.0f],
+            classifier: new FakeImageClassifier(new VisionVerdict { Matches = false, Confidence = 0.0 }),
+            journal: journal);
+
+        _ = await service.ApplyProposalsAsync([CreateProposal()], FileOperationMode.Copy, dryRun: false, CancellationToken.None);
+
+        Assert.Equal(FileOperationMode.Copy, Assert.Single(journal.Runs).Operation);
+    }
+
+    [Fact]
+    public async Task ApplyProposalsAsync_PassesTheOperationToTheOrganizer()
+    {
+        FakeFileOrganizer organizer = new();
+        PhotoSortingService service = CreateService(
+            embedding: [1.0f, 0.0f, 0.0f],
+            classifier: new FakeImageClassifier(new VisionVerdict { Matches = false, Confidence = 0.0 }),
+            organizer: organizer);
+
+        _ = await service.ApplyProposalsAsync([CreateProposal()], FileOperationMode.Copy, dryRun: false, CancellationToken.None);
+
+        Assert.Equal(FileOperationMode.Copy, organizer.LastOperation);
+    }
+
+    [Fact]
     public async Task ApplyProposalsAsync_WithDryRun_RecordsNothing()
     {
         FakeSortJournal journal = new();
@@ -233,7 +264,7 @@ public sealed class PhotoSortingServiceTests
             classifier: new FakeImageClassifier(new VisionVerdict { Matches = false, Confidence = 0.0 }),
             journal: journal);
 
-        _ = await service.ApplyProposalsAsync([CreateProposal()], dryRun: true, CancellationToken.None);
+        _ = await service.ApplyProposalsAsync([CreateProposal()], FileOperationMode.Move, dryRun: true, CancellationToken.None);
 
         // Im Probelauf bewegt sich nichts – es gäbe nichts zurückzunehmen.
         Assert.Empty(journal.Runs);
@@ -254,6 +285,7 @@ public sealed class PhotoSortingServiceTests
 
         _ = await service.ApplyProposalsAsync(
             [CreateProposal("foto0.jpg"), CreateProposal("foto1.jpg"), CreateProposal("foto2.jpg")],
+            FileOperationMode.Move,
             dryRun: false,
             CancellationToken.None);
 
@@ -280,7 +312,7 @@ public sealed class PhotoSortingServiceTests
             CreateProposal("foto2.jpg"),
         ];
 
-        int applied = await service.ApplyProposalsAsync(proposals, dryRun: false, CancellationToken.None);
+        int applied = await service.ApplyProposalsAsync(proposals, FileOperationMode.Move, dryRun: false, CancellationToken.None);
 
         // Eine gesperrte Datei darf den Lauf nicht abbrechen: die übrigen werden
         // verschoben, die fehlgeschlagene bleibt ungemerkt und kommt wieder.
@@ -306,6 +338,7 @@ public sealed class PhotoSortingServiceTests
 
         _ = await Assert.ThrowsAnyAsync<OperationCanceledException>(() => service.ApplyProposalsAsync(
             [CreateProposal("foto0.jpg"), CreateProposal("foto1.jpg"), CreateProposal("foto2.jpg")],
+            FileOperationMode.Move,
             dryRun: false,
             cancellation.Token));
 

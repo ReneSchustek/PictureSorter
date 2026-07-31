@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using PictureSorter.Core.Enums;
 using PictureSorter.Core.Interfaces;
 using PictureSorter.Core.ValueObjects;
 using PictureSorter.Data.Context;
@@ -45,6 +46,7 @@ internal sealed class SortJournalRepository : ISortJournal
                 SourceFolder = run.SourceFolder,
                 CategoryName = run.CategoryName,
                 IsUndone = false,
+                Operation = (int)run.Operation,
             };
 
             foreach (SortRunItem item in run.Items)
@@ -54,6 +56,8 @@ internal sealed class SortJournalRepository : ISortJournal
                     SourcePath = item.SourcePath,
                     TargetPath = item.TargetPath,
                     FileSignature = item.FileSignature,
+                    TargetLength = item.TargetLength,
+                    TargetLastWriteUtc = item.TargetLastWriteUtc,
                 });
             }
 
@@ -102,6 +106,7 @@ internal sealed class SortJournalRepository : ISortJournal
         StartedAt = new DateTimeOffset(DateTime.SpecifyKind(entity.StartedAtUtc, DateTimeKind.Utc)),
         SourceFolder = entity.SourceFolder,
         CategoryName = entity.CategoryName,
+        Operation = (FileOperationMode)entity.Operation,
         Items =
         [
             .. entity.Items.Select(item => new SortRunItem
@@ -109,6 +114,10 @@ internal sealed class SortJournalRepository : ISortJournal
                 SourcePath = item.SourcePath,
                 TargetPath = item.TargetPath,
                 FileSignature = item.FileSignature,
+                TargetLength = item.TargetLength,
+                TargetLastWriteUtc = item.TargetLastWriteUtc is null
+                    ? null
+                    : DateTime.SpecifyKind(item.TargetLastWriteUtc.Value, DateTimeKind.Utc),
             }),
         ],
     };

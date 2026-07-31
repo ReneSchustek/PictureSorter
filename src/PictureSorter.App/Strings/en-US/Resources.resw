@@ -301,6 +301,9 @@
   <data name="SortPage_IncludeSubfoldersCheck.Content" xml:space="preserve">
     <value>Include subfolders too</value>
   </data>
+  <data name="SortPage_CopyInsteadOfMoveCheck.Content" xml:space="preserve">
+    <value>Copy photos instead of moving them (originals stay in place)</value>
+  </data>
   <data name="SortPage_Step2Heading.Text" xml:space="preserve">
     <value>2. Describe the category</value>
   </data>

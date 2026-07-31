@@ -33,7 +33,7 @@ public sealed class FileOrganizerTests : IDisposable
         string targetFolder = Path.Combine(_root, "Urlaub");
         SortProposal proposal = ProposalFor(source, targetFolder);
 
-        string result = await _organizer.ApplyAsync(proposal, dryRun: false, CancellationToken.None);
+        string result = await _organizer.ApplyAsync(proposal, FileOperationMode.Move, dryRun: false, CancellationToken.None);
 
         Assert.Equal(Path.Combine(targetFolder, "urlaub.jpg"), result);
         Assert.True(File.Exists(result));
@@ -50,7 +50,7 @@ public sealed class FileOrganizerTests : IDisposable
         string source = CreateFile(targetFolder, "strand.jpg", "inhalt");
         SortProposal proposal = ProposalFor(source, targetFolder);
 
-        string result = await _organizer.ApplyAsync(proposal, dryRun: false, CancellationToken.None);
+        string result = await _organizer.ApplyAsync(proposal, FileOperationMode.Move, dryRun: false, CancellationToken.None);
 
         Assert.Equal(source, result);
         Assert.True(File.Exists(source));
@@ -70,7 +70,7 @@ public sealed class FileOrganizerTests : IDisposable
 
         for (int run = 0; run < 3; run++)
         {
-            string moved = await _organizer.ApplyAsync(proposal, dryRun: false, CancellationToken.None);
+            string moved = await _organizer.ApplyAsync(proposal, FileOperationMode.Move, dryRun: false, CancellationToken.None);
             Assert.Equal(source, moved);
         }
 
@@ -90,7 +90,7 @@ public sealed class FileOrganizerTests : IDisposable
         string source = CreateFile(_root, "strand.jpg", "neu");
         SortProposal proposal = ProposalFor(source, targetFolder);
 
-        string result = await _organizer.ApplyAsync(proposal, dryRun: false, CancellationToken.None);
+        string result = await _organizer.ApplyAsync(proposal, FileOperationMode.Move, dryRun: false, CancellationToken.None);
 
         Assert.Equal(Path.Combine(targetFolder, "strand (1).jpg"), result);
         Assert.True(File.Exists(result));
@@ -105,7 +105,7 @@ public sealed class FileOrganizerTests : IDisposable
         string targetFolder = Path.Combine(_root, "Urlaub");
         SortProposal proposal = ProposalFor(source, targetFolder);
 
-        string result = await _organizer.ApplyAsync(proposal, dryRun: true, CancellationToken.None);
+        string result = await _organizer.ApplyAsync(proposal, FileOperationMode.Move, dryRun: true, CancellationToken.None);
 
         Assert.Equal(Path.Combine(targetFolder, "urlaub.jpg"), result);
         Assert.True(File.Exists(source));
@@ -119,6 +119,7 @@ public sealed class FileOrganizerTests : IDisposable
         string targetFolder = Path.Combine(_root, "Urlaub");
         string target = await _organizer.ApplyAsync(
             ProposalFor(source, targetFolder),
+            FileOperationMode.Move,
             dryRun: false,
             CancellationToken.None);
 
@@ -140,6 +141,7 @@ public sealed class FileOrganizerTests : IDisposable
         string targetFolder = Path.Combine(_root, "Urlaub");
         string target = await _organizer.ApplyAsync(
             ProposalFor(source, targetFolder),
+            FileOperationMode.Move,
             dryRun: false,
             CancellationToken.None);
 
@@ -175,6 +177,109 @@ public sealed class FileOrganizerTests : IDisposable
 
         Assert.False(Directory.Exists(empty));
         Assert.True(Directory.Exists(filled));
+    }
+
+    [Fact]
+    public async Task ApplyAsync_WithCopy_LeavesTheOriginalWhereItWas()
+    {
+        string source = CreateFile(_root, "urlaub.jpg", "inhalt");
+        string targetFolder = Path.Combine(_root, "Urlaub");
+        SortProposal proposal = ProposalFor(source, targetFolder);
+
+        string result = await _organizer.ApplyAsync(proposal, FileOperationMode.Copy, dryRun: false, CancellationToken.None);
+
+        Assert.Equal(Path.Combine(targetFolder, "urlaub.jpg"), result);
+        Assert.True(File.Exists(result));
+        Assert.True(File.Exists(source));
+        Assert.Equal("inhalt", await File.ReadAllTextAsync(result));
+    }
+
+    [Fact]
+    public async Task ApplyAsync_WithCopy_KeepsTheCreationDate()
+    {
+        // File.Copy übernimmt zwar das Änderungsdatum, setzt das Erstelldatum aber auf
+        // „jetzt". Für eine Fotosammlung ist genau dieses Datum die Ordnung – ohne das
+        // Zurückschreiben trüge nach dem Sortieren jedes Bild denselben Tag.
+        string source = CreateFile(_root, "urlaub.jpg", "inhalt");
+        DateTime aufnahme = new(2019, 3, 5, 8, 15, 0, DateTimeKind.Utc);
+        File.SetCreationTimeUtc(source, aufnahme);
+        SortProposal proposal = ProposalFor(source, Path.Combine(_root, "Urlaub"));
+
+        string result = await _organizer.ApplyAsync(proposal, FileOperationMode.Copy, dryRun: false, CancellationToken.None);
+
+        Assert.Equal(aufnahme, File.GetCreationTimeUtc(result));
+    }
+
+    [Fact]
+    public async Task ApplyAsync_WithMove_KeepsTheCreationDate()
+    {
+        // Innerhalb eines Laufwerks bleibt das Datum ohnehin erhalten. Der Test hält
+        // fest, dass das Zurückschreiben es nicht kaputtmacht – über eine
+        // Laufwerksgrenze hinweg ist es die einzige Rettung, dort wird aus dem
+        // Verschieben intern Kopieren plus Löschen.
+        string source = CreateFile(_root, "urlaub.jpg", "inhalt");
+        DateTime aufnahme = new(2019, 3, 5, 8, 15, 0, DateTimeKind.Utc);
+        File.SetCreationTimeUtc(source, aufnahme);
+        SortProposal proposal = ProposalFor(source, Path.Combine(_root, "Urlaub"));
+
+        string result = await _organizer.ApplyAsync(proposal, FileOperationMode.Move, dryRun: false, CancellationToken.None);
+
+        Assert.Equal(aufnahme, File.GetCreationTimeUtc(result));
+    }
+
+    [Fact]
+    public async Task DiscardCopyAsync_WhenUnchanged_RemovesTheCopy()
+    {
+        string copy = CreateFile(_root, "kopie.jpg", "inhalt");
+        FileInfo info = new(copy);
+
+        bool entfernt = await _organizer.DiscardCopyAsync(
+            copy,
+            info.Length,
+            info.LastWriteTimeUtc,
+            CancellationToken.None);
+
+        Assert.True(entfernt);
+        Assert.False(File.Exists(copy));
+    }
+
+    [Fact]
+    public async Task DiscardCopyAsync_WhenTheCopyWasEdited_KeepsIt()
+    {
+        // Wer die Kopie inzwischen bearbeitet hat, verlöre diese Arbeit. Ein
+        // Rückgängig darf nichts vernichten, das nach dem Lauf entstanden ist.
+        string copy = CreateFile(_root, "kopie.jpg", "inhalt");
+        FileInfo vorher = new(copy);
+        long laenge = vorher.Length;
+        DateTime geschrieben = vorher.LastWriteTimeUtc;
+        await File.WriteAllTextAsync(copy, "nachträglich bearbeitet");
+
+        bool entfernt = await _organizer.DiscardCopyAsync(copy, laenge, geschrieben, CancellationToken.None);
+
+        Assert.False(entfernt);
+        Assert.True(File.Exists(copy));
+        Assert.Equal("nachträglich bearbeitet", await File.ReadAllTextAsync(copy));
+    }
+
+    [Fact]
+    public async Task DiscardCopyAsync_WithoutComparisonValues_KeepsTheFile()
+    {
+        // Läufe aus der Zeit vor dieser Prüfung haben keine Vergleichswerte. Ohne sie
+        // ließe sich nicht belegen, dass hier wirklich die Kopie dieses Laufs liegt.
+        string copy = CreateFile(_root, "kopie.jpg", "inhalt");
+
+        bool entfernt = await _organizer.DiscardCopyAsync(copy, null, null, CancellationToken.None);
+
+        Assert.False(entfernt);
+        Assert.True(File.Exists(copy));
+    }
+
+    [Fact]
+    public async Task DiscardCopyAsync_WhenTheCopyIsGone_ReportsFailureInsteadOfGuessing()
+    {
+        string fehlt = Path.Combine(_root, "Urlaub", "kopie.jpg");
+
+        Assert.False(await _organizer.DiscardCopyAsync(fehlt, 7, DateTime.UtcNow, CancellationToken.None));
     }
 
     private static string CreateFile(string folder, string name, string content)

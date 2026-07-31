@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PictureSorter.Data.Context;
 
@@ -10,9 +11,11 @@ using PictureSorter.Data.Context;
 namespace PictureSorter.Data.Migrations
 {
     [DbContext(typeof(PictureSorterDbContext))]
-    partial class PictureSorterDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260731080646_AddSortRunOperationAndTargetStamp")]
+    partial class AddSortRunOperationAndTargetStamp
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.5");

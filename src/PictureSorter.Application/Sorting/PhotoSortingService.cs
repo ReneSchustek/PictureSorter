@@ -147,6 +147,7 @@ public sealed class PhotoSortingService : IPhotoSorter
     /// <inheritdoc />
     public async Task<int> ApplyProposalsAsync(
         IReadOnlyList<SortProposal> proposals,
+        FileOperationMode operation,
         bool dryRun,
         CancellationToken cancellationToken)
     {
@@ -170,7 +171,7 @@ public sealed class PhotoSortingService : IPhotoSorter
                 try
                 {
                     targetPath = await _fileOrganizer
-                        .ApplyAsync(proposal, dryRun, cancellationToken)
+                        .ApplyAsync(proposal, operation, dryRun, cancellationToken)
                         .ConfigureAwait(false);
                 }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
@@ -195,11 +196,19 @@ public sealed class PhotoSortingService : IPhotoSorter
                     // „zurück" schieben, an dem sie nie war.
                     if (!string.Equals(proposal.Photo.FullPath, targetPath, StringComparison.OrdinalIgnoreCase))
                     {
+                        // Größe und Änderungszeit werden unmittelbar nach der Operation
+                        // gelesen. Sie sind später der einzige Beleg dafür, dass eine
+                        // Kopie noch die ist, die dieser Lauf angelegt hat – und damit
+                        // gefahrlos wieder entfernt werden darf.
+                        (long? length, DateTime? lastWriteUtc) = ReadTargetStamp(targetPath);
+
                         moved.Add(new SortRunItem
                         {
                             SourcePath = proposal.Photo.FullPath,
                             TargetPath = targetPath,
                             FileSignature = proposal.Photo.ComputeSignature(),
+                            TargetLength = length,
+                            TargetLastWriteUtc = lastWriteUtc,
                         });
                     }
                 }
@@ -217,7 +226,7 @@ public sealed class PhotoSortingService : IPhotoSorter
             // ausgelöst und würde das Protokollieren sofort wieder abwürgen.
             if (moved.Count > 0)
             {
-                await RecordRunAsync(proposals[0], moved, CancellationToken.None).ConfigureAwait(false);
+                await RecordRunAsync(proposals[0], operation, moved, CancellationToken.None).ConfigureAwait(false);
             }
         }
 
@@ -234,6 +243,7 @@ public sealed class PhotoSortingService : IPhotoSorter
     // Kategorie; der erste Vorschlag liefert daher beides für den Lauf.
     private Task RecordRunAsync(
         SortProposal first,
+        FileOperationMode operation,
         IReadOnlyList<SortRunItem> moved,
         CancellationToken cancellationToken)
     {
@@ -243,10 +253,26 @@ public sealed class PhotoSortingService : IPhotoSorter
             StartedAt = _clock.UtcNow,
             SourceFolder = first.SourceFolder,
             CategoryName = first.CategoryName,
+            Operation = operation,
             Items = moved,
         };
 
         return _journal.RecordAsync(run, cancellationToken);
+    }
+
+    // Fehlende Werte sind kein Grund, den Lauf scheitern zu lassen: Ohne sie unterbleibt
+    // später nur das Entfernen einer Kopie, und das ist die sichere Richtung.
+    private static (long? Length, DateTime? LastWriteUtc) ReadTargetStamp(string targetPath)
+    {
+        try
+        {
+            FileInfo info = new(targetPath);
+            return info.Exists ? (info.Length, info.LastWriteTimeUtc) : (null, null);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            return (null, null);
+        }
     }
 
     /// <inheritdoc />
