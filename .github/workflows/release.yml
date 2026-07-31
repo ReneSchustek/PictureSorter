@@ -110,15 +110,71 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "ISCC fehlgeschlagen ($LASTEXITCODE)." }
           Get-ChildItem PictureSorter-Setup-*.exe | ForEach-Object { Write-Output "Erstellt: $($_.Name)" }
 
-      - name: An GitHub-Release anhaengen
+      # Die drei Architektur-Laeufe legen ihre Dateien nur ab; das Release entsteht
+      # danach EINMAL im Job "veroeffentlichen". Frueher hat jeder Lauf das Release
+      # selbst angelegt bzw. bestueckt - liefen zwei gleichzeitig, erzeugte einer ein
+      # zweites, unbenanntes Release, und dessen Dateien fehlten im eigentlichen. Bei
+      # v1.4.5 ist genau das mit der ARM64-Fassung passiert.
+      - name: Dateien ablegen
+        uses: actions/upload-artifact@v4
+        with:
+          name: paket-${{ matrix.rid }}
+          if-no-files-found: error
+          retention-days: 1
+          path: |
+            PictureSorter-${{ github.ref_name }}-${{ matrix.rid }}.zip
+            PictureSorter-${{ github.ref_name }}-${{ matrix.rid }}.zip.sig
+            PictureSorter-Setup-v${{ steps.version.outputs.value }}.exe
+
+  veroeffentlichen:
+    name: Release erstellen
+    needs: release
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Version aus Tag ableiten
+        id: version
+        shell: bash
+        run: echo "value=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Dateien einsammeln
+        uses: actions/download-artifact@v4
+        with:
+          path: dateien
+          merge-multiple: true
+
+      # Ein Release ohne die Setup.exe oder ohne eine der drei Architekturen ist
+      # unvollstaendig - und faellt niemandem auf, solange nur die eigene Architektur
+      # geprueft wird. Deshalb wird hier gezaehlt, bevor irgendetwas veroeffentlicht wird.
+      - name: Vollstaendigkeit pruefen
+        shell: bash
+        run: |
+          cd dateien
+          ls -la
+          fehlt=0
+          for datei in \
+            "PictureSorter-Setup-v${{ steps.version.outputs.value }}.exe" \
+            "PictureSorter-${{ github.ref_name }}-win-x64.zip" \
+            "PictureSorter-${{ github.ref_name }}-win-x64.zip.sig" \
+            "PictureSorter-${{ github.ref_name }}-win-x86.zip" \
+            "PictureSorter-${{ github.ref_name }}-win-x86.zip.sig" \
+            "PictureSorter-${{ github.ref_name }}-win-arm64.zip" \
+            "PictureSorter-${{ github.ref_name }}-win-arm64.zip.sig"; do
+            if [ ! -f "$datei" ]; then
+              echo "FEHLT: $datei"
+              fehlt=1
+            fi
+          done
+          [ "$fehlt" -eq 0 ] || { echo "Das Release waere unvollstaendig - Abbruch."; exit 1; }
+          echo "Alle sieben Dateien vorhanden."
+
+      - name: GitHub-Release anlegen
         uses: softprops/action-gh-release@v2
         with:
-          # Der Glob laedt das Paket UND seine .sig-Datei hoch.
-          files: |
-            PictureSorter-${{ github.ref_name }}-${{ matrix.rid }}.zip*
-            PictureSorter-Setup-v${{ steps.version.outputs.value }}.exe
+          files: dateien/*
           draft: true
-          fail_on_unmatched_files: false
+          fail_on_unmatched_files: true
           body: >-
             PictureSorter ${{ github.ref_name }}.
 
