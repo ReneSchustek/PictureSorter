@@ -54,7 +54,7 @@ public sealed class DuplicateScanService : IDuplicateScanner
         ArgumentException.ThrowIfNullOrWhiteSpace(folderPath);
 
         IReadOnlyList<Photo> photos = await _photoSource
-            .GetPhotosAsync(folderPath, includeSubfolders, maxCount: null, cancellationToken)
+            .GetPhotosAsync(folderPath, includeSubfolders, skip: 0, maxCount: null, cancellationToken)
             .ConfigureAwait(false);
 
         IReadOnlyList<FingerprintedPhoto> fingerprinted =

@@ -100,9 +100,18 @@ public partial class App : Microsoft.UI.Xaml.Application
             .WaitForExitAsync(apply.ProcessId, TimeSpan.FromSeconds(30), CancellationToken.None)
             .ConfigureAwait(true);
 
-        bool applied = UpdateInstaller.ApplyStagedFiles(apply.SourceDirectory, apply.TargetDirectory);
+        UpdateInstaller.ApplyResult applied = UpdateInstaller.ApplyStagedFiles(apply.SourceDirectory, apply.TargetDirectory);
         UpdateInstaller.RemovePendingNote(dataDirectory);
-        AppLog.UpdateApplied(_logger!, applied);
+
+        // Der Vermerk überlebt den Neustart: Die frisch gestartete Anwendung liest ihn
+        // und sagt der Nutzerin, ob die Aktualisierung gelungen ist. Ohne ihn sähe ein
+        // Fehlschlag genauso aus wie ein Erfolg – das Programm startet so oder so neu.
+        UpdateInstaller.WriteOutcome(dataDirectory, applied);
+        AppLog.UpdateApplied(_logger!, applied.Success);
+        if (!applied.Success)
+        {
+            AppLog.UpdateApplyFailed(_logger!, applied.FailedFile ?? "?", applied.Reason ?? "?");
+        }
 
         // Die Anwendung wieder aus dem Programmordner starten – nicht aus dem
         // Staging-Ordner, aus dem dieser Helfer läuft.
@@ -166,6 +175,8 @@ public partial class App : Microsoft.UI.Xaml.Application
             splash.Close();
             AppLog.Started(_logger!);
 
+            ReportUpdateOutcome();
+
             // Beide Prüfungen gehen ins Netz und haben nichts miteinander zu tun.
             // Nacheinander ausgeführt schob die KI-Prüfung den Update-Hinweis um ihre
             // gesamte Wartezeit nach hinten – bei einer KI, die die Verbindung annimmt
@@ -180,6 +191,29 @@ public partial class App : Microsoft.UI.Xaml.Application
             AppLog.StartupFailed(_logger!, ex);
             throw;
         }
+    }
+
+    // Meldet, wie die letzte Aktualisierung ausgegangen ist. Der Helfer, der die Dateien
+    // ersetzt, hat keine Oberfläche und beendet sich sofort – ohne diese Meldung sähe
+    // ein Fehlschlag für die Nutzerin genauso aus wie ein Erfolg: Das Programm startet
+    // in beiden Fällen einfach neu, nur eben mit der alten Fassung.
+    private void ReportUpdateOutcome()
+    {
+        if (UpdateInstaller.TakeOutcome(GetDataDirectory()) is not { } outcome)
+        {
+            return;
+        }
+
+        StatusBarViewModel status = Services.GetRequiredService<StatusBarViewModel>();
+        ILocalizer localizer = Services.GetRequiredService<ILocalizer>();
+
+        if (outcome.Success)
+        {
+            status.Report(localizer.Format("Update_Applied", UpdateService.CurrentVersion), StatusSeverity.Success);
+            return;
+        }
+
+        status.Report(localizer.Get("Update_ApplyFailed"), StatusSeverity.Error);
     }
 
     // Hält die Start-Prüfungen voneinander fern. Ohne diesen Riegel beendete eine
@@ -361,6 +395,12 @@ internal static partial class AppLog
 
     [LoggerMessage(EventId = 1007, Level = LogLevel.Error, Message = "Eine Prüfung beim Start ist fehlgeschlagen; die Anwendung läuft weiter.")]
     public static partial void StartupCheckFailed(ILogger logger, Exception exception);
+
+    [LoggerMessage(EventId = 1008, Level = LogLevel.Error, Message = "Aktualisierung nicht eingespielt. Datei {File}: {Reason}")]
+    public static partial void UpdateApplyFailed(ILogger logger, string file, string reason);
+
+    [LoggerMessage(EventId = 1009, Level = LogLevel.Error, Message = "Aktualisierung nicht möglich: Im Programmordner {Folder} darf nicht geschrieben werden.")]
+    public static partial void UpdateFolderNotWritable(ILogger logger, string folder);
 
     [LoggerMessage(EventId = 1003, Level = LogLevel.Information, Message = "Neue Version verfügbar: {Version}.")]
     public static partial void UpdateAvailable(ILogger logger, string version);

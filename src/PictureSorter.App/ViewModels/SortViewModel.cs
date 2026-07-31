@@ -28,6 +28,12 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
 {
     private const int ExampleLimit = 30;
 
+    // Dieselben Endungen, die auch die Fotoquelle einliest.
+    private static readonly HashSet<string> SupportedExampleExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".jpg", ".jpeg", ".png", ".bmp", ".gif", ".webp", ".heic", ".tif", ".tiff",
+    };
+
     private readonly IPhotoSorter _sorter;
     private readonly ISortUndoService _undo;
     private readonly IPhotoSource _photoSource;
@@ -42,6 +48,9 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
 
     private Category? _category;
     private CancellationTokenSource? _cancellation;
+
+    // Startpunkt des nächsten Beispiel-Schwungs im Ordner.
+    private int _exampleOffset;
 
     /// <summary>Expliziter Ablaufzustand der Sortier-Ansicht.</summary>
     [ObservableProperty]
@@ -276,7 +285,9 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     partial void OnSourceFolderChanged(string value)
     {
         // Bei Ordnerwechsel die alten Beispiele verwerfen, damit Schritt 3 sie für
-        // den neuen Ordner automatisch neu lädt.
+        // den neuen Ordner automatisch neu lädt. Der Startpunkt beginnt wieder vorn –
+        // sonst überspränge der neue Ordner ohne Grund seine ersten Bilder.
+        _exampleOffset = 0;
         if (ExampleCandidates.Count > 0)
         {
             ClearCandidates();
@@ -371,6 +382,101 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         }
     }
 
+    /// <summary>
+    /// Holt den nächsten Schwung Beispiele aus dem Ordner. Wer ein bestimmtes Thema
+    /// sucht, findet unter den ersten dreißig Bildern eines gemischten Ordners oft kaum
+    /// eines, das passt – ohne diesen Weg bliebe nur, den Ordner zu wechseln.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanLoadExamples))]
+    private Task LoadMoreExamplesAsync()
+    {
+        _exampleOffset += ExampleLimit;
+        return LoadExamplesAsync();
+    }
+
+    /// <summary>
+    /// Nimmt selbst ausgewählte Bilder als Beispiele auf. Sie werden den vorhandenen
+    /// hinzugefügt, nicht ersetzt: So lässt sich eine Auswahl aus mehreren Ordnern
+    /// zusammentragen.
+    /// </summary>
+    [RelayCommand]
+    private async Task AddOwnExamplesAsync()
+    {
+        IReadOnlyList<string> paths = await _folderPicker.PickImagesAsync(CancellationToken.None).ConfigureAwait(true);
+        AddExamples(paths);
+    }
+
+    /// <summary>
+    /// Nimmt hereingezogene Bilddateien als Beispiele auf.
+    /// </summary>
+    /// <param name="paths">Die Pfade der hereingezogenen Dateien.</param>
+    public void AddExamples(IEnumerable<string> paths)
+    {
+        ArgumentNullException.ThrowIfNull(paths);
+
+        int added = 0;
+        int rejected = 0;
+        foreach (string path in paths)
+        {
+            if (ExampleCandidates.Count >= ExampleLimit)
+            {
+                rejected++;
+                continue;
+            }
+
+            if (!SupportedExampleExtensions.Contains(Path.GetExtension(path)))
+            {
+                rejected++;
+                continue;
+            }
+
+            // Doppelte still übergehen: Wer zweimal dieselbe Datei hereinzieht, will
+            // sie nicht zweimal bewerten.
+            if (ExampleCandidates.Any(candidate => string.Equals(candidate.FilePath, path, StringComparison.OrdinalIgnoreCase)))
+            {
+                continue;
+            }
+
+            FileInfo info = new(path);
+            if (!info.Exists)
+            {
+                rejected++;
+                continue;
+            }
+
+            // Bewusst ohne EXIF-Auswertung: Die Datei müsste dafür geöffnet werden, und
+            // für die Auswahl zählt allein das Bild. Aufnahmedatum und Ort holt der
+            // Sortierlauf ohnehin selbst.
+            ExampleCandidateViewModel candidate = new(
+                new Photo
+                {
+                    FullPath = info.FullName,
+                    FileName = info.Name,
+                    SizeBytes = info.Length,
+                    CapturedAt = new DateTimeOffset(info.LastWriteTimeUtc, TimeSpan.Zero),
+                },
+                _localizer);
+            candidate.PropertyChanged += OnCandidateChanged;
+            ExampleCandidates.Add(candidate);
+            added++;
+        }
+
+        LearnCommand.NotifyCanExecuteChanged();
+        Wizard.NotifyStateChanged();
+
+        if (added == 0 && rejected > 0)
+        {
+            _status.Report(_localizer.Format("Sort_ExamplesNoneAdded", ExampleLimit), StatusSeverity.Warning);
+            return;
+        }
+
+        _status.Report(
+            rejected > 0
+                ? _localizer.Format("Sort_ExamplesAddedPartly", added, rejected)
+                : _localizer.Format("Sort_ExamplesAdded", added),
+            StatusSeverity.Success);
+    }
+
     [RelayCommand(CanExecute = nameof(CanLoadExamples))]
     private async Task LoadExamplesAsync()
     {
@@ -386,8 +492,18 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
             // Ordner, dessen Dateien erst aus der Cloud geholt werden (iCloud-Fotos unter
             // Windows), lud die Auswahl von dreißig Beispielen so die ganze Mediathek.
             IReadOnlyList<Photo> photos = await _photoSource
-                .GetPhotosAsync(SourceFolder, IncludeSubfolders, ExampleLimit, cancellation.Token)
+                .GetPhotosAsync(SourceFolder, IncludeSubfolders, _exampleOffset, ExampleLimit, cancellation.Token)
                 .ConfigureAwait(true);
+
+            // Am Ende des Ordners wieder von vorn: Sonst führte wiederholtes „Andere
+            // Beispiele" in eine leere Auswahl, aus der nur ein Ordnerwechsel führte.
+            if (photos.Count == 0 && _exampleOffset > 0)
+            {
+                _exampleOffset = 0;
+                photos = await _photoSource
+                    .GetPhotosAsync(SourceFolder, IncludeSubfolders, 0, ExampleLimit, cancellation.Token)
+                    .ConfigureAwait(true);
+            }
 
             ClearCandidates();
             foreach (Photo photo in photos)

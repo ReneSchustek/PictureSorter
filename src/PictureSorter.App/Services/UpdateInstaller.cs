@@ -23,6 +23,9 @@ internal static class UpdateInstaller
     /// <summary>Datei mit dem Vertrauensvermerk zum vorbereiteten Update.</summary>
     public const string PendingUpdateFileName = "pending-update.json";
 
+    /// <summary>Datei mit dem Ausgang der letzten Aktualisierung.</summary>
+    public const string UpdateOutcomeFileName = "update-outcome.json";
+
     // Deckel gegen ein „Zip-Bomben"-Paket: Weder die Zahl der Einträge noch die
     // tatsächlich geschriebene Menge darf beliebig groß werden.
     private const int MaxEntries = 20_000;
@@ -172,21 +175,47 @@ internal static class UpdateInstaller
     }
 
     /// <summary>
+    /// Prüft, ob sich im Programmordner überhaupt schreiben lässt. Wurde die Anwendung
+    /// „für alle Benutzer" nach <c>C:\Programme</c> installiert, darf der Updater ohne
+    /// Administratorrechte nichts ersetzen. Ohne diese Vorabprüfung lädt er erst
+    /// hundert Megabyte herunter, beendet die Anwendung und scheitert dann lautlos –
+    /// aus Sicht des Nutzers startet das Programm einfach unverändert neu.
+    /// </summary>
+    /// <param name="directory">Der Programmordner.</param>
+    /// <returns><see langword="true"/>, wenn dort geschrieben werden darf.</returns>
+    public static bool CanWriteTo(string directory)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(directory);
+
+        string probe = Path.Combine(directory, $"schreibtest-{Guid.NewGuid():N}.tmp");
+        try
+        {
+            File.WriteAllBytes(probe, []);
+            File.Delete(probe);
+            return true;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or DirectoryNotFoundException)
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
     /// Ersetzt die Dateien der Installation durch die des Staging-Ordners. Jede Datei
     /// wird vorher gesichert; scheitert eine, wird alles Bisherige zurückgerollt. Eine
     /// halb ersetzte Installation wäre schlimmer als gar kein Update.
     /// </summary>
     /// <param name="sourceDirectory">Der geprüfte Staging-Ordner.</param>
     /// <param name="targetDirectory">Der Programmordner.</param>
-    /// <returns><see langword="true"/>, wenn alle Dateien ersetzt wurden.</returns>
-    public static bool ApplyStagedFiles(string sourceDirectory, string targetDirectory) =>
+    /// <returns>Das Ergebnis samt Grund, falls es fehlschlug.</returns>
+    public static ApplyResult ApplyStagedFiles(string sourceDirectory, string targetDirectory) =>
         ApplyStagedFiles(sourceDirectory, targetDirectory, CopyWithRetry);
 
     // Der Kopierschritt ist herauslösbar, damit der Test genau den Fall herstellen kann,
     // den ein Dateisystem nicht verlässlich erzeugt: Das Sichern gelingt, erst das
     // Ersetzen scheitert. Eine gesperrte Datei scheitert schon beim Sichern und lässt
     // den Rollback-Pfad der betroffenen Datei ungeprüft.
-    internal static bool ApplyStagedFiles(
+    internal static ApplyResult ApplyStagedFiles(
         string sourceDirectory,
         string targetDirectory,
         Action<string, string> copyFile)
@@ -198,6 +227,7 @@ internal static class UpdateInstaller
         string source = Path.GetFullPath(sourceDirectory);
         string target = Path.GetFullPath(targetDirectory);
         List<(string Target, string Backup)> replaced = [];
+        string? current = null;
 
         try
         {
@@ -205,6 +235,7 @@ internal static class UpdateInstaller
             {
                 string relative = Path.GetRelativePath(source, file);
                 string destination = Path.Combine(target, relative);
+                current = relative;
                 _ = Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
 
                 string? backup = null;
@@ -229,12 +260,68 @@ internal static class UpdateInstaller
                 TryDelete(backup);
             }
 
-            return true;
+            return new ApplyResult(true, null, null);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
+            // Grund und betroffene Datei festhalten: Bisher endete jeder Fehlschlag als
+            // bloßes „false". Der Nutzer sah nur, dass sich nichts geändert hat, und
+            // im Protokoll stand nichts, womit sich die Ursache eingrenzen ließe.
             Rollback(replaced);
-            return false;
+            return new ApplyResult(false, current, ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// Hält den Ausgang der Aktualisierung fest. Der Helfer hat keine Oberfläche und
+    /// beendet sich sofort; ohne diesen Vermerk erführe die Nutzerin nie, ob die
+    /// Aktualisierung gelungen ist – das Programm startet in beiden Fällen einfach neu.
+    /// </summary>
+    /// <param name="dataDirectory">Das Datenverzeichnis der Anwendung.</param>
+    /// <param name="result">Das Ergebnis des Ersetzens.</param>
+    public static void WriteOutcome(string dataDirectory, ApplyResult result)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
+        ArgumentNullException.ThrowIfNull(result);
+
+        try
+        {
+            File.WriteAllText(
+                Path.Combine(dataDirectory, UpdateOutcomeFileName),
+                JsonSerializer.Serialize(result));
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // Der Vermerk ist eine Rückmeldung, kein Teil der Aktualisierung selbst.
+        }
+    }
+
+    /// <summary>
+    /// Liest den Ausgang der letzten Aktualisierung und entfernt den Vermerk, damit er
+    /// nur einmal gemeldet wird.
+    /// </summary>
+    /// <param name="dataDirectory">Das Datenverzeichnis der Anwendung.</param>
+    /// <returns>Das Ergebnis oder <see langword="null"/>, wenn keines vorliegt.</returns>
+    public static ApplyResult? TakeOutcome(string dataDirectory)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
+
+        string path = Path.Combine(dataDirectory, UpdateOutcomeFileName);
+        try
+        {
+            if (!File.Exists(path))
+            {
+                return null;
+            }
+
+            ApplyResult? result = JsonSerializer.Deserialize<ApplyResult>(File.ReadAllText(path));
+            TryDelete(path);
+            return result;
+        }
+        catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException)
+        {
+            TryDelete(path);
+            return null;
         }
     }
 
@@ -346,6 +433,15 @@ internal static class UpdateInstaller
             // Eine zurückgebliebene Sicherungsdatei ist harmlos.
         }
     }
+
+    /// <summary>
+    /// Ergebnis des Ersetzens: ob es gelang und – wenn nicht – an welcher Datei und
+    /// woran es scheiterte.
+    /// </summary>
+    /// <param name="Success">Ob alle Dateien ersetzt wurden.</param>
+    /// <param name="FailedFile">Die Datei, an der es scheiterte (relativer Pfad).</param>
+    /// <param name="Reason">Die Meldung des Dateisystems.</param>
+    internal sealed record ApplyResult(bool Success, string? FailedFile, string? Reason);
 
     /// <summary>Der Vertrauensvermerk zum vorbereiteten Update.</summary>
     /// <param name="StagingDirectory">Der geprüfte Staging-Ordner.</param>
