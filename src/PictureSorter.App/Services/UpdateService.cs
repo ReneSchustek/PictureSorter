@@ -116,6 +116,17 @@ internal sealed class UpdateService : IUpdateCoordinator
             return false;
         }
 
+        // Erst prüfen, ob überhaupt geschrieben werden darf, dann laden. Wurde die
+        // Anwendung „für alle Benutzer" nach C:\Programme installiert, scheitert das
+        // Ersetzen ohne Administratorrechte – bisher erst nach hundert Megabyte
+        // Download und dem Beenden der Anwendung, für den Nutzer völlig lautlos.
+        string installationDirectory = AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar);
+        if (!UpdateInstaller.CanWriteTo(installationDirectory))
+        {
+            UpdateServiceLog.FolderNotWritable(_logger, LogPaths.Redact(installationDirectory));
+            return false;
+        }
+
         // In einen eigenen, frisch angelegten Ordner laden. Ein fester Pfad im
         // gemeinsamen Temp-Verzeichnis wäre für andere Prozesse beschreibbar – die
         // Datei könnte zwischen Prüfung und Start ausgetauscht werden.
@@ -171,7 +182,6 @@ internal sealed class UpdateService : IUpdateCoordinator
             // gegen diesen Vermerk ab, den nur der geprüfte Hauptprozess schreibt.
             // Vermerkt wird auch der Programmordner, sonst bestimmte der Aufruf allein,
             // wohin die geprüften Dateien geschrieben werden.
-            string installationDirectory = AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar);
             UpdateInstaller.WritePendingNote(_dataDirectory, stagingDirectory, installationDirectory);
 
             progress?.Report(new UpdateProgress(UpdateStage.Starting, 100));
@@ -348,6 +358,9 @@ internal static partial class UpdateServiceLog
 
     [LoggerMessage(EventId = 5106, Level = LogLevel.Error, Message = "Aktualisierung abgebrochen: Im Paket fehlt die ausführbare Datei.")]
     public static partial void PackageIncomplete(ILogger logger);
+
+    [LoggerMessage(EventId = 5107, Level = LogLevel.Error, Message = "Aktualisierung abgebrochen: Im Programmordner {Folder} darf nicht geschrieben werden (Installation für alle Benutzer?).")]
+    public static partial void FolderNotWritable(ILogger logger, string folder);
 
     [LoggerMessage(EventId = 5104, Level = LogLevel.Error, Message = "Aktualisierung abgebrochen: zu viele Weiterleitungen.")]
     public static partial void TooManyRedirects(ILogger logger);

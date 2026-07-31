@@ -4,6 +4,31 @@ Alle nennenswerten Änderungen an diesem Projekt werden hier dokumentiert.
 Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/),
 die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
+## [1.4.5] - 2026-07-31
+
+### Hinzugefügt
+
+- **Beispielbilder lassen sich jetzt selbst bestimmen.** „Andere Beispiele" holt den
+  nächsten Schwung aus dem Ordner, „Eigene Bilder wählen" öffnet einen Auswahldialog,
+  und Bilder lassen sich auch direkt aus dem Explorer in die Auswahl ziehen — auch aus
+  mehreren Ordnern nacheinander. Zuvor waren es immer dieselben ersten dreißig Bilder;
+  bei einem gemischten Ordner war darunter oft kaum eines, das zum gesuchten Thema
+  passte, und damit stand das ganze Anlernen auf einem einzigen Beispiel.
+
+### Behoben
+
+- **Bilder, die „passt nicht" markiert waren, hatten keinerlei Wirkung.** Sie wurden
+  erfasst und gespeichert, bei der Sortierung aber nie herangezogen. Ein Foto, das
+  einem Gegenbeispiel ähnlicher ist als jedem Beispiel, wird jetzt nicht mehr
+  einsortiert. Das trennt vor allem die Fälle, die dem gesuchten Motiv nahe kommen,
+  aber nicht gemeint sind.
+- **Eine gescheiterte Aktualisierung verschwand spurlos.** Ließen sich die Dateien
+  nicht ersetzen, startete das Programm einfach mit der alten Fassung neu — ohne
+  Meldung, ohne Protokolleintrag. Der Grund wird jetzt festgehalten und nach dem
+  Neustart angezeigt. Ist der Programmordner gar nicht beschreibbar (Installation
+  „für alle Benutzer"), wird das vor dem Herunterladen erkannt und erklärt, statt
+  hundert Megabyte umsonst zu laden.
+
 ## [1.4.4] - 2026-07-31
 
 ### Hinzugefügt

@@ -15,6 +15,10 @@ public interface IPhotoSource
     /// <param name="includeSubfolders">
     /// <see langword="true"/>, um Unterordner einzubeziehen.
     /// </param>
+    /// <param name="skip">
+    /// Wie viele passende Bilder am Anfang übersprungen werden. Damit lässt sich ein
+    /// weiterer Schwung Beispiele holen, ohne die bereits gezeigten erneut einzulesen.
+    /// </param>
     /// <param name="maxCount">
     /// Höchstzahl der einzulesenden Fotos, oder <see langword="null"/> für alle. Wer nur
     /// eine Handvoll Bilder braucht, soll auch nur diese einlesen: Das Ermitteln der
@@ -27,6 +31,7 @@ public interface IPhotoSource
     Task<IReadOnlyList<Photo>> GetPhotosAsync(
         string folderPath,
         bool includeSubfolders,
+        int skip,
         int? maxCount,
         CancellationToken cancellationToken);
 }

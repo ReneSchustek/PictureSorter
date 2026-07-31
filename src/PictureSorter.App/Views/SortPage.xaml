@@ -273,16 +273,44 @@
                                 Content="Beispiele neu laden"
                                 ToolTipService.ToolTip="Lädt die Beispielbilder erneut – nützlich, falls das automatische Laden nicht geklappt hat." />
                             <Button
+                                Command="{x:Bind ViewModel.LoadMoreExamplesCommand}"
+                                x:Uid="SortPage_MoreExamplesButton"
+                                Content="Andere Beispiele"
+                                ToolTipService.ToolTip="Zeigt den nächsten Schwung Bilder aus dem Ordner – nützlich, wenn unter den gezeigten kaum eines zum Thema passt." />
+                            <Button
+                                Command="{x:Bind ViewModel.AddOwnExamplesCommand}"
+                                x:Uid="SortPage_AddOwnExamplesButton"
+                                Content="Eigene Bilder wählen"
+                                ToolTipService.ToolTip="Bilder selbst aussuchen, statt die zufällig ersten des Ordners zu nehmen." />
+                            <Button
                                 Command="{x:Bind ViewModel.LearnCommand}"
                                 x:Uid="SortPage_LearnButton"
                                 Content="Profil lernen"
                                 Style="{ThemeResource AccentButtonStyle}"
                                 Visibility="{x:Bind ViewModel.Wizard.ShowStandardActions, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                         </StackPanel>
-                        <GridView
-                            MaxHeight="360"
-                            ItemsSource="{x:Bind ViewModel.ExampleCandidates}"
-                            SelectionMode="None">
+                        <!-- Ablagefläche: Bilder aus dem Explorer lassen sich direkt
+                             hierher ziehen. Der Rahmen ist auch dann sichtbar, wenn die
+                             Auswahl noch leer ist – sonst wüsste niemand davon. -->
+                        <Border
+                            Padding="8"
+                            AllowDrop="True"
+                            Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="6"
+                            DragOver="OnExamplesDragOver"
+                            Drop="OnExamplesDrop">
+                            <StackPanel Spacing="8">
+                                <TextBlock
+                                    x:Uid="SortPage_ExampleDropHint"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Text="Du kannst Bilder auch aus dem Explorer hierher ziehen (bis zu dreißig)."
+                                    TextWrapping="Wrap" />
+                                <GridView
+                                    MaxHeight="360"
+                                    ItemsSource="{x:Bind ViewModel.ExampleCandidates}"
+                                    SelectionMode="None">
                             <GridView.ItemTemplate>
                                 <DataTemplate x:DataType="vm:ExampleCandidateViewModel">
                                     <StackPanel
@@ -317,7 +345,9 @@
                                     </StackPanel>
                                 </DataTemplate>
                             </GridView.ItemTemplate>
-                        </GridView>
+                                </GridView>
+                            </StackPanel>
+                        </Border>
                         <TextBlock>
                             <Run x:Uid="SortPage_ActiveGroupLabel" Text="Aktive Gruppe:" />
                             <Run FontWeight="SemiBold" Text="{x:Bind ViewModel.ActiveCategoryName, Mode=OneWay}" />
