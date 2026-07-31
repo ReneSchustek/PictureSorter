@@ -4,6 +4,19 @@ Alle nennenswerten Änderungen an diesem Projekt werden hier dokumentiert.
 Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/),
 die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
+## [Unveröffentlicht]
+
+### Behoben
+
+- **Die ausgelieferte Fassung ließ sich nicht starten.** Der Veröffentlichungsschritt
+  gab die eigene Ressourcendatei der Anwendung nicht mit aus. Ohne sie findet die
+  Oberflächenbibliothek keine einzige Ansicht und die Anwendung bricht schon beim
+  ersten Fenster ab. Betroffen war jedes weitergegebene Paket – Setup wie portable
+  Fassung –, während die aus den Quellen gebaute Fassung einwandfrei lief; deshalb
+  ist es so lange unbemerkt geblieben. Die Datei wird jetzt mit ausgegeben, und die
+  Veröffentlichung bricht ab, wenn sie einmal fehlen sollte, statt ein Paket zu
+  erzeugen, das sich nicht öffnen lässt.
+
 ## [1.4.0] - 2026-07-31
 
 ### Hinzugefügt
