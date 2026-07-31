@@ -166,13 +166,38 @@ public partial class App : Microsoft.UI.Xaml.Application
             splash.Close();
             AppLog.Started(_logger!);
 
-            await CheckModelsAtStartupAsync().ConfigureAwait(true);
-            await CheckForUpdatesAtStartupAsync().ConfigureAwait(true);
+            // Beide Prüfungen gehen ins Netz und haben nichts miteinander zu tun.
+            // Nacheinander ausgeführt schob die KI-Prüfung den Update-Hinweis um ihre
+            // gesamte Wartezeit nach hinten – bei einer KI, die die Verbindung annimmt
+            // und nicht antwortet, um Minuten – und nahm ihn ganz mit, sobald sie mit
+            // einer Ausnahme endete. Getrennt gestartet kann keine die andere aufhalten.
+            await Task.WhenAll(
+                RunStartupCheckAsync(CheckModelsAtStartupAsync),
+                RunStartupCheckAsync(CheckForUpdatesAtStartupAsync)).ConfigureAwait(true);
         }
         catch (Exception ex)
         {
             AppLog.StartupFailed(_logger!, ex);
             throw;
+        }
+    }
+
+    // Hält die Start-Prüfungen voneinander fern. Ohne diesen Riegel beendete eine
+    // einzige unerwartete Ausnahme den gesamten Startablauf und unterdrückte die
+    // jeweils andere Prüfung – sichtbar wurde davon nichts.
+    [SuppressMessage(
+        "Design",
+        "CA1031:Do not catch general exception types",
+        Justification = "Nebenläufige Start-Prüfung: Sie darf weder den Start noch die jeweils andere Prüfung beenden. Die Ausnahme wird protokolliert.")]
+    private async Task RunStartupCheckAsync(Func<Task> check)
+    {
+        try
+        {
+            await check().ConfigureAwait(true);
+        }
+        catch (Exception ex)
+        {
+            AppLog.StartupCheckFailed(_logger!, ex);
         }
     }
 
@@ -315,6 +340,9 @@ internal static partial class AppLog
 
     [LoggerMessage(EventId = 1005, Level = LogLevel.Information, Message = "Update eingespielt: {Applied}.")]
     public static partial void UpdateApplied(ILogger logger, bool applied);
+
+    [LoggerMessage(EventId = 1007, Level = LogLevel.Error, Message = "Eine Prüfung beim Start ist fehlgeschlagen; die Anwendung läuft weiter.")]
+    public static partial void StartupCheckFailed(ILogger logger, Exception exception);
 
     [LoggerMessage(EventId = 1003, Level = LogLevel.Information, Message = "Neue Version verfügbar: {Version}.")]
     public static partial void UpdateAvailable(ILogger logger, string version);
