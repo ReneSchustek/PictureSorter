@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using PictureSorter.Application.Sorting;
+using PictureSorter.Core.Enums;
 using PictureSorter.Core.Interfaces;
 using PictureSorter.Core.ValueObjects;
 using PictureSorter.Data.Context;
@@ -163,7 +164,7 @@ public sealed class SortUndoIntegrationTests : IAsyncLifetime
             };
 
             string targetPath = await _organizer
-                .ApplyAsync(proposal, dryRun: false, CancellationToken.None)
+                .ApplyAsync(proposal, FileOperationMode.Move, dryRun: false, CancellationToken.None)
                 .ConfigureAwait(false);
             await _memory.MarkSortedAsync(proposal, CancellationToken.None).ConfigureAwait(false);
 

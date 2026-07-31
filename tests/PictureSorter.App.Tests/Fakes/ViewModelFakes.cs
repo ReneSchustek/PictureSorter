@@ -94,6 +94,9 @@ internal sealed class FakePhotoSorter(IReadOnlyList<SortProposal> proposals) : I
 
     public List<SortProposal> Ignored { get; } = [];
 
+    /// <summary>Die Betriebsart des zuletzt angewendeten Laufs.</summary>
+    public FileOperationMode LastOperation { get; private set; }
+
     public Task<IReadOnlyList<SortProposal>> CreateProposalsAsync(
         string sourceFolder,
         Category category,
@@ -107,10 +110,12 @@ internal sealed class FakePhotoSorter(IReadOnlyList<SortProposal> proposals) : I
 
     public Task<int> ApplyProposalsAsync(
         IReadOnlyList<SortProposal> toApply,
+        FileOperationMode operation,
         bool dryRun,
         CancellationToken cancellationToken)
     {
         Applied.AddRange(toApply);
+        LastOperation = operation;
         return Task.FromResult(toApply.Count);
     }
 

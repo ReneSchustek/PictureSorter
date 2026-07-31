@@ -29,6 +29,13 @@ internal sealed class SortRunEntity
     /// <summary><see langword="true"/>, wenn der Lauf bereits zurückgenommen wurde.</summary>
     public bool IsUndone { get; set; }
 
+    /// <summary>
+    /// Ob der Lauf verschoben (0) oder kopiert (1) hat. Bestehende Zeilen bekommen
+    /// bei der Migration die 0 – vor dieser Wahlmöglichkeit wurde ausnahmslos
+    /// verschoben, der Vorgabewert ist hier also kein Notbehelf, sondern zutreffend.
+    /// </summary>
+    public int Operation { get; set; }
+
     /// <summary>Die verschobenen Dateien des Laufs.</summary>
     public List<SortRunItemEntity> Items { get; } = [];
 }

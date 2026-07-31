@@ -78,6 +78,9 @@ namespace PictureSorter.Data.Migrations
                     b.Property<bool>("IsUndone")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("Operation")
+                        .HasColumnType("INTEGER");
+
                     b.Property<Guid>("RunId")
                         .HasColumnType("TEXT");
 
@@ -119,6 +122,12 @@ namespace PictureSorter.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(1024)
                         .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("TargetLastWriteUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<long?>("TargetLength")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("TargetPath")
                         .IsRequired()

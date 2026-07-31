@@ -4,6 +4,29 @@ Alle nennenswerten Änderungen an diesem Projekt werden hier dokumentiert.
 Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/),
 die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
+## [Unveröffentlicht]
+
+### Hinzugefügt
+
+- **Kopieren statt Verschieben**: Direkt über dem Sortieren-Knopf lässt sich für den
+  einzelnen Lauf wählen, ob die Fotos verschoben oder kopiert werden. Die
+  Voreinstellung bleibt das Verschieben. Beim Kopieren bleiben die Originale im
+  Quellordner liegen; das Rückgängigmachen entfernt dann die Kopien, statt Dateien
+  zurückzuholen – und nur die Kopien, die seit dem Lauf unverändert geblieben sind.
+  Eine nachträglich bearbeitete Kopie bleibt stehen und wird als übersprungen
+  gemeldet.
+
+### Behoben
+
+- **Erstelldatum ging beim Sortieren über eine Laufwerksgrenze verloren.** Wurde aus
+  einem Ordner auf `C:` in ein Archiv auf einem anderen Laufwerk sortiert, machte
+  Windows aus dem Verschieben intern ein Kopieren mit anschließendem Löschen – die
+  Zieldatei trug danach den heutigen Tag als Erstelldatum. Bei einer Fotosammlung ist
+  genau dieses Datum die Ordnung. Das Datum wird jetzt in beiden Betriebsarten aus
+  der Quelle übernommen. Innerhalb desselben Laufwerks bestand das Problem nicht.
+  Aufnahmedaten in den Bildern selbst (EXIF) waren nie betroffen – sie stehen in den
+  Dateibytes und überstehen beide Vorgänge unverändert.
+
 ## [1.3.1] - 2026-07-30
 
 ### Hinzugefügt
