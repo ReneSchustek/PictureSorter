@@ -27,7 +27,7 @@ Bildanalysen laufen vollständig offline auf dem eigenen Rechner.
 
 - Windows 11 (Build 10.0.17763.0 oder neuer)
 - [.NET SDK 10.0](https://dotnet.microsoft.com/download) (zum Bauen)
-- [Ollama](https://ollama.com/) lokal installiert und laufend (`http://localhost:11434`)
+- [Ollama](https://ollama.com/) lokal installiert und laufend (`http://127.0.0.1:11434`)
 - **Benötigte Ollama-Modelle** (einmalig laden) — ohne sie ist nur die
   Duplikat-Erkennung nutzbar:
   - `ollama pull llava` — Vision-Modell: beschreibt das Bild und prüft Grenzfälle

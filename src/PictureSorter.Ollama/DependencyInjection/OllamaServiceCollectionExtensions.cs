@@ -42,6 +42,16 @@ public static class OllamaServiceCollectionExtensions
             // ein fremder Dienst am Port könnte eine riesige Antwort liefern. Embeddings
             // und Klassifikationen sind klein; 64 MB sind großzügig bemessen.
             client.MaxResponseContentBufferSize = 64L * 1024 * 1024;
+        })
+        .ConfigurePrimaryHttpMessageHandler(static () => new SocketsHttpHandler
+        {
+            // Ollama läuft auf demselben Rechner. Ohne diese Vorgabe übernimmt .NET die
+            // Proxy-Einstellungen von Windows – setzt eine Sicherheits- oder VPN-Software
+            // dort einen Proxy ohne Ausnahme für lokale Adressen, liefe die Anfrage an den
+            // eigenen Rechner über diesen Proxy und liefe ins Leere. Ein laufendes Ollama
+            // gälte dann als nicht vorhanden, ohne dass die Nutzerin den Zusammenhang je
+            // erkennen könnte.
+            UseProxy = false,
         });
 
         // KI-Provider hängen am transienten HttpClient und sind daher selbst transient

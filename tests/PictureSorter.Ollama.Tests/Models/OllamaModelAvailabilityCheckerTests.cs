@@ -67,6 +67,50 @@ public sealed class OllamaModelAvailabilityCheckerTests
         Assert.Equal(availability.RequiredModels, availability.MissingModels);
     }
 
+    [Fact]
+    public async Task CheckAsync_WhenOllamaAcceptsButNeverAnswers_GivesUpAndReportsNotReachable()
+    {
+        // Das Bild eines Ollama, das gerade aktualisiert wird: Die Verbindung kommt
+        // zustande, eine Antwort nie. Ohne eigenes Zeitlimit hinge die Prüfung am langen
+        // Anfrage-Limit und die Oberfläche bliebe minutenlang bei „wird geprüft" stehen.
+        OllamaModelAvailabilityChecker sut = CreateSut(
+            new HangingOllamaClient(),
+            new OllamaOptions { AvailabilityTimeoutSeconds = 1 });
+
+        ModelAvailability availability = await sut.CheckAsync(CancellationToken.None);
+
+        Assert.False(availability.IsReachable);
+        Assert.False(availability.IsReady);
+        Assert.Equal(availability.RequiredModels, availability.MissingModels);
+    }
+
+    [Fact]
+    public async Task CheckAsync_WhenCallerCancels_PassesTheCancellationOn()
+    {
+        // Der Abbruch durch den Aufrufer darf nicht als „Ollama fehlt" durchgehen –
+        // sonst meldete ein Seitenwechsel der Nutzerin eine kaputte Einrichtung.
+        OllamaModelAvailabilityChecker sut = CreateSut(new HangingOllamaClient(), new OllamaOptions());
+        using CancellationTokenSource cancelled = new();
+        await cancelled.CancelAsync();
+
+        _ = await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => sut.CheckAsync(cancelled.Token));
+    }
+
+    [Fact]
+    public async Task CheckAsync_WhenTheClientFailsUnexpectedly_StillAnswers()
+    {
+        // Auch eine nicht vorhergesehene Ausnahme muss zu einer Antwort führen; käme sie
+        // nach oben durch, bliebe der Text „wird geprüft" für immer stehen.
+        OllamaModelAvailabilityChecker sut = CreateSut(
+            new FakeOllamaClient(new HttpRequestException("kaputt")),
+            new OllamaOptions());
+
+        ModelAvailability availability = await sut.CheckAsync(CancellationToken.None);
+
+        Assert.False(availability.IsReachable);
+    }
+
     private static async Task<ModelAvailability> CheckAsync(params string[] installed)
     {
         FakeOllamaClient client = new(string.Empty);
@@ -75,8 +119,8 @@ public sealed class OllamaModelAvailabilityCheckerTests
         return await CreateSut(client).CheckAsync(CancellationToken.None).ConfigureAwait(false);
     }
 
-    private static OllamaModelAvailabilityChecker CreateSut(FakeOllamaClient client) => new(
+    private static OllamaModelAvailabilityChecker CreateSut(IOllamaClient client, OllamaOptions? options = null) => new(
         client,
-        Options.Create(new OllamaOptions()),
+        Options.Create(options ?? new OllamaOptions()),
         NullLogger<OllamaModelAvailabilityChecker>.Instance);
 }
