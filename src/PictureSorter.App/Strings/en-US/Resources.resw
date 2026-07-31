@@ -272,13 +272,13 @@
     <value>2. Category</value>
   </data>
   <data name="SortPage_Step3Link.Content" xml:space="preserve">
-    <value>3. Examples</value>
+    <value>3. Matching</value>
   </data>
   <data name="SortPage_Step4Link.Content" xml:space="preserve">
-    <value>4. Analysis</value>
+    <value>4. Counter-examples</value>
   </data>
   <data name="SortPage_Step5Link.Content" xml:space="preserve">
-    <value>5. Sort</value>
+    <value>5. Analysis</value>
   </data>
   <data name="SortPage_RestartButton.Content" xml:space="preserve">
     <value>↺ Restart</value>
@@ -326,43 +326,34 @@
     <value>Event group (folder name includes the capture date, e.g. "Vacation 14.07.25")</value>
   </data>
   <data name="SortPage_Step3Heading.Text" xml:space="preserve">
-    <value>3. Select examples</value>
+    <value>3. These images belong</value>
   </data>
   <data name="SortPage_Step3Description.Text" xml:space="preserve">
-    <value>The example images load automatically. Mark whether they belong to the group ("yes") or "not".</value>
-  </data>
-  <data name="SortPage_ReloadExamplesButton.Content" xml:space="preserve">
-    <value>Reload examples</value>
-  </data>
-  <data name="SortPage_ReloadExamplesButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
-    <value>Reloads the example images – useful if automatic loading did not work.</value>
+    <value>Pick images that clearly belong to the group. A few clear examples work better than many unclear ones.</value>
   </data>
   <data name="SortPage_LearnButton.Content" xml:space="preserve">
     <value>Learn profile</value>
-  </data>
-  <data name="SortPage_ExamplePositiveToggle.Content" xml:space="preserve">
-    <value>✓ yes</value>
-  </data>
-  <data name="SortPage_ExampleNegativeToggle.Content" xml:space="preserve">
-    <value>✗ no</value>
   </data>
   <data name="SortPage_ActiveGroupLabel.Text" xml:space="preserve">
     <value>Active group:</value>
   </data>
   <data name="SortPage_Step4Heading.Text" xml:space="preserve">
-    <value>4. Start analysis</value>
+    <value>4. These images do not belong</value>
   </data>
   <data name="SortPage_Step4Description.Text" xml:space="preserve">
-    <value>Now PictureSorter reviews all photos in the folder and suggests which ones fit the group. This may take a while depending on the number.</value>
+    <value>Most useful are images that come close to the subject but are not meant. This step is optional.</value>
   </data>
   <data name="SortPage_AnalyzeButton.Content" xml:space="preserve">
     <value>Analyze</value>
   </data>
   <data name="SortPage_Step5Heading.Text" xml:space="preserve">
-    <value>5. Preview and sort</value>
+    <value>5. Start the analysis</value>
   </data>
   <data name="SortPage_Step5Description.Text" xml:space="preserve">
-    <value>Review the suggestions. Simply uncheck images you don't want – they won't be moved and won't be suggested again. Click an image to view it enlarged.</value>
+    <value>PictureSorter now looks at every photo in the folder and suggests which ones fit the group. Depending on the number this can take a while.</value>
+  </data>
+  <data name="SortPage_Step6Description.Text" xml:space="preserve">
+    <value>Check the suggestions. For images you do not want, clear the checkbox – they are not moved and not suggested again. Click an image to see it full size.</value>
   </data>
   <data name="SortPage_ToggleAllButton.Content" xml:space="preserve">
     <value>Select/deselect all</value>
@@ -399,9 +390,6 @@
   </data>
   <data name="Sort_NoImagesInFolder" xml:space="preserve">
     <value>No images were found in the folder. Please choose a different folder in step 1.</value>
-  </data>
-  <data name="Sort_ExamplesLoaded" xml:space="preserve">
-    <value>{0} examples loaded — mark the matching images with “Belongs here”.</value>
   </data>
   <data name="Sort_FolderNotFound" xml:space="preserve">
     <value>The folder was not found. Please check the path in step 1.</value>
@@ -470,13 +458,13 @@
     <value>Step 2 of 5: Describe the category</value>
   </data>
   <data name="Wizard_Step3Title" xml:space="preserve">
-    <value>Step 3 of 5: Select examples</value>
+    <value>Step 3 of 6: Choose matching images</value>
   </data>
   <data name="Wizard_Step4Title" xml:space="preserve">
-    <value>Step 4 of 5: Start the analysis</value>
+    <value>Step 4 of 6: Choose counter-examples</value>
   </data>
   <data name="Wizard_Step5Title" xml:space="preserve">
-    <value>Step 5 of 5: Sort</value>
+    <value>Step 5 of 6: Start the analysis</value>
   </data>
   <data name="Wizard_ActionNext" xml:space="preserve">
     <value>Next ▶</value>
@@ -659,25 +647,7 @@
     <value>Application version</value>
   </data>
   <data name="SortPage_DropCaption" xml:space="preserve">
-    <value>Use as examples</value>
-  </data>
-  <data name="SortPage_ExampleDropHint.Text" xml:space="preserve">
-    <value>You can also drag images here from File Explorer (up to thirty).</value>
-  </data>
-  <data name="SortPage_MoreExamplesButton.Content" xml:space="preserve">
-    <value>Other examples</value>
-  </data>
-  <data name="SortPage_AddOwnExamplesButton.Content" xml:space="preserve">
-    <value>Choose your own images</value>
-  </data>
-  <data name="Sort_ExamplesAdded" xml:space="preserve">
-    <value>Added {0} of your own images. Now mark which ones belong and which do not.</value>
-  </data>
-  <data name="Sort_ExamplesAddedPartly" xml:space="preserve">
-    <value>Added {0} images, skipped {1} (more than thirty, or not a supported image format).</value>
-  </data>
-  <data name="Sort_ExamplesNoneAdded" xml:space="preserve">
-    <value>Nothing was added: at most {0} examples fit, and only image files are accepted.</value>
+    <value>Use as matching images</value>
   </data>
   <data name="Sort_LearningProgress" xml:space="preserve">
     <value>Learning the profile: image {0} of {1}…</value>
@@ -693,7 +663,8 @@
   </data>
   <data name="Update_NotWritable" xml:space="preserve">
     <value>The update is not possible because the program folder is not writable. This happens with an “all users” installation — please install the new version manually.</value>
-  </data>  <data name="Update_Failed" xml:space="preserve">
+  </data>
+  <data name="Update_Failed" xml:space="preserve">
     <value>The update is not possible. Please try again later.</value>
   </data>
   <data name="About_LogEmpty" xml:space="preserve">
@@ -825,10 +796,61 @@
   <data name="MemoryPage_ItemList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Remembered decisions</value>
   </data>
-  <data name="SortPage_ExampleList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Example images</value>
+  <data name="SortPage_PositiveExampleList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Matching example images</value>
   </data>
   <data name="SortPage_ProposalList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Proposals</value>
+  </data>
+  <data name="Examples_AllKnown" xml:space="preserve">
+    <value>Those images are already chosen.</value>
+  </data>
+  <data name="SortPage_SuggestPositivesButton.Content" xml:space="preserve">
+    <value>Get suggestions</value>
+  </data>
+  <data name="SortPage_DropHintNegative.Text" xml:space="preserve">
+    <value>You can drag images in here as well.</value>
+  </data>
+  <data name="SortPage_Step6Heading.Text" xml:space="preserve">
+    <value>6. Sort</value>
+  </data>
+  <data name="SortPage_DropCaptionNegative" xml:space="preserve">
+    <value>Use as counter-examples</value>
+  </data>
+  <data name="SortPage_Step6Link.Content" xml:space="preserve">
+    <value>6. Sort</value>
+  </data>
+  <data name="SortPage_SuggestNegativesButton.Content" xml:space="preserve">
+    <value>Get suggestions</value>
+  </data>
+  <data name="Examples_Capacity" xml:space="preserve">
+    <value>{0} of {1} chosen — {2} more possible</value>
+  </data>
+  <data name="SortPage_PickPositivesButton.Content" xml:space="preserve">
+    <value>Choose yourself</value>
+  </data>
+  <data name="Examples_Added" xml:space="preserve">
+    <value>Added {0} images, {1} more possible.</value>
+  </data>
+  <data name="Wizard_Step6Title" xml:space="preserve">
+    <value>Step 6 of 6: Sort</value>
+  </data>
+  <data name="SortPage_DropHint.Text" xml:space="preserve">
+    <value>You can also drag images here from File Explorer.</value>
+  </data>
+  <data name="Examples_NoImageFiles" xml:space="preserve">
+    <value>None of those was a readable image file.</value>
+  </data>
+  <data name="SortPage_PickNegativesButton.Content" xml:space="preserve">
+    <value>Choose yourself</value>
+  </data>
+  <data name="Examples_AlreadyFull" xml:space="preserve">
+    <value>At most {0} images fit. Remove one first if you want to add another.</value>
+  </data>
+  <data name="SortPage_RemoveExampleButton.Content" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="SortPage_NegativeExampleList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Counter-examples</value>
   </data>
 </root>

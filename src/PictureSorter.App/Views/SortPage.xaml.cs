@@ -123,15 +123,24 @@ internal sealed partial class SortPage : Page
         }
     }
 
-    // Startet die geführte Ollama-Einrichtung in einem separaten Fenster.
-    // Hereinziehen aus dem Explorer. Ohne DragOver, das die Kopier-Absicht setzt, zeigt
-    // Windows das Verbotszeichen und lässt gar nicht erst fallen.
-    private void OnExamplesDragOver(object sender, DragEventArgs e)
+    private void OnPositivesDragOver(object sender, DragEventArgs e) => AcceptImageDrop(e, "SortPage_DropCaption");
+
+    private void OnNegativesDragOver(object sender, DragEventArgs e) => AcceptImageDrop(e, "SortPage_DropCaptionNegative");
+
+    private async void OnPositivesDrop(object sender, DragEventArgs e) =>
+        await TakeDroppedImagesAsync(e, isPositive: true).ConfigureAwait(true);
+
+    private async void OnNegativesDrop(object sender, DragEventArgs e) =>
+        await TakeDroppedImagesAsync(e, isPositive: false).ConfigureAwait(true);
+
+    // Ohne DragOver, das die Kopier-Absicht setzt, zeigt Windows das Verbotszeichen und
+    // lässt gar nicht erst fallen.
+    private void AcceptImageDrop(DragEventArgs e, string captionKey)
     {
         if (e.DataView.Contains(StandardDataFormats.StorageItems))
         {
             e.AcceptedOperation = DataPackageOperation.Copy;
-            e.DragUIOverride.Caption = _localizer.Get("SortPage_DropCaption");
+            e.DragUIOverride.Caption = _localizer.Get(captionKey);
             e.DragUIOverride.IsCaptionVisible = true;
         }
     }
@@ -140,7 +149,7 @@ internal sealed partial class SortPage : Page
         "Design",
         "CA1031:Do not catch general exception types",
         Justification = "Letzter Fangblock eines async-void-Ereignishandlers: Eine entkommende Ausnahme beendet den Prozess. Sie wird protokolliert.")]
-    private async void OnExamplesDrop(object sender, DragEventArgs e)
+    private async Task TakeDroppedImagesAsync(DragEventArgs e, bool isPositive)
     {
         if (!e.DataView.Contains(StandardDataFormats.StorageItems))
         {
@@ -153,7 +162,7 @@ internal sealed partial class SortPage : Page
         try
         {
             IReadOnlyList<IStorageItem> items = await e.DataView.GetStorageItemsAsync();
-            ViewModel.AddExamples(items.OfType<StorageFile>().Select(file => file.Path));
+            ViewModel.AddDroppedImages(isPositive, items.OfType<StorageFile>().Select(file => file.Path));
         }
         catch (Exception ex)
         {
@@ -165,6 +174,7 @@ internal sealed partial class SortPage : Page
         }
     }
 
+    // Startet die geführte Ollama-Einrichtung in einem separaten Fenster.
     private void OnSetupOllamaClick(object sender, RoutedEventArgs e)
     {
         try

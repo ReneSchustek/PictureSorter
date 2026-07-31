@@ -37,6 +37,15 @@ if ($reports.Count -eq 0) {
     Write-Error "Keine Coverage-Berichte unter '$ResultsDirectory' gefunden."
 }
 
+# Welche Berichte gelesen wurden, gehört in die Ausgabe. Das Skript nimmt alles, was
+# unter dem Ergebnisordner liegt – auch Berichte eines früheren Laufs. Wer lokal
+# `dotnet test` ohne `--results-directory TestResults` aufruft, schreibt die neuen
+# Berichte woanders hin; das Gate wertet dann stillschweigend den alten Stand aus und
+# meldet grün, ohne die aktuelle Änderung je gesehen zu haben.
+$newest = ($reports | Sort-Object LastWriteTime -Descending | Select-Object -First 1).LastWriteTime
+Write-Output ("Gelesen: {0} Bericht(e), neuester vom {1:dd.MM.yyyy HH:mm}." -f $reports.Count, $newest)
+Write-Output ''
+
 # Schlüssel: "Datei|Zeile" -> wurde die Zeile von irgendeinem Testprojekt erreicht?
 $lines = @{}
 # Zuordnung Datei -> Assembly, damit die Ausgabe je Schicht aufschlüsseln kann.

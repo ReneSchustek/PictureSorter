@@ -26,13 +26,6 @@ namespace PictureSorter.App.ViewModels;
 /// </summary>
 internal sealed partial class SortViewModel : ObservableObject, IDisposable
 {
-    private const int ExampleLimit = 30;
-
-    // Dieselben Endungen, die auch die Fotoquelle einliest.
-    private static readonly HashSet<string> SupportedExampleExtensions = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ".jpg", ".jpeg", ".png", ".bmp", ".gif", ".webp", ".heic", ".tif", ".tiff",
-    };
 
     private readonly IPhotoSorter _sorter;
     private readonly ISortUndoService _undo;
@@ -49,13 +42,18 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     private Category? _category;
     private CancellationTokenSource? _cancellation;
 
-    // Startpunkt des nächsten Beispiel-Schwungs im Ordner.
-    private int _exampleOffset;
+    // Startpunkt des nächsten Vorschlags-Schwungs, für beide Seiten getrennt: Sie
+    // schöpfen aus demselben Ordner, sollen aber nicht dieselben Bilder vorschlagen.
+    private int _positiveOffset;
+    private int _negativeOffset;
 
     /// <summary>Expliziter Ablaufzustand der Sortier-Ansicht.</summary>
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(BrowseCommand))]
-    [NotifyCanExecuteChangedFor(nameof(LoadExamplesCommand))]
+    [NotifyCanExecuteChangedFor(nameof(SuggestPositivesCommand))]
+    [NotifyCanExecuteChangedFor(nameof(SuggestNegativesCommand))]
+    [NotifyCanExecuteChangedFor(nameof(PickPositivesCommand))]
+    [NotifyCanExecuteChangedFor(nameof(PickNegativesCommand))]
     [NotifyCanExecuteChangedFor(nameof(LearnCommand))]
     [NotifyCanExecuteChangedFor(nameof(AnalyzeCommand))]
     [NotifyCanExecuteChangedFor(nameof(ApplyCommand))]
@@ -64,7 +62,8 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
 
     /// <summary>Der gewählte Quellordner.</summary>
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(LoadExamplesCommand))]
+    [NotifyCanExecuteChangedFor(nameof(SuggestPositivesCommand))]
+    [NotifyCanExecuteChangedFor(nameof(SuggestNegativesCommand))]
     [NotifyCanExecuteChangedFor(nameof(AnalyzeCommand))]
     public partial string SourceFolder { get; set; }
 
@@ -160,6 +159,11 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         _localizer = localizer;
         _logger = logger;
 
+        // Beide Seiten der Beispielauswahl mit eigener Obergrenze. Sie stehen vor dem
+        // Assistenten, weil dessen Vorbedingungen ihren Inhalt lesen.
+        PositiveExamples = new ExampleSetViewModel(_options.MaxExamplesPerSide, localizer, OnExampleSetChanged);
+        NegativeExamples = new ExampleSetViewModel(_options.MaxExamplesPerSide, localizer, OnExampleSetChanged);
+
         // Der Assistent kennt die Use-Cases nur über diese Delegaten (SRP). Er muss
         // vor den Anfangswerten stehen: deren Setter melden jede Änderung an den
         // Assistenten weiter und würden sonst auf ein noch nicht erzeugtes Objekt
@@ -187,7 +191,15 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     /// <summary>
     /// Die geladenen Beispiel-Kandidaten zum Anlernen der Kategorie.
     /// </summary>
-    public ObservableCollection<ExampleCandidateViewModel> ExampleCandidates { get; } = [];
+    public ExampleSetViewModel PositiveExamples { get; }
+
+    /// <summary>
+    /// Die Bilder, die ausdrücklich NICHT zur Gruppe gehören. Eigene Seite mit eigener
+    /// Obergrenze: In einer gemeinsamen Liste teilten sich beide Seiten das Kontingent,
+    /// und wer zuerst passende Bilder sammelte, hatte für die Gegenbeispiele keinen
+    /// Platz mehr.
+    /// </summary>
+    public ExampleSetViewModel NegativeExamples { get; }
 
     /// <summary>
     /// Die erzeugten Sortiervorschläge (Vorschau). Jeder Eintrag trägt seine
@@ -235,7 +247,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     public bool CanLearn =>
         IsInteractive
         && !string.IsNullOrWhiteSpace(CategoryName)
-        && ExampleCandidates.Any(candidate => candidate.IsPositive);
+        && PositiveExamples.Items.Count > 0;
 
     /// <summary>
     /// Analysiert werden kann, wenn Ordner und gelernte Kategorie vorliegen.
@@ -284,13 +296,16 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
 
     partial void OnSourceFolderChanged(string value)
     {
-        // Bei Ordnerwechsel die alten Beispiele verwerfen, damit Schritt 3 sie für
-        // den neuen Ordner automatisch neu lädt. Der Startpunkt beginnt wieder vorn –
-        // sonst überspränge der neue Ordner ohne Grund seine ersten Bilder.
-        _exampleOffset = 0;
-        if (ExampleCandidates.Count > 0)
+        // Bei Ordnerwechsel die alten Beispiele verwerfen: Sie stammen aus dem vorigen
+        // Ordner und würden dort weiterwirken, wo sie niemand mehr erwartet. Der
+        // Startpunkt beginnt wieder vorn – sonst überspränge der neue Ordner ohne
+        // Grund seine ersten Bilder.
+        _positiveOffset = 0;
+        _negativeOffset = 0;
+        if (!PositiveExamples.IsEmpty || !NegativeExamples.IsEmpty)
         {
-            ClearCandidates();
+            PositiveExamples.Clear();
+            NegativeExamples.Clear();
             LearnCommand.NotifyCanExecuteChanged();
         }
 
@@ -306,9 +321,10 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     {
         0 => IsInteractive && !string.IsNullOrWhiteSpace(SourceFolder),
         1 => IsInteractive && !string.IsNullOrWhiteSpace(CategoryName),
-        2 => CanLearn,
-        3 => CanAnalyze,
-        4 => CanApply,
+        2 => IsInteractive && PositiveExamples.Items.Count > 0,
+        3 => CanLearn,
+        4 => CanAnalyze,
+        5 => CanApply,
         _ => false,
     };
 
@@ -321,14 +337,15 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         {
             case 0:
             case 1:
-                return true;
             case 2:
+                return true;
+            case 3:
                 await LearnAsync().ConfigureAwait(true);
                 return _category is not null;
-            case 3:
+            case 4:
                 await AnalyzeAsync().ConfigureAwait(true);
                 return State is SortState.Preview;
-            case 4:
+            case 5:
                 await ApplyAsync().ConfigureAwait(true);
                 return false;
             default:
@@ -336,18 +353,10 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         }
     }
 
-    // Beim Betreten von Schritt 3 die Beispiele automatisch laden, damit der Nutzer
-    // ohne Zusatzklick passende Bilder markieren kann.
-    private void OnWizardStepEntered(int step)
-    {
-        if (step == 2
-            && ExampleCandidates.Count == 0
-            && !string.IsNullOrWhiteSpace(SourceFolder)
-            && LoadExamplesCommand.CanExecute(parameter: null))
-        {
-            LoadExamplesCommand.Execute(parameter: null);
-        }
-    }
+    // Bewusst ohne automatisches Laden: Beide Seiten beginnen leer. Vorher standen
+    // dreißig zufällige Bilder des Ordners bereits drin, von denen zu einem bestimmten
+    // Thema oft kaum eines passte – der Platz war trotzdem belegt.
+    private void OnWizardStepEntered(int step) => Wizard.NotifyStateChanged();
 
     // Setzt die fachlichen Daten beim Neustart zurück (der Assistent setzt die
     // Schritt-Position separat zurück). Der gewählte Ordner wird ebenfalls geleert.
@@ -359,7 +368,10 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         CategoryName = string.Empty;
         CategoryDescription = string.Empty;
         IsEventCategory = false;
-        ClearCandidates();
+        PositiveExamples.Clear();
+        NegativeExamples.Clear();
+        _positiveOffset = 0;
+        _negativeOffset = 0;
         ClearProposals();
         State = SortState.Idle;
 
@@ -383,103 +395,69 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>
-    /// Holt den nächsten Schwung Beispiele aus dem Ordner. Wer ein bestimmtes Thema
-    /// sucht, findet unter den ersten dreißig Bildern eines gemischten Ordners oft kaum
-    /// eines, das passt – ohne diesen Weg bliebe nur, den Ordner zu wechseln.
+    /// Holt einen Schwung Vorschläge für die passenden Bilder. Jeder Aufruf greift
+    /// weiter hinten im Ordner: Wer ein bestimmtes Thema sucht, findet unter den ersten
+    /// Bildern eines gemischten Ordners oft kaum eines, das passt.
     /// </summary>
     [RelayCommand(CanExecute = nameof(CanLoadExamples))]
-    private Task LoadMoreExamplesAsync()
-    {
-        _exampleOffset += ExampleLimit;
-        return LoadExamplesAsync();
-    }
+    private Task SuggestPositivesAsync() => SuggestAsync(PositiveExamples, isPositive: true);
+
+    /// <summary>Holt einen Schwung Vorschläge für die Gegenbeispiele.</summary>
+    [RelayCommand(CanExecute = nameof(CanLoadExamples))]
+    private Task SuggestNegativesAsync() => SuggestAsync(NegativeExamples, isPositive: false);
 
     /// <summary>
-    /// Nimmt selbst ausgewählte Bilder als Beispiele auf. Sie werden den vorhandenen
-    /// hinzugefügt, nicht ersetzt: So lässt sich eine Auswahl aus mehreren Ordnern
-    /// zusammentragen.
+    /// Öffnet den Auswahldialog für eigene passende Bilder. Anders als die Vorschläge
+    /// braucht die eigene Auswahl keinen Quellordner – die Bilder dürfen von überall
+    /// kommen –, wohl aber einen ruhenden Ablauf.
     /// </summary>
-    [RelayCommand]
-    private async Task AddOwnExamplesAsync()
-    {
-        IReadOnlyList<string> paths = await _folderPicker.PickImagesAsync(CancellationToken.None).ConfigureAwait(true);
-        AddExamples(paths);
-    }
+    [RelayCommand(CanExecute = nameof(IsInteractive))]
+    private Task PickPositivesAsync() => PickAsync(PositiveExamples);
+
+    /// <summary>Öffnet den Auswahldialog für eigene Gegenbeispiele.</summary>
+    [RelayCommand(CanExecute = nameof(IsInteractive))]
+    private Task PickNegativesAsync() => PickAsync(NegativeExamples);
 
     /// <summary>
-    /// Nimmt hereingezogene Bilddateien als Beispiele auf.
+    /// Nimmt hereingezogene Bilddateien auf einer der beiden Seiten auf.
     /// </summary>
+    /// <param name="isPositive"><see langword="true"/> für die passenden Bilder.</param>
     /// <param name="paths">Die Pfade der hereingezogenen Dateien.</param>
-    public void AddExamples(IEnumerable<string> paths)
+    public void AddDroppedImages(bool isPositive, IEnumerable<string> paths)
     {
         ArgumentNullException.ThrowIfNull(paths);
 
-        int added = 0;
-        int rejected = 0;
-        foreach (string path in paths)
+        ExampleSetViewModel set = isPositive ? PositiveExamples : NegativeExamples;
+        ReportAdded(set, set.AddPaths(paths));
+    }
+
+    private async Task PickAsync(ExampleSetViewModel set)
+    {
+        // Voll ist voll: Erst gar keinen Dialog öffnen, statt den Nutzer auswählen zu
+        // lassen und die Auswahl anschließend wortlos zu verwerfen.
+        if (set.IsFull)
         {
-            if (ExampleCandidates.Count >= ExampleLimit)
-            {
-                rejected++;
-                continue;
-            }
-
-            if (!SupportedExampleExtensions.Contains(Path.GetExtension(path)))
-            {
-                rejected++;
-                continue;
-            }
-
-            // Doppelte still übergehen: Wer zweimal dieselbe Datei hereinzieht, will
-            // sie nicht zweimal bewerten.
-            if (ExampleCandidates.Any(candidate => string.Equals(candidate.FilePath, path, StringComparison.OrdinalIgnoreCase)))
-            {
-                continue;
-            }
-
-            FileInfo info = new(path);
-            if (!info.Exists)
-            {
-                rejected++;
-                continue;
-            }
-
-            // Bewusst ohne EXIF-Auswertung: Die Datei müsste dafür geöffnet werden, und
-            // für die Auswahl zählt allein das Bild. Aufnahmedatum und Ort holt der
-            // Sortierlauf ohnehin selbst.
-            ExampleCandidateViewModel candidate = new(
-                new Photo
-                {
-                    FullPath = info.FullName,
-                    FileName = info.Name,
-                    SizeBytes = info.Length,
-                    CapturedAt = new DateTimeOffset(info.LastWriteTimeUtc, TimeSpan.Zero),
-                },
-                _localizer);
-            candidate.PropertyChanged += OnCandidateChanged;
-            ExampleCandidates.Add(candidate);
-            added++;
-        }
-
-        LearnCommand.NotifyCanExecuteChanged();
-        Wizard.NotifyStateChanged();
-
-        if (added == 0 && rejected > 0)
-        {
-            _status.Report(_localizer.Format("Sort_ExamplesNoneAdded", ExampleLimit), StatusSeverity.Warning);
+            _status.Report(_localizer.Format("Examples_AlreadyFull", set.Capacity), StatusSeverity.Warning);
             return;
         }
 
-        _status.Report(
-            rejected > 0
-                ? _localizer.Format("Sort_ExamplesAddedPartly", added, rejected)
-                : _localizer.Format("Sort_ExamplesAdded", added),
-            StatusSeverity.Success);
+        IReadOnlyList<string> paths = await _folderPicker.PickImagesAsync(CancellationToken.None).ConfigureAwait(true);
+        if (paths.Count == 0)
+        {
+            return;
+        }
+
+        ReportAdded(set, set.AddPaths(paths));
     }
 
-    [RelayCommand(CanExecute = nameof(CanLoadExamples))]
-    private async Task LoadExamplesAsync()
+    private async Task SuggestAsync(ExampleSetViewModel set, bool isPositive)
     {
+        if (set.IsFull)
+        {
+            _status.Report(_localizer.Format("Examples_AlreadyFull", set.Capacity), StatusSeverity.Warning);
+            return;
+        }
+
         // Begin statt Report: Nur Begin schaltet den Fortschrittsbalken ein. Mit bloßem
         // Text sah das Laden aus einem großen (oder aus der Cloud geholten) Ordner aus,
         // als sei die Anwendung stehengeblieben.
@@ -487,42 +465,56 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         _status.Begin(_localizer.Get("Sort_LoadingExamples"), cancellation.Cancel);
         try
         {
-            // Nur so viele Bilder einlesen, wie Schritt 3 überhaupt anzeigt. Vorher wurde
-            // der gesamte Ordner eingelesen und erst danach abgeschnitten – bei einem
-            // Ordner, dessen Dateien erst aus der Cloud geholt werden (iCloud-Fotos unter
-            // Windows), lud die Auswahl von dreißig Beispielen so die ganze Mediathek.
+            // Nur so viele Bilder einlesen, wie noch Platz haben. Das Ermitteln der
+            // Aufnahmedaten öffnet jede Datei einzeln; bei einem Ordner, dessen Bilder
+            // erst aus der Cloud geholt werden (iCloud-Fotos unter Windows), zieht jedes
+            // Öffnen einen vollständigen Download nach sich.
+            int offset = isPositive ? _positiveOffset : _negativeOffset;
             IReadOnlyList<Photo> photos = await _photoSource
-                .GetPhotosAsync(SourceFolder, IncludeSubfolders, _exampleOffset, ExampleLimit, cancellation.Token)
+                .GetPhotosAsync(SourceFolder, IncludeSubfolders, offset, set.RemainingSlots, cancellation.Token)
                 .ConfigureAwait(true);
 
-            // Am Ende des Ordners wieder von vorn: Sonst führte wiederholtes „Andere
-            // Beispiele" in eine leere Auswahl, aus der nur ein Ordnerwechsel führte.
-            if (photos.Count == 0 && _exampleOffset > 0)
+            // Am Ende des Ordners wieder von vorn: Sonst führte wiederholtes Nachfordern
+            // in eine leere Auswahl, aus der nur ein Ordnerwechsel führte.
+            if (photos.Count == 0 && offset > 0)
             {
-                _exampleOffset = 0;
+                offset = 0;
                 photos = await _photoSource
-                    .GetPhotosAsync(SourceFolder, IncludeSubfolders, 0, ExampleLimit, cancellation.Token)
+                    .GetPhotosAsync(SourceFolder, IncludeSubfolders, 0, set.RemainingSlots, cancellation.Token)
                     .ConfigureAwait(true);
             }
 
-            ClearCandidates();
-            foreach (Photo photo in photos)
+            offset += photos.Count;
+            if (isPositive)
             {
-                ExampleCandidateViewModel candidate = new(photo, _localizer);
-                candidate.PropertyChanged += OnCandidateChanged;
-                ExampleCandidates.Add(candidate);
-            }
-
-            LearnCommand.NotifyCanExecuteChanged();
-            Wizard.NotifyStateChanged();
-            if (ExampleCandidates.Count == 0)
-            {
-                _status.Finish(_localizer.Get("Sort_NoImagesInFolder"), StatusSeverity.Warning);
+                _positiveOffset = offset;
             }
             else
             {
-                _status.Finish(_localizer.Format("Sort_ExamplesLoaded", ExampleCandidates.Count), StatusSeverity.Success);
+                _negativeOffset = offset;
             }
+
+            // Bilder, die auf der anderen Seite schon liegen, gehören nicht in die
+            // Vorschläge – sonst stünde dasselbe Foto als passend und als Gegenbeispiel.
+            ExampleSetViewModel otherSide = isPositive ? NegativeExamples : PositiveExamples;
+            ExampleSetViewModel.AddResult result =
+                set.Add(photos.Where(photo => !otherSide.Contains(photo.FullPath)));
+
+            if (result.Added == 0)
+            {
+                // „Keine Bilder im Ordner" nur, wenn der Ordner wirklich keines mehr
+                // hergab. Wurden welche gefunden und bloß übergangen – schon gewählt
+                // oder auf der anderen Seite –, muss die Meldung das sagen, sonst sucht
+                // die Nutzerin den Fehler im Ordner statt in ihrer Auswahl.
+                _status.Finish(
+                    photos.Count == 0
+                        ? _localizer.Get("Sort_NoImagesInFolder")
+                        : _localizer.Get("Examples_AllKnown"),
+                    StatusSeverity.Warning);
+                return;
+            }
+
+            _status.Finish(_localizer.Format("Examples_Added", result.Added, set.RemainingSlots), StatusSeverity.Success);
         }
         catch (OperationCanceledException)
         {
@@ -540,6 +532,28 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         }
     }
 
+    // Eine Meldung, die den Grund nennt: „nichts übernommen" ohne Erklärung wäre für
+    // die Zielnutzerin nicht von einem Fehler zu unterscheiden.
+    private void ReportAdded(ExampleSetViewModel set, ExampleSetViewModel.AddResult result)
+    {
+        if (result.Added > 0)
+        {
+            _status.Report(
+                _localizer.Format("Examples_Added", result.Added, set.RemainingSlots),
+                StatusSeverity.Success);
+            return;
+        }
+
+        string reason = result switch
+        {
+            { RejectedBecauseFull: > 0 } => _localizer.Format("Examples_AlreadyFull", set.Capacity),
+            { Unusable: > 0 } => _localizer.Get("Examples_NoImageFiles"),
+            _ => _localizer.Get("Examples_AllKnown"),
+        };
+
+        _status.Report(reason, StatusSeverity.Warning);
+    }
+
     [RelayCommand(CanExecute = nameof(CanLearn))]
     private async Task LearnAsync()
     {
@@ -551,8 +565,8 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         try
         {
             IReadOnlyList<TrainingExample> examples =
-                [.. ExampleCandidates.Where(candidate => candidate.IsLabeled)
-                    .Select(candidate => new TrainingExample(candidate.Photo, candidate.IsPositive))];
+                [.. PositiveExamples.Items.Select(item => new TrainingExample(item.Photo, IsPositive: true)),
+                 .. NegativeExamples.Items.Select(item => new TrainingExample(item.Photo, IsPositive: false))];
 
             // Für jedes Beispiel läuft ein vollständiger Aufruf des Bild-Modells. Ohne
             // Zählstand stünde die Oberfläche minutenlang bei derselben unveränderten
@@ -885,23 +899,12 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         Wizard.NotifyStateChanged();
     }
 
-    private void OnCandidateChanged(object? sender, PropertyChangedEventArgs e)
+    // Beide Seiten melden jede Änderung hierher: Ob gelernt werden kann und ob der
+    // Assistent weiterblättern darf, hängt allein an ihrem Inhalt.
+    private void OnExampleSetChanged()
     {
-        if (e.PropertyName is nameof(ExampleCandidateViewModel.IsPositive) or nameof(ExampleCandidateViewModel.IsNegative))
-        {
-            LearnCommand.NotifyCanExecuteChanged();
-            Wizard.NotifyStateChanged();
-        }
-    }
-
-    private void ClearCandidates()
-    {
-        foreach (ExampleCandidateViewModel candidate in ExampleCandidates)
-        {
-            candidate.PropertyChanged -= OnCandidateChanged;
-        }
-
-        ExampleCandidates.Clear();
+        LearnCommand.NotifyCanExecuteChanged();
+        Wizard.NotifyStateChanged();
     }
 
     private void DisposeCancellation()
@@ -915,7 +918,10 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     /// </summary>
     public void Dispose()
     {
-        ClearCandidates();
+        PositiveExamples.Clear();
+        NegativeExamples.Clear();
+        _positiveOffset = 0;
+        _negativeOffset = 0;
         ClearProposals();
         DisposeCancellation();
         GC.SuppressFinalize(this);

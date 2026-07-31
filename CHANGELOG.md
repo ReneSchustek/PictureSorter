@@ -4,6 +4,39 @@ Alle nennenswerten Änderungen an diesem Projekt werden hier dokumentiert.
 Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/),
 die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
+## [Unveröffentlicht]
+
+### Geändert
+
+- **Die Beispiele werden nicht mehr vorab geladen, sondern in zwei getrennten Schritten
+  selbst zusammengestellt.** Vorher standen dreißig Bilder des Ordners bereits in der
+  Auswahl, von denen zu einem bestimmten Thema oft kaum eines passte — der Platz war
+  trotzdem belegt, und jedes Bild musste einzeln als passend oder nicht passend markiert
+  werden. Jetzt gibt es je einen Schritt für die passenden Bilder und für die
+  Gegenbeispiele, beide leer beginnend, mit eigener Obergrenze und ständig ablesbarem
+  Stand. Auf jeder Seite lassen sich Vorschläge holen (jeder Griff greift weiter hinten
+  im Ordner), eigene Bilder wählen, Bilder aus dem Explorer hereinziehen und einzeln
+  wieder entfernen. Dasselbe Foto kann nicht mehr gleichzeitig als passend und als
+  Gegenbeispiel dastehen.
+
+### Behoben
+
+- **Der letzte Schritt des Assistenten trug die Überschrift des vorletzten.** Über der
+  Vorschau stand „5. Analyse starten", obwohl dort sortiert wird.
+- **Die Erklärung im letzten Schritt blieb in der englischen Fassung deutsch.** Für
+  diesen einen Text fehlte die Übersetzung; angezeigt wurde ersatzweise das deutsche
+  Original.
+- **Der Hinweis am Häkchen sagte das Gegenteil dessen, was er meinte.** „Abhaken heißt:
+  nicht verschieben" — gemeint war das Entfernen des Häkchens.
+- **„Vorschläge holen" meldete „keine Bilder im Ordner", obwohl welche da waren.** Waren
+  alle gefundenen Bilder bereits gewählt oder lagen auf der anderen Seite, ließ die
+  Meldung den Fehler im Ordner vermuten statt in der eigenen Auswahl.
+- **„Selbst auswählen" ließ sich mitten in einem laufenden Vorgang öffnen.** Der Dialog
+  ist jetzt gesperrt, solange gelernt, analysiert oder sortiert wird.
+- **Ein hereingezogener Eintrag, den das Dateisystem nicht annimmt, konnte die Auswahl
+  abbrechen lassen.** Aus dem Explorer lässt sich alles hereinziehen; unbrauchbare
+  Einträge werden jetzt gezählt und benannt statt durchgereicht.
+
 ## [1.4.6] - 2026-07-31
 
 ### Behoben
