@@ -92,7 +92,7 @@ public sealed class PhotoSortingService : IPhotoSorter
         }
 
         IReadOnlyList<Photo> photos = await _photoSource
-            .GetPhotosAsync(sourceFolder, includeSubfolders, cancellationToken)
+            .GetPhotosAsync(sourceFolder, includeSubfolders, maxCount: null, cancellationToken)
             .ConfigureAwait(false);
 
         int total = photos.Count;
