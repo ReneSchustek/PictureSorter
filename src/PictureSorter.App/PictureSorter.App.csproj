@@ -162,4 +162,21 @@
       Condition="!Exists('$(PublishDir)$(AssemblyName).pri')"
       Text="Ressourcendatei $(AssemblyName).pri fehlt in der Veroeffentlichung. Ohne sie startet die Anwendung nicht (XamlParseException im ersten Fenster)." />
   </Target>
+
+  <!-- Dieselbe Falle in klein: Das Einrichtungsskript lag lange nur auf dem
+       Entwicklungsrechner, weil die .gitignore alle .ps1-Dateien ausschloss. Der Build
+       blieb gruen, das <None Update="..."> lief ins Leere, und jede ausgelieferte
+       Fassung meldete beim Knopf "Jetzt einrichten" nur, sie koenne nicht starten.
+       Ein fehlendes Skript soll deshalb den Build anhalten, nicht den Nutzer. -->
+  <Target Name="ValidateOllamaSetupSkript" BeforeTargets="BeforeBuild">
+    <Error
+      Condition="!Exists('$(MSBuildProjectDirectory)\Tools\install-ollama.ps1')"
+      Text="Einrichtungsskript fehlt: Tools\install-ollama.ps1 wird mit ausgeliefert und vom OllamaSetupService gestartet." />
+  </Target>
+
+  <Target Name="ValidateOllamaSetupSkriptImPublish" AfterTargets="Publish">
+    <Error
+      Condition="!Exists('$(PublishDir)Tools\install-ollama.ps1')"
+      Text="Einrichtungsskript fehlt in der Veroeffentlichung: Tools\install-ollama.ps1. Ohne es scheitert die gefuehrte Einrichtung der lokalen KI." />
+  </Target>
 </Project>

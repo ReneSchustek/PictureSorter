@@ -14,6 +14,11 @@ NOTIZEN.md
 # ============================================================
 *.ps1
 !tools/*.ps1
+# Das Einrichtungsskript wird mit der Anwendung ausgeliefert. Fehlt es im Repository,
+# baut die Veröffentlichung ein Paket ohne den Ordner „Tools" – „Jetzt einrichten"
+# scheitert dann auf jedem Rechner ausser dem Entwicklungsrechner, wo die Datei noch
+# lokal liegt.
+!src/PictureSorter.App/Tools/*.ps1
 
 # ============================================================
 # Test- und Coverage-Artefakte

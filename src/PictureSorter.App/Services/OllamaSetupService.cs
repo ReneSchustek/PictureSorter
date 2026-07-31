@@ -40,6 +40,11 @@ internal sealed class OllamaSetupService
         string script = ScriptPath;
         if (!File.Exists(script))
         {
+            // Ohne diese Meldung stünde im Protokoll gar nichts: Die Ausnahme entsteht
+            // vor dem Start des Vorgangs und lief bisher an jedem Logaufruf vorbei. Auf
+            // dem Rechner der Nutzerin war damit nicht zu unterscheiden, ob das Skript
+            // fehlt oder ob PowerShell den Start verweigert hat.
+            OllamaSetupLog.ScriptMissing(_logger, script);
             throw new FileNotFoundException("Einrichtungsskript nicht gefunden.", script);
         }
 
@@ -77,4 +82,7 @@ internal static partial class OllamaSetupLog
 
     [LoggerMessage(EventId = 1101, Level = LogLevel.Error, Message = "Ollama-Einrichtung konnte nicht gestartet werden.")]
     public static partial void SetupFailed(ILogger logger, Exception exception);
+
+    [LoggerMessage(EventId = 1102, Level = LogLevel.Error, Message = "Einrichtungsskript nicht gefunden: {Script}.")]
+    public static partial void ScriptMissing(ILogger logger, string script);
 }
