@@ -179,13 +179,25 @@ internal sealed class FakeSortUndoService : ISortUndoService
     }
 }
 
-/// <summary>Liefert eine feste Fotoliste.</summary>
+/// <summary>
+/// Liefert eine feste Fotoliste und hält die zuletzt erfragte Höchstzahl fest –
+/// daran hängt, ob die Beispielauswahl den ganzen Ordner einliest oder nur so viel,
+/// wie sie anzeigt.
+/// </summary>
 internal sealed class FakePhotoSource(IReadOnlyList<Photo> photos) : IPhotoSource
 {
+    /// <summary>Die bei der letzten Abfrage übergebene Höchstzahl.</summary>
+    public int? LastMaxCount { get; private set; }
+
     public Task<IReadOnlyList<Photo>> GetPhotosAsync(
         string folderPath,
         bool includeSubfolders,
-        CancellationToken cancellationToken) => Task.FromResult(photos);
+        int? maxCount,
+        CancellationToken cancellationToken)
+    {
+        LastMaxCount = maxCount;
+        return Task.FromResult(maxCount is { } limit ? [.. photos.Take(limit)] : photos);
+    }
 }
 
 /// <summary>Liefert eine feste, bereits angelernte Kategorie.</summary>

@@ -38,9 +38,14 @@ public sealed class FileSystemPhotoSource : IPhotoSource
     public async Task<IReadOnlyList<Photo>> GetPhotosAsync(
         string folderPath,
         bool includeSubfolders,
+        int? maxCount,
         CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(folderPath);
+        if (maxCount is <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(maxCount), maxCount, "Die Höchstzahl muss größer als null sein.");
+        }
 
         string fullFolderPath = Path.GetFullPath(folderPath);
         if (!Directory.Exists(fullFolderPath))
@@ -48,7 +53,7 @@ public sealed class FileSystemPhotoSource : IPhotoSource
             throw new DirectoryNotFoundException($"Der Ordner „{fullFolderPath}\" existiert nicht.");
         }
 
-        List<string> paths = EnumerateImagePaths(fullFolderPath, includeSubfolders, cancellationToken);
+        List<string> paths = EnumerateImagePaths(fullFolderPath, includeSubfolders, maxCount, cancellationToken);
 
         List<Photo> photos = new(paths.Count);
         foreach (string path in paths)
@@ -62,9 +67,13 @@ public sealed class FileSystemPhotoSource : IPhotoSource
         return photos;
     }
 
+    // Das Aufzählen selbst liest nur die Verzeichniseinträge und ist auch bei einem
+    // Cloud-Ordner billig – teuer wird erst das Öffnen jeder Datei im Anschluss.
+    // Deshalb hört schon das Aufzählen bei der Höchstzahl auf.
     private static List<string> EnumerateImagePaths(
         string folderPath,
         bool includeSubfolders,
+        int? maxCount,
         CancellationToken cancellationToken)
     {
         SearchOption searchOption = includeSubfolders ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
@@ -73,9 +82,15 @@ public sealed class FileSystemPhotoSource : IPhotoSource
         foreach (string path in Directory.EnumerateFiles(folderPath, "*", searchOption))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (SupportedExtensions.Contains(Path.GetExtension(path)))
+            if (!SupportedExtensions.Contains(Path.GetExtension(path)))
             {
-                paths.Add(path);
+                continue;
+            }
+
+            paths.Add(path);
+            if (paths.Count == maxCount)
+            {
+                break;
             }
         }
 

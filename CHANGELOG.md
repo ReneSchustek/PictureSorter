@@ -4,6 +4,24 @@ Alle nennenswerten Änderungen an diesem Projekt werden hier dokumentiert.
 Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/),
 die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
+## [Unveröffentlicht]
+
+### Behoben
+
+- **Das Laden der Beispiele dauerte bei großen Ordnern endlos.** Für die dreißig
+  Bilder, die zur Auswahl stehen, wurde zuvor der gesamte Ordner eingelesen und erst
+  danach abgeschnitten. Da für jedes Foto die Datei geöffnet werden muss, traf es
+  Ordner besonders hart, deren Bilder erst aus der Cloud geholt werden — bei den
+  iCloud-Fotos unter Windows lud die Anwendung so die halbe Mediathek herunter, um
+  eine Handvoll Vorschauen zu zeigen. Jetzt werden nur noch so viele Bilder
+  eingelesen, wie auch angezeigt werden. Das Sortieren und die Duplikat-Suche lesen
+  weiterhin den ganzen Ordner — dort ist es ihre Aufgabe.
+- **Der Hinweis auf eine neue Fassung konnte beim Start ausbleiben.** Die Suche nach
+  Aktualisierungen lief erst, nachdem die Prüfung der lokalen KI fertig war. Antwortete
+  die KI nicht, verzögerte das den Hinweis um deren gesamte Wartezeit; endete sie mit
+  einem Fehler, blieb er ganz aus. Beide Prüfungen laufen jetzt unabhängig
+  voneinander, und keine kann die andere mehr aufhalten oder verhindern.
+
 ## [1.4.2] - 2026-07-31
 
 ### Behoben

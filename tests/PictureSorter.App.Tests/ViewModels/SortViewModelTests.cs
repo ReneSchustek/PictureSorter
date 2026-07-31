@@ -234,10 +234,28 @@ public sealed class SortViewModelTests
         Assert.True(sut.HasUndoableRun);
     }
 
+    [Fact]
+    public async Task LoadExamples_AsksOnlyForAsManyPhotosAsItShows()
+    {
+        // Ohne Höchstzahl las die Auswahl den gesamten Ordner ein und schnitt erst danach
+        // ab. Weil für jedes Foto die Datei geöffnet wird, lud sie damit bei einem
+        // Cloud-Ordner (iCloud-Fotos unter Windows) die ganze Mediathek herunter, um
+        // dreißig Bilder zu zeigen.
+        FakePhotoSource source = new([]);
+        using SortViewModel sut = CreateSut(new FakePhotoSorter(CreateProposals(1)), photoSource: source);
+        sut.SourceFolder = SourceFolder;
+
+        await sut.LoadExamplesCommand.ExecuteAsync(parameter: null).ConfigureAwait(true);
+
+        // Ohne Höchstzahl (null) fiele der Wert auf int.MaxValue und der Test durch.
+        Assert.InRange(source.LastMaxCount ?? int.MaxValue, 1, 100);
+    }
+
     private static SortViewModel CreateSut(
         FakePhotoSorter sorter,
         FakeSortUndoService? undo = null,
-        bool confirms = true)
+        bool confirms = true,
+        FakePhotoSource? photoSource = null)
     {
         Photo examplePhoto = new()
         {
@@ -250,7 +268,7 @@ public sealed class SortViewModelTests
         return new SortViewModel(
             sorter,
             undo ?? new FakeSortUndoService(),
-            new FakePhotoSource([examplePhoto]),
+            photoSource ?? new FakePhotoSource([examplePhoto]),
             new FakeCategoryTrainer(CreateCategory()),
             new FakeCategoryRepository(),
             new FakeFolderPicker(SourceFolder),
