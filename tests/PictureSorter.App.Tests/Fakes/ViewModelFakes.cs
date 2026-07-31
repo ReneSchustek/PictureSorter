@@ -216,7 +216,12 @@ internal sealed class FakeCategoryTrainer(Category category) : ICategoryTrainer
         string description,
         CategoryKind kind,
         IReadOnlyList<TrainingExample> examples,
-        CancellationToken cancellationToken) => Task.FromResult(category);
+        IProgress<TrainingProgress>? progress,
+        CancellationToken cancellationToken)
+    {
+        progress?.Report(new TrainingProgress(examples.Count, examples.Count));
+        return Task.FromResult(category);
+    }
 }
 
 /// <summary>Hält Kategorien im Speicher.</summary>

@@ -50,6 +50,16 @@ public sealed class OllamaOptions
     public int AvailabilityTimeoutSeconds { get; set; } = 5;
 
     /// <summary>
+    /// Obergrenze für die Länge einer Modellantwort in Token. Die Dauer eines
+    /// Bild-Modell-Aufrufs hängt fast unmittelbar an der Zahl der erzeugten Token, und
+    /// für den Vergleichsvektor genügen ein bis zwei Sätze. Ohne Grenze schreibt das
+    /// Modell regelmäßig deutlich mehr — und jedes Beispiel beim Anlernen dauert
+    /// entsprechend länger.
+    /// </summary>
+    [Range(16, 4096)]
+    public int MaxResponseTokens { get; set; } = 96;
+
+    /// <summary>
     /// Wie lange Ollama das Modell nach einer Anfrage im Speicher hält.
     /// </summary>
     public string KeepAlive { get; set; } = "30m";
