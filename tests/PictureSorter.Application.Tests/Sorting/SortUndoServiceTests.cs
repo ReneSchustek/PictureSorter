@@ -145,10 +145,63 @@ public sealed class SortUndoServiceTests
             organizer,
             NullLogger<SortUndoService>.Instance);
 
+    [Fact]
+    public async Task UndoLastRunAsync_AfterACopyRun_RemovesTheCopiesInsteadOfMovingThemBack()
+    {
+        // Nach einem Kopierlauf liegt das Original noch im Quellordner. „Zurückholen"
+        // hieße dort, es ein zweites Mal hinzulegen – rückgängig ist hier das
+        // Entfernen der Kopie.
+        FakeFileOrganizer organizer = new();
+        FakeSortJournal journal = SeededCopyRun("a.jpg", "b.jpg");
+        SortUndoService sut = CreateSut(journal, organizer, new FakeSortMemory());
+
+        UndoResult? result = await sut.UndoLastRunAsync(CancellationToken.None);
+
+        Assert.Equal(2, result!.Restored);
+        Assert.Empty(organizer.Restored);
+        Assert.Equal(
+            [Path.Combine(TargetFolder, "a.jpg"), Path.Combine(TargetFolder, "b.jpg")],
+            organizer.Discarded);
+    }
+
+    [Fact]
+    public async Task UndoLastRunAsync_AfterACopyRun_KeepsACopyThatWasEditedAndCountsIt()
+    {
+        FakeFileOrganizer organizer = new();
+        _ = organizer.Undiscardable.Add(Path.Combine(TargetFolder, "b.jpg"));
+        FakeSortJournal journal = SeededCopyRun("a.jpg", "b.jpg");
+        SortUndoService sut = CreateSut(journal, organizer, new FakeSortMemory());
+
+        UndoResult? result = await sut.UndoLastRunAsync(CancellationToken.None);
+
+        Assert.Equal(1, result!.Restored);
+        Assert.Equal(1, result.Skipped);
+        Assert.Equal([Path.Combine(TargetFolder, "a.jpg")], organizer.Discarded);
+    }
+
     private static FakeSortJournal Seeded(params string[] fileNames)
     {
         FakeSortJournal journal = new();
         journal.Runs.Add(CreateRun(fileNames));
+        return journal;
+    }
+
+    private static FakeSortJournal SeededCopyRun(params string[] fileNames)
+    {
+        FakeSortJournal journal = new();
+        SortRun run = CreateRun(fileNames);
+        journal.Runs.Add(run with
+        {
+            Operation = FileOperationMode.Copy,
+            Items =
+            [
+                .. run.Items.Select(item => item with
+                {
+                    TargetLength = 1024,
+                    TargetLastWriteUtc = new DateTime(2026, 7, 1, 8, 0, 0, DateTimeKind.Utc),
+                }),
+            ],
+        });
         return journal;
     }
 

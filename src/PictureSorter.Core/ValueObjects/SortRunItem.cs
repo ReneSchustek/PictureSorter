@@ -21,4 +21,19 @@ public sealed record SortRunItem
     /// Quellordner liegt, und würde nie wieder vorgeschlagen.
     /// </summary>
     public required string FileSignature { get; init; }
+
+    /// <summary>
+    /// Größe der Zieldatei unmittelbar nach dem Sortieren. Zusammen mit
+    /// <see cref="TargetLastWriteUtc"/> der Beleg dafür, dass eine Kopie noch
+    /// unverändert ist und beim Rückgängigmachen entfernt werden darf.
+    /// <see langword="null"/> bei Läufen aus der Zeit vor dieser Prüfung – dann wird
+    /// im Zweifel nichts gelöscht.
+    /// </summary>
+    public long? TargetLength { get; init; }
+
+    /// <summary>
+    /// Änderungszeitpunkt der Zieldatei unmittelbar nach dem Sortieren (UTC).
+    /// Siehe <see cref="TargetLength"/>.
+    /// </summary>
+    public DateTime? TargetLastWriteUtc { get; init; }
 }

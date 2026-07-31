@@ -1,3 +1,5 @@
+using PictureSorter.Core.Enums;
+
 namespace PictureSorter.Core.ValueObjects;
 
 /// <summary>
@@ -18,6 +20,13 @@ public sealed record SortRun
 
     /// <summary>Die Kategorie, nach der sortiert wurde.</summary>
     public required string CategoryName { get; init; }
+
+    /// <summary>
+    /// Ob der Lauf verschoben oder kopiert hat. Voreinstellung ist
+    /// <see cref="FileOperationMode.Move"/> – so tragen auch die Läufe, die vor
+    /// dieser Wahlmöglichkeit protokolliert wurden, den zutreffenden Wert.
+    /// </summary>
+    public FileOperationMode Operation { get; init; } = FileOperationMode.Move;
 
     /// <summary>Die verschobenen Dateien.</summary>
     public required IReadOnlyList<SortRunItem> Items { get; init; }

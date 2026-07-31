@@ -47,6 +47,35 @@ public sealed class SortViewModelTests
     }
 
     [Fact]
+    public async Task Apply_ByDefault_MovesInsteadOfCopying()
+    {
+        // Die Voreinstellung darf sich durch die neue Wahlmöglichkeit nicht ändern –
+        // wer nichts umstellt, bekommt weiterhin das gewohnte Verschieben.
+        FakePhotoSorter sorter = new(CreateProposals(1));
+        using SortViewModel sut = CreateSut(sorter);
+        await AnalyzeAsync(sut);
+
+        await sut.ApplyCommand.ExecuteAsync(parameter: null);
+
+        Assert.False(sut.CopyInsteadOfMove);
+        Assert.Equal(FileOperationMode.Move, sorter.LastOperation);
+    }
+
+    [Fact]
+    public async Task Apply_WithCopyChosen_RunsAsCopy()
+    {
+        FakePhotoSorter sorter = new(CreateProposals(1));
+        using SortViewModel sut = CreateSut(sorter);
+        await AnalyzeAsync(sut);
+
+        sut.CopyInsteadOfMove = true;
+
+        await sut.ApplyCommand.ExecuteAsync(parameter: null);
+
+        Assert.Equal(FileOperationMode.Copy, sorter.LastOperation);
+    }
+
+    [Fact]
     public async Task Apply_WithDeselectedProposal_RemembersItAsIgnored()
     {
         FakePhotoSorter sorter = new(CreateProposals(3));

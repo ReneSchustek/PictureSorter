@@ -1,4 +1,5 @@
 using PictureSorter.Core.Entities;
+using PictureSorter.Core.Enums;
 using PictureSorter.Core.ValueObjects;
 
 namespace PictureSorter.Core.Interfaces;
@@ -34,13 +35,18 @@ public interface IPhotoSorter
     /// Wendet eine Menge bestätigter Vorschläge an oder simuliert sie (Dry-Run).
     /// </summary>
     /// <param name="proposals">Die anzuwendenden Vorschläge.</param>
+    /// <param name="operation">
+    /// Ob die Dateien verschoben oder kopiert werden. Gilt für den ganzen Lauf und
+    /// wird mitprotokolliert, weil das Rückgängigmachen davon abhängt.
+    /// </param>
     /// <param name="dryRun">
     /// <see langword="true"/> für eine reine Simulation ohne Dateioperation.
     /// </param>
     /// <param name="cancellationToken">Token zum Abbrechen des Vorgangs.</param>
-    /// <returns>Anzahl der (tatsächlich oder simuliert) verschobenen Dateien.</returns>
+    /// <returns>Anzahl der (tatsächlich oder simuliert) einsortierten Dateien.</returns>
     Task<int> ApplyProposalsAsync(
         IReadOnlyList<SortProposal> proposals,
+        FileOperationMode operation,
         bool dryRun,
         CancellationToken cancellationToken);
 
