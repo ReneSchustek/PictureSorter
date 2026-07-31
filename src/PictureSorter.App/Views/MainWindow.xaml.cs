@@ -93,7 +93,13 @@ internal sealed partial class MainWindow : Window
                 return;
             }
 
-            Status.Finish(_localizer.Get("Update_Failed"), StatusSeverity.Error);
+            // Der häufigste Grund für ein „geht nicht" ist ein Programmordner, in dem
+            // nicht geschrieben werden darf. Das kann die Nutzerin selbst beheben – aber
+            // nur, wenn es dasteht.
+            string reason = UpdateInstaller.CanWriteTo(AppContext.BaseDirectory)
+                ? "Update_Failed"
+                : "Update_NotWritable";
+            Status.Finish(_localizer.Get(reason), StatusSeverity.Error);
             _update.ReportFailed();
         }
         catch (OperationCanceledException)

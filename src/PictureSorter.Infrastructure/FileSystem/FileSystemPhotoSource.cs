@@ -38,10 +38,12 @@ public sealed class FileSystemPhotoSource : IPhotoSource
     public async Task<IReadOnlyList<Photo>> GetPhotosAsync(
         string folderPath,
         bool includeSubfolders,
+        int skip,
         int? maxCount,
         CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(folderPath);
+        ArgumentOutOfRangeException.ThrowIfNegative(skip);
         if (maxCount is <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(maxCount), maxCount, "Die Höchstzahl muss größer als null sein.");
@@ -53,7 +55,7 @@ public sealed class FileSystemPhotoSource : IPhotoSource
             throw new DirectoryNotFoundException($"Der Ordner „{fullFolderPath}\" existiert nicht.");
         }
 
-        List<string> paths = EnumerateImagePaths(fullFolderPath, includeSubfolders, maxCount, cancellationToken);
+        List<string> paths = EnumerateImagePaths(fullFolderPath, includeSubfolders, skip, maxCount, cancellationToken);
 
         List<Photo> photos = new(paths.Count);
         foreach (string path in paths)
@@ -73,16 +75,25 @@ public sealed class FileSystemPhotoSource : IPhotoSource
     private static List<string> EnumerateImagePaths(
         string folderPath,
         bool includeSubfolders,
+        int skip,
         int? maxCount,
         CancellationToken cancellationToken)
     {
         SearchOption searchOption = includeSubfolders ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
         List<string> paths = [];
+        int seen = 0;
 
         foreach (string path in Directory.EnumerateFiles(folderPath, "*", searchOption))
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (!SupportedExtensions.Contains(Path.GetExtension(path)))
+            {
+                continue;
+            }
+
+            // Übersprungen wird beim Aufzählen, nicht erst danach: Sonst würden für die
+            // bereits gezeigten Bilder erneut die Dateien geöffnet.
+            if (seen++ < skip)
             {
                 continue;
             }

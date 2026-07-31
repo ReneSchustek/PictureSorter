@@ -72,10 +72,13 @@ internal sealed class FakeModelAvailabilityChecker(ModelAvailability availabilit
         Task.FromResult(availability);
 }
 
-/// <summary>Liefert einen festen Ordnerpfad (oder <see langword="null"/>).</summary>
-internal sealed class FakeFolderPicker(string? folder) : IFolderPicker
+/// <summary>Liefert einen festen Ordnerpfad und eine feste Bildauswahl.</summary>
+internal sealed class FakeFolderPicker(string? folder, IReadOnlyList<string>? images = null) : IFolderPicker
 {
     public Task<string?> PickFolderAsync(CancellationToken cancellationToken) => Task.FromResult(folder);
+
+    public Task<IReadOnlyList<string>> PickImagesAsync(CancellationToken cancellationToken) =>
+        Task.FromResult(images ?? []);
 }
 
 /// <summary>Beantwortet jede Rückfrage mit einem festen Ergebnis.</summary>
@@ -189,14 +192,19 @@ internal sealed class FakePhotoSource(IReadOnlyList<Photo> photos) : IPhotoSourc
     /// <summary>Die bei der letzten Abfrage übergebene Höchstzahl.</summary>
     public int? LastMaxCount { get; private set; }
 
+    /// <summary>Der bei der letzten Abfrage übergebene Startpunkt.</summary>
+    public int LastSkip { get; private set; }
+
     public Task<IReadOnlyList<Photo>> GetPhotosAsync(
         string folderPath,
         bool includeSubfolders,
+        int skip,
         int? maxCount,
         CancellationToken cancellationToken)
     {
         LastMaxCount = maxCount;
-        return Task.FromResult(maxCount is { } limit ? [.. photos.Take(limit)] : photos);
+        LastSkip = skip;
+        return Task.FromResult<IReadOnlyList<Photo>>([.. photos.Skip(skip).Take(maxCount ?? int.MaxValue)]);
     }
 }
 

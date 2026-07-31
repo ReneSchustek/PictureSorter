@@ -12,9 +12,10 @@ internal sealed class FakePhotoSource(IReadOnlyList<Photo> photos) : IPhotoSourc
     public Task<IReadOnlyList<Photo>> GetPhotosAsync(
         string folderPath,
         bool includeSubfolders,
+        int skip,
         int? maxCount,
         CancellationToken cancellationToken) =>
-        Task.FromResult(maxCount is { } limit ? [.. photos.Take(limit)] : photos);
+        Task.FromResult<IReadOnlyList<Photo>>([.. photos.Skip(skip).Take(maxCount ?? int.MaxValue)]);
 }
 
 /// <summary>Erzeugt Embeddings über eine Testfunktion.</summary>
