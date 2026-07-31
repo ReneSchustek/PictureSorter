@@ -679,7 +679,11 @@
   <data name="Sort_ExamplesNoneAdded" xml:space="preserve">
     <value>Es wurde nichts hinzugefügt: Es passen höchstens {0} Beispiele, und es werden nur Bilddateien angenommen.</value>
   </data>
-  <data name="Sort_LoadExamplesCanceled" xml:space="preserve">    <value>Das Laden der Beispiele wurde abgebrochen.</value>
+  <data name="Sort_LearningProgress" xml:space="preserve">
+    <value>Profil wird gelernt: Bild {0} von {1}…</value>
+  </data>
+  <data name="Sort_LoadExamplesCanceled" xml:space="preserve">
+    <value>Das Laden der Beispiele wurde abgebrochen.</value>
   </data>
   <data name="Update_Applied" xml:space="preserve">
     <value>Die Aktualisierung auf Version {0} wurde eingespielt.</value>

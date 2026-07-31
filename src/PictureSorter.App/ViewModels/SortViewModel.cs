@@ -554,9 +554,16 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
                 [.. ExampleCandidates.Where(candidate => candidate.IsLabeled)
                     .Select(candidate => new TrainingExample(candidate.Photo, candidate.IsPositive))];
 
+            // Für jedes Beispiel läuft ein vollständiger Aufruf des Bild-Modells. Ohne
+            // Zählstand stünde die Oberfläche minutenlang bei derselben unveränderten
+            // Zeile und wäre nicht von einem Absturz zu unterscheiden.
+            Progress<TrainingProgress> progress = new(stand => _status.ReportProgress(
+                _localizer.Format("Sort_LearningProgress", stand.Processed, stand.Total),
+                stand.Total == 0 ? 0 : stand.Processed * 100d / stand.Total));
+
             CategoryKind kind = IsEventCategory ? CategoryKind.Event : CategoryKind.Topic;
             Category category = await _trainer
-                .TrainAsync(CategoryName.Trim(), CategoryDescription.Trim(), kind, examples, _cancellation.Token)
+                .TrainAsync(CategoryName.Trim(), CategoryDescription.Trim(), kind, examples, progress, _cancellation.Token)
                 .ConfigureAwait(true);
 
             await PersistCategoryAsync(category, _cancellation.Token).ConfigureAwait(true);

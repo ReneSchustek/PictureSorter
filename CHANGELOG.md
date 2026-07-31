@@ -4,6 +4,26 @@ Alle nennenswerten Änderungen an diesem Projekt werden hier dokumentiert.
 Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/),
 die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
+## [1.4.6] - 2026-07-31
+
+### Behoben
+
+- **Beim Anlernen war nicht zu erkennen, ob noch etwas passiert.** Für jedes
+  Beispielbild läuft ein vollständiger Aufruf der Bilderkennung; angezeigt wurde nur
+  eine unveränderte Zeile. Jetzt steht dort „Bild 7 von 15" samt Balken.
+- **Das Anlernen dauerte unnötig lange.** Die Bilderkennung beschreibt jedes Bild in
+  Worten, und die Dauer hängt fast unmittelbar an der Länge dieser Beschreibung. Sie
+  ist jetzt begrenzt — für den Vergleich genügen ein bis zwei Sätze, geschrieben wurden
+  oft deutlich mehr.
+
+### Geändert
+
+- **Für die Beispiele gilt eine einstellbare Obergrenze, ab Werk fünfzehn je Seite.**
+  Entschieden wird über die höchste Ähnlichkeit zu einem einzelnen Beispiel: Ein
+  halbpassendes Beispiel zieht deshalb eine ganze Nachbarschaft falscher Fotos mit
+  herein. Wenige eindeutige Beispiele wirken besser als viele mittelmäßige — und jedes
+  zusätzliche kostet Wartezeit beim Anlernen.
+
 ## [1.4.5] - 2026-07-31
 
 ### Hinzugefügt

@@ -80,7 +80,13 @@ public sealed class OllamaClient : IOllamaClient
         ArgumentException.ThrowIfNullOrWhiteSpace(prompt);
         ArgumentNullException.ThrowIfNull(imagesBase64);
 
-        GenerateRequest request = new(model, prompt, imagesBase64, Stream: false, _options.KeepAlive);
+        GenerateRequest request = new(
+            model,
+            prompt,
+            imagesBase64,
+            Stream: false,
+            _options.KeepAlive,
+            new GenerateOptions(_options.MaxResponseTokens));
         GenerateResponse response = await PostAsync<GenerateRequest, GenerateResponse>(
             "/api/generate",
             request,
@@ -220,7 +226,13 @@ public sealed class OllamaClient : IOllamaClient
         [property: JsonPropertyName("prompt")] string Prompt,
         [property: JsonPropertyName("images")] IReadOnlyList<string> Images,
         [property: JsonPropertyName("stream")] bool Stream,
-        [property: JsonPropertyName("keep_alive")] string KeepAlive);
+        [property: JsonPropertyName("keep_alive")] string KeepAlive,
+        [property: JsonPropertyName("options")] GenerateOptions Options);
+
+    // Ollama nimmt Modellparameter unter „options" entgegen; „num_predict" begrenzt die
+    // Zahl der erzeugten Token und damit die Dauer des Aufrufs.
+    private sealed record GenerateOptions(
+        [property: JsonPropertyName("num_predict")] int NumPredict);
 
     private sealed record GenerateResponse(
         [property: JsonPropertyName("response")] string? Response);

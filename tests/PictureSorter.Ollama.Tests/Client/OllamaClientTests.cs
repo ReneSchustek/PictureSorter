@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -165,6 +166,23 @@ public sealed class OllamaClientTests : IDisposable
             () => sut.EmbedAsync("nomic-embed-text", "ein Foto", cancellation.Token));
 
         Assert.Equal(1, _handler!.CallCount);
+    }
+
+    [Fact]
+    public async Task GenerateAsync_LimitsTheAnswerLength()
+    {
+        // Die Dauer eines Bild-Modell-Aufrufs hängt fast unmittelbar an der Zahl der
+        // erzeugten Token. Für den Vergleichsvektor genügen ein bis zwei Sätze – ohne
+        // Obergrenze schreibt das Modell regelmäßig mehr, und jedes Beispiel beim
+        // Anlernen dauert entsprechend länger.
+        OllamaClient sut = CreateSut(StubHttpMessageHandler.Json("""{"response":"ein Foto am Strand"}"""));
+
+        _ = await sut.GenerateAsync("llava", "Beschreibe", ["base64"], CancellationToken.None);
+
+        string erwartet = string.Create(
+            CultureInfo.InvariantCulture,
+            $"\"num_predict\":{new OllamaOptions().MaxResponseTokens}");
+        Assert.Contains(erwartet, _handler!.LastRequestBody, StringComparison.Ordinal);
     }
 
     // Der Handler entsteht nur hier, nie als lokale Variable eines Tests: So gehört
