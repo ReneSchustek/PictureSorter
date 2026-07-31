@@ -745,4 +745,13 @@
   <data name="AboutPage_ProblemsOnlyToggle.OffContent" xml:space="preserve">
     <value>Aus</value>
   </data>
+  <data name="AboutPage_SupportHeading.Text" xml:space="preserve">
+    <value>Gefällt dir PictureSorter? Über einen Kaffee freue ich mich – ganz freiwillig.</value>
+  </data>
+  <data name="AboutPage_SupportButton.Content" xml:space="preserve">
+    <value>☕ Kaffee spendieren</value>
+  </data>
+  <data name="AboutPage_SupportButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Kaffee spendieren</value>
+  </data>
 </root>
