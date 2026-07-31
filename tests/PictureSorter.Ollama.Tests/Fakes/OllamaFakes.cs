@@ -77,6 +77,36 @@ internal sealed class FakeOllamaClient : IOllamaClient
 }
 
 /// <summary>
+/// Nimmt die Anfrage an und antwortet nie – das Bild eines Ollama, das gerade
+/// aktualisiert wird: Der Port ist belegt, aber es kommt nichts zurück. Damit lässt
+/// sich prüfen, dass die Prüfung von sich aus aufgibt statt zu hängen.
+/// </summary>
+internal sealed class HangingOllamaClient : IOllamaClient
+{
+    public async Task<IReadOnlyList<float>> EmbedAsync(string model, string text, CancellationToken cancellationToken)
+    {
+        await Task.Delay(Timeout.Infinite, cancellationToken).ConfigureAwait(false);
+        return [];
+    }
+
+    public async Task<string> GenerateAsync(
+        string model,
+        string prompt,
+        IReadOnlyList<string> imagesBase64,
+        CancellationToken cancellationToken)
+    {
+        await Task.Delay(Timeout.Infinite, cancellationToken).ConfigureAwait(false);
+        return string.Empty;
+    }
+
+    public async Task<IReadOnlyList<string>> ListModelsAsync(CancellationToken cancellationToken)
+    {
+        await Task.Delay(Timeout.Infinite, cancellationToken).ConfigureAwait(false);
+        return [];
+    }
+}
+
+/// <summary>
 /// Liefert feste JPEG-Daten, statt eine Datei zu dekodieren – die echte Aufbereitung
 /// braucht die Windows-Bild-API und damit ein Bild auf der Platte. Mit einem Fehler
 /// bestückt bildet sie den Fall ab, dass der Codec fehlt (etwa für HEIC).

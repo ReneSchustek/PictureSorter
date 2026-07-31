@@ -42,9 +42,16 @@ public sealed class OllamaModelAvailabilityChecker : IModelAvailabilityChecker
     {
         IReadOnlyList<string> required = [_options.VisionModel, _options.EmbeddingModel];
 
+        // Eigenes, kurzes Zeitlimit statt des Limits einer Bildbeschreibung: Ein Ollama,
+        // das die Verbindung annimmt, aber nicht antwortet – etwa während seiner eigenen
+        // Aktualisierung – hielte die Oberfläche sonst über Minuten bei „Zustand der KI
+        // wird geprüft" fest, weil das lange Limit noch dreimal wiederholt wird.
+        using CancellationTokenSource deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        deadline.CancelAfter(TimeSpan.FromSeconds(_options.AvailabilityTimeoutSeconds));
+
         try
         {
-            IReadOnlyList<string> installed = await _client.ListModelsAsync(cancellationToken).ConfigureAwait(false);
+            IReadOnlyList<string> installed = await _client.ListModelsAsync(deadline.Token).ConfigureAwait(false);
             IReadOnlyList<string> missing = [.. required.Where(model => !IsInstalled(model, installed))];
 
             if (missing.Count > 0)
@@ -54,12 +61,25 @@ public sealed class OllamaModelAvailabilityChecker : IModelAvailabilityChecker
 
             return new ModelAvailability { IsReachable = true, RequiredModels = required, MissingModels = missing };
         }
-        catch (AiUnavailableException ex)
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
+            // Nur das eigene Zeitlimit ist abgelaufen; ein Abbruch durch den Aufrufer
+            // bleibt ein Abbruch und wird weitergereicht.
+            ModelLog.TimedOut(_logger, _options.AvailabilityTimeoutSeconds);
+            return Unreachable(required);
+        }
+        catch (Exception ex) when (ex is AiUnavailableException or HttpRequestException or InvalidOperationException)
+        {
+            // Der Prüfer gibt immer eine Antwort. Käme hier eine Ausnahme heraus, bliebe
+            // in der Oberfläche der Text „wird geprüft" stehen – ohne dass die Nutzerin
+            // je erführe, dass die Prüfung längst gescheitert ist.
             ModelLog.Unreachable(_logger, ex);
-            return new ModelAvailability { IsReachable = false, RequiredModels = required, MissingModels = required };
+            return Unreachable(required);
         }
     }
+
+    private static ModelAvailability Unreachable(IReadOnlyList<string> required) =>
+        new() { IsReachable = false, RequiredModels = required, MissingModels = required };
 
     // Ollama meldet Modelle mit Tag (z. B. „llava:latest"). Ein ohne Tag
     // konfiguriertes Modell („llava") gilt als vorhanden, wenn ein installiertes
@@ -86,4 +106,7 @@ internal static partial class ModelLog
 
     [LoggerMessage(EventId = 2601, Level = LogLevel.Warning, Message = "Ollama ist beim Start nicht erreichbar.")]
     public static partial void Unreachable(ILogger logger, Exception exception);
+
+    [LoggerMessage(EventId = 2602, Level = LogLevel.Warning, Message = "Ollama hat die Verfügbarkeitsprüfung nicht innerhalb von {Seconds} Sekunden beantwortet.")]
+    public static partial void TimedOut(ILogger logger, int seconds);
 }
