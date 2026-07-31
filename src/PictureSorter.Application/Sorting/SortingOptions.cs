@@ -37,4 +37,14 @@ public sealed class SortingOptions
     /// </summary>
     [Range(1, 100000)]
     public int BulkConfirmationThreshold { get; set; } = 50;
+
+    /// <summary>
+    /// Höchstzahl der Beispiele je Seite (passend bzw. nicht passend). Entschieden wird
+    /// über die höchste Ähnlichkeit zu einem einzelnen Beispiel: Ein halbpassendes
+    /// Beispiel zieht deshalb eine ganze Nachbarschaft falscher Fotos mit herein. Wenige,
+    /// eindeutige Beispiele wirken besser als viele mittelmäßige — und jedes zusätzliche
+    /// kostet beim Anlernen einen vollständigen Aufruf des Bild-Modells.
+    /// </summary>
+    [Range(1, 100)]
+    public int MaxExamplesPerSide { get; set; } = 15;
 }

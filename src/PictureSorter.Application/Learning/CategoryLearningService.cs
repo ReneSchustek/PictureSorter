@@ -35,6 +35,7 @@ public sealed class CategoryLearningService : ICategoryTrainer
         string description,
         CategoryKind kind,
         IReadOnlyList<TrainingExample> examples,
+        IProgress<TrainingProgress>? progress,
         CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
@@ -45,6 +46,9 @@ public sealed class CategoryLearningService : ICategoryTrainer
         }
 
         Category category = new(name, description, kind);
+        int processed = 0;
+        progress?.Report(new TrainingProgress(0, examples.Count));
+
         foreach (TrainingExample example in examples)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -58,6 +62,9 @@ public sealed class CategoryLearningService : ICategoryTrainer
                 IsPositive = example.IsPositive,
                 Embedding = embedding,
             });
+
+            processed++;
+            progress?.Report(new TrainingProgress(processed, examples.Count));
         }
 
         LearningLog.Trained(_logger, category.Name, examples.Count);

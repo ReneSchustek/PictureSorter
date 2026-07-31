@@ -679,7 +679,11 @@
   <data name="Sort_ExamplesNoneAdded" xml:space="preserve">
     <value>Nothing was added: at most {0} examples fit, and only image files are accepted.</value>
   </data>
-  <data name="Sort_LoadExamplesCanceled" xml:space="preserve">    <value>Loading the examples was cancelled.</value>
+  <data name="Sort_LearningProgress" xml:space="preserve">
+    <value>Learning the profile: image {0} of {1}…</value>
+  </data>
+  <data name="Sort_LoadExamplesCanceled" xml:space="preserve">
+    <value>Loading the examples was cancelled.</value>
   </data>
   <data name="Update_Applied" xml:space="preserve">
     <value>The update to version {0} has been installed.</value>
