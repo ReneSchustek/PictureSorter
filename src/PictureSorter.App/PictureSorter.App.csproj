@@ -136,4 +136,30 @@
       Condition="!Exists('$(MSBuildProjectDirectory)\Assets\SplashLogo.png')"
       Text="SplashScreen-Logo fehlt: Assets\SplashLogo.png muss vorhanden und als EmbeddedResource eingebettet sein." />
   </Target>
+
+  <!-- Die eigene Ressourcendatei (PictureSorter.pri) entsteht beim Build, wird von
+       `dotnet publish` bei einer unpaketierten WinUI-App aber NICHT mit ausgegeben.
+       Ohne sie findet WinUI kein einziges XAML: Die Anwendung bricht schon beim ersten
+       Fenster mit einer XamlParseException ab. Der Build bleibt dabei gruen und die
+       Tests auch, weil beide die Datei aus dem bin-Ordner sehen; auffallen kann es
+       einzig beim Start der ausgelieferten Fassung. -->
+  <Target Name="ProjektPriMitVeroeffentlichen" AfterTargets="ComputeResolvedFilesToPublishList">
+    <ItemGroup>
+      <ResolvedFileToPublish
+        Include="$(ProjectPriFullPath)"
+        Condition="'$(ProjectPriFullPath)' != '' and Exists('$(ProjectPriFullPath)')">
+        <RelativePath>$([System.IO.Path]::GetFileName('$(ProjectPriFullPath)'))</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+  </Target>
+
+  <!-- Verteidigung in der Tiefe, wie beim Splash-Logo: Fehlt die Ressourcendatei in der
+       Ausgabe, soll die Veroeffentlichung abbrechen statt ein Paket zu erzeugen, das
+       sich nicht starten laesst. Genau das ist bis 1.4.0 unbemerkt ausgeliefert worden. -->
+  <Target Name="ValidateProjektPriImPublish" AfterTargets="Publish">
+    <Error
+      Condition="!Exists('$(PublishDir)$(AssemblyName).pri')"
+      Text="Ressourcendatei $(AssemblyName).pri fehlt in der Veroeffentlichung. Ohne sie startet die Anwendung nicht (XamlParseException im ersten Fenster)." />
+  </Target>
 </Project>
