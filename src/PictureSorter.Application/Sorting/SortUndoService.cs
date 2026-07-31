@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using PictureSorter.Core.Enums;
 using PictureSorter.Core.Interfaces;
 using PictureSorter.Core.ValueObjects;
 
@@ -68,9 +69,17 @@ public sealed class SortUndoService : ISortUndoService
             bool moved;
             try
             {
-                moved = await _fileOrganizer
-                    .RestoreAsync(item.TargetPath, item.SourcePath, cancellationToken)
-                    .ConfigureAwait(false);
+                // Nach einem Kopierlauf liegt das Original noch im Quellordner.
+                // „Zurückholen" hieße dort, es ein zweites Mal hinzulegen – rückgängig
+                // ist hier das Entfernen der Kopie, und das nur, wenn sie noch
+                // unverändert ist.
+                moved = run.Operation is FileOperationMode.Copy
+                    ? await _fileOrganizer
+                        .DiscardCopyAsync(item.TargetPath, item.TargetLength, item.TargetLastWriteUtc, cancellationToken)
+                        .ConfigureAwait(false)
+                    : await _fileOrganizer
+                        .RestoreAsync(item.TargetPath, item.SourcePath, cancellationToken)
+                        .ConfigureAwait(false);
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
@@ -86,7 +95,7 @@ public sealed class SortUndoService : ISortUndoService
                 continue;
             }
 
-            // Das Foto liegt wieder im Quellordner. Bliebe es als „einsortiert"
+            // Das Foto liegt wieder allein im Quellordner. Bliebe es als „einsortiert"
             // gemerkt, würde es nie wieder vorgeschlagen – die Anwendung hätte ein
             // Gedächtnis an eine Sortierung, die es nicht mehr gibt.
             await _memory

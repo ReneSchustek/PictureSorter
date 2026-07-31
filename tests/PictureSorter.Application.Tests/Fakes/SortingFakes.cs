@@ -1,4 +1,5 @@
 using PictureSorter.Core.Entities;
+using PictureSorter.Core.Enums;
 using PictureSorter.Core.Exceptions;
 using PictureSorter.Core.Interfaces;
 using PictureSorter.Core.ValueObjects;
@@ -67,12 +68,26 @@ internal sealed class FakeFileOrganizer : IFileOrganizer
     /// <summary>Zielpfade, die beim Zurückholen als „nicht auffindbar" gelten sollen.</summary>
     public HashSet<string> Unrestorable { get; } = new(StringComparer.OrdinalIgnoreCase);
 
+    /// <summary>Entfernte Kopien – gefüllt, wenn das Rückgängig einen Kopierlauf zurücknimmt.</summary>
+    public List<string> Discarded { get; } = [];
+
+    /// <summary>Kopien, die als „inzwischen verändert" gelten und nicht entfernt werden dürfen.</summary>
+    public HashSet<string> Undiscardable { get; } = new(StringComparer.OrdinalIgnoreCase);
+
     public bool LastDryRun { get; private set; }
 
-    public Task<string> ApplyAsync(SortProposal proposal, bool dryRun, CancellationToken cancellationToken)
+    /// <summary>Die Betriebsart des zuletzt angewendeten Vorschlags.</summary>
+    public FileOperationMode LastOperation { get; private set; }
+
+    public Task<string> ApplyAsync(
+        SortProposal proposal,
+        FileOperationMode operation,
+        bool dryRun,
+        CancellationToken cancellationToken)
     {
         Applied.Add(proposal);
         LastDryRun = dryRun;
+        LastOperation = operation;
         return Task.FromResult(Path.Combine(proposal.TargetFolderPath, proposal.Photo.FileName));
     }
 
@@ -84,6 +99,21 @@ internal sealed class FakeFileOrganizer : IFileOrganizer
         }
 
         Restored.Add((currentPath, originalPath));
+        return Task.FromResult(true);
+    }
+
+    public Task<bool> DiscardCopyAsync(
+        string copyPath,
+        long? expectedLength,
+        DateTime? expectedLastWriteUtc,
+        CancellationToken cancellationToken)
+    {
+        if (Undiscardable.Contains(copyPath) || expectedLength is null || expectedLastWriteUtc is null)
+        {
+            return Task.FromResult(false);
+        }
+
+        Discarded.Add(copyPath);
         return Task.FromResult(true);
     }
 
@@ -102,7 +132,11 @@ internal sealed class FailingFileOrganizer(string failOn) : IFileOrganizer
 {
     public List<SortProposal> Applied { get; } = [];
 
-    public Task<string> ApplyAsync(SortProposal proposal, bool dryRun, CancellationToken cancellationToken)
+    public Task<string> ApplyAsync(
+        SortProposal proposal,
+        FileOperationMode operation,
+        bool dryRun,
+        CancellationToken cancellationToken)
     {
         if (string.Equals(proposal.Photo.FileName, failOn, StringComparison.Ordinal))
         {
@@ -116,6 +150,20 @@ internal sealed class FailingFileOrganizer(string failOn) : IFileOrganizer
     public Task<bool> RestoreAsync(string currentPath, string originalPath, CancellationToken cancellationToken)
     {
         if (string.Equals(Path.GetFileName(currentPath), failOn, StringComparison.Ordinal))
+        {
+            throw new IOException($"Die Datei {failOn} wird von einem anderen Prozess verwendet.");
+        }
+
+        return Task.FromResult(true);
+    }
+
+    public Task<bool> DiscardCopyAsync(
+        string copyPath,
+        long? expectedLength,
+        DateTime? expectedLastWriteUtc,
+        CancellationToken cancellationToken)
+    {
+        if (string.Equals(Path.GetFileName(copyPath), failOn, StringComparison.Ordinal))
         {
             throw new IOException($"Die Datei {failOn} wird von einem anderen Prozess verwendet.");
         }
@@ -137,7 +185,11 @@ internal sealed class CancellingFileOrganizer(CancellationTokenSource cancellati
 {
     public List<SortProposal> Applied { get; } = [];
 
-    public async Task<string> ApplyAsync(SortProposal proposal, bool dryRun, CancellationToken cancellationToken)
+    public async Task<string> ApplyAsync(
+        SortProposal proposal,
+        FileOperationMode operation,
+        bool dryRun,
+        CancellationToken cancellationToken)
     {
         Applied.Add(proposal);
         if (Applied.Count >= cancelAfter)
@@ -150,6 +202,12 @@ internal sealed class CancellingFileOrganizer(CancellationTokenSource cancellati
 
     public Task<bool> RestoreAsync(string currentPath, string originalPath, CancellationToken cancellationToken) =>
         Task.FromResult(true);
+
+    public Task<bool> DiscardCopyAsync(
+        string copyPath,
+        long? expectedLength,
+        DateTime? expectedLastWriteUtc,
+        CancellationToken cancellationToken) => Task.FromResult(true);
 
     public Task RemoveFolderIfEmptyAsync(string folderPath, CancellationToken cancellationToken) =>
         Task.CompletedTask;

@@ -77,6 +77,16 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     public partial bool IsEventCategory { get; set; }
 
     /// <summary>
+    /// <see langword="true"/>, wenn der Lauf die Fotos kopieren statt verschieben soll.
+    /// Bewusst pro Lauf und nicht als dauerhafte Einstellung: Von der Speicherkarte
+    /// will man kopieren, innerhalb des Archivs verschieben – das hängt am Fall.
+    /// Voreinstellung bleibt das Verschieben, damit sich das gewohnte Verhalten nicht
+    /// unbemerkt ändert.
+    /// </summary>
+    [ObservableProperty]
+    public partial bool CopyInsteadOfMove { get; set; }
+
+    /// <summary>
     /// Zusammenfassung des Laufs, der zurückgenommen werden kann (leer, wenn keiner
     /// vorliegt).
     /// </summary>
@@ -504,8 +514,12 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
             IReadOnlyList<SortProposal> rejected =
                 [.. Proposals.Where(proposal => !proposal.IsSelected).Select(proposal => proposal.Proposal)];
 
+            FileOperationMode operation = CopyInsteadOfMove
+                ? FileOperationMode.Copy
+                : FileOperationMode.Move;
+
             int moved = await _sorter
-                .ApplyProposalsAsync(selected, dryRun: false, _cancellation.Token)
+                .ApplyProposalsAsync(selected, operation, dryRun: false, _cancellation.Token)
                 .ConfigureAwait(true);
 
             // Abgewählte Vorschläge dauerhaft merken, damit sie nicht erneut erscheinen.

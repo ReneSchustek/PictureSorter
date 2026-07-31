@@ -381,6 +381,15 @@
                                 Visibility="{x:Bind ViewModel.Wizard.ShowStandardActions, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                         </Grid>
 
+                        <!-- Steht bewusst direkt über dem Sortieren-Knopf: Der Weg, auf dem
+                             die Fotos ihren Ordner erreichen, gehört dorthin, wo man ihn
+                             auslöst, nicht in eine Einstellungsseite. -->
+                        <CheckBox
+                            x:Uid="SortPage_CopyInsteadOfMoveCheck"
+                            Content="Fotos kopieren statt verschieben (Originale bleiben liegen)"
+                            IsChecked="{x:Bind ViewModel.CopyInsteadOfMove, Mode=TwoWay}"
+                            Visibility="{x:Bind ViewModel.Wizard.ShowStandardActions, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+
                         <ListView
                             MaxHeight="360"
                             ItemsSource="{x:Bind ViewModel.Proposals}"

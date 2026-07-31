@@ -1,15 +1,17 @@
 using System.Globalization;
 using Microsoft.Extensions.Logging;
 using PictureSorter.Core.Diagnostics;
+using PictureSorter.Core.Enums;
 using PictureSorter.Core.Interfaces;
 using PictureSorter.Core.ValueObjects;
 
 namespace PictureSorter.Infrastructure.FileSystem;
 
 /// <summary>
-/// Verschiebt Bilddateien sicher in ihren Zielordner. Im Dry-Run wird nichts
-/// verändert, sondern nur der kollisionsfreie Zielpfad ermittelt. Bestehende
-/// Dateien werden nie überschrieben (Safe-Write).
+/// Bringt Bilddateien sicher in ihren Zielordner – wahlweise verschiebend oder
+/// kopierend. Im Dry-Run wird nichts verändert, sondern nur der kollisionsfreie
+/// Zielpfad ermittelt. Bestehende Dateien werden nie überschrieben (Safe-Write).
+/// Das Erstelldatum wird in beiden Betriebsarten übernommen.
 /// </summary>
 public sealed class FileOrganizer : IFileOrganizer
 {
@@ -28,7 +30,11 @@ public sealed class FileOrganizer : IFileOrganizer
     }
 
     /// <inheritdoc />
-    public async Task<string> ApplyAsync(SortProposal proposal, bool dryRun, CancellationToken cancellationToken)
+    public async Task<string> ApplyAsync(
+        SortProposal proposal,
+        FileOperationMode operation,
+        bool dryRun,
+        CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(proposal);
 
@@ -44,7 +50,8 @@ public sealed class FileOrganizer : IFileOrganizer
         // Liegt das Foto bereits an seinem Zielpfad, ist nichts zu tun. Ohne diese
         // Prüfung würde File.Move die Datei auf sich selbst verschieben und – da der
         // Zielname dann als „belegt" gilt – bei jedem Lauf eine weitere „ (n)"-Stufe
-        // anhängen (a.jpg → a (1).jpg → a (1) (1).jpg …).
+        // anhängen (a.jpg → a (1).jpg → a (1) (1).jpg …). Beim Kopieren wäre es eine
+        // Datei, die sich selbst überschreibt.
         if (string.Equals(sourcePath, targetPath, StringComparison.OrdinalIgnoreCase))
         {
             return targetPath;
@@ -54,13 +61,105 @@ public sealed class FileOrganizer : IFileOrganizer
             () =>
             {
                 _ = Directory.CreateDirectory(targetFolder);
-                File.Move(sourcePath, targetPath, overwrite: false);
+
+                // Vor der Operation lesen: Beim Verschieben ist die Quelle danach weg,
+                // beim Kopieren trägt die neue Datei bereits das falsche Datum.
+                DateTime createdUtc = File.GetCreationTimeUtc(sourcePath);
+
+                if (operation is FileOperationMode.Copy)
+                {
+                    File.Copy(sourcePath, targetPath, overwrite: false);
+                }
+                else
+                {
+                    File.Move(sourcePath, targetPath, overwrite: false);
+                }
+
+                PreserveCreationTime(targetPath, createdUtc, proposal.Photo.FileName);
             },
             cancellationToken).ConfigureAwait(false);
 
         string redactedTarget = LogPaths.Redact(targetFolder);
-        OrganizerLog.Moved(_logger, proposal.Photo.FileName, redactedTarget);
+        if (operation is FileOperationMode.Copy)
+        {
+            OrganizerLog.Copied(_logger, proposal.Photo.FileName, redactedTarget);
+        }
+        else
+        {
+            OrganizerLog.Moved(_logger, proposal.Photo.FileName, redactedTarget);
+        }
+
         return targetPath;
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> DiscardCopyAsync(
+        string copyPath,
+        long? expectedLength,
+        DateTime? expectedLastWriteUtc,
+        CancellationToken cancellationToken)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(copyPath);
+
+        string copy = Path.GetFullPath(copyPath);
+        string fileName = Path.GetFileName(copy);
+
+        return await Task.Run(
+            () =>
+            {
+                if (!File.Exists(copy))
+                {
+                    // Schon weg – aus Sicht des Rückgängigmachens ist das der Zielzustand,
+                    // aber es wurde nichts entfernt.
+                    OrganizerLog.CopyDiscardSkipped(_logger, fileName);
+                    return false;
+                }
+
+                // Ohne Vergleichswerte lässt sich nicht belegen, dass hier wirklich die
+                // Kopie dieses Laufs liegt. Löschen wäre dann geraten, und Raten darf
+                // nichts vernichten. Betrifft Läufe aus der Zeit vor dieser Prüfung.
+                if (expectedLength is null || expectedLastWriteUtc is null)
+                {
+                    OrganizerLog.CopyDiscardUnverifiable(_logger, fileName);
+                    return false;
+                }
+
+                FileInfo info = new(copy);
+                bool unchanged = info.Length == expectedLength.Value
+                    && info.LastWriteTimeUtc == expectedLastWriteUtc.Value;
+
+                if (!unchanged)
+                {
+                    // Jemand hat die Kopie bearbeitet. Sie zu löschen wäre genau der
+                    // Datenverlust, den das Rückgängig verhindern soll.
+                    OrganizerLog.CopyDiscardBlocked(_logger, fileName);
+                    return false;
+                }
+
+                File.Delete(copy);
+                OrganizerLog.CopyDiscarded(_logger, fileName);
+                return true;
+            },
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    // Windows setzt das Erstelldatum neu, sobald die Datei tatsächlich neu geschrieben
+    // wird – beim Kopieren immer, beim Verschieben über eine Laufwerksgrenze ebenfalls
+    // (daraus wird intern Kopieren plus Löschen). Innerhalb eines Laufwerks ist das
+    // Zurückschreiben wirkungslos, aber harmlos.
+    private void PreserveCreationTime(string targetPath, DateTime createdUtc, string fileName)
+    {
+        try
+        {
+            File.SetCreationTimeUtc(targetPath, createdUtc);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentOutOfRangeException)
+        {
+            // Das Foto liegt richtig und ist unversehrt; nur sein Erstelldatum stimmt
+            // nicht. Deswegen den ganzen Lauf scheitern zu lassen wäre unverhältnismäßig
+            // – aber stillschweigend übergehen darf man es auch nicht.
+            OrganizerLog.CreationTimeNotPreserved(_logger, fileName, ex);
+        }
     }
 
     /// <inheritdoc />
@@ -197,4 +296,22 @@ internal static partial class OrganizerLog
 
     [LoggerMessage(EventId = 2405, Level = LogLevel.Debug, Message = "Leerer Ordner {Folder} konnte nicht entfernt werden.")]
     public static partial void FolderRemovalFailed(ILogger logger, string folder, Exception exception);
+
+    [LoggerMessage(EventId = 2406, Level = LogLevel.Information, Message = "{FileName} nach {TargetFolder} kopiert.")]
+    public static partial void Copied(ILogger logger, string fileName, string targetFolder);
+
+    [LoggerMessage(EventId = 2407, Level = LogLevel.Information, Message = "Kopie von {FileName} wieder entfernt.")]
+    public static partial void CopyDiscarded(ILogger logger, string fileName);
+
+    [LoggerMessage(EventId = 2408, Level = LogLevel.Warning, Message = "Die Kopie von {FileName} liegt nicht mehr am Zielort und wurde nicht entfernt.")]
+    public static partial void CopyDiscardSkipped(ILogger logger, string fileName);
+
+    [LoggerMessage(EventId = 2409, Level = LogLevel.Warning, Message = "Die Kopie von {FileName} wurde seit dem Sortieren verändert und deshalb nicht entfernt.")]
+    public static partial void CopyDiscardBlocked(ILogger logger, string fileName);
+
+    [LoggerMessage(EventId = 2410, Level = LogLevel.Warning, Message = "Für {FileName} fehlen die Vergleichswerte des Laufs; die Kopie wurde vorsichtshalber nicht entfernt.")]
+    public static partial void CopyDiscardUnverifiable(ILogger logger, string fileName);
+
+    [LoggerMessage(EventId = 2411, Level = LogLevel.Warning, Message = "Das Erstelldatum von {FileName} konnte nicht übernommen werden.")]
+    public static partial void CreationTimeNotPreserved(ILogger logger, string fileName, Exception exception);
 }
