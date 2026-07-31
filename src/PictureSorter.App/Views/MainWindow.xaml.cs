@@ -26,6 +26,7 @@ internal sealed partial class MainWindow : Window
     private readonly UpdateViewModel _update;
     private readonly UpdateService _updateService;
     private readonly NavigationService _navigation;
+    private readonly ILocalizer _localizer;
     private readonly ILogger<MainWindow> _logger;
 
     /// <summary>
@@ -37,6 +38,7 @@ internal sealed partial class MainWindow : Window
         _update = App.Services.GetRequiredService<UpdateViewModel>();
         _updateService = App.Services.GetRequiredService<UpdateService>();
         _navigation = App.Services.GetRequiredService<NavigationService>();
+        _localizer = App.Services.GetRequiredService<ILocalizer>();
         _logger = App.Services.GetRequiredService<ILogger<MainWindow>>();
         InitializeComponent();
 
@@ -69,23 +71,64 @@ internal sealed partial class MainWindow : Window
         // async void ist bei Ereignishandlern unvermeidbar; eine Ausnahme, die hier
         // entkommt, beendet den Prozess. Der UpdateService fängt die erwarteten Fälle
         // bereits ab – dieser Block deckt den Rest.
+        using CancellationTokenSource cancellation = new();
         try
         {
             _update.ReportPreparing();
-            bool started = await _updateService.DownloadAndLaunchUpdaterAsync(CancellationToken.None).ConfigureAwait(true);
+
+            // Das Paket ist rund hundert Megabyte groß. Ohne Balken und Prozentzahl
+            // sah der Knopf aus, als bewirke er nichts – der Abbruch über „Stopp" der
+            // Statusleiste gehört dazu, sonst bliebe nur das Schließen des Fensters.
+            Status.Begin(_localizer.Get("Update_Downloading"), cancellation.Cancel);
+            Progress<UpdateProgress> progress = new(ReportUpdateProgress);
+
+            bool started = await _updateService
+                .DownloadAndLaunchUpdaterAsync(progress, cancellation.Token)
+                .ConfigureAwait(true);
+
             if (started)
             {
+                Status.Finish(_localizer.Get("Update_Restarting"), StatusSeverity.Success);
                 Close();
                 return;
             }
 
+            Status.Finish(_localizer.Get("Update_Failed"), StatusSeverity.Error);
+            _update.ReportFailed();
+        }
+        catch (OperationCanceledException)
+        {
+            Status.Finish(_localizer.Get("Update_Canceled"), StatusSeverity.Warning);
             _update.ReportFailed();
         }
         catch (Exception ex)
         {
             MainWindowLog.UpdateFailed(_logger, ex);
+            Status.Finish(_localizer.Get("Update_Failed"), StatusSeverity.Error);
             _update.ReportFailed();
         }
+    }
+
+    // Übersetzt den Zwischenstand in Text und Balken. Nur der Download kennt einen
+    // echten Anteil; die übrigen Abschnitte dauern kurz und laufen unbestimmt.
+    private void ReportUpdateProgress(UpdateProgress progress)
+    {
+        if (progress.Stage == UpdateStage.Downloading)
+        {
+            Status.ReportProgress(
+                _localizer.Format("Update_DownloadingPercent", (int)progress.Percent),
+                progress.Percent);
+            return;
+        }
+
+        string key = progress.Stage switch
+        {
+            UpdateStage.Verifying => "Update_Verifying",
+            UpdateStage.Extracting => "Update_Extracting",
+            _ => "Update_Starting",
+        };
+
+        Status.ReportIndeterminate(_localizer.Get(key));
     }
 }
 
