@@ -377,12 +377,16 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         _status.Report(_localizer.Get("Sort_LoadingExamples"));
         try
         {
+            // Nur so viele Bilder einlesen, wie Schritt 3 überhaupt anzeigt. Vorher wurde
+            // der gesamte Ordner eingelesen und erst danach abgeschnitten – bei einem
+            // Ordner, dessen Dateien erst aus der Cloud geholt werden (iCloud-Fotos unter
+            // Windows), lud die Auswahl von dreißig Beispielen so die ganze Mediathek.
             IReadOnlyList<Photo> photos = await _photoSource
-                .GetPhotosAsync(SourceFolder, IncludeSubfolders, CancellationToken.None)
+                .GetPhotosAsync(SourceFolder, IncludeSubfolders, ExampleLimit, CancellationToken.None)
                 .ConfigureAwait(true);
 
             ClearCandidates();
-            foreach (Photo photo in photos.Take(ExampleLimit))
+            foreach (Photo photo in photos)
             {
                 ExampleCandidateViewModel candidate = new(photo, _localizer);
                 candidate.PropertyChanged += OnCandidateChanged;
