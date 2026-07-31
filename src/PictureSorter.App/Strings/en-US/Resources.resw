@@ -655,10 +655,42 @@
   <data name="StatusBar_Version" xml:space="preserve">
     <value>Version {0}</value>
   </data>
-  <data name="Sort_LoadExamplesCanceled" xml:space="preserve">
-    <value>Loading the examples was cancelled.</value>
+  <data name="MainWindow_AppVersionText.AutomationProperties.Name" xml:space="preserve">
+    <value>Application version</value>
   </data>
-  <data name="Update_Failed" xml:space="preserve">    <value>The update is not possible. Please try again later.</value>
+  <data name="SortPage_DropCaption" xml:space="preserve">
+    <value>Use as examples</value>
+  </data>
+  <data name="SortPage_ExampleDropHint.Text" xml:space="preserve">
+    <value>You can also drag images here from File Explorer (up to thirty).</value>
+  </data>
+  <data name="SortPage_MoreExamplesButton.Content" xml:space="preserve">
+    <value>Other examples</value>
+  </data>
+  <data name="SortPage_AddOwnExamplesButton.Content" xml:space="preserve">
+    <value>Choose your own images</value>
+  </data>
+  <data name="Sort_ExamplesAdded" xml:space="preserve">
+    <value>Added {0} of your own images. Now mark which ones belong and which do not.</value>
+  </data>
+  <data name="Sort_ExamplesAddedPartly" xml:space="preserve">
+    <value>Added {0} images, skipped {1} (more than thirty, or not a supported image format).</value>
+  </data>
+  <data name="Sort_ExamplesNoneAdded" xml:space="preserve">
+    <value>Nothing was added: at most {0} examples fit, and only image files are accepted.</value>
+  </data>
+  <data name="Sort_LoadExamplesCanceled" xml:space="preserve">    <value>Loading the examples was cancelled.</value>
+  </data>
+  <data name="Update_Applied" xml:space="preserve">
+    <value>The update to version {0} has been installed.</value>
+  </data>
+  <data name="Update_ApplyFailed" xml:space="preserve">
+    <value>The update could not be installed; the previous version is still running. Details are in the log under “Settings”.</value>
+  </data>
+  <data name="Update_NotWritable" xml:space="preserve">
+    <value>The update is not possible because the program folder is not writable. This happens with an “all users” installation — please install the new version manually.</value>
+  </data>  <data name="Update_Failed" xml:space="preserve">
+    <value>The update is not possible. Please try again later.</value>
   </data>
   <data name="About_LogEmpty" xml:space="preserve">
     <value>No log entries yet.</value>

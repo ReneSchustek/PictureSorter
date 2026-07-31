@@ -655,10 +655,42 @@
   <data name="StatusBar_Version" xml:space="preserve">
     <value>Version {0}</value>
   </data>
-  <data name="Sort_LoadExamplesCanceled" xml:space="preserve">
-    <value>Das Laden der Beispiele wurde abgebrochen.</value>
+  <data name="MainWindow_AppVersionText.AutomationProperties.Name" xml:space="preserve">
+    <value>Programmversion</value>
   </data>
-  <data name="Update_Failed" xml:space="preserve">    <value>Aktualisierung nicht möglich. Bitte später erneut versuchen.</value>
+  <data name="SortPage_DropCaption" xml:space="preserve">
+    <value>Als Beispiele übernehmen</value>
+  </data>
+  <data name="SortPage_ExampleDropHint.Text" xml:space="preserve">
+    <value>Du kannst Bilder auch aus dem Explorer hierher ziehen (bis zu dreißig).</value>
+  </data>
+  <data name="SortPage_MoreExamplesButton.Content" xml:space="preserve">
+    <value>Andere Beispiele</value>
+  </data>
+  <data name="SortPage_AddOwnExamplesButton.Content" xml:space="preserve">
+    <value>Eigene Bilder wählen</value>
+  </data>
+  <data name="Sort_ExamplesAdded" xml:space="preserve">
+    <value>{0} eigene Bilder hinzugefügt. Markiere jetzt, welche dazugehören und welche nicht.</value>
+  </data>
+  <data name="Sort_ExamplesAddedPartly" xml:space="preserve">
+    <value>{0} Bilder hinzugefügt, {1} übergangen (mehr als dreißig oder kein unterstütztes Bildformat).</value>
+  </data>
+  <data name="Sort_ExamplesNoneAdded" xml:space="preserve">
+    <value>Es wurde nichts hinzugefügt: Es passen höchstens {0} Beispiele, und es werden nur Bilddateien angenommen.</value>
+  </data>
+  <data name="Sort_LoadExamplesCanceled" xml:space="preserve">    <value>Das Laden der Beispiele wurde abgebrochen.</value>
+  </data>
+  <data name="Update_Applied" xml:space="preserve">
+    <value>Die Aktualisierung auf Version {0} wurde eingespielt.</value>
+  </data>
+  <data name="Update_ApplyFailed" xml:space="preserve">
+    <value>Die Aktualisierung konnte nicht eingespielt werden; es läuft weiter die bisherige Fassung. Einzelheiten stehen im Protokoll unter „Einstellungen“.</value>
+  </data>
+  <data name="Update_NotWritable" xml:space="preserve">
+    <value>Die Aktualisierung ist nicht möglich, weil im Programmordner nicht geschrieben werden darf. Das ist bei einer Installation „für alle Benutzer“ der Fall — bitte die neue Fassung von Hand installieren.</value>
+  </data>  <data name="Update_Failed" xml:space="preserve">
+    <value>Aktualisierung nicht möglich. Bitte später erneut versuchen.</value>
   </data>
   <data name="About_LogEmpty" xml:space="preserve">
     <value>Noch keine Protokolleinträge vorhanden.</value>

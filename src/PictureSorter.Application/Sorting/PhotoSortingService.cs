@@ -91,8 +91,13 @@ public sealed class PhotoSortingService : IPhotoSorter
             return [];
         }
 
+        // Die Gegenbeispiele wurden bisher zwar erfasst und gespeichert, aber nie
+        // ausgewertet – jede Markierung „passt nicht" blieb ohne jede Wirkung.
+        IReadOnlyList<ImageEmbedding> negatives =
+            [.. category.Examples.Where(example => !example.IsPositive).Select(example => example.Embedding)];
+
         IReadOnlyList<Photo> photos = await _photoSource
-            .GetPhotosAsync(sourceFolder, includeSubfolders, maxCount: null, cancellationToken)
+            .GetPhotosAsync(sourceFolder, includeSubfolders, skip: 0, maxCount: null, cancellationToken)
             .ConfigureAwait(false);
 
         int total = photos.Count;
@@ -114,7 +119,7 @@ public sealed class PhotoSortingService : IPhotoSorter
                 continue;
             }
 
-            Evaluation evaluation = await EvaluateAsync(photo, category, positives, sourceFolder, cancellationToken)
+            Evaluation evaluation = await EvaluateAsync(photo, category, positives, negatives, sourceFolder, cancellationToken)
                 .ConfigureAwait(false);
 
             if (evaluation.Proposal is not null)
@@ -295,6 +300,7 @@ public sealed class PhotoSortingService : IPhotoSorter
         Photo photo,
         Category category,
         IReadOnlyList<ImageEmbedding> positives,
+        IReadOnlyList<ImageEmbedding> negatives,
         string sourceFolder,
         CancellationToken cancellationToken)
     {
@@ -304,6 +310,16 @@ public sealed class PhotoSortingService : IPhotoSorter
                 .CreateEmbeddingAsync(photo, cancellationToken)
                 .ConfigureAwait(false);
             double similarity = BestSimilarity(embedding, positives);
+
+            // Ähnelt das Foto einem Gegenbeispiel mehr als jedem Beispiel, gehört es
+            // nicht dazu – unabhängig von den Schwellen. Das ist der eigentliche Zweck
+            // der Gegenbeispiele: Genau die Bilder auszuschließen, die dem Motiv nahe
+            // kommen, aber nicht gemeint sind (Urlaubsstrand gegen Strandhochzeit).
+            if (negatives.Count > 0 && BestSimilarity(embedding, negatives) >= similarity)
+            {
+                SortingLog.RejectedByCounterExample(_logger, photo.FileName);
+                return Evaluation.Rejected();
+            }
 
             if (similarity >= _options.UpperSimilarityThreshold)
             {
@@ -460,6 +476,9 @@ public sealed class PhotoSortingService : IPhotoSorter
 /// </summary>
 internal static partial class SortingLog
 {
+    [LoggerMessage(EventId = 3009, Level = LogLevel.Debug, Message = "{File} ähnelt einem Gegenbeispiel stärker als jedem Beispiel und wird nicht einsortiert.")]
+    public static partial void RejectedByCounterExample(ILogger logger, string file);
+
     [LoggerMessage(EventId = 3000, Level = LogLevel.Warning, Message = "Kategorie {Category} hat keine positiven Beispiele; keine Sortierung möglich.")]
     public static partial void NoExamples(ILogger logger, string category);
 

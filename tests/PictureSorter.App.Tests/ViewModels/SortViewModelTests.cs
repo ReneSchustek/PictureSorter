@@ -251,6 +251,76 @@ public sealed class SortViewModelTests
         Assert.InRange(source.LastMaxCount ?? int.MaxValue, 1, 100);
     }
 
+    [Fact]
+    public async Task LoadMoreExamples_AsksForTheNextBatch()
+    {
+        // Bei einem gemischten Ordner ist unter den ersten dreißig Bildern oft kaum
+        // eines, das zum gesuchten Thema passt. Ohne einen weiteren Schwung bliebe nur,
+        // den Ordner zu wechseln.
+        // Genug Bilder für zwei Schwünge: Ist der zweite leer, beginnt die Auswahl
+        // bewusst wieder von vorn – dann bliebe der Startpunkt bei null.
+        FakePhotoSource source = new([.. Enumerable.Range(0, 45).Select(index => new Photo
+        {
+            FullPath = Path.Combine(SourceFolder, $"bild-{index}.jpg"),
+            FileName = $"bild-{index}.jpg",
+        })]);
+        using SortViewModel sut = CreateSut(new FakePhotoSorter(CreateProposals(1)), photoSource: source);
+        sut.SourceFolder = SourceFolder;
+
+        await sut.LoadExamplesCommand.ExecuteAsync(parameter: null).ConfigureAwait(true);
+        int first = source.LastSkip;
+        await sut.LoadMoreExamplesCommand.ExecuteAsync(parameter: null).ConfigureAwait(true);
+
+        Assert.Equal(0, first);
+        Assert.True(source.LastSkip > 0, "Der zweite Schwung muss hinter dem ersten beginnen.");
+    }
+
+    [Fact]
+    public void AddExamples_TakesImagesAndIgnoresOtherFiles()
+    {
+        using SortViewModel sut = CreateSut(new FakePhotoSorter(CreateProposals(1)));
+        string folder = Path.Combine(Path.GetTempPath(), "PictureSorterTests", Guid.NewGuid().ToString("N"));
+        _ = Directory.CreateDirectory(folder);
+        try
+        {
+            string image = Path.Combine(folder, "eigenes.jpg");
+            string document = Path.Combine(folder, "notiz.txt");
+            File.WriteAllBytes(image, [1, 2, 3]);
+            File.WriteAllBytes(document, [1, 2, 3]);
+
+            sut.AddExamples([image, document]);
+
+            ExampleCandidateViewModel candidate = Assert.Single(sut.ExampleCandidates);
+            Assert.Equal(image, candidate.FilePath);
+        }
+        finally
+        {
+            Directory.Delete(folder, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void AddExamples_IgnoresTheSameFileTwice()
+    {
+        using SortViewModel sut = CreateSut(new FakePhotoSorter(CreateProposals(1)));
+        string folder = Path.Combine(Path.GetTempPath(), "PictureSorterTests", Guid.NewGuid().ToString("N"));
+        _ = Directory.CreateDirectory(folder);
+        try
+        {
+            string image = Path.Combine(folder, "eigenes.jpg");
+            File.WriteAllBytes(image, [1, 2, 3]);
+
+            sut.AddExamples([image]);
+            sut.AddExamples([image]);
+
+            _ = Assert.Single(sut.ExampleCandidates);
+        }
+        finally
+        {
+            Directory.Delete(folder, recursive: true);
+        }
+    }
+
     private static SortViewModel CreateSut(
         FakePhotoSorter sorter,
         FakeSortUndoService? undo = null,

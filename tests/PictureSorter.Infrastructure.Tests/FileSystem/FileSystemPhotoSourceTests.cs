@@ -28,13 +28,13 @@ public sealed class FileSystemPhotoSourceTests : IDisposable
         string missing = Path.Combine(_root, "gibt-es-nicht");
 
         _ = await Assert.ThrowsAsync<DirectoryNotFoundException>(
-            () => _source.GetPhotosAsync(missing, includeSubfolders: false, maxCount: null, CancellationToken.None));
+            () => _source.GetPhotosAsync(missing, includeSubfolders: false, skip: 0, maxCount: null, CancellationToken.None));
     }
 
     [Fact]
     public async Task GetPhotosAsync_EmptyFolder_ReturnsEmpty()
     {
-        IReadOnlyList<Photo> photos = await _source.GetPhotosAsync(_root, includeSubfolders: false, maxCount: null, CancellationToken.None);
+        IReadOnlyList<Photo> photos = await _source.GetPhotosAsync(_root, includeSubfolders: false, skip: 0, maxCount: null, CancellationToken.None);
 
         Assert.Empty(photos);
     }
@@ -45,7 +45,7 @@ public sealed class FileSystemPhotoSourceTests : IDisposable
         Write("notiz.txt");
         Write("video.mp4");
 
-        IReadOnlyList<Photo> photos = await _source.GetPhotosAsync(_root, includeSubfolders: false, maxCount: null, CancellationToken.None);
+        IReadOnlyList<Photo> photos = await _source.GetPhotosAsync(_root, includeSubfolders: false, skip: 0, maxCount: null, CancellationToken.None);
 
         Assert.Empty(photos);
     }
@@ -57,7 +57,7 @@ public sealed class FileSystemPhotoSourceTests : IDisposable
         Write("b.png");
         Write("c.txt");
 
-        IReadOnlyList<Photo> photos = await _source.GetPhotosAsync(_root, includeSubfolders: false, maxCount: null, CancellationToken.None);
+        IReadOnlyList<Photo> photos = await _source.GetPhotosAsync(_root, includeSubfolders: false, skip: 0, maxCount: null, CancellationToken.None);
 
         Assert.Equal(2, photos.Count);
         Assert.All(photos, photo => Assert.True(Path.GetExtension(photo.FileName) is ".jpg" or ".png"));
@@ -69,8 +69,8 @@ public sealed class FileSystemPhotoSourceTests : IDisposable
         Write("oben.jpg");
         Write(Path.Combine("Unterordner", "unten.jpg"));
 
-        IReadOnlyList<Photo> flat = await _source.GetPhotosAsync(_root, includeSubfolders: false, maxCount: null, CancellationToken.None);
-        IReadOnlyList<Photo> deep = await _source.GetPhotosAsync(_root, includeSubfolders: true, maxCount: null, CancellationToken.None);
+        IReadOnlyList<Photo> flat = await _source.GetPhotosAsync(_root, includeSubfolders: false, skip: 0, maxCount: null, CancellationToken.None);
+        IReadOnlyList<Photo> deep = await _source.GetPhotosAsync(_root, includeSubfolders: true, skip: 0, maxCount: null, CancellationToken.None);
 
         _ = Assert.Single(flat);
         Assert.Equal(2, deep.Count);
@@ -84,7 +84,7 @@ public sealed class FileSystemPhotoSourceTests : IDisposable
         await cts.CancelAsync();
 
         _ = await Assert.ThrowsAnyAsync<OperationCanceledException>(
-            () => _source.GetPhotosAsync(_root, includeSubfolders: false, maxCount: null, cts.Token));
+            () => _source.GetPhotosAsync(_root, includeSubfolders: false, skip: 0, maxCount: null, cts.Token));
     }
 
     [Fact]
@@ -100,7 +100,7 @@ public sealed class FileSystemPhotoSourceTests : IDisposable
         CountingMetadataReader reader = new();
         FileSystemPhotoSource source = new(reader, NullLogger<FileSystemPhotoSource>.Instance);
 
-        IReadOnlyList<Photo> photos = await source.GetPhotosAsync(_root, includeSubfolders: false, maxCount: 2, CancellationToken.None);
+        IReadOnlyList<Photo> photos = await source.GetPhotosAsync(_root, includeSubfolders: false, skip: 0, maxCount: 2, CancellationToken.None);
 
         Assert.Equal(2, photos.Count);
         Assert.Equal(2, reader.CallCount);
@@ -112,7 +112,7 @@ public sealed class FileSystemPhotoSourceTests : IDisposable
         Write("a.jpg");
         Write("b.jpg");
 
-        IReadOnlyList<Photo> photos = await _source.GetPhotosAsync(_root, includeSubfolders: false, maxCount: 10, CancellationToken.None);
+        IReadOnlyList<Photo> photos = await _source.GetPhotosAsync(_root, includeSubfolders: false, skip: 0, maxCount: 10, CancellationToken.None);
 
         Assert.Equal(2, photos.Count);
     }
@@ -121,7 +121,7 @@ public sealed class FileSystemPhotoSourceTests : IDisposable
     public async Task GetPhotosAsync_WithMaxCountZero_Throws()
     {
         _ = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(
-            () => _source.GetPhotosAsync(_root, includeSubfolders: false, maxCount: 0, CancellationToken.None));
+            () => _source.GetPhotosAsync(_root, includeSubfolders: false, skip: 0, maxCount: 0, CancellationToken.None));
     }
 
     // Nicht-asynchroner Helfer: synchrones Datei-Schreiben in einer async-Testmethode

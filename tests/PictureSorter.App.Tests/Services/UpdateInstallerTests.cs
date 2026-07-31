@@ -53,12 +53,73 @@ public sealed class UpdateInstallerTests : IDisposable
     }
 
     [Fact]
+    public void CanWriteTo_WritableFolder_IsTrue()
+    {
+        Assert.True(UpdateInstaller.CanWriteTo(_root));
+    }
+
+    [Fact]
+    public void CanWriteTo_MissingFolder_IsFalse()
+    {
+        // Steht der Programmordner nicht zur Verfügung, soll gar nicht erst ein
+        // hundert Megabyte großes Paket geladen werden.
+        Assert.False(UpdateInstaller.CanWriteTo(Path.Combine(_root, "gibt-es-nicht")));
+    }
+
+    [Fact]
+    public void ApplyStagedFiles_WhenItFails_NamesTheFileAndTheReason()
+    {
+        // Bisher endete jeder Fehlschlag als bloßes „false": Die Nutzerin sah nur, dass
+        // sich nichts geändert hatte, und im Protokoll stand nichts Verwertbares.
+        string source = CreateDirectory("staging", ("a.txt", "neu-a"), ("b.txt", "neu-b"));
+        string target = CreateDirectory("programm", ("a.txt", "alt-a"), ("b.txt", "alt-b"));
+
+        static void FailOnB(string from, string to)
+        {
+            if (Path.GetFileName(to) == "b.txt")
+            {
+                throw new IOException("Zugriff verweigert.");
+            }
+
+            File.Copy(from, to, overwrite: true);
+        }
+
+        UpdateInstaller.ApplyResult result = UpdateInstaller.ApplyStagedFiles(source, target, FailOnB);
+
+        Assert.False(result.Success);
+        Assert.Equal("b.txt", result.FailedFile);
+        Assert.Contains("verweigert", result.Reason, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void TakeOutcome_ReturnsWhatWasWritten_AndOnlyOnce()
+    {
+        // Der Vermerk überlebt den Neustart und meldet der Nutzerin, wie es ausging.
+        // Nur einmal: Sonst stünde die Meldung bei jedem weiteren Start erneut da.
+        UpdateInstaller.WriteOutcome(_root, new UpdateInstaller.ApplyResult(false, "b.txt", "Zugriff verweigert."));
+
+        UpdateInstaller.ApplyResult? first = UpdateInstaller.TakeOutcome(_root);
+        UpdateInstaller.ApplyResult? second = UpdateInstaller.TakeOutcome(_root);
+
+        Assert.NotNull(first);
+        Assert.False(first!.Success);
+        Assert.Equal("b.txt", first.FailedFile);
+        Assert.Null(second);
+    }
+
+    [Fact]
+    public void TakeOutcome_WithoutAnyUpdate_ReturnsNothing()
+    {
+        Assert.Null(UpdateInstaller.TakeOutcome(_root));
+    }
+
+    [Fact]
     public void ApplyStagedFiles_ReplacesTheInstalledFiles()
     {
         string source = CreateDirectory("staging", ("PictureSorter.exe", "neu"), ("daten.txt", "neu"));
         string target = CreateDirectory("programm", ("PictureSorter.exe", "alt"), ("daten.txt", "alt"));
 
-        Assert.True(UpdateInstaller.ApplyStagedFiles(source, target));
+        Assert.True(UpdateInstaller.ApplyStagedFiles(source, target).Success);
 
         Assert.Equal("neu", File.ReadAllText(Path.Combine(target, "PictureSorter.exe")));
         Assert.Equal("neu", File.ReadAllText(Path.Combine(target, "daten.txt")));
@@ -79,7 +140,7 @@ public sealed class UpdateInstallerTests : IDisposable
         // b.txt im Ziel offen halten – das Ersetzen muss daran scheitern.
         using (FileStream _ = File.Open(Path.Combine(target, "b.txt"), FileMode.Open, FileAccess.Read, FileShare.None))
         {
-            Assert.False(UpdateInstaller.ApplyStagedFiles(source, target));
+            Assert.False(UpdateInstaller.ApplyStagedFiles(source, target).Success);
         }
 
         Assert.Equal("alt-a", File.ReadAllText(Path.Combine(target, "a.txt")));
@@ -110,7 +171,7 @@ public sealed class UpdateInstallerTests : IDisposable
             File.Copy(from, to, overwrite: true);
         }
 
-        Assert.False(UpdateInstaller.ApplyStagedFiles(source, target, CopyButFailOnB));
+        Assert.False(UpdateInstaller.ApplyStagedFiles(source, target, CopyButFailOnB).Success);
 
         Assert.Equal("alt-a", File.ReadAllText(Path.Combine(target, "a.txt")));
         Assert.Equal("alt-b", File.ReadAllText(Path.Combine(target, "b.txt")));

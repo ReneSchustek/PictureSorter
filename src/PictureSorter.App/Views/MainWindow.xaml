@@ -128,6 +128,7 @@
                         Value="{Binding ProgressValue}"
                         Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}" />
                     <TextBlock
+                        x:Uid="MainWindow_AppVersionText"
                         Grid.Column="1"
                         VerticalAlignment="Center"
                         AutomationProperties.Name="Programmversion"

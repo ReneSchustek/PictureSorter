@@ -1,10 +1,16 @@
 using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using PictureSorter.App.Services;
 using PictureSorter.App.ViewModels;
+using Windows.ApplicationModel.DataTransfer;
+using Windows.Storage;
 
 namespace PictureSorter.App.Views;
 
@@ -19,6 +25,8 @@ internal sealed partial class SortPage : Page
 {
     private readonly OllamaSetupService _setupService;
     private readonly ThemeService _themeService;
+    private readonly ILocalizer _localizer;
+    private readonly ILogger<SortPage> _logger;
     private bool _initializing = true;
     private bool _previewOpen;
 
@@ -41,6 +49,8 @@ internal sealed partial class SortPage : Page
         ModelHint = App.Services.GetRequiredService<ModelHintViewModel>();
         _setupService = App.Services.GetRequiredService<OllamaSetupService>();
         _themeService = App.Services.GetRequiredService<ThemeService>();
+        _localizer = App.Services.GetRequiredService<ILocalizer>();
+        _logger = App.Services.GetRequiredService<ILogger<SortPage>>();
         InitializeComponent();
 
         // Seite (samt ViewModel) zwischenspeichern, damit ein laufender Vorgang
@@ -114,6 +124,47 @@ internal sealed partial class SortPage : Page
     }
 
     // Startet die geführte Ollama-Einrichtung in einem separaten Fenster.
+    // Hereinziehen aus dem Explorer. Ohne DragOver, das die Kopier-Absicht setzt, zeigt
+    // Windows das Verbotszeichen und lässt gar nicht erst fallen.
+    private void OnExamplesDragOver(object sender, DragEventArgs e)
+    {
+        if (e.DataView.Contains(StandardDataFormats.StorageItems))
+        {
+            e.AcceptedOperation = DataPackageOperation.Copy;
+            e.DragUIOverride.Caption = _localizer.Get("SortPage_DropCaption");
+            e.DragUIOverride.IsCaptionVisible = true;
+        }
+    }
+
+    [SuppressMessage(
+        "Design",
+        "CA1031:Do not catch general exception types",
+        Justification = "Letzter Fangblock eines async-void-Ereignishandlers: Eine entkommende Ausnahme beendet den Prozess. Sie wird protokolliert.")]
+    private async void OnExamplesDrop(object sender, DragEventArgs e)
+    {
+        if (!e.DataView.Contains(StandardDataFormats.StorageItems))
+        {
+            return;
+        }
+
+        // Der Vorgang muss angemeldet werden, bevor der erste await läuft – sonst gilt
+        // das Ziehen als beendet und die Daten sind nicht mehr abrufbar.
+        DragOperationDeferral deferral = e.GetDeferral();
+        try
+        {
+            IReadOnlyList<IStorageItem> items = await e.DataView.GetStorageItemsAsync();
+            ViewModel.AddExamples(items.OfType<StorageFile>().Select(file => file.Path));
+        }
+        catch (Exception ex)
+        {
+            SortPageLog.DropFailed(_logger, ex);
+        }
+        finally
+        {
+            deferral.Complete();
+        }
+    }
+
     private void OnSetupOllamaClick(object sender, RoutedEventArgs e)
     {
         try
@@ -126,4 +177,13 @@ internal sealed partial class SortPage : Page
             _ = ex;
         }
     }
+}
+
+/// <summary>
+/// Quellgenerierte Logmeldungen der Sortierseite.
+/// </summary>
+internal static partial class SortPageLog
+{
+    [LoggerMessage(EventId = 3430, Level = LogLevel.Warning, Message = "Hereingezogene Bilder konnten nicht übernommen werden.")]
+    public static partial void DropFailed(ILogger logger, Exception exception);
 }

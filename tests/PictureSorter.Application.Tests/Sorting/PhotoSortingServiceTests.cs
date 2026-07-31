@@ -389,6 +389,52 @@ public sealed class PhotoSortingServiceTests
         UpdatedAt = new DateTimeOffset(2026, 5, 1, 12, 0, 0, TimeSpan.Zero),
     };
 
+    [Fact]
+    public async Task CreateProposalsAsync_WhenCloserToACounterExample_DoesNotAssign()
+    {
+        // Die Gegenbeispiele wurden zwar erfasst und gespeichert, aber nie ausgewertet:
+        // Jede Markierung „passt nicht" blieb ohne Wirkung. Ein Foto, das einem
+        // Gegenbeispiel ähnlicher ist als jedem Beispiel, gehört nicht in die Gruppe.
+        Category category = CreateCategory();
+        category.AddExample(new CategoryExample
+        {
+            PhotoPath = @"C:\fotos\gegenbeispiel.jpg",
+            IsPositive = false,
+            Embedding = new ImageEmbedding([0.0f, 1.0f, 0.0f], "fake"),
+        });
+
+        FakeImageClassifier classifier = new(new VisionVerdict { Matches = true, Confidence = 1.0 });
+        PhotoSortingService service = CreateService(embedding: [0.0f, 1.0f, 0.0f], classifier: classifier);
+
+        IReadOnlyList<SortProposal> proposals = await service.CreateProposalsAsync(
+            SourceFolder, category, includeSubfolders: false, progress: null, CancellationToken.None);
+
+        Assert.Empty(proposals);
+        Assert.Equal(0, classifier.CallCount);
+    }
+
+    [Fact]
+    public async Task CreateProposalsAsync_WhenCloserToAnExample_StillAssigns()
+    {
+        // Gegenprobe: Ein Gegenbeispiel darf nicht pauschal blockieren, sondern nur,
+        // wenn das Foto ihm tatsächlich näher steht.
+        Category category = CreateCategory();
+        category.AddExample(new CategoryExample
+        {
+            PhotoPath = @"C:\fotos\gegenbeispiel.jpg",
+            IsPositive = false,
+            Embedding = new ImageEmbedding([0.0f, 1.0f, 0.0f], "fake"),
+        });
+
+        FakeImageClassifier classifier = new(new VisionVerdict { Matches = false, Confidence = 0.0 });
+        PhotoSortingService service = CreateService(embedding: [1.0f, 0.0f, 0.0f], classifier: classifier);
+
+        IReadOnlyList<SortProposal> proposals = await service.CreateProposalsAsync(
+            SourceFolder, category, includeSubfolders: false, progress: null, CancellationToken.None);
+
+        _ = Assert.Single(proposals);
+    }
+
     private static Category CreateCategory()
     {
         Category category = new("Familie", "Bilder meiner Familie", CategoryKind.Topic);
