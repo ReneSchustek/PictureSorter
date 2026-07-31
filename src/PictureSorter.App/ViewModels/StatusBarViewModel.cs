@@ -69,6 +69,13 @@ internal sealed partial class StatusBarViewModel : ObservableObject
     public partial double ProgressValue { get; set; }
 
     /// <summary>
+    /// Die laufende Programmversion, dauerhaft im Fußbereich sichtbar. Ohne sie lässt
+    /// sich von außen nicht feststellen, welche Fassung gerade läuft – bei einer Meldung
+    /// wie „funktioniert nicht" ist das die erste Frage.
+    /// </summary>
+    public string AppVersion { get; }
+
+    /// <summary>
     /// Initialisiert die Statusleiste im Ruhezustand.
     /// </summary>
     /// <param name="localizer">Die Textquelle.</param>
@@ -79,6 +86,7 @@ internal sealed partial class StatusBarViewModel : ObservableObject
         Message = localizer.Get("StatusBar_Ready");
         Severity = StatusSeverity.Informational;
         IsIndeterminate = true;
+        AppVersion = localizer.Format("StatusBar_Version", UpdateService.CurrentVersion);
     }
 
     /// <summary>
@@ -118,6 +126,19 @@ internal sealed partial class StatusBarViewModel : ObservableObject
         Message = message;
         IsIndeterminate = false;
         ProgressValue = Math.Clamp(percent, 0, 100);
+    }
+
+    /// <summary>
+    /// Meldet einen Abschnitt ohne bezifferbaren Anteil (durchlaufender Balken). Für
+    /// Schritte, deren Dauer sich nicht vorhersagen lässt – der Balken muss trotzdem
+    /// weiterlaufen, sonst wirkt der Vorgang abgebrochen.
+    /// </summary>
+    /// <param name="message">Der Statustext.</param>
+    public void ReportIndeterminate(string message)
+    {
+        Message = message;
+        IsIndeterminate = true;
+        ProgressValue = 0;
     }
 
     /// <summary>

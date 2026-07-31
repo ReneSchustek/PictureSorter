@@ -223,11 +223,29 @@ public partial class App : Microsoft.UI.Xaml.Application
         Services.GetRequiredService<UpdateViewModel>().SetAvailable(info.LatestVersion);
         AppLog.UpdateAvailable(_logger!, info.LatestVersion);
 
-        if (themeService.AutoInstallUpdates
-            && await updateService.DownloadAndLaunchUpdaterAsync(CancellationToken.None).ConfigureAwait(true))
+        if (!themeService.AutoInstallUpdates)
         {
-            _window?.Close();
+            return;
         }
+
+        // Auch die automatische Aktualisierung läuft sichtbar ab: Sie beginnt unmittelbar
+        // nach dem Start, lädt rund hundert Megabyte und beendet die Anwendung danach.
+        // Ohne Anzeige schlösse sich das Fenster für die Nutzerin ohne jeden Anlass.
+        StatusBarViewModel status = Services.GetRequiredService<StatusBarViewModel>();
+        ILocalizer localizer = Services.GetRequiredService<ILocalizer>();
+        status.Begin(localizer.Get("Update_Downloading"), static () => { });
+        Progress<UpdateProgress> progress = new(update => status.ReportProgress(
+            localizer.Format("Update_DownloadingPercent", (int)update.Percent),
+            update.Percent));
+
+        if (await updateService.DownloadAndLaunchUpdaterAsync(progress, CancellationToken.None).ConfigureAwait(true))
+        {
+            status.Finish(localizer.Get("Update_Restarting"), StatusSeverity.Success);
+            _window?.Close();
+            return;
+        }
+
+        status.Finish(localizer.Get("Update_Failed"), StatusSeverity.Error);
     }
 
     // Prüft beim Start, ob Ollama erreichbar ist und die Modelle vorhanden sind.
