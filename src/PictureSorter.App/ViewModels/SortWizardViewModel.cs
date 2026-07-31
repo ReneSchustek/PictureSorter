@@ -7,7 +7,7 @@ using PictureSorter.App.Services;
 namespace PictureSorter.App.ViewModels;
 
 /// <summary>
-/// Steuert Navigation und Darstellung des fünfstufigen Sortier-Assistenten:
+/// Steuert Navigation und Darstellung des sechsstufigen Sortier-Assistenten:
 /// Schrittzustand, anklickbare Schrittleiste und genau ein Aktionsknopf je Schritt.
 ///
 /// Die fachlichen Aktionen (Beispiele lernen, analysieren, sortieren) bleiben im
@@ -19,7 +19,7 @@ namespace PictureSorter.App.ViewModels;
 internal sealed partial class SortWizardViewModel : ObservableObject
 {
     /// <summary>Anzahl der Schritte des Assistenten.</summary>
-    public const int StepCount = 5;
+    public const int StepCount = 6;
 
     private readonly Func<bool> _isInteractive;
     private readonly Func<int, bool> _canRunStep;
@@ -79,7 +79,10 @@ internal sealed partial class SortWizardViewModel : ObservableObject
         IsGuided = true;
     }
 
-    // Die fünf Schritte: 0 Ordner, 1 Kategorie, 2 Beispiele, 3 Analyse, 4 Sortieren.
+    // Die sechs Schritte: 0 Ordner, 1 Kategorie, 2 passende Bilder, 3 nicht passende
+    // Bilder, 4 Analyse, 5 Sortieren. Beide Seiten der Beispielauswahl sind bewusst
+    // getrennt: In einer gemeinsamen Liste teilten sie sich eine Obergrenze, und jedes
+    // Bild musste einzeln als zugehörig oder nicht zugehörig markiert werden.
 
     /// <summary><see langword="true"/>, wenn Schritt 1 (Ordner) aktiv ist.</summary>
     public bool IsStep1 => CurrentStep == 0;
@@ -87,23 +90,27 @@ internal sealed partial class SortWizardViewModel : ObservableObject
     /// <summary><see langword="true"/>, wenn Schritt 2 (Kategorie) aktiv ist.</summary>
     public bool IsStep2 => CurrentStep == 1;
 
-    /// <summary><see langword="true"/>, wenn Schritt 3 (Beispiele) aktiv ist.</summary>
+    /// <summary><see langword="true"/>, wenn Schritt 3 (passende Bilder) aktiv ist.</summary>
     public bool IsStep3 => CurrentStep == 2;
 
-    /// <summary><see langword="true"/>, wenn Schritt 4 (Analyse) aktiv ist.</summary>
+    /// <summary><see langword="true"/>, wenn Schritt 4 (nicht passende Bilder) aktiv ist.</summary>
     public bool IsStep4 => CurrentStep == 3;
 
-    /// <summary><see langword="true"/>, wenn Schritt 5 (Sortieren) aktiv ist.</summary>
+    /// <summary><see langword="true"/>, wenn Schritt 5 (Analyse) aktiv ist.</summary>
     public bool IsStep5 => CurrentStep == 4;
 
-    /// <summary>Überschrift des aktuellen Schritts, z. B. „Schritt 2 von 5: …“.</summary>
+    /// <summary><see langword="true"/>, wenn Schritt 6 (Sortieren) aktiv ist.</summary>
+    public bool IsStep6 => CurrentStep == 5;
+
+    /// <summary>Überschrift des aktuellen Schritts, z. B. „Schritt 2 von 6: …“.</summary>
     public string StepTitle => CurrentStep switch
     {
         0 => _localizer.Get("Wizard_Step1Title"),
         1 => _localizer.Get("Wizard_Step2Title"),
         2 => _localizer.Get("Wizard_Step3Title"),
         3 => _localizer.Get("Wizard_Step4Title"),
-        _ => _localizer.Get("Wizard_Step5Title"),
+        4 => _localizer.Get("Wizard_Step5Title"),
+        _ => _localizer.Get("Wizard_Step6Title"),
     };
 
     /// <summary>
@@ -114,8 +121,9 @@ internal sealed partial class SortWizardViewModel : ObservableObject
     {
         0 => _localizer.Get("Wizard_ActionNext"),
         1 => _localizer.Get("Wizard_ActionNext"),
-        2 => _localizer.Get("Wizard_ActionLearn"),
-        3 => _localizer.Get("Wizard_ActionAnalyze"),
+        2 => _localizer.Get("Wizard_ActionNext"),
+        3 => _localizer.Get("Wizard_ActionLearn"),
+        4 => _localizer.Get("Wizard_ActionAnalyze"),
         _ => _localizer.Get("Wizard_ActionSort"),
     };
 
@@ -136,6 +144,9 @@ internal sealed partial class SortWizardViewModel : ObservableObject
 
     /// <summary><see langword="true"/>, wenn die Karte für Schritt 5 sichtbar ist.</summary>
     public bool ShowStep5 => !IsGuided || IsStep5;
+
+    /// <summary><see langword="true"/>, wenn die Karte für Schritt 6 sichtbar ist.</summary>
+    public bool ShowStep6 => !IsGuided || IsStep6;
 
     /// <summary>
     /// <see langword="true"/> im Standard-Modus. Dann tragen die Karten ihre eigenen
@@ -229,11 +240,13 @@ internal sealed partial class SortWizardViewModel : ObservableObject
         OnPropertyChanged(nameof(IsStep3));
         OnPropertyChanged(nameof(IsStep4));
         OnPropertyChanged(nameof(IsStep5));
+        OnPropertyChanged(nameof(IsStep6));
         OnPropertyChanged(nameof(ShowStep1));
         OnPropertyChanged(nameof(ShowStep2));
         OnPropertyChanged(nameof(ShowStep3));
         OnPropertyChanged(nameof(ShowStep4));
         OnPropertyChanged(nameof(ShowStep5));
+        OnPropertyChanged(nameof(ShowStep6));
         OnPropertyChanged(nameof(StepTitle));
         OnPropertyChanged(nameof(PrimaryActionLabel));
         PrimaryActionCommand.NotifyCanExecuteChanged();
@@ -248,6 +261,7 @@ internal sealed partial class SortWizardViewModel : ObservableObject
         OnPropertyChanged(nameof(ShowStep3));
         OnPropertyChanged(nameof(ShowStep4));
         OnPropertyChanged(nameof(ShowStep5));
+        OnPropertyChanged(nameof(ShowStep6));
         OnPropertyChanged(nameof(ShowStandardActions));
     }
 }

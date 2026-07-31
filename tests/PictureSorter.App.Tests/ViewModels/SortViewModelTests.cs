@@ -145,15 +145,14 @@ public sealed class SortViewModelTests
         Assert.Equal("2 von 3 ausgewählt", sut.SelectionSummary);
     }
 
-    // Durchläuft den echten Ablauf bis zur Vorschau: Beispiele laden, eines als
-    // passend markieren, Profil lernen, analysieren.
+    // Durchläuft den echten Ablauf bis zur Vorschau: passende Bilder vorschlagen
+    // lassen, Profil lernen, analysieren.
     private static async Task AnalyzeAsync(SortViewModel sut)
     {
         sut.SourceFolder = SourceFolder;
         sut.CategoryName = "Familie";
 
-        await sut.LoadExamplesCommand.ExecuteAsync(parameter: null).ConfigureAwait(false);
-        sut.ExampleCandidates[0].IsPositive = true;
+        await sut.SuggestPositivesCommand.ExecuteAsync(parameter: null).ConfigureAwait(false);
 
         await sut.LearnCommand.ExecuteAsync(parameter: null).ConfigureAwait(false);
         await sut.AnalyzeCommand.ExecuteAsync(parameter: null).ConfigureAwait(false);
@@ -235,30 +234,62 @@ public sealed class SortViewModelTests
     }
 
     [Fact]
-    public async Task LoadExamples_AsksOnlyForAsManyPhotosAsItShows()
+    public async Task SuggestPositives_AsksOnlyForAsManyPhotosAsThereIsRoomFor()
     {
         // Ohne Höchstzahl las die Auswahl den gesamten Ordner ein und schnitt erst danach
         // ab. Weil für jedes Foto die Datei geöffnet wird, lud sie damit bei einem
-        // Cloud-Ordner (iCloud-Fotos unter Windows) die ganze Mediathek herunter, um
-        // dreißig Bilder zu zeigen.
+        // Cloud-Ordner (iCloud-Fotos unter Windows) die ganze Mediathek herunter.
         FakePhotoSource source = new([]);
         using SortViewModel sut = CreateSut(new FakePhotoSorter(CreateProposals(1)), photoSource: source);
         sut.SourceFolder = SourceFolder;
 
-        await sut.LoadExamplesCommand.ExecuteAsync(parameter: null).ConfigureAwait(true);
+        await sut.SuggestPositivesCommand.ExecuteAsync(parameter: null).ConfigureAwait(true);
 
         // Ohne Höchstzahl (null) fiele der Wert auf int.MaxValue und der Test durch.
-        Assert.InRange(source.LastMaxCount ?? int.MaxValue, 1, 100);
+        Assert.Equal(sut.PositiveExamples.Capacity, source.LastMaxCount ?? int.MaxValue);
     }
 
     [Fact]
-    public async Task LoadMoreExamples_AsksForTheNextBatch()
+    public async Task Examples_StartEmptyOnBothSides()
     {
-        // Bei einem gemischten Ordner ist unter den ersten dreißig Bildern oft kaum
-        // eines, das zum gesuchten Thema passt. Ohne einen weiteren Schwung bliebe nur,
-        // den Ordner zu wechseln.
-        // Genug Bilder für zwei Schwünge: Ist der zweite leer, beginnt die Auswahl
-        // bewusst wieder von vorn – dann bliebe der Startpunkt bei null.
+        // Vorher standen dreißig zufällige Bilder des Ordners bereits drin, von denen zu
+        // einem bestimmten Thema oft kaum eines passte – der Platz war trotzdem belegt.
+        using SortViewModel sut = CreateSut(new FakePhotoSorter(CreateProposals(1)));
+        sut.SourceFolder = SourceFolder;
+
+        sut.Wizard.GoToStep(0);
+
+        Assert.True(sut.PositiveExamples.IsEmpty);
+        Assert.True(sut.NegativeExamples.IsEmpty);
+        await Task.CompletedTask.ConfigureAwait(true);
+    }
+
+    [Fact]
+    public async Task SuggestNegatives_DoesNotOfferImagesAlreadyChosenAsMatching()
+    {
+        // Dasselbe Foto darf nicht gleichzeitig als passend und als Gegenbeispiel
+        // dastehen – das Profil widerspräche sich selbst.
+        FakePhotoSource source = new([.. Enumerable.Range(0, 3).Select(index => new Photo
+        {
+            FullPath = Path.Combine(SourceFolder, $"bild-{index}.jpg"),
+            FileName = $"bild-{index}.jpg",
+        })]);
+        using SortViewModel sut = CreateSut(new FakePhotoSorter(CreateProposals(1)), photoSource: source);
+        sut.SourceFolder = SourceFolder;
+
+        await sut.SuggestPositivesCommand.ExecuteAsync(parameter: null).ConfigureAwait(true);
+        await sut.SuggestNegativesCommand.ExecuteAsync(parameter: null).ConfigureAwait(true);
+
+        string[] passend = [.. sut.PositiveExamples.Items.Select(item => item.FilePath)];
+        Assert.DoesNotContain(sut.NegativeExamples.Items, item => passend.Contains(item.FilePath));
+    }
+
+    [Fact]
+    public async Task SuggestPositives_TwiceInARow_AsksFurtherAlongTheFolder()
+    {
+        // Wer ein bestimmtes Thema sucht, findet unter den ersten Bildern eines
+        // gemischten Ordners oft kaum eines, das passt. Ohne weiteren Schwung bliebe
+        // nur, den Ordner zu wechseln.
         FakePhotoSource source = new([.. Enumerable.Range(0, 45).Select(index => new Photo
         {
             FullPath = Path.Combine(SourceFolder, $"bild-{index}.jpg"),
@@ -267,16 +298,17 @@ public sealed class SortViewModelTests
         using SortViewModel sut = CreateSut(new FakePhotoSorter(CreateProposals(1)), photoSource: source);
         sut.SourceFolder = SourceFolder;
 
-        await sut.LoadExamplesCommand.ExecuteAsync(parameter: null).ConfigureAwait(true);
-        int first = source.LastSkip;
-        await sut.LoadMoreExamplesCommand.ExecuteAsync(parameter: null).ConfigureAwait(true);
+        await sut.SuggestPositivesCommand.ExecuteAsync(parameter: null).ConfigureAwait(true);
+        int erster = source.LastSkip;
+        sut.PositiveExamples.Clear();
+        await sut.SuggestPositivesCommand.ExecuteAsync(parameter: null).ConfigureAwait(true);
 
-        Assert.Equal(0, first);
+        Assert.Equal(0, erster);
         Assert.True(source.LastSkip > 0, "Der zweite Schwung muss hinter dem ersten beginnen.");
     }
 
     [Fact]
-    public void AddExamples_TakesImagesAndIgnoresOtherFiles()
+    public void AddDroppedImages_TakesImagesAndIgnoresOtherFiles()
     {
         using SortViewModel sut = CreateSut(new FakePhotoSorter(CreateProposals(1)));
         string folder = Path.Combine(Path.GetTempPath(), "PictureSorterTests", Guid.NewGuid().ToString("N"));
@@ -288,9 +320,9 @@ public sealed class SortViewModelTests
             File.WriteAllBytes(image, [1, 2, 3]);
             File.WriteAllBytes(document, [1, 2, 3]);
 
-            sut.AddExamples([image, document]);
+            sut.AddDroppedImages(isPositive: true, [image, document]);
 
-            ExampleCandidateViewModel candidate = Assert.Single(sut.ExampleCandidates);
+            ExampleCandidateViewModel candidate = Assert.Single(sut.PositiveExamples.Items);
             Assert.Equal(image, candidate.FilePath);
         }
         finally
@@ -300,7 +332,37 @@ public sealed class SortViewModelTests
     }
 
     [Fact]
-    public void AddExamples_IgnoresTheSameFileTwice()
+    public void AddDroppedImages_RespectsTheCapacityOfTheSide()
+    {
+        // Ohne diese Grenze erfährt der Nutzer erst beim Anlernen, dass es zu viele
+        // Bilder waren – dort läuft je Bild ein vollständiger Aufruf der Bilderkennung.
+        using SortViewModel sut = CreateSut(new FakePhotoSorter(CreateProposals(1)));
+        string folder = Path.Combine(Path.GetTempPath(), "PictureSorterTests", Guid.NewGuid().ToString("N"));
+        _ = Directory.CreateDirectory(folder);
+        try
+        {
+            int zuViele = sut.PositiveExamples.Capacity + 5;
+            List<string> bilder = [];
+            for (int index = 0; index < zuViele; index++)
+            {
+                string pfad = Path.Combine(folder, $"bild-{index}.jpg");
+                File.WriteAllBytes(pfad, [1, 2, 3]);
+                bilder.Add(pfad);
+            }
+
+            sut.AddDroppedImages(isPositive: true, bilder);
+
+            Assert.Equal(sut.PositiveExamples.Capacity, sut.PositiveExamples.Items.Count);
+            Assert.True(sut.PositiveExamples.IsFull);
+        }
+        finally
+        {
+            Directory.Delete(folder, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void AddDroppedImages_IgnoresTheSameFileTwice()
     {
         using SortViewModel sut = CreateSut(new FakePhotoSorter(CreateProposals(1)));
         string folder = Path.Combine(Path.GetTempPath(), "PictureSorterTests", Guid.NewGuid().ToString("N"));
@@ -310,10 +372,32 @@ public sealed class SortViewModelTests
             string image = Path.Combine(folder, "eigenes.jpg");
             File.WriteAllBytes(image, [1, 2, 3]);
 
-            sut.AddExamples([image]);
-            sut.AddExamples([image]);
+            sut.AddDroppedImages(isPositive: true, [image]);
+            sut.AddDroppedImages(isPositive: true, [image]);
 
-            _ = Assert.Single(sut.ExampleCandidates);
+            _ = Assert.Single(sut.PositiveExamples.Items);
+        }
+        finally
+        {
+            Directory.Delete(folder, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void AddDroppedImages_OnTheNegativeSide_KeepsBothSidesApart()
+    {
+        using SortViewModel sut = CreateSut(new FakePhotoSorter(CreateProposals(1)));
+        string folder = Path.Combine(Path.GetTempPath(), "PictureSorterTests", Guid.NewGuid().ToString("N"));
+        _ = Directory.CreateDirectory(folder);
+        try
+        {
+            string image = Path.Combine(folder, "gegenbeispiel.jpg");
+            File.WriteAllBytes(image, [1, 2, 3]);
+
+            sut.AddDroppedImages(isPositive: false, [image]);
+
+            _ = Assert.Single(sut.NegativeExamples.Items);
+            Assert.True(sut.PositiveExamples.IsEmpty);
         }
         finally
         {
