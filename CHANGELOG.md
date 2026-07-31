@@ -4,6 +4,25 @@ Alle nennenswerten Änderungen an diesem Projekt werden hier dokumentiert.
 Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/),
 die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
+## [Unveröffentlicht]
+
+### Hinzugefügt
+
+- **Die laufende Version steht jetzt dauerhaft im Fußbereich.** Bei einer Rückfrage
+  war bisher nicht zu erkennen, welche Fassung gerade läuft.
+
+### Behoben
+
+- **„Jetzt aktualisieren" sah aus, als bewirke es nichts.** Die neue Fassung ist rund
+  hundert Megabyte groß; während sie geladen wurde, blieb der Bildschirm unverändert.
+  Jetzt zeigt der Fußbereich einen Balken mit Prozentangabe und benennt jeden Schritt
+  — Laden, Echtheitsprüfung, Entpacken, Neustart. Abbrechen ist über „Stopp" möglich,
+  und ein Fehlschlag wird gemeldet, statt still zu enden. Das gilt ebenso für die
+  Aktualisierung über die Einstellungen und für die automatische beim Programmstart.
+- **Beim Laden der Beispiele fehlte der Fortschrittsbalken.** Angezeigt wurde nur ein
+  Text, der bei einem großen Ordner minutenlang unverändert stehenblieb und nicht von
+  einem Absturz zu unterscheiden war. Der Vorgang lässt sich jetzt auch abbrechen.
+
 ## [1.4.3] - 2026-07-31
 
 ### Behoben

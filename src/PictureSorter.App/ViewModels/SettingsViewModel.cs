@@ -174,8 +174,12 @@ internal sealed partial class SettingsViewModel : ObservableObject
         UpdateSeverity = StatusSeverity.Informational;
         UpdateStatusText = _localizer.Get("Update_Preparing");
 
+        // Der Download umfasst rund hundert Megabyte. Ohne laufende Prozentangabe wirkt
+        // die Seite über Minuten hinweg, als sei nichts geschehen.
+        Progress<UpdateProgress> progress = new(ReportInstallProgress);
+
         bool started = await _updateService
-            .DownloadAndLaunchUpdaterAsync(CancellationToken.None)
+            .DownloadAndLaunchUpdaterAsync(progress, CancellationToken.None)
             .ConfigureAwait(true);
 
         if (started)
@@ -186,6 +190,19 @@ internal sealed partial class SettingsViewModel : ObservableObject
 
         UpdateSeverity = StatusSeverity.Error;
         UpdateStatusText = _localizer.Get("Update_Failed");
+    }
+
+    // Übersetzt den Zwischenstand in einen Text. Nur der Download kennt einen echten
+    // Anteil; die übrigen Abschnitte dauern kurz und werden nur benannt.
+    private void ReportInstallProgress(UpdateProgress progress)
+    {
+        UpdateStatusText = progress.Stage switch
+        {
+            UpdateStage.Downloading => _localizer.Format("Update_DownloadingPercent", (int)progress.Percent),
+            UpdateStage.Verifying => _localizer.Get("Update_Verifying"),
+            UpdateStage.Extracting => _localizer.Get("Update_Extracting"),
+            _ => _localizer.Get("Update_Starting"),
+        };
     }
 
     partial void OnSearchTextChanged(string value) => ApplyFilter();

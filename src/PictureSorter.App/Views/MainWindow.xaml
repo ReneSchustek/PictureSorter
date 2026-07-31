@@ -114,12 +114,27 @@
                     Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}" />
             </InfoBar.ActionButton>
             <InfoBar.Content>
-                <ProgressBar
-                    Margin="0,4,0,12"
-                    IsIndeterminate="{Binding IsIndeterminate}"
-                    Maximum="100"
-                    Value="{Binding ProgressValue}"
-                    Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}" />
+                <!-- Fortschritt links, laufende Version rechts. Die Version steht
+                     dauerhaft da, der Balken nur bei laufender Arbeit. -->
+                <Grid Margin="0,4,0,12" ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <ProgressBar
+                        VerticalAlignment="Center"
+                        IsIndeterminate="{Binding IsIndeterminate}"
+                        Maximum="100"
+                        Value="{Binding ProgressValue}"
+                        Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    <TextBlock
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        AutomationProperties.Name="Programmversion"
+                        Opacity="0.7"
+                        Style="{ThemeResource CaptionTextBlockStyle}"
+                        Text="{Binding AppVersion}" />
+                </Grid>
             </InfoBar.Content>
         </InfoBar>
     </Grid>

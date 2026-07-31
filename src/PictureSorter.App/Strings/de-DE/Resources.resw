@@ -631,8 +631,34 @@
   <data name="Update_Preparing" xml:space="preserve">
     <value>Aktualisierung wird vorbereitet…</value>
   </data>
-  <data name="Update_Failed" xml:space="preserve">
-    <value>Aktualisierung nicht möglich. Bitte später erneut versuchen.</value>
+  <data name="Update_Downloading" xml:space="preserve">
+    <value>Die neue Fassung wird geladen…</value>
+  </data>
+  <data name="Update_DownloadingPercent" xml:space="preserve">
+    <value>Die neue Fassung wird geladen… {0} %</value>
+  </data>
+  <data name="Update_Verifying" xml:space="preserve">
+    <value>Die Echtheit der neuen Fassung wird geprüft…</value>
+  </data>
+  <data name="Update_Extracting" xml:space="preserve">
+    <value>Die neue Fassung wird entpackt…</value>
+  </data>
+  <data name="Update_Starting" xml:space="preserve">
+    <value>Die Aktualisierung wird gestartet…</value>
+  </data>
+  <data name="Update_Restarting" xml:space="preserve">
+    <value>Die Aktualisierung läuft. PictureSorter startet gleich neu.</value>
+  </data>
+  <data name="Update_Canceled" xml:space="preserve">
+    <value>Die Aktualisierung wurde abgebrochen.</value>
+  </data>
+  <data name="StatusBar_Version" xml:space="preserve">
+    <value>Version {0}</value>
+  </data>
+  <data name="Sort_LoadExamplesCanceled" xml:space="preserve">
+    <value>Das Laden der Beispiele wurde abgebrochen.</value>
+  </data>
+  <data name="Update_Failed" xml:space="preserve">    <value>Aktualisierung nicht möglich. Bitte später erneut versuchen.</value>
   </data>
   <data name="About_LogEmpty" xml:space="preserve">
     <value>Noch keine Protokolleinträge vorhanden.</value>

@@ -374,7 +374,11 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     [RelayCommand(CanExecute = nameof(CanLoadExamples))]
     private async Task LoadExamplesAsync()
     {
-        _status.Report(_localizer.Get("Sort_LoadingExamples"));
+        // Begin statt Report: Nur Begin schaltet den Fortschrittsbalken ein. Mit bloßem
+        // Text sah das Laden aus einem großen (oder aus der Cloud geholten) Ordner aus,
+        // als sei die Anwendung stehengeblieben.
+        using CancellationTokenSource cancellation = new();
+        _status.Begin(_localizer.Get("Sort_LoadingExamples"), cancellation.Cancel);
         try
         {
             // Nur so viele Bilder einlesen, wie Schritt 3 überhaupt anzeigt. Vorher wurde
@@ -382,7 +386,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
             // Ordner, dessen Dateien erst aus der Cloud geholt werden (iCloud-Fotos unter
             // Windows), lud die Auswahl von dreißig Beispielen so die ganze Mediathek.
             IReadOnlyList<Photo> photos = await _photoSource
-                .GetPhotosAsync(SourceFolder, IncludeSubfolders, ExampleLimit, CancellationToken.None)
+                .GetPhotosAsync(SourceFolder, IncludeSubfolders, ExampleLimit, cancellation.Token)
                 .ConfigureAwait(true);
 
             ClearCandidates();
@@ -397,22 +401,26 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
             Wizard.NotifyStateChanged();
             if (ExampleCandidates.Count == 0)
             {
-                _status.Report(_localizer.Get("Sort_NoImagesInFolder"), StatusSeverity.Warning);
+                _status.Finish(_localizer.Get("Sort_NoImagesInFolder"), StatusSeverity.Warning);
             }
             else
             {
-                _status.Report(_localizer.Format("Sort_ExamplesLoaded", ExampleCandidates.Count));
+                _status.Finish(_localizer.Format("Sort_ExamplesLoaded", ExampleCandidates.Count), StatusSeverity.Success);
             }
+        }
+        catch (OperationCanceledException)
+        {
+            _status.Finish(_localizer.Get("Sort_LoadExamplesCanceled"), StatusSeverity.Warning);
         }
         catch (DirectoryNotFoundException ex)
         {
             SortViewModelLog.LoadExamplesFailed(_logger, ex);
-            _status.Report(_localizer.Get("Sort_FolderNotFound"), StatusSeverity.Error);
+            _status.Finish(_localizer.Get("Sort_FolderNotFound"), StatusSeverity.Error);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             SortViewModelLog.LoadExamplesFailed(_logger, ex);
-            _status.Report(_localizer.Get("Sort_FolderUnreadable"), StatusSeverity.Error);
+            _status.Finish(_localizer.Get("Sort_FolderUnreadable"), StatusSeverity.Error);
         }
     }
 

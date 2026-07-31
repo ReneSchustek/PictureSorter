@@ -102,9 +102,12 @@ internal sealed class UpdateService : IUpdateCoordinator
     /// startet die neue Fassung im Helfer-Modus. Nach Erfolg muss der Aufrufer die
     /// Anwendung beenden – erst dann sind ihre Dateien nicht mehr gesperrt.
     /// </summary>
+    /// <param name="progress">Nimmt die Zwischenstände entgegen (für die Statusanzeige).</param>
     /// <param name="cancellationToken">Token zum Abbrechen des Vorgangs.</param>
     /// <returns><see langword="true"/>, wenn der Helfer gestartet wurde.</returns>
-    public async Task<bool> DownloadAndLaunchUpdaterAsync(CancellationToken cancellationToken)
+    public async Task<bool> DownloadAndLaunchUpdaterAsync(
+        IProgress<UpdateProgress>? progress,
+        CancellationToken cancellationToken)
     {
         // Ohne Signatur wird gar nicht erst geladen. Das ist die Grundregel der
         // Update-Kette: kein Beleg, kein Einspielen (fail-closed).
@@ -125,11 +128,15 @@ internal sealed class UpdateService : IUpdateCoordinator
         {
             _ = Directory.CreateDirectory(workingDirectory);
 
+            // Vor dem ersten Byte melden: Der Nutzer soll sofort sehen, dass sein Klick
+            // etwas ausgelöst hat, nicht erst wenn die erste Antwort da ist.
+            progress?.Report(new UpdateProgress(UpdateStage.Downloading, 0));
+
             using (HttpClient client = _httpClientFactory.CreateClient(DownloadClientName))
             {
                 client.Timeout = DownloadTimeout;
-                if (!await DownloadToAsync(client, packageUrl, packagePath, cancellationToken).ConfigureAwait(true)
-                    || !await DownloadToAsync(client, signatureUrl, signaturePath, cancellationToken).ConfigureAwait(true))
+                if (!await DownloadToAsync(client, packageUrl, packagePath, progress, cancellationToken).ConfigureAwait(true)
+                    || !await DownloadToAsync(client, signatureUrl, signaturePath, progress: null, cancellationToken).ConfigureAwait(true))
                 {
                     TryCleanUp(workingDirectory);
                     return false;
@@ -140,6 +147,7 @@ internal sealed class UpdateService : IUpdateCoordinator
             // Release-Kanal übernimmt, kommt hier nicht vorbei – ohne den privaten
             // Schlüssel entsteht keine gültige Signatur. Geprüft wird, bevor
             // irgendetwas entpackt oder gestartet wird.
+            progress?.Report(new UpdateProgress(UpdateStage.Verifying, 100));
             byte[] signature = await File.ReadAllBytesAsync(signaturePath, cancellationToken).ConfigureAwait(true);
             if (!ReleaseSignatureVerifier.IsAuthentic(packagePath, signature))
             {
@@ -148,6 +156,7 @@ internal sealed class UpdateService : IUpdateCoordinator
                 return false;
             }
 
+            progress?.Report(new UpdateProgress(UpdateStage.Extracting, 100));
             UpdateInstaller.Extract(packagePath, stagingDirectory);
             string stagedExecutable = Path.Combine(stagingDirectory, UpdateInstaller.ExecutableName);
             if (!File.Exists(stagedExecutable))
@@ -165,6 +174,7 @@ internal sealed class UpdateService : IUpdateCoordinator
             string installationDirectory = AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar);
             UpdateInstaller.WritePendingNote(_dataDirectory, stagingDirectory, installationDirectory);
 
+            progress?.Report(new UpdateProgress(UpdateStage.Starting, 100));
             UpdateApplyArgs apply = new(
                 Environment.ProcessId,
                 stagingDirectory,
@@ -203,7 +213,12 @@ internal sealed class UpdateService : IUpdateCoordinator
     // protokolliert), wenn ein Ziel nicht vertrauenswürdig ist, zu viele Sprünge
     // auftreten oder die Antwort das Größenlimit überschreitet.
     // Intern (nicht privat) für den Test der Redirect-/Allowlist-/Größen-Logik.
-    internal async Task<bool> DownloadToAsync(HttpClient client, Uri url, string targetPath, CancellationToken cancellationToken)
+    internal async Task<bool> DownloadToAsync(
+        HttpClient client,
+        Uri url,
+        string targetPath,
+        IProgress<UpdateProgress>? progress,
+        CancellationToken cancellationToken)
     {
         Uri current = url;
         for (int hop = 0; hop <= MaxRedirects; hop++)
@@ -239,7 +254,7 @@ internal sealed class UpdateService : IUpdateCoordinator
 
             using Stream remote = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(true);
             using FileStream file = File.Create(targetPath);
-            await CopyWithLimitAsync(remote, file, cancellationToken).ConfigureAwait(true);
+            await CopyWithLimitAsync(remote, file, response.Content.Headers.ContentLength, progress, cancellationToken).ConfigureAwait(true);
             return true;
         }
 
@@ -250,11 +265,19 @@ internal sealed class UpdateService : IUpdateCoordinator
     private static bool IsRedirect(System.Net.HttpStatusCode status) =>
         (int)status is >= 300 and < 400;
 
-    // Kopiert höchstens MaxUpdaterBytes, auch wenn kein Content-Length gemeldet wird.
-    private static async Task CopyWithLimitAsync(Stream source, Stream destination, CancellationToken cancellationToken)
+    // Kopiert höchstens MaxUpdaterBytes, auch wenn kein Content-Length gemeldet wird,
+    // und meldet dabei den Fortschritt. Ohne bekannte Gesamtgröße bleibt es beim
+    // Abschnitt ohne Prozentwert – die Oberfläche zeigt dann einen laufenden Balken.
+    private static async Task CopyWithLimitAsync(
+        Stream source,
+        Stream destination,
+        long? totalBytes,
+        IProgress<UpdateProgress>? progress,
+        CancellationToken cancellationToken)
     {
         byte[] buffer = new byte[81920];
         long total = 0;
+        double lastReported = -1;
         int read;
         while ((read = await source.ReadAsync(buffer, cancellationToken).ConfigureAwait(true)) > 0)
         {
@@ -265,6 +288,21 @@ internal sealed class UpdateService : IUpdateCoordinator
             }
 
             await destination.WriteAsync(buffer.AsMemory(0, read), cancellationToken).ConfigureAwait(true);
+
+            if (progress is null || totalBytes is not > 0)
+            {
+                continue;
+            }
+
+            // Nur bei jedem vollen Prozent melden: Bei knapp hundert Megabyte fiele
+            // sonst pro Puffer eine Meldung an, und die Oberfläche käme mit dem
+            // Zeichnen kaum nach.
+            double percent = Math.Floor(total * 100d / totalBytes.Value);
+            if (percent > lastReported)
+            {
+                lastReported = percent;
+                progress.Report(new UpdateProgress(UpdateStage.Downloading, percent));
+            }
         }
     }
 

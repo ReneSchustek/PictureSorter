@@ -45,7 +45,7 @@ public sealed class UpdateServiceTests : IDisposable
                 : Content("sollte-nie-geladen-werden"));
 
         bool result = await service.DownloadToAsync(
-            client, new Uri("https://github.com/a/updater.exe"), _target, CancellationToken.None);
+            client, new Uri("https://github.com/a/updater.exe"), _target, progress: null, CancellationToken.None);
 
         Assert.False(result);
         Assert.False(File.Exists(_target));
@@ -60,7 +60,7 @@ public sealed class UpdateServiceTests : IDisposable
                 : Content("inhalt"));
 
         bool result = await service.DownloadToAsync(
-            client, new Uri("https://github.com/a/updater.exe"), _target, CancellationToken.None);
+            client, new Uri("https://github.com/a/updater.exe"), _target, progress: null, CancellationToken.None);
 
         Assert.True(result);
         Assert.Equal("inhalt", await File.ReadAllTextAsync(_target));
@@ -77,10 +77,41 @@ public sealed class UpdateServiceTests : IDisposable
         });
 
         bool result = await service.DownloadToAsync(
-            client, new Uri("https://github.com/a/updater.exe"), _target, CancellationToken.None);
+            client, new Uri("https://github.com/a/updater.exe"), _target, progress: null, CancellationToken.None);
 
         Assert.False(result);
         Assert.False(File.Exists(_target));
+    }
+
+    [Fact]
+    public async Task DownloadToAsync_WithKnownSize_ReportsProgressUpTo100()
+    {
+        // Das Paket ist rund hundert Megabyte groß. Ohne diese Meldungen sah der Knopf
+        // „Jetzt aktualisieren" für den Nutzer aus, als bewirke er überhaupt nichts.
+        (UpdateService service, HttpClient client) = Setup(_ => Content("inhalt"));
+        RecordingProgress progress = new();
+
+        bool result = await service.DownloadToAsync(
+            client, new Uri("https://github.com/a/updater.exe"), _target, progress, CancellationToken.None);
+
+        Assert.True(result);
+        Assert.NotEmpty(progress.Reported);
+        Assert.All(progress.Reported, p => Assert.Equal(UpdateStage.Downloading, p.Stage));
+        Assert.Equal(100, progress.Reported[^1].Percent);
+    }
+
+    [Fact]
+    public async Task DownloadToAsync_WithoutProgress_StillDownloads()
+    {
+        // Die Signaturdatei ist 64 Byte groß; für sie wird bewusst kein Fortschritt
+        // gemeldet, damit der Balken nicht kurz vor dem Ziel zurückspringt.
+        (UpdateService service, HttpClient client) = Setup(_ => Content("inhalt"));
+
+        bool result = await service.DownloadToAsync(
+            client, new Uri("https://github.com/a/updater.exe"), _target, progress: null, CancellationToken.None);
+
+        Assert.True(result);
+        Assert.Equal("inhalt", await File.ReadAllTextAsync(_target));
     }
 
     private (UpdateService Service, HttpClient Client) Setup(Func<HttpRequestMessage, HttpResponseMessage> responder)
@@ -136,5 +167,15 @@ public sealed class UpdateServiceTests : IDisposable
     private sealed class SingleClientFactory(HttpClient client) : IHttpClientFactory
     {
         public HttpClient CreateClient(string name) => client;
+    }
+
+    // Bewusst nicht Progress<T>: Das reicht die Meldungen über den
+    // Synchronisierungskontext weiter und damit erst nach dem Ende des Tests. Hier wird
+    // synchron mitgeschrieben.
+    private sealed class RecordingProgress : IProgress<UpdateProgress>
+    {
+        public List<UpdateProgress> Reported { get; } = [];
+
+        public void Report(UpdateProgress value) => Reported.Add(value);
     }
 }
