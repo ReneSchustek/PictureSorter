@@ -53,6 +53,30 @@ internal sealed partial class AboutPage : Page
         VersionText.Text = _localizer.Format(
             "Common_Version",
             Assembly.GetEntryAssembly()?.GetName().Version?.ToString(3) ?? "1.0.0");
+
+        // Spenden-Einstieg nur zeigen, wenn ein echter PayPal-Handle hinterlegt ist –
+        // sonst bliebe ein toter Platzhalter-Link stehen.
+        SupportPanel.Visibility = SupportDonation.IsConfigured ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    // Öffnet das fest verdrahtete Spendenziel im Standardbrowser. Die Adresse ist eine
+    // Compile-Zeit-Konstante auf HTTPS – es gibt keinen Laufzeit-Pfad, über den hier
+    // eine fremde URL ankommen könnte.
+    private void OnSupportClick(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            _ = Process.Start(new ProcessStartInfo
+            {
+                FileName = SupportDonation.PayPalUrl,
+                UseShellExecute = true,
+            });
+        }
+        catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException)
+        {
+            // Kein Standardbrowser oder Start verweigert – die Seite bleibt stehen, der
+            // Nutzer kann die Adresse manuell aufrufen. Bewusst nicht-fatal.
+        }
     }
 
     [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = LastResortJustification)]

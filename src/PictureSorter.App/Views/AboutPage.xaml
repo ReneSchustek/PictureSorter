@@ -179,6 +179,27 @@
                     <TextBlock
                         x:Name="VersionText"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+
+                    <!-- Freiwilliger Spenden-Einstieg. Bleibt ausgeblendet, solange kein
+                         echter PayPal-Handle konfiguriert ist (Sichtbarkeit im Code-Behind). -->
+                    <StackPanel
+                        x:Name="SupportPanel"
+                        Margin="0,8,0,0"
+                        Spacing="8"
+                        Visibility="Collapsed">
+                        <TextBlock
+                            x:Uid="AboutPage_SupportHeading"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Style="{ThemeResource CaptionTextBlockStyle}"
+                            Text="Gefällt dir PictureSorter? Über einen Kaffee freue ich mich – ganz freiwillig."
+                            TextWrapping="Wrap" />
+                        <Button
+                            x:Uid="AboutPage_SupportButton"
+                            HorizontalAlignment="Left"
+                            AutomationProperties.Name="Kaffee spendieren"
+                            Click="OnSupportClick"
+                            Content="☕ Kaffee spendieren" />
+                    </StackPanel>
                 </StackPanel>
             </Border>
         </StackPanel>
