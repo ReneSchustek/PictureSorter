@@ -9,6 +9,10 @@ on:
     # Wöchentlicher Security-Scan, damit neue CVEs in unveränderten Abhängigkeiten
     # auch ohne Push gefunden werden. Sonntag 04:00 UTC = außerhalb der Arbeitspaket-Arbeitszeit.
     - cron: '0 4 * * 0'
+  # Von Hand auslösbar: Ein Sicherheitsgate, das man nur durch einen Commit in Gang
+  # setzen kann, wird nach einer Änderung an den Voraussetzungen nicht nachgeprüft --
+  # etwa nachdem das Repository öffentlich wurde und CodeQL überhaupt erst laufen darf.
+  workflow_dispatch:
 
 jobs:
   codeql:
@@ -34,7 +38,7 @@ jobs:
           dotnet-version: '10.x'
 
       - name: CodeQL initialisieren
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v4
         with:
           languages: csharp
           queries: security-extended,security-and-quality
@@ -45,7 +49,7 @@ jobs:
           dotnet build PictureSorter.slnx --no-restore
 
       - name: CodeQL-Analyse durchführen
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v4
         with:
           category: '/language:csharp'
 
