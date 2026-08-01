@@ -6,6 +6,15 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
+## [1.4.8] - 2026-08-01
+
+### Behoben
+
+- **Die Statusleiste am unteren Rand war zweizeilig.** Fortschrittsbalken und
+  Versionsangabe standen unter der Meldung statt neben ihr und nahmen dauerhaft eine
+  zweite Zeile ein — auch dann, wenn gerade nichts lief. Beides steht jetzt in
+  derselben Zeile wie die Meldung.
+
 ## [1.4.7] - 2026-08-01
 
 ### Geändert
