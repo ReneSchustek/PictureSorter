@@ -88,11 +88,11 @@ public sealed class SortMemoryRepositoryTests : IAsyncLifetime
         IReadOnlyList<SortMemoryRecord> all = await _sut.GetForFolderAsync(Folder, CancellationToken.None);
         Assert.Equal(2, all.Count);
 
-        SortMemoryRecord? urlaub = await _sut.GetAsync(Folder, "sig-1", "Urlaub", CancellationToken.None);
-        SortMemoryRecord? familie = await _sut.GetAsync(Folder, "sig-1", "Familie", CancellationToken.None);
+        SortMemoryRecord? holiday = await _sut.GetAsync(Folder, "sig-1", "Urlaub", CancellationToken.None);
+        SortMemoryRecord? family = await _sut.GetAsync(Folder, "sig-1", "Familie", CancellationToken.None);
 
-        Assert.Equal(SortMemoryStatus.Sorted, urlaub?.Status);
-        Assert.Equal(SortMemoryStatus.Rejected, familie?.Status);
+        Assert.Equal(SortMemoryStatus.Sorted, holiday?.Status);
+        Assert.Equal(SortMemoryStatus.Rejected, family?.Status);
     }
 
     [Fact]

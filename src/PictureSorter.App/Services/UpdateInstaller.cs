@@ -187,11 +187,11 @@ internal static class UpdateInstaller
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(directory);
 
-        string probe = Path.Combine(directory, $"schreibtest-{Guid.NewGuid():N}.tmp");
+        string probeFile = Path.Combine(directory, $"schreibtest-{Guid.NewGuid():N}.tmp");
         try
         {
-            File.WriteAllBytes(probe, []);
-            File.Delete(probe);
+            File.WriteAllBytes(probeFile, []);
+            File.Delete(probeFile);
             return true;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or DirectoryNotFoundException)

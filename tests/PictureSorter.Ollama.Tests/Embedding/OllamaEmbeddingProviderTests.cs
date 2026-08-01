@@ -54,9 +54,9 @@ public sealed class OllamaEmbeddingProviderTests
         // Vektor um denselben Betrag und verwässerte den Vergleich.
         FakeOllamaClient client = new(Beschreibung);
         OllamaEmbeddingProvider sut = CreateSut(client, new FakeVisionImageEncoder());
-        Photo ohneMetadaten = new() { FullPath = @"C:\Fotos\a.jpg", FileName = "a.jpg", SizeBytes = 1 };
+        Photo withoutMetadata = new() { FullPath = @"C:\Fotos\a.jpg", FileName = "a.jpg", SizeBytes = 1 };
 
-        _ = await sut.CreateEmbeddingAsync(ohneMetadaten, TestContext.Current.CancellationToken);
+        _ = await sut.CreateEmbeddingAsync(withoutMetadata, TestContext.Current.CancellationToken);
 
         Assert.Equal(Beschreibung, client.LastEmbeddedText);
     }

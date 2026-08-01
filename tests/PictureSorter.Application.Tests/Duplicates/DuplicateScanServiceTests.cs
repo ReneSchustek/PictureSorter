@@ -104,15 +104,15 @@ public sealed class DuplicateScanServiceTests
             [@"C:\f\weg.jpg"] = Fingerprint(@"C:\f\weg.jpg", "Z", null),
         };
         DuplicateScanService service = CreateService(fingerprints, unreadable: @"C:\f\weg.jpg");
-        RecordingProgress<DuplicateScanProgress> gemeldet = new();
+        RecordingProgress<DuplicateScanProgress> reported = new();
 
         _ = await service.ScanAsync(
             @"C:\f",
             includeSubfolders: false,
-            progress: gemeldet,
+            progress: reported,
             CancellationToken.None);
 
-        Assert.Equal(2, gemeldet.Reports.Count);
+        Assert.Equal(2, reported.Reports.Count);
     }
 
     private static ImageFingerprint Fingerprint(string path, string contentHash, PerceptualHash? perceptual) =>

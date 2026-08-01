@@ -103,16 +103,16 @@ public sealed class ReleaseSignatureVerifierTests : IDisposable
         // Der Schlüsselwechsel: Solange beide Schlüssel zugelassen sind, nimmt die
         // Anwendung Pakete des alten wie des neuen Unterzeichners an. Ohne diesen
         // Übergang wäre jede ausgelieferte Fassung nach einem Wechsel update-unfähig.
-        using ECDsa alt = ECDsa.Create(ECCurve.NamedCurves.nistP256);
-        using ECDsa neu = ECDsa.Create(ECCurve.NamedCurves.nistP256);
-        string[] zugelassen =
+        using ECDsa previous = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        using ECDsa successor = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        string[] accepted =
         [
-            Convert.ToBase64String(alt.ExportSubjectPublicKeyInfo()),
-            Convert.ToBase64String(neu.ExportSubjectPublicKeyInfo()),
+            Convert.ToBase64String(previous.ExportSubjectPublicKeyInfo()),
+            Convert.ToBase64String(successor.ExportSubjectPublicKeyInfo()),
         ];
 
-        Assert.True(ReleaseSignatureVerifier.IsAuthentic(_package, Sign(neu, _package), zugelassen));
-        Assert.True(ReleaseSignatureVerifier.IsAuthentic(_package, Sign(alt, _package), zugelassen));
+        Assert.True(ReleaseSignatureVerifier.IsAuthentic(_package, Sign(successor, _package), accepted));
+        Assert.True(ReleaseSignatureVerifier.IsAuthentic(_package, Sign(previous, _package), accepted));
     }
 
     [Fact]
@@ -120,11 +120,11 @@ public sealed class ReleaseSignatureVerifierTests : IDisposable
     {
         // Nach abgeschlossenem Wechsel steht der alte Schlüssel nicht mehr in der Liste.
         // Ab da darf seine Signatur nicht mehr durchgehen.
-        using ECDsa ausgemustert = ECDsa.Create(ECCurve.NamedCurves.nistP256);
-        using ECDsa aktuell = ECDsa.Create(ECCurve.NamedCurves.nistP256);
-        string[] zugelassen = [Convert.ToBase64String(aktuell.ExportSubjectPublicKeyInfo())];
+        using ECDsa retired = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        using ECDsa current = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        string[] accepted = [Convert.ToBase64String(current.ExportSubjectPublicKeyInfo())];
 
-        Assert.False(ReleaseSignatureVerifier.IsAuthentic(_package, Sign(ausgemustert, _package), zugelassen));
+        Assert.False(ReleaseSignatureVerifier.IsAuthentic(_package, Sign(retired, _package), accepted));
     }
 
     [Fact]

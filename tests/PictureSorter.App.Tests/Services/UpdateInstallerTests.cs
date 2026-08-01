@@ -186,13 +186,13 @@ public sealed class UpdateInstallerTests : IDisposable
         // beliebigen Ordner starten und damit die Installation überschreiben.
         string data = CreateDirectory("daten");
         string staging = CreateDirectory("staging", ("PictureSorter.exe", "die geprüfte neue Fassung"));
-        string fremd = CreateDirectory("fremd", ("PictureSorter.exe", "etwas ganz anderes"));
-        string programm = CreateDirectory("programm");
+        string other = CreateDirectory("fremd", ("PictureSorter.exe", "etwas ganz anderes"));
+        string executable = CreateDirectory("programm");
 
-        UpdateInstaller.WritePendingNote(data, staging, programm);
+        UpdateInstaller.WritePendingNote(data, staging, executable);
 
-        Assert.True(UpdateInstaller.IsTrustedStaging(data, staging, programm));
-        Assert.False(UpdateInstaller.IsTrustedStaging(data, fremd, programm));
+        Assert.True(UpdateInstaller.IsTrustedStaging(data, staging, executable));
+        Assert.False(UpdateInstaller.IsTrustedStaging(data, other, executable));
     }
 
     [Fact]
@@ -203,12 +203,12 @@ public sealed class UpdateInstallerTests : IDisposable
         // etwa in den Autostart-Ordner. Auch das Ziel muss aus dem Vermerk stammen.
         string data = CreateDirectory("daten");
         string staging = CreateDirectory("staging", ("PictureSorter.exe", "die geprüfte neue Fassung"));
-        string programm = CreateDirectory("programm");
+        string executable = CreateDirectory("programm");
         string autostart = CreateDirectory("autostart");
 
-        UpdateInstaller.WritePendingNote(data, staging, programm);
+        UpdateInstaller.WritePendingNote(data, staging, executable);
 
-        Assert.True(UpdateInstaller.IsTrustedStaging(data, staging, programm));
+        Assert.True(UpdateInstaller.IsTrustedStaging(data, staging, executable));
         Assert.False(UpdateInstaller.IsTrustedStaging(data, staging, autostart));
     }
 
@@ -217,12 +217,12 @@ public sealed class UpdateInstallerTests : IDisposable
     {
         string data = CreateDirectory("daten");
         string staging = CreateDirectory("staging", ("PictureSorter.exe", "die geprüfte neue Fassung"));
-        string programm = CreateDirectory("programm");
-        UpdateInstaller.WritePendingNote(data, staging, programm);
+        string executable = CreateDirectory("programm");
+        UpdateInstaller.WritePendingNote(data, staging, executable);
 
         File.WriteAllText(Path.Combine(staging, "PictureSorter.exe"), "untergeschoben");
 
-        Assert.False(UpdateInstaller.IsTrustedStaging(data, staging, programm));
+        Assert.False(UpdateInstaller.IsTrustedStaging(data, staging, executable));
     }
 
     [Fact]

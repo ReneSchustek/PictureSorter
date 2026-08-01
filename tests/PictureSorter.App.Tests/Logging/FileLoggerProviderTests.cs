@@ -119,14 +119,14 @@ public sealed class FileLoggerProviderTests : IDisposable
     {
         // Der Dateiname kam bisher aus DateTimeOffset.Now und hing damit am Kalender
         // des Rechners; prüfbar war er nicht. Über die Zeitquelle ist er es.
-        TestClock silvester = new(new DateTimeOffset(2026, 12, 31, 23, 0, 0, TimeSpan.Zero));
-        using FileLoggerProvider provider = new(_directory, silvester);
+        TestClock newYearsEve = new(new DateTimeOffset(2026, 12, 31, 23, 0, 0, TimeSpan.Zero));
+        using FileLoggerProvider provider = new(_directory, newYearsEve);
 
         provider.CreateLogger("Test").LogInformation("Kurz vor Mitternacht.");
 
         string expected = Path.Combine(
             _directory,
-            $"picturesorter-{silvester.UtcNow.ToLocalTime():yyyy-MM-dd}.log");
+            $"picturesorter-{newYearsEve.UtcNow.ToLocalTime():yyyy-MM-dd}.log");
         Assert.True(File.Exists(expected), $"Erwartet wurde {expected}.");
     }
 
