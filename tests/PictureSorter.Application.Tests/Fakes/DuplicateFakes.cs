@@ -9,3 +9,15 @@ internal sealed class FakePerceptualHasher(Func<string, ImageFingerprint> factor
     public Task<ImageFingerprint> ComputeAsync(string filePath, CancellationToken cancellationToken)
         => Task.FromResult(factory(filePath));
 }
+
+/// <summary>
+/// Sammelt Fortschrittsmeldungen synchron ein. <see cref="Progress{T}"/> stellt sie
+/// ohne Synchronisationskontext über den Threadpool zu – der Test würde dann mal
+/// alle, mal nur einen Teil der Meldungen sehen.
+/// </summary>
+internal sealed class RecordingProgress<T> : IProgress<T>
+{
+    public List<T> Reports { get; } = [];
+
+    public void Report(T value) => Reports.Add(value);
+}

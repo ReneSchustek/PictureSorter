@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using PictureSorter.Application.Duplicates;
 using PictureSorter.Core.Entities;
 using PictureSorter.Core.Enums;
+using PictureSorter.Core.Interfaces;
 using PictureSorter.Core.ValueObjects;
 using PictureSorter.Application.Tests.Fakes;
 
@@ -69,10 +70,57 @@ public sealed class DuplicateScanServiceTests
         Assert.Empty(groups);
     }
 
+    [Fact]
+    public async Task ScanAsync_WhenOneFileCannotBeRead_ScansTheRestAndStillFindsTheDuplicates()
+    {
+        // Der Alltagsfall: Ein Virenscanner zieht eine Datei mitten im Lauf weg. Vorher
+        // riss diese eine Datei den kompletten Lauf mit – nach Minuten Wartezeit stand
+        // statt des Ergebnisses eine Fehlermeldung da.
+        Dictionary<string, ImageFingerprint> fingerprints = new(StringComparer.Ordinal)
+        {
+            [@"C:\f\a.jpg"] = Fingerprint(@"C:\f\a.jpg", "AAA", null),
+            [@"C:\f\b.jpg"] = Fingerprint(@"C:\f\b.jpg", "AAA", null),
+            [@"C:\f\weg.jpg"] = Fingerprint(@"C:\f\weg.jpg", "ZZZ", null),
+        };
+        DuplicateScanService service = CreateService(
+            fingerprints,
+            unreadable: @"C:\f\weg.jpg");
+
+        IReadOnlyList<DuplicateGroup> groups =
+            await service.ScanAsync(@"C:\f", includeSubfolders: false, progress: null, CancellationToken.None);
+
+        DuplicateGroup group = Assert.Single(groups);
+        Assert.Equal(2, group.Photos.Count);
+    }
+
+    [Fact]
+    public async Task ScanAsync_WhenOneFileCannotBeRead_ReportsProgressForItAsWell()
+    {
+        // Der Fortschritt muss auch über die übersprungene Datei hinweg laufen, sonst
+        // bleibt der Balken bei einem gesperrten Bild stehen und wirkt wie ein Hänger.
+        Dictionary<string, ImageFingerprint> fingerprints = new(StringComparer.Ordinal)
+        {
+            [@"C:\f\a.jpg"] = Fingerprint(@"C:\f\a.jpg", "A", null),
+            [@"C:\f\weg.jpg"] = Fingerprint(@"C:\f\weg.jpg", "Z", null),
+        };
+        DuplicateScanService service = CreateService(fingerprints, unreadable: @"C:\f\weg.jpg");
+        RecordingProgress<DuplicateScanProgress> gemeldet = new();
+
+        _ = await service.ScanAsync(
+            @"C:\f",
+            includeSubfolders: false,
+            progress: gemeldet,
+            CancellationToken.None);
+
+        Assert.Equal(2, gemeldet.Reports.Count);
+    }
+
     private static ImageFingerprint Fingerprint(string path, string contentHash, PerceptualHash? perceptual) =>
         new() { FilePath = path, ContentHash = contentHash, Perceptual = perceptual };
 
-    private static DuplicateScanService CreateService(Dictionary<string, ImageFingerprint> fingerprints)
+    private static DuplicateScanService CreateService(
+        Dictionary<string, ImageFingerprint> fingerprints,
+        string? unreadable = null)
     {
         List<Photo> photos = [.. fingerprints.Keys.Select(path => new Photo
         {
@@ -81,7 +129,9 @@ public sealed class DuplicateScanServiceTests
         })];
 
         FakePhotoSource photoSource = new(photos);
-        FakePerceptualHasher hasher = new(path => fingerprints[path]);
+        FakePerceptualHasher hasher = new(path => path == unreadable
+            ? throw new IOException($"Die Datei „{path}\" ist gesperrt.")
+            : fingerprints[path]);
         IOptions<DuplicateScanOptions> options =
             Options.Create(new DuplicateScanOptions { DetectSimilar = true, MaxHammingDistance = 8 });
 

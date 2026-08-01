@@ -84,8 +84,21 @@ public sealed class DuplicateScanService : IDuplicateScanner
         {
             cancellationToken.ThrowIfCancellationRequested();
             Photo photo = photos[index];
-            ImageFingerprint fingerprint = await _hasher.ComputeAsync(photo.FullPath, cancellationToken).ConfigureAwait(false);
-            result.Add(new FingerprintedPhoto(photo, fingerprint));
+            try
+            {
+                ImageFingerprint fingerprint = await _hasher.ComputeAsync(photo.FullPath, cancellationToken).ConfigureAwait(false);
+                result.Add(new FingerprintedPhoto(photo, fingerprint));
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                // Eine einzelne unlesbare Datei darf den ganzen Lauf nicht beenden. Der
+                // Fall tritt im Alltag auf: Ein Virenscanner zieht die Datei waehrend des
+                // Laufs weg, ein Cloud-Ordner hat sie noch nicht heruntergeladen, oder die
+                // Rechte fehlen. Ohne diese Behandlung stand die Nutzerin nach Minuten
+                // Wartezeit vor einer Fehlermeldung statt vor einem Ergebnis.
+                DuplicateLog.Skipped(_logger, LogPaths.Redact(photo.FullPath), ex);
+            }
+
             progress?.Report(new DuplicateScanProgress(index + 1, photos.Count));
         }
 
@@ -186,4 +199,7 @@ internal static partial class DuplicateLog
 {
     [LoggerMessage(EventId = 3200, Level = LogLevel.Information, Message = "{Count} Duplikat-Gruppen in {Folder} gefunden.")]
     public static partial void Scanned(ILogger logger, int count, string folder);
+
+    [LoggerMessage(EventId = 3201, Level = LogLevel.Warning, Message = "Foto {File} bei der Duplikat-Suche übersprungen (nicht lesbar).")]
+    public static partial void Skipped(ILogger logger, string file, Exception exception);
 }
