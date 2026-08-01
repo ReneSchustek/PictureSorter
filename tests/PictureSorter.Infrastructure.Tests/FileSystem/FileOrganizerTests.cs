@@ -250,11 +250,11 @@ public sealed class FileOrganizerTests : IDisposable
         // Rückgängig darf nichts vernichten, das nach dem Lauf entstanden ist.
         string copy = CreateFile(_root, "kopie.jpg", "inhalt");
         FileInfo vorher = new(copy);
-        long laenge = vorher.Length;
+        long length = vorher.Length;
         DateTime geschrieben = vorher.LastWriteTimeUtc;
         await File.WriteAllTextAsync(copy, "nachträglich bearbeitet", TestContext.Current.CancellationToken);
 
-        bool entfernt = await _organizer.DiscardCopyAsync(copy, laenge, geschrieben, CancellationToken.None);
+        bool entfernt = await _organizer.DiscardCopyAsync(copy, length, geschrieben, CancellationToken.None);
 
         Assert.False(entfernt);
         Assert.True(File.Exists(copy));

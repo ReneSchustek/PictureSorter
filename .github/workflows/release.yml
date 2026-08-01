@@ -111,7 +111,7 @@ jobs:
           Get-ChildItem PictureSorter-Setup-*.exe | ForEach-Object { Write-Output "Erstellt: $($_.Name)" }
 
       # Die drei Architektur-Läufe legen ihre Dateien nur ab; das Release entsteht
-      # danach EINMAL im Job "veroeffentlichen". Früher hat jeder Lauf das Release
+      # danach EINMAL im Job "publish". Früher hat jeder Lauf das Release
       # selbst angelegt bzw. bestückt - liefen zwei gleichzeitig, erzeugte einer ein
       # zweites, unbenanntes Release, und dessen Dateien fehlten im eigentlichen. Bei
       # v1.4.5 ist genau das mit der ARM64-Fassung passiert.
@@ -126,7 +126,7 @@ jobs:
             PictureSorter-${{ github.ref_name }}-${{ matrix.rid }}.zip.sig
             PictureSorter-Setup-v${{ steps.version.outputs.value }}.exe
 
-  veroeffentlichen:
+  publish:
     name: Release erstellen
     needs: release
     runs-on: ubuntu-latest
