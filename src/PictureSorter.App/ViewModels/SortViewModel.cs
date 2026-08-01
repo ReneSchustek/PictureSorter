@@ -164,6 +164,9 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         PositiveExamples = new ExampleSetViewModel(_options.MaxExamplesPerSide, localizer, OnExampleSetChanged);
         NegativeExamples = new ExampleSetViewModel(_options.MaxExamplesPerSide, localizer, OnExampleSetChanged);
 
+        // Die Vorschau kennt den Ablauf nur über den Delegaten – wie der Assistent.
+        Proposals = new ProposalListViewModel(localizer, () => IsInteractive, OnProposalSelectionChanged);
+
         // Der Assistent kennt die Use-Cases nur über diese Delegaten (SRP). Er muss
         // vor den Anfangswerten stehen: deren Setter melden jede Änderung an den
         // Assistenten weiter und würden sonst auf ein noch nicht erzeugtes Objekt
@@ -202,28 +205,9 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     public ExampleSetViewModel NegativeExamples { get; }
 
     /// <summary>
-    /// Die erzeugten Sortiervorschläge (Vorschau). Jeder Eintrag trägt seine
-    /// Auswahl; nur ausgewählte werden angewendet.
+    /// Die erzeugten Sortiervorschläge (Vorschau) samt Auswahl.
     /// </summary>
-    public ObservableCollection<ProposalViewModel> Proposals { get; } = [];
-
-    /// <summary>
-    /// Anzahl der zum Sortieren ausgewählten Vorschläge.
-    /// </summary>
-    public int SelectedProposalCount => Proposals.Count(proposal => proposal.IsSelected);
-
-    /// <summary>
-    /// Zusammenfassung der Vorschau, z. B. „12 von 20 ausgewählt".
-    /// </summary>
-    public string SelectionSummary => Proposals.Count == 0
-        ? string.Empty
-        : _localizer.Format("Sort_SelectionSummary", SelectedProposalCount, Proposals.Count);
-
-    /// <summary>
-    /// <see langword="true"/>, wenn mindestens ein Vorschlag abgewählt ist (steuert
-    /// die Beschriftung des Umschaltknopfs).
-    /// </summary>
-    public bool CanSelectAll => Proposals.Count > 0 && SelectedProposalCount < Proposals.Count;
+    public ProposalListViewModel Proposals { get; }
 
     /// <summary>
     /// Name der aktuell aktiven (gelernten) Kategorie, oder leer.
@@ -258,12 +242,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     /// <summary>
     /// Anwenden ist möglich, wenn mindestens ein Vorschlag ausgewählt ist.
     /// </summary>
-    public bool CanApply => State is SortState.Preview && SelectedProposalCount > 0;
-
-    /// <summary>
-    /// Das Umschalten der Auswahl ist möglich, solange Vorschläge vorliegen.
-    /// </summary>
-    public bool CanToggleAll => IsInteractive && Proposals.Count > 0;
+    public bool CanApply => State is SortState.Preview && Proposals.SelectedCount > 0;
 
     /// <summary>
     /// Abbrechen ist möglich, solange ein Vorgang läuft.
@@ -289,6 +268,15 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(IsInteractive));
         OnPropertyChanged(nameof(CanUndo));
         UndoCommand.NotifyCanExecuteChanged();
+        Wizard.NotifyStateChanged();
+        Proposals.NotifyStateChanged();
+    }
+
+    // Inhalt oder Auswahl der Vorschau haben sich geändert: Davon hängt ab, ob
+    // „Sortieren" bedienbar ist, und der Assistent zeigt es in seinem letzten Schritt.
+    private void OnProposalSelectionChanged()
+    {
+        ApplyCommand.NotifyCanExecuteChanged();
         Wizard.NotifyStateChanged();
     }
 
@@ -372,7 +360,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         NegativeExamples.Clear();
         _positiveOffset = 0;
         _negativeOffset = 0;
-        ClearProposals();
+        Proposals.Clear();
         State = SortState.Idle;
 
         OnPropertyChanged(nameof(ActiveCategoryName));
@@ -617,7 +605,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
                 .CreateProposalsAsync(SourceFolder, _category!, IncludeSubfolders, progress, _cancellation.Token)
                 .ConfigureAwait(true);
 
-            ReplaceProposals(proposals);
+            Proposals.Replace(proposals);
             State = SortState.Preview;
             _status.Finish(
                 proposals.Count == 0
@@ -658,10 +646,8 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
 
         try
         {
-            IReadOnlyList<SortProposal> selected =
-                [.. Proposals.Where(proposal => proposal.IsSelected).Select(proposal => proposal.Proposal)];
-            IReadOnlyList<SortProposal> rejected =
-                [.. Proposals.Where(proposal => !proposal.IsSelected).Select(proposal => proposal.Proposal)];
+            IReadOnlyList<SortProposal> selected = Proposals.Selected;
+            IReadOnlyList<SortProposal> rejected = Proposals.Rejected;
 
             FileOperationMode operation = CopyInsteadOfMove
                 ? FileOperationMode.Copy
@@ -677,7 +663,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
                 await _sorter.IgnoreProposalsAsync(rejected, _cancellation.Token).ConfigureAwait(true);
             }
 
-            ClearProposals();
+            Proposals.Clear();
             State = SortState.Completed;
             _status.Finish(
                 rejected.Count == 0
@@ -844,61 +830,6 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         Wizard.NotifyStateChanged();
     }
 
-    /// <summary>
-    /// Wählt alle Vorschläge aus bzw. hebt die Auswahl für alle auf.
-    /// </summary>
-    [RelayCommand(CanExecute = nameof(CanToggleAll))]
-    private void ToggleAll()
-    {
-        bool select = CanSelectAll;
-        foreach (ProposalViewModel proposal in Proposals)
-        {
-            proposal.IsSelected = select;
-        }
-    }
-
-    private void ReplaceProposals(IReadOnlyList<SortProposal> proposals)
-    {
-        ClearProposals();
-        foreach (SortProposal proposal in proposals)
-        {
-            ProposalViewModel viewModel = new(proposal, _localizer);
-            viewModel.PropertyChanged += OnProposalChanged;
-            Proposals.Add(viewModel);
-        }
-
-        NotifyProposalsChanged();
-    }
-
-    private void ClearProposals()
-    {
-        foreach (ProposalViewModel proposal in Proposals)
-        {
-            proposal.PropertyChanged -= OnProposalChanged;
-        }
-
-        Proposals.Clear();
-        NotifyProposalsChanged();
-    }
-
-    private void OnProposalChanged(object? sender, PropertyChangedEventArgs e)
-    {
-        if (e.PropertyName == nameof(ProposalViewModel.IsSelected))
-        {
-            NotifyProposalsChanged();
-        }
-    }
-
-    private void NotifyProposalsChanged()
-    {
-        OnPropertyChanged(nameof(SelectedProposalCount));
-        OnPropertyChanged(nameof(SelectionSummary));
-        OnPropertyChanged(nameof(CanSelectAll));
-        ApplyCommand.NotifyCanExecuteChanged();
-        ToggleAllCommand.NotifyCanExecuteChanged();
-        Wizard.NotifyStateChanged();
-    }
-
     // Beide Seiten melden jede Änderung hierher: Ob gelernt werden kann und ob der
     // Assistent weiterblättern darf, hängt allein an ihrem Inhalt.
     private void OnExampleSetChanged()
@@ -922,7 +853,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         NegativeExamples.Clear();
         _positiveOffset = 0;
         _negativeOffset = 0;
-        ClearProposals();
+        Proposals.Clear();
         DisposeCancellation();
         GC.SuppressFinalize(this);
     }
