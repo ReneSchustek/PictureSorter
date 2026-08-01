@@ -94,8 +94,8 @@ public sealed class FileOrganizerTests : IDisposable
 
         Assert.Equal(Path.Combine(targetFolder, "strand (1).jpg"), result);
         Assert.True(File.Exists(result));
-        Assert.Equal("neu", await File.ReadAllTextAsync(result));
-        Assert.Equal("bereits vorhanden", await File.ReadAllTextAsync(Path.Combine(targetFolder, "strand.jpg")));
+        Assert.Equal("neu", await File.ReadAllTextAsync(result, TestContext.Current.CancellationToken));
+        Assert.Equal("bereits vorhanden", await File.ReadAllTextAsync(Path.Combine(targetFolder, "strand.jpg"), TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -128,7 +128,7 @@ public sealed class FileOrganizerTests : IDisposable
         Assert.True(restored);
         Assert.True(File.Exists(source));
         Assert.False(File.Exists(target));
-        Assert.Equal("inhalt", await File.ReadAllTextAsync(source));
+        Assert.Equal("inhalt", await File.ReadAllTextAsync(source, TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -151,7 +151,7 @@ public sealed class FileOrganizerTests : IDisposable
         bool restored = await _organizer.RestoreAsync(target, source, CancellationToken.None);
 
         Assert.False(restored);
-        Assert.Equal("ein neues Foto", await File.ReadAllTextAsync(source));
+        Assert.Equal("ein neues Foto", await File.ReadAllTextAsync(source, TestContext.Current.CancellationToken));
         Assert.True(File.Exists(target));
     }
 
@@ -191,7 +191,7 @@ public sealed class FileOrganizerTests : IDisposable
         Assert.Equal(Path.Combine(targetFolder, "urlaub.jpg"), result);
         Assert.True(File.Exists(result));
         Assert.True(File.Exists(source));
-        Assert.Equal("inhalt", await File.ReadAllTextAsync(result));
+        Assert.Equal("inhalt", await File.ReadAllTextAsync(result, TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -252,13 +252,13 @@ public sealed class FileOrganizerTests : IDisposable
         FileInfo vorher = new(copy);
         long laenge = vorher.Length;
         DateTime geschrieben = vorher.LastWriteTimeUtc;
-        await File.WriteAllTextAsync(copy, "nachträglich bearbeitet");
+        await File.WriteAllTextAsync(copy, "nachträglich bearbeitet", TestContext.Current.CancellationToken);
 
         bool entfernt = await _organizer.DiscardCopyAsync(copy, laenge, geschrieben, CancellationToken.None);
 
         Assert.False(entfernt);
         Assert.True(File.Exists(copy));
-        Assert.Equal("nachträglich bearbeitet", await File.ReadAllTextAsync(copy));
+        Assert.Equal("nachträglich bearbeitet", await File.ReadAllTextAsync(copy, TestContext.Current.CancellationToken));
     }
 
     [Fact]

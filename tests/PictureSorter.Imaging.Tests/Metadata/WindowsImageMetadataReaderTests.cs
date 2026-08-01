@@ -90,7 +90,7 @@ public sealed class WindowsImageMetadataReaderTests : IDisposable
         // Metadaten sind optional: Eine kaputte Datei darf den Scan über tausende
         // Fotos nicht abbrechen.
         string path = Path.Combine(_root, "kein-bild.jpg");
-        await File.WriteAllTextAsync(path, "Das ist in Wahrheit Text.");
+        await File.WriteAllTextAsync(path, "Das ist in Wahrheit Text.", TestContext.Current.CancellationToken);
 
         Assert.Null(await _sut.ReadAsync(path, CancellationToken.None));
     }

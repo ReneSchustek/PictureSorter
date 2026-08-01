@@ -24,7 +24,7 @@ public sealed class SortMemoryRepositoryTests : IAsyncLifetime
     private ServiceProvider _provider = null!;
     private ISortMemory _sut = null!;
 
-    public async Task InitializeAsync()
+    public async ValueTask InitializeAsync()
     {
         ServiceCollection services = new();
         _ = services.AddLogging();
@@ -40,7 +40,7 @@ public sealed class SortMemoryRepositoryTests : IAsyncLifetime
         _sut = _provider.GetRequiredService<ISortMemory>();
     }
 
-    public async Task DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
         await _provider.DisposeAsync().ConfigureAwait(false);
 
