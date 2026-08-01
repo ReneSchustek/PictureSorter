@@ -57,6 +57,16 @@ public sealed class PerceptualHashTests
     public void FromLuminanceGrid_TooNarrow_ThrowsArgumentOutOfRange()
         => Assert.Throws<ArgumentOutOfRangeException>(() => PerceptualHash.FromLuminanceGrid(new byte[8], 1, 8));
 
+    [Fact]
+    public void FromLuminanceGrid_WithoutAnyRow_ThrowsArgumentOutOfRange()
+        => Assert.Throws<ArgumentOutOfRangeException>(() => PerceptualHash.FromLuminanceGrid([], 9, 0));
+
+    [Fact]
+    public void FromLuminanceGrid_WithAGridLargerThan64Bit_IsRejected()
+        // Der Hash fasst 64 Bit. Ein größeres Raster stillschweigend abzuschneiden
+        // ergäbe Hashes, die sich nicht mehr sinnvoll vergleichen lassen.
+        => Assert.Throws<ArgumentException>(() => PerceptualHash.FromLuminanceGrid(new byte[100], 10, 10));
+
     private static byte[] BuildUniformRows(bool ascending)
     {
         const int width = 9;

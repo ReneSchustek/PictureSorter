@@ -182,7 +182,7 @@ public sealed class UpdateServiceTests : IDisposable
         // ein eigenes Paket samt eigener Signatur hinterlegt. Ohne den privaten
         // Schlüssel des Herausgebers darf nichts entpackt und nichts gestartet werden –
         // und der Arbeitsordner muss danach wieder verschwunden sein.
-        string[] vorher = TempUpdateDirectories();
+        string[] before = TempUpdateDirectories();
         (UpdateService service, _) = SetupWithUpdate(_ => Content("ein untergeschobenes Paket"));
 
         _ = await service.CheckAsync(TestContext.Current.CancellationToken);
@@ -190,7 +190,7 @@ public sealed class UpdateServiceTests : IDisposable
             progress: null, TestContext.Current.CancellationToken);
 
         Assert.False(started);
-        Assert.Equal(vorher.Length, TempUpdateDirectories().Length);
+        Assert.Equal(before.Length, TempUpdateDirectories().Length);
     }
 
     [Fact]

@@ -153,14 +153,14 @@ public sealed class SortWizardViewModelTests
             await wizard.PrimaryActionCommand.ExecuteAsync(parameter: null);
         }
 
-        bool[] sichtbar =
+        bool[] visibility =
         [
             wizard.ShowStep1, wizard.ShowStep2, wizard.ShowStep3,
             wizard.ShowStep4, wizard.ShowStep5, wizard.ShowStep6,
         ];
 
-        _ = Assert.Single(sichtbar, visible => visible);
-        Assert.True(sichtbar[step]);
+        _ = Assert.Single(visibility, visible => visible);
+        Assert.True(visibility[step]);
         Assert.False(wizard.ShowStandardActions);
     }
 
@@ -179,14 +179,14 @@ public sealed class SortWizardViewModelTests
             await wizard.PrimaryActionCommand.ExecuteAsync(parameter: null);
         }
 
-        bool[] aktiv =
+        bool[] activeStates =
         [
             wizard.IsStep1, wizard.IsStep2, wizard.IsStep3,
             wizard.IsStep4, wizard.IsStep5, wizard.IsStep6,
         ];
 
-        _ = Assert.Single(aktiv, active => active);
-        Assert.True(aktiv[step]);
+        _ = Assert.Single(activeStates, active => active);
+        Assert.True(activeStates[step]);
     }
 
     [Fact]
@@ -216,13 +216,13 @@ public sealed class SortWizardViewModelTests
     {
         // Während gelernt, analysiert oder sortiert wird, darf niemand den Schritt
         // wechseln — sonst liefe der Vorgang auf einem Stand, den es nicht mehr gibt.
-        bool läuft = false;
+        bool isRunning = false;
         SortWizardViewModel wizard = Create(
-            isInteractive: () => !läuft,
+            isInteractive: () => !isRunning,
             run: _ => Task.FromResult(true));
         await wizard.PrimaryActionCommand.ExecuteAsync(parameter: null);
 
-        läuft = true;
+        isRunning = true;
         wizard.NotifyStateChanged();
 
         Assert.False(wizard.IsInteractive);
