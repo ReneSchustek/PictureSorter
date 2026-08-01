@@ -112,6 +112,123 @@ public sealed class SortWizardViewModelTests
         Assert.Equal(1, enteredStep);
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    [InlineData(4)]
+    [InlineData(5)]
+    public async Task EveryStep_HasATitleAndAnActionLabel(int step)
+    {
+        // Alle sechs Schritte müssen beschriftet und übersetzt sein. Der Sprach-Fake
+        // wirft bei einem fehlenden Schlüssel — genau so blieb der letzte Schritt
+        // schon einmal mit der Überschrift des vorletzten stehen.
+        SortWizardViewModel wizard = Create(run: _ => Task.FromResult(true));
+        for (int i = 0; i < step; i++)
+        {
+            await wizard.PrimaryActionCommand.ExecuteAsync(parameter: null);
+        }
+
+        Assert.Equal(step, wizard.CurrentStep);
+        Assert.False(string.IsNullOrWhiteSpace(wizard.StepTitle));
+        Assert.False(string.IsNullOrWhiteSpace(wizard.PrimaryActionLabel));
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    [InlineData(4)]
+    [InlineData(5)]
+    public async Task InGuidedMode_ExactlyTheCurrentStepIsVisible(int step)
+    {
+        // Der geführte Modus zeigt genau eine Karte. Zeigte er zwei, stünde die
+        // Nutzerin vor zwei Aktionsknöpfen und wüsste nicht, welcher gilt.
+        SortWizardViewModel wizard = Create(run: _ => Task.FromResult(true));
+        wizard.IsGuided = true;
+        for (int i = 0; i < step; i++)
+        {
+            await wizard.PrimaryActionCommand.ExecuteAsync(parameter: null);
+        }
+
+        bool[] sichtbar =
+        [
+            wizard.ShowStep1, wizard.ShowStep2, wizard.ShowStep3,
+            wizard.ShowStep4, wizard.ShowStep5, wizard.ShowStep6,
+        ];
+
+        _ = Assert.Single(sichtbar, visible => visible);
+        Assert.True(sichtbar[step]);
+        Assert.False(wizard.ShowStandardActions);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    [InlineData(4)]
+    [InlineData(5)]
+    public async Task EveryStep_ReportsItselfAsTheActiveOne(int step)
+    {
+        SortWizardViewModel wizard = Create(run: _ => Task.FromResult(true));
+        for (int i = 0; i < step; i++)
+        {
+            await wizard.PrimaryActionCommand.ExecuteAsync(parameter: null);
+        }
+
+        bool[] aktiv =
+        [
+            wizard.IsStep1, wizard.IsStep2, wizard.IsStep3,
+            wizard.IsStep4, wizard.IsStep5, wizard.IsStep6,
+        ];
+
+        _ = Assert.Single(aktiv, active => active);
+        Assert.True(aktiv[step]);
+    }
+
+    [Fact]
+    public async Task GoBack_ReturnsToThePreviousStep()
+    {
+        SortWizardViewModel wizard = Create(run: _ => Task.FromResult(true));
+        await wizard.PrimaryActionCommand.ExecuteAsync(parameter: null);
+
+        wizard.GoBackCommand.Execute(parameter: null);
+
+        Assert.Equal(0, wizard.CurrentStep);
+        Assert.False(wizard.CanGoBack);
+    }
+
+    [Fact]
+    public void GoBack_OnTheFirstStep_ChangesNothing()
+    {
+        SortWizardViewModel wizard = Create();
+
+        wizard.GoBackCommand.Execute(parameter: null);
+
+        Assert.Equal(0, wizard.CurrentStep);
+    }
+
+    [Fact]
+    public async Task DuringARun_NeitherBackNorTheStepBarIsAvailable()
+    {
+        // Während gelernt, analysiert oder sortiert wird, darf niemand den Schritt
+        // wechseln — sonst liefe der Vorgang auf einem Stand, den es nicht mehr gibt.
+        bool läuft = false;
+        SortWizardViewModel wizard = Create(
+            isInteractive: () => !läuft,
+            run: _ => Task.FromResult(true));
+        await wizard.PrimaryActionCommand.ExecuteAsync(parameter: null);
+
+        läuft = true;
+        wizard.NotifyStateChanged();
+
+        Assert.False(wizard.IsInteractive);
+        Assert.False(wizard.CanGoBack);
+    }
+
     private static SortWizardViewModel Create(
         Func<bool>? isInteractive = null,
         Func<int, bool>? canRun = null,
