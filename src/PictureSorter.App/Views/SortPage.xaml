@@ -474,14 +474,14 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <Button
-                                Command="{x:Bind ViewModel.ToggleAllCommand}"
+                                Command="{x:Bind ViewModel.Proposals.ToggleAllCommand}"
                                 x:Uid="SortPage_ToggleAllButton"
                                 Content="Alle aus-/abwählen" />
                             <TextBlock
                                 Grid.Column="1"
                                 VerticalAlignment="Center"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Text="{x:Bind ViewModel.SelectionSummary, Mode=OneWay}" />
+                                Text="{x:Bind ViewModel.Proposals.SelectionSummary, Mode=OneWay}" />
                             <Button
                                 Grid.Column="2"
                                 Command="{x:Bind ViewModel.ApplyCommand}"
@@ -504,7 +504,7 @@
                             x:Uid="SortPage_ProposalList"
                             MaxHeight="360"
                             AutomationProperties.Name="Vorschläge"
-                            ItemsSource="{x:Bind ViewModel.Proposals}"
+                            ItemsSource="{x:Bind ViewModel.Proposals.Items}"
                             SelectionMode="None">
                             <ListView.ItemTemplate>
                                 <DataTemplate x:DataType="vm:ProposalViewModel">

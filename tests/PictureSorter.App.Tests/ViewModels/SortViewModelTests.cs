@@ -25,9 +25,9 @@ public sealed class SortViewModelTests
 
         await AnalyzeAsync(sut);
 
-        Assert.Equal(3, sut.Proposals.Count);
-        Assert.All(sut.Proposals, proposal => Assert.True(proposal.IsSelected));
-        Assert.Equal(3, sut.SelectedProposalCount);
+        Assert.Equal(3, sut.Proposals.Items.Count);
+        Assert.All(sut.Proposals.Items, proposal => Assert.True(proposal.IsSelected));
+        Assert.Equal(3, sut.Proposals.SelectedCount);
         Assert.True(sut.CanApply);
     }
 
@@ -38,7 +38,7 @@ public sealed class SortViewModelTests
         using SortViewModel sut = CreateSut(sorter);
         await AnalyzeAsync(sut);
 
-        sut.Proposals[1].IsSelected = false;
+        sut.Proposals.Items[1].IsSelected = false;
 
         await sut.ApplyCommand.ExecuteAsync(parameter: null);
 
@@ -82,7 +82,7 @@ public sealed class SortViewModelTests
         using SortViewModel sut = CreateSut(sorter);
         await AnalyzeAsync(sut);
 
-        sut.Proposals[1].IsSelected = false;
+        sut.Proposals.Items[1].IsSelected = false;
 
         await sut.ApplyCommand.ExecuteAsync(parameter: null);
 
@@ -98,12 +98,12 @@ public sealed class SortViewModelTests
         using SortViewModel sut = CreateSut(sorter);
         await AnalyzeAsync(sut);
 
-        foreach (ProposalViewModel proposal in sut.Proposals)
+        foreach (ProposalViewModel proposal in sut.Proposals.Items)
         {
             proposal.IsSelected = false;
         }
 
-        Assert.Equal(0, sut.SelectedProposalCount);
+        Assert.Equal(0, sut.Proposals.SelectedCount);
         Assert.False(sut.CanApply);
         Assert.False(sut.ApplyCommand.CanExecute(parameter: null));
     }
@@ -114,11 +114,11 @@ public sealed class SortViewModelTests
         FakePhotoSorter sorter = new(CreateProposals(3));
         using SortViewModel sut = CreateSut(sorter);
         await AnalyzeAsync(sut);
-        sut.Proposals[0].IsSelected = false;
+        sut.Proposals.Items[0].IsSelected = false;
 
-        sut.ToggleAllCommand.Execute(parameter: null);
+        sut.Proposals.ToggleAllCommand.Execute(parameter: null);
 
-        Assert.Equal(3, sut.SelectedProposalCount);
+        Assert.Equal(3, sut.Proposals.SelectedCount);
     }
 
     [Fact]
@@ -128,9 +128,9 @@ public sealed class SortViewModelTests
         using SortViewModel sut = CreateSut(sorter);
         await AnalyzeAsync(sut);
 
-        sut.ToggleAllCommand.Execute(parameter: null);
+        sut.Proposals.ToggleAllCommand.Execute(parameter: null);
 
-        Assert.Equal(0, sut.SelectedProposalCount);
+        Assert.Equal(0, sut.Proposals.SelectedCount);
     }
 
     [Fact]
@@ -140,9 +140,9 @@ public sealed class SortViewModelTests
         using SortViewModel sut = CreateSut(sorter);
         await AnalyzeAsync(sut);
 
-        sut.Proposals[0].IsSelected = false;
+        sut.Proposals.Items[0].IsSelected = false;
 
-        Assert.Equal("2 von 3 ausgewählt", sut.SelectionSummary);
+        Assert.Equal("2 von 3 ausgewählt", sut.Proposals.SelectionSummary);
     }
 
     // Durchläuft den echten Ablauf bis zur Vorschau: passende Bilder vorschlagen
