@@ -96,48 +96,50 @@
 
         <!-- Global angedockte Statusleiste: zeigt laufende Vorgänge seitenübergreifend
              samt Fortschritt und Stopp-Knopf. -->
-        <InfoBar
-            Grid.Row="3"
-            AutomationProperties.LiveSetting="Polite"
-            BorderThickness="0,1,0,0"
-            CornerRadius="0"
-            IsClosable="False"
-            IsOpen="True"
-            Message="{Binding Message}"
-            Severity="{Binding Severity, Converter={StaticResource StatusSeverityConverter}}">
-            <InfoBar.ActionButton>
-                <Button
-                    x:Uid="MainWindow_StopButton"
-                    VerticalAlignment="Center"
-                    Command="{Binding StopCommand}"
-                    Content="Stopp"
-                    Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}" />
-            </InfoBar.ActionButton>
-            <InfoBar.Content>
-                <!-- Fortschritt links, laufende Version rechts. Die Version steht
-                     dauerhaft da, der Balken nur bei laufender Arbeit. -->
-                <Grid Margin="0,4,0,12" ColumnSpacing="12">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <ProgressBar
+        <!-- Fortschritt und Version liegen bewusst NEBEN der Meldung, nicht in
+             InfoBar.Content: Deren Inhalt rendert das Steuerelement grundsätzlich
+             unterhalb der Meldungszeile, und die Leiste wurde dadurch zweizeilig. -->
+        <Grid Grid.Row="3">
+            <InfoBar
+                AutomationProperties.LiveSetting="Polite"
+                BorderThickness="0,1,0,0"
+                CornerRadius="0"
+                IsClosable="False"
+                IsOpen="True"
+                Message="{Binding Message}"
+                Severity="{Binding Severity, Converter={StaticResource StatusSeverityConverter}}">
+                <InfoBar.ActionButton>
+                    <Button
+                        x:Uid="MainWindow_StopButton"
                         VerticalAlignment="Center"
-                        IsIndeterminate="{Binding IsIndeterminate}"
-                        Maximum="100"
-                        Value="{Binding ProgressValue}"
+                        Command="{Binding StopCommand}"
+                        Content="Stopp"
                         Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}" />
-                    <TextBlock
-                        x:Uid="MainWindow_AppVersionText"
-                        Grid.Column="1"
-                        Margin="0,0,12,0"
-                        VerticalAlignment="Center"
-                        AutomationProperties.Name="Programmversion"
-                        Opacity="0.7"
-                        Style="{ThemeResource CaptionTextBlockStyle}"
-                        Text="{Binding AppVersion}" />
-                </Grid>
-            </InfoBar.Content>
-        </InfoBar>
+                </InfoBar.ActionButton>
+            </InfoBar>
+
+            <!-- Die Version steht dauerhaft da, der Balken nur bei laufender Arbeit. -->
+            <StackPanel
+                Margin="0,0,16,0"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                Orientation="Horizontal"
+                Spacing="12">
+                <ProgressBar
+                    Width="180"
+                    VerticalAlignment="Center"
+                    IsIndeterminate="{Binding IsIndeterminate}"
+                    Maximum="100"
+                    Value="{Binding ProgressValue}"
+                    Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}" />
+                <TextBlock
+                    x:Uid="MainWindow_AppVersionText"
+                    VerticalAlignment="Center"
+                    AutomationProperties.Name="Programmversion"
+                    Opacity="0.7"
+                    Style="{ThemeResource CaptionTextBlockStyle}"
+                    Text="{Binding AppVersion}" />
+            </StackPanel>
+        </Grid>
     </Grid>
 </Window>
