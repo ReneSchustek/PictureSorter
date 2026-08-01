@@ -130,6 +130,11 @@ internal sealed class FileLoggerProvider : ILoggerProvider
         return scope;
     }
 
+    // Der Zeitstempel einer Logzeile — aus derselben Quelle wie der Dateiname. Vorher
+    // griff der Logger direkt auf die Systemuhr zu: zwei Zeitquellen in einer Klasse,
+    // und der Zeitstempel ließ sich nicht prüfen. Ortszeit wie beim Dateinamen.
+    internal DateTimeOffset Now => _clock.UtcNow.ToLocalTime();
+
     // Hängt die offenen Scopes (äußerster zuerst) an die Logzeile an.
     internal void AppendScopes(StringBuilder builder)
     {

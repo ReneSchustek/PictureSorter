@@ -362,6 +362,94 @@ public sealed class PhotoSortingServiceTests
         Assert.Equal(SortMemoryStatus.Ignored, remembered.Status);
     }
 
+    [Fact]
+    public async Task ApplyProposalsAsync_WithMixedFoldersOrCategories_IsRejected()
+    {
+        // Der Lauf wird als ein Protokolleintrag festgehalten – mit einem Quellordner
+        // und einer Kategorie. Käme eine gemischte Liste durch, stünde im Protokoll die
+        // Angabe des ersten Vorschlags für alle, und das Zurücknehmen liefe ins Leere.
+        PhotoSortingService service = CreateService([1.0f, 0.0f, 0.0f], new FakeImageClassifier(new VisionVerdict { Matches = true, Confidence = 0.9 }));
+        SortProposal fromAnotherFolder = CreateProposal("b.jpg") with { SourceFolder = @"C:\andere" };
+        SortProposal anotherCategory = CreateProposal("c.jpg") with { CategoryName = "Urlaub" };
+
+        _ = await Assert.ThrowsAsync<InvalidOperationException>(() => service.ApplyProposalsAsync(
+            [CreateProposal(), fromAnotherFolder],
+            FileOperationMode.Move,
+            dryRun: false,
+            TestContext.Current.CancellationToken));
+
+        _ = await Assert.ThrowsAsync<InvalidOperationException>(() => service.ApplyProposalsAsync(
+            [CreateProposal(), anotherCategory],
+            FileOperationMode.Move,
+            dryRun: false,
+            TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
+    public async Task CreateProposalsAsync_ForAnEventCategory_PutsTheCaptureDateIntoTheFolderName()
+    {
+        // Bei einem Ereignis ist das Datum der eigentliche Ordnername – „Geburtstag"
+        // allein hilft nicht, wenn es davon mehrere gibt.
+        Photo captured = new()
+        {
+            FullPath = @"C:\fotos\fest.jpg",
+            FileName = "fest.jpg",
+            CapturedAt = new DateTimeOffset(2026, 5, 17, 15, 30, 0, TimeSpan.Zero),
+        };
+
+        Category eventCategory = new("Geburtstag", "Bilder der Feier", CategoryKind.Event);
+        eventCategory.AddExample(new CategoryExample
+        {
+            PhotoPath = @"C:\fotos\beispiel.jpg",
+            IsPositive = true,
+            Embedding = new ImageEmbedding([1.0f, 0.0f, 0.0f], "fake"),
+        });
+
+        PhotoSortingService service = CreateService(
+            [1.0f, 0.0f, 0.0f],
+            new FakeImageClassifier(new VisionVerdict { Matches = true, Confidence = 0.9 }),
+            photos: [captured]);
+
+        IReadOnlyList<SortProposal> proposals = await service.CreateProposalsAsync(
+            SourceFolder, eventCategory, includeSubfolders: false, progress: null,
+            TestContext.Current.CancellationToken);
+
+        SortProposal proposal = Assert.Single(proposals);
+        Assert.Equal(Path.Combine(SourceFolder, "Geburtstag 17.05.26"), proposal.TargetFolderPath);
+    }
+
+    [Fact]
+    public async Task CreateProposalsAsync_ReportsProgressAlsoForSettledPhotos()
+    {
+        // Ein bereits abgehaktes Foto wird übersprungen – der Zählstand muss trotzdem
+        // weiterlaufen, sonst bliebe der Fortschrittsbalken bei einem Ordner voller
+        // bekannter Bilder scheinbar stehen.
+        FakeSortMemory memory = new();
+        memory.Records.Add(CreateMemory(SortMemoryStatus.Sorted));
+        PhotoSortingService service = CreateService(
+            [1.0f, 0.0f, 0.0f],
+            new FakeImageClassifier(new VisionVerdict { Matches = true, Confidence = 0.9 }),
+            memory: memory);
+
+        // Bewusst kein Progress<T>: Das meldet über den Synchronisationskontext und
+        // damit nicht zwingend vor der Rückkehr – der Test wäre zeitabhängig.
+        CollectingProgress reported = new();
+        IReadOnlyList<SortProposal> proposals = await service.CreateProposalsAsync(
+            SourceFolder, CreateCategory(), includeSubfolders: false, reported,
+            TestContext.Current.CancellationToken);
+
+        Assert.Empty(proposals);
+        Assert.Equal(new SortProgress(1, 1), reported.Reports[^1]);
+    }
+
+    /// <summary>Nimmt Fortschrittsmeldungen unmittelbar entgegen.</summary>
+    private sealed class CollectingProgress : IProgress<SortProgress>
+    {
+        public List<SortProgress> Reports { get; } = [];
+
+        public void Report(SortProgress value) => Reports.Add(value);
+    }
+
     private static SortProposal CreateProposal() => CreateProposal(SamplePhoto.FileName);
 
     private static SortProposal CreateProposal(string fileName) => new()
@@ -516,9 +604,10 @@ public sealed class PhotoSortingServiceTests
         IFileOrganizer? organizer = null,
         FakeSortMemory? memory = null,
         IEmbeddingProvider? embeddingProvider = null,
-        FakeSortJournal? journal = null)
+        FakeSortJournal? journal = null,
+        IReadOnlyList<Photo>? photos = null)
     {
-        FakePhotoSource photoSource = new([SamplePhoto]);
+        FakePhotoSource photoSource = new(photos ?? [SamplePhoto]);
         IOptions<SortingOptions> options = Options.Create(new SortingOptions());
         FakeClock clock = new(new DateTimeOffset(2026, 7, 1, 8, 0, 0, TimeSpan.Zero));
 

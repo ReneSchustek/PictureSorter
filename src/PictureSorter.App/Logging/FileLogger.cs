@@ -53,7 +53,7 @@ internal sealed class FileLogger : ILogger
         string message = formatter(state, exception);
         StringBuilder builder = new();
         _ = builder
-            .Append(DateTimeOffset.Now.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture))
+            .Append(_provider.Now.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture))
             .Append(" [").Append(LevelLabel(logLevel)).Append("] ")
             .Append(_category);
 

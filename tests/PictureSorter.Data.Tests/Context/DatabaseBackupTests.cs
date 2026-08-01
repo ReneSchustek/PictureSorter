@@ -62,6 +62,22 @@ public sealed class DatabaseBackupTests : IDisposable
     }
 
     [Fact]
+    public void TryCreate_WhenTheCopyFails_ReportsItAndLeavesNoHalfBackup()
+    {
+        // Eine halb geschriebene Sicherung ist schlimmer als keine – sie sähe brauchbar
+        // aus. Hier ist der Zielname durch einen Ordner belegt, das Kopieren scheitert.
+        string databasePath = CreateDatabaseWithOneRow();
+        string backupPath = DatabaseBackup.BuildBackupPath(databasePath, "20260303000000_Dritte");
+        _ = Directory.CreateDirectory(backupPath);
+        DatabaseBackup backup = new(NullLogger<DatabaseBackup>.Instance);
+
+        bool result = backup.TryCreate(databasePath, "20260303000000_Dritte");
+
+        Assert.False(result);
+        Assert.False(File.Exists(backupPath));
+    }
+
+    [Fact]
     public void TryCreate_WhenBackupAlreadyExists_LeavesItUntouched()
     {
         // Scheitert eine Migration und startet die Anwendung erneut, darf die

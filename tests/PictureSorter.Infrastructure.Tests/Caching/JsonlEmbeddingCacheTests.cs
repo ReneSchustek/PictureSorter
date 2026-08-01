@@ -129,6 +129,54 @@ public sealed class JsonlEmbeddingCacheTests : IDisposable
             () => cache.GetAsync(" ", CancellationToken.None));
     }
 
+    [Fact]
+    public async Task Load_WhenCompactionFails_KeepsWorkingAndLeavesNoTempFile()
+    {
+        // Ein belegter Name für die temporäre Datei lässt die Kompaktierung scheitern.
+        // Sie ist eine Optimierung – der Cache muss trotzdem antworten.
+        string path = await WriteDeadLinesAsync().ConfigureAwait(true);
+        _ = Directory.CreateDirectory(path + ".tmp");
+
+        using JsonlEmbeddingCache cache = CreateCache();
+        ImageEmbedding? loaded = await cache.GetAsync("key-1", TestContext.Current.CancellationToken);
+
+        Assert.NotNull(loaded);
+        Assert.Equal(150, (await File.ReadAllLinesAsync(path, TestContext.Current.CancellationToken)).Length);
+    }
+
+    [Fact]
+    public async Task AnUnusableCacheFile_IsNoReasonToStopTheAnalysis()
+    {
+        // Der Cache ist nur eine Optimierung. Lässt sich die Datei weder lesen noch
+        // schreiben, muss der Sortierlauf trotzdem weitergehen.
+        _ = Directory.CreateDirectory(Path.Combine(_directory, "embedding-cache.jsonl"));
+        using JsonlEmbeddingCache cache = CreateCache();
+
+        await cache.SetAsync(
+            "key-1",
+            new ImageEmbedding([0.5f], "nomic-embed-text"),
+            TestContext.Current.CancellationToken);
+
+        Assert.Null(await cache.GetAsync("unbekannt", TestContext.Current.CancellationToken));
+    }
+
+    // Schreibt 150 Fassungen desselben Schlüssels — genau das, was im Betrieb entsteht
+    // und was die Kompaktierung auslöst. Bewusst über den Cache selbst geschrieben:
+    // Das Dateiformat ist intern und kein Vertrag gegenüber dem Test.
+    private async Task<string> WriteDeadLinesAsync()
+    {
+        using JsonlEmbeddingCache writer = CreateCache();
+        for (int index = 0; index < 150; index++)
+        {
+            await writer.SetAsync(
+                "key-1",
+                new ImageEmbedding([index], "nomic-embed-text"),
+                TestContext.Current.CancellationToken).ConfigureAwait(true);
+        }
+
+        return Path.Combine(_directory, "embedding-cache.jsonl");
+    }
+
     private JsonlEmbeddingCache CreateCache() =>
         new(_directory, NullLogger<JsonlEmbeddingCache>.Instance);
 
