@@ -32,6 +32,18 @@ internal static class UpdateInstaller
     private const long MaxExtractedBytes = 1L * 1024 * 1024 * 1024;
 
     private const int MaxCopyAttempts = 10;
+
+    // Endung der beiseitegelegten Vorgängerdatei (siehe TryReplaceByRenaming).
+    private const string AsideSuffix = ".alt-update";
+
+    /// <summary>
+    /// Präfix der Arbeitsordner, die der Download anlegt. Sie tragen je Lauf rund
+    /// 325 MB und bleiben nach dem Einspielen zwangsläufig liegen: Der Helfer läuft
+    /// aus dem Ordner, den er löschen müsste. Wer den Ordner anlegt, muss dasselbe
+    /// Präfix verwenden – sonst findet <see cref="RemoveWorkingDirectories"/> ihn nicht.
+    /// </summary>
+    internal const string WorkingDirectoryPrefix = "PictureSorter-Update-";
+
     private static readonly TimeSpan CopyRetryDelay = TimeSpan.FromMilliseconds(500);
 
     /// <summary>
@@ -395,8 +407,67 @@ internal static class UpdateInstaller
             }
             catch (Exception ex) when (attempt < MaxCopyAttempts && ex is IOException or UnauthorizedAccessException)
             {
+                // Warten allein genügt hier nicht immer: Ist die Datei noch im
+                // Speicher abgebildet, bleibt sie dauerhaft unüberschreibbar.
+                if (TryReplaceByRenaming(source, destination))
+                {
+                    return;
+                }
+
                 Thread.Sleep(CopyRetryDelay);
             }
+        }
+    }
+
+    // Eine Datei, die im Speicher abgebildet ist, lässt sich nicht überschreiben –
+    // Windows meldet „Der Vorgang ist bei einer Datei mit einem geöffneten Bereich …
+    // nicht anwendbar", und zwar nicht nur für einen Moment, sondern so lange die
+    // Abbildung besteht. Genau daran scheiterte jede Aktualisierung an der
+    // Laufzeitdatei clrjit.dll, die ein Virenscanner abgebildet hält.
+    //
+    // Umbenennen erlaubt Windows dagegen auch dann. Der Weg ist deshalb: alte Datei
+    // beiseitelegen, neue an ihre Stelle schreiben, die beiseitegelegte entfernen.
+    private static bool TryReplaceByRenaming(string source, string destination)
+    {
+        string aside = destination + AsideSuffix;
+        try
+        {
+            TryDelete(aside);
+            File.Move(destination, aside);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            return false;
+        }
+
+        try
+        {
+            File.Copy(source, destination, overwrite: false);
+            TryDelete(aside);
+            return true;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // Die alte Datei zurückholen: Eine fehlende Datei wäre schlimmer als eine
+            // veraltete – ohne sie startet die Anwendung überhaupt nicht mehr.
+            TryRestore(aside, destination);
+            return false;
+        }
+    }
+
+    private static void TryRestore(string aside, string destination)
+    {
+        try
+        {
+            if (!File.Exists(destination) && File.Exists(aside))
+            {
+                File.Move(aside, destination);
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // Mehr als der Versuch ist an dieser Stelle nicht möglich; der Ausgang
+            // wird ohnehin vermerkt und der Nutzerin nach dem Neustart gemeldet.
         }
     }
 
@@ -417,6 +488,43 @@ internal static class UpdateInstaller
         }
 
         return written;
+    }
+
+    /// <summary>
+    /// Entfernt die Arbeitsordner früherer Aktualisierungen. Aufzurufen beim Start:
+    /// Der Helfer kann seinen eigenen Ordner nicht löschen, weil er daraus läuft –
+    /// ohne dieses Aufräumen bleiben je Aktualisierung rund 325 MB im
+    /// Temp-Verzeichnis liegen, auch wenn sie gelungen ist.
+    /// </summary>
+    /// <returns>Die Zahl der entfernten Ordner.</returns>
+    public static int RemoveWorkingDirectories()
+    {
+        int removed = 0;
+        IEnumerable<string> candidates;
+        try
+        {
+            candidates = Directory.EnumerateDirectories(Path.GetTempPath(), WorkingDirectoryPrefix + "*");
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            return 0;
+        }
+
+        foreach (string directory in candidates)
+        {
+            try
+            {
+                Directory.Delete(directory, recursive: true);
+                removed++;
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                // Der Ordner des gerade noch laufenden Helfers lässt sich nicht
+                // löschen. Das ist kein Fehler: Der nächste Start holt ihn.
+            }
+        }
+
+        return removed;
     }
 
     private static void TryDelete(string path)

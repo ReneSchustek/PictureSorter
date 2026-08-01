@@ -1,3 +1,4 @@
+using System.IO.MemoryMappedFiles;
 using PictureSorter.App.Services;
 
 namespace PictureSorter.App.Tests.Services;
@@ -211,6 +212,128 @@ public sealed class UpdateInstallerOutcomeTests : IDisposable
 
         Assert.False(result.Success);
         Assert.Empty(Directory.GetFiles(target));
+    }
+
+    [Fact]
+    public void Apply_WhenTheTargetIsMemoryMapped_ReplacesItByRenamingInstead()
+    {
+        // Der Zustand, an dem in der ausgelieferten Fassung jede Aktualisierung
+        // scheiterte: Die Zieldatei ist im Speicher abgebildet — bei uns clrjit.dll,
+        // gehalten von einem Virenscanner. Windows verweigert das Überschreiben dann
+        // dauerhaft, kein Abwarten hilft; Umbenennen erlaubt es dagegen.
+        string staging = CreateFolder("neu");
+        string target = CreateFolder("programm");
+        File.WriteAllText(Path.Combine(staging, "gesperrt.dll"), "neu");
+        string destination = Path.Combine(target, "gesperrt.dll");
+        File.WriteAllText(destination, "alt");
+
+        // Freigabe wie ein Virenscanner sie hält: lesen, schreiben und löschen bleiben
+        // erlaubt. Nur das Überschreiben verbietet die Abbildung selbst — genau daran
+        // scheiterte es. Ohne FileShare.Delete prüfte der Test einen anderen Zustand
+        // (eine schlicht gesperrte Datei) und ginge am Befund vorbei.
+        UpdateInstaller.ApplyResult result;
+        using (FileStream opened = new(
+            destination, FileMode.Open, FileAccess.ReadWrite,
+            FileShare.ReadWrite | FileShare.Delete))
+        using (MemoryMappedFile.CreateFromFile(
+            opened, mapName: null, capacity: 0,
+            MemoryMappedFileAccess.Read, HandleInheritability.None, leaveOpen: true))
+        {
+            result = UpdateInstaller.ApplyStagedFiles(staging, target);
+        }
+
+        Assert.True(result.Success);
+        Assert.Equal("neu", File.ReadAllText(destination));
+
+        // Die beiseitegelegte Vorgängerdatei bleibt liegen, solange die Abbildung
+        // besteht — löschen ließe sie sich ebenso wenig wie überschreiben. Die
+        // nächste Aktualisierung räumt sie weg, bevor sie erneut umbenennt.
+    }
+
+    [Fact]
+    public void Apply_WhenTheTargetCannotEvenBeRenamed_KeepsTheOldInstallation()
+    {
+        // Die Grenze des Umbenennungs-Wegs: Hält jemand die Datei ohne Lösch-Freigabe
+        // offen, ist auch das Umbenennen versperrt. Dann muss die Aktualisierung sauber
+        // scheitern — mit unversehrter alter Fassung, nicht mit einer halben.
+        string staging = CreateFolder("neu");
+        string target = CreateFolder("programm");
+        File.WriteAllText(Path.Combine(staging, "fest.dll"), "neu");
+        string destination = Path.Combine(target, "fest.dll");
+        File.WriteAllText(destination, "alt");
+
+        UpdateInstaller.ApplyResult result;
+        using (new FileStream(destination, FileMode.Open, FileAccess.Read, FileShare.Read))
+        {
+            result = UpdateInstaller.ApplyStagedFiles(staging, target);
+        }
+
+        Assert.False(result.Success);
+        Assert.Equal("fest.dll", result.FailedFile);
+        Assert.Equal("alt", File.ReadAllText(destination));
+    }
+
+    [Fact]
+    public void Apply_WhenTheNewFileCannotBeRead_PutsTheOldFileBack()
+    {
+        // Nach dem Beiseitelegen scheitert das Schreiben der neuen Datei — etwa, weil
+        // ein Virenscanner sie gerade prüft. Eine fehlende Datei wäre schlimmer als
+        // eine veraltete: Ohne sie startet die Anwendung überhaupt nicht mehr.
+        string staging = CreateFolder("neu");
+        string target = CreateFolder("programm");
+        string source = Path.Combine(staging, "quelle.dll");
+        File.WriteAllText(source, "neu");
+        string destination = Path.Combine(target, "quelle.dll");
+        File.WriteAllText(destination, "alt");
+
+        UpdateInstaller.ApplyResult result;
+        using (new FileStream(source, FileMode.Open, FileAccess.Read, FileShare.None))
+        {
+            result = UpdateInstaller.ApplyStagedFiles(staging, target);
+        }
+
+        Assert.False(result.Success);
+        Assert.Equal("alt", File.ReadAllText(destination));
+        Assert.Empty(Directory.EnumerateFiles(target, "*.alt-update", SearchOption.AllDirectories));
+    }
+
+    // ── Arbeitsordner der Aktualisierung ───────────────────────────────────────
+
+    [Fact]
+    public void WorkingDirectories_OfEarlierUpdates_AreRemoved()
+    {
+        // Der Helfer läuft aus seinem Arbeitsordner heraus und kann ihn deshalb nicht
+        // selbst löschen. Ohne dieses Aufräumen blieben je Aktualisierung rund 325 MB
+        // im Temp-Verzeichnis liegen — auch bei einer gelungenen.
+        string leftover = Path.Combine(Path.GetTempPath(), "PictureSorter-Update-" + Guid.NewGuid().ToString("N"));
+        _ = Directory.CreateDirectory(Path.Combine(leftover, "neu"));
+        File.WriteAllText(Path.Combine(leftover, "package.zip"), "inhalt");
+
+        int removed = UpdateInstaller.RemoveWorkingDirectories();
+
+        Assert.True(removed >= 1);
+        Assert.False(Directory.Exists(leftover));
+    }
+
+    [Fact]
+    public void WorkingDirectories_StillInUse_AreLeftForTheNextStart()
+    {
+        // Beim Start läuft der Helfer unter Umständen noch aus seinem Ordner. Ihn
+        // nicht löschen zu können ist dann kein Fehler — der nächste Start holt ihn.
+        string inUse = Path.Combine(Path.GetTempPath(), "PictureSorter-Update-" + Guid.NewGuid().ToString("N"));
+        _ = Directory.CreateDirectory(inUse);
+        string running = Path.Combine(inUse, "PictureSorter.exe");
+        File.WriteAllText(running, "Helfer");
+
+        using (new FileStream(running, FileMode.Open, FileAccess.Read, FileShare.Read))
+        {
+            _ = UpdateInstaller.RemoveWorkingDirectories();
+            Assert.True(Directory.Exists(inUse));
+        }
+
+        _ = UpdateInstaller.RemoveWorkingDirectories();
+
+        Assert.False(Directory.Exists(inUse));
     }
 
     // ── Warten auf die alte Instanz ────────────────────────────────────────────
