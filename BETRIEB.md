@@ -136,11 +136,29 @@ unsignierte ältere Releases – sie lassen sich nicht über die Update-Funktion
 einspielen, sondern nur über ihr Setup.
 
 **Schlüsselwechsel:** Der öffentliche Schlüssel ist in die Anwendung einkompiliert.
-Ein Wechsel des Signaturschlüssels macht neue Releases für alte Installationen
-unbrauchbar – sie lehnen die neue Signatur ab und melden das im Protokoll. Ein
-Wechsel erfordert deshalb eine Zwischenfassung, die beide Schlüssel akzeptiert,
-bevor der alte abgeschaltet wird. Der private Schlüssel liegt außerhalb des
+Eine Installation kennt nur die Schlüssel, die zum Zeitpunkt ihrer Auslieferung
+einkompiliert waren. Wird der Schlüssel einfach ausgetauscht, lehnt jede vorhandene
+Installation jedes weitere Update ab – und kann sich damit auch nicht mehr auf die
+Fassung mit dem neuen Schlüssel bringen. Der private Schlüssel liegt außerhalb des
 Repositories; in der CI als Secret `PICTURESORTER_SIGNING_KEY`.
+
+Der Wechsel läuft deshalb in drei Veröffentlichungen ab. Die Anwendung akzeptiert
+dafür eine Liste von Schlüsseln (`ReleaseSignatureVerifier.AcceptedPublicKeys`):
+
+1. **Nachfolger bekanntmachen.** Neues Schlüsselpaar mit `tools/new-signing-key.ps1`
+   erzeugen, den neuen öffentlichen Schlüssel zur Liste hinzufügen, den alten dort
+   belassen. Signiert wird weiter mit dem alten. Diese Fassung veröffentlichen.
+2. **Umschalten.** Erst wenn die Installationen auf Schritt 1 sind (Update-Zeitraum
+   großzügig bemessen), das CI-Secret auf den neuen privaten Schlüssel umstellen. Ab
+   hier tragen die Pakete die neue Signatur; Schritt-1-Installationen nehmen sie an.
+3. **Alten Schlüssel abschalten.** In einer späteren Fassung den alten öffentlichen
+   Schlüssel aus der Liste entfernen. Installationen, die die Schritte davor
+   übersprungen haben, brauchen dann eine Neuinstallation über das Setup.
+
+Wird ein Schlüssel kompromittiert, entfällt die Schonfrist: Dann wird sofort auf den
+neuen umgestellt und der alte entfernt. Installationen, die den Nachfolger noch nicht
+kennen, müssen über das Setup neu eingerichtet werden – das ist der Preis dafür, dass
+ein fremder Unterzeichner nichts einschleusen kann.
 
 ---
 

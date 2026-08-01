@@ -143,7 +143,9 @@
                         Toggled="OnProblemsOnlyToggled" />
                     <TextBox
                         x:Name="LogView"
+                        x:Uid="AboutPage_LogView"
                         Height="220"
+                        AutomationProperties.Name="Protokoll"
                         FontFamily="Consolas"
                         FontSize="12"
                         IsReadOnly="True"

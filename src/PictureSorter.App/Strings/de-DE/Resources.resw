@@ -816,4 +816,19 @@
   <data name="AboutPage_SupportButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Kaffee spendieren</value>
   </data>
+  <data name="AboutPage_LogView.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Protokoll</value>
+  </data>
+  <data name="DashboardPage_Tiles.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Bereiche</value>
+  </data>
+  <data name="MemoryPage_ItemList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Gemerkte Entscheidungen</value>
+  </data>
+  <data name="SortPage_ExampleList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Beispielbilder</value>
+  </data>
+  <data name="SortPage_ProposalList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Vorschläge</value>
+  </data>
 </root>
