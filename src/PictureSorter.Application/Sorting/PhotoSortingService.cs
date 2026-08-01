@@ -106,6 +106,7 @@ public sealed class PhotoSortingService : IPhotoSorter
         List<SortProposal> proposals = [];
         int processed = 0;
         int skipped = 0;
+        int incompatible = 0;
 
         foreach (Photo photo in photos)
         {
@@ -127,6 +128,11 @@ public sealed class PhotoSortingService : IPhotoSorter
                 proposals.Add(evaluation.Proposal);
             }
 
+            if (evaluation.ExamplesIncompatible)
+            {
+                incompatible++;
+            }
+
             // Nur ein tatsächlich gefälltes Urteil wird gemerkt. Bei einem KI-Ausfall
             // bleibt das Foto ungemerkt, damit der nächste Lauf es erneut versucht.
             if (evaluation.WasEvaluated)
@@ -144,6 +150,13 @@ public sealed class PhotoSortingService : IPhotoSorter
         if (skipped > 0)
         {
             SortingLog.PhotosSkippedByMemory(_logger, skipped);
+        }
+
+        // Einmal je Lauf, nicht je Foto: Sonst stünde dieselbe Meldung tausendfach im
+        // Protokoll und die Ursache ginge darin unter.
+        if (incompatible > 0)
+        {
+            SortingLog.ExamplesFromAnotherModel(_logger, category.Name, incompatible);
         }
 
         return proposals;
@@ -309,13 +322,26 @@ public sealed class PhotoSortingService : IPhotoSorter
             ImageEmbedding embedding = await _embeddingProvider
                 .CreateEmbeddingAsync(photo, cancellationToken)
                 .ConfigureAwait(false);
-            double similarity = BestSimilarity(embedding, positives);
+
+            (double similarity, bool comparable) = BestSimilarity(embedding, positives);
+
+            // Die gespeicherten Beispiele stammen aus einem anderen Modell als das
+            // gerade eingestellte. Ihre Vektoren sind mit dem aktuellen nicht
+            // vergleichbar – jedes Urteil daraus wäre geraten. Deshalb wird das Foto
+            // ausdrücklich NICHT bewertet und damit auch nicht gemerkt: Andernfalls
+            // stünde nach einem Modellwechsel der ganze Ordner dauerhaft als
+            // „passt nicht" im Gedächtnis, und selbst nach dem Zurückstellen des
+            // Modells käme kein Foto je wieder zur Prüfung.
+            if (!comparable)
+            {
+                return Evaluation.IncompatibleExamples();
+            }
 
             // Ähnelt das Foto einem Gegenbeispiel mehr als jedem Beispiel, gehört es
             // nicht dazu – unabhängig von den Schwellen. Das ist der eigentliche Zweck
             // der Gegenbeispiele: Genau die Bilder auszuschließen, die dem Motiv nahe
             // kommen, aber nicht gemeint sind (Urlaubsstrand gegen Strandhochzeit).
-            if (negatives.Count > 0 && BestSimilarity(embedding, negatives) >= similarity)
+            if (negatives.Count > 0 && BestSimilarity(embedding, negatives).Best >= similarity)
             {
                 SortingLog.RejectedByCounterExample(_logger, photo.FileName);
                 return Evaluation.Rejected();
@@ -367,25 +393,35 @@ public sealed class PhotoSortingService : IPhotoSorter
             : Evaluation.Rejected();
     }
 
-    private static double BestSimilarity(ImageEmbedding embedding, IReadOnlyList<ImageEmbedding> positives)
+    // Liefert die höchste Ähnlichkeit zu einem der Vergleichsvektoren und ob überhaupt
+    // einer vergleichbar war. Vergleichbar heißt: gleiches Modell und gleiche Länge.
+    // Das Modell allein genügt nicht (eine spätere Fassung kann die Länge ändern), die
+    // Länge allein erst recht nicht – zwei verschiedene Modelle können dieselbe Länge
+    // liefern, und dann käme statt einer Ähnlichkeit eine Zufallszahl heraus.
+    private static (double Best, bool AnyComparable) BestSimilarity(
+        ImageEmbedding embedding,
+        IReadOnlyList<ImageEmbedding> references)
     {
         double best = 0.0;
-        foreach (ImageEmbedding positive in positives)
+        bool anyComparable = false;
+
+        foreach (ImageEmbedding reference in references)
         {
-            // Nur vergleichbare (gleich lange) Vektoren berücksichtigen.
-            if (positive.Values.Count != embedding.Values.Count)
+            if (reference.Values.Count != embedding.Values.Count
+                || !string.Equals(reference.Model, embedding.Model, StringComparison.Ordinal))
             {
                 continue;
             }
 
-            double similarity = VectorMath.CosineSimilarity(embedding.Values, positive.Values);
+            anyComparable = true;
+            double similarity = VectorMath.CosineSimilarity(embedding.Values, reference.Values);
             if (similarity > best)
             {
                 best = similarity;
             }
         }
 
-        return best;
+        return (best, anyComparable);
     }
 
     private static SortProposal CreateProposal(
@@ -461,13 +497,26 @@ public sealed class PhotoSortingService : IPhotoSorter
     /// KI abgelehnt" (Urteil, wird gemerkt) und „nicht bewertet" (KI-Ausfall, wird
     /// nicht gemerkt).
     /// </summary>
-    private readonly record struct Evaluation(SortProposal? Proposal, bool WasEvaluated)
+    private readonly record struct Evaluation(
+        SortProposal? Proposal,
+        bool WasEvaluated,
+        bool ExamplesIncompatible)
     {
-        public static Evaluation Matched(SortProposal proposal) => new(proposal, WasEvaluated: true);
+        public static Evaluation Matched(SortProposal proposal) =>
+            new(proposal, WasEvaluated: true, ExamplesIncompatible: false);
 
-        public static Evaluation Rejected() => new(Proposal: null, WasEvaluated: true);
+        public static Evaluation Rejected() =>
+            new(Proposal: null, WasEvaluated: true, ExamplesIncompatible: false);
 
-        public static Evaluation NotEvaluated() => new(Proposal: null, WasEvaluated: false);
+        public static Evaluation NotEvaluated() =>
+            new(Proposal: null, WasEvaluated: false, ExamplesIncompatible: false);
+
+        /// <summary>
+        /// Die Beispiele der Kategorie stammen aus einem anderen Modell. Kein Urteil –
+        /// und deshalb ausdrücklich nichts, was gemerkt werden dürfte.
+        /// </summary>
+        public static Evaluation IncompatibleExamples() =>
+            new(Proposal: null, WasEvaluated: false, ExamplesIncompatible: true);
     }
 }
 
@@ -481,6 +530,9 @@ internal static partial class SortingLog
 
     [LoggerMessage(EventId = 3000, Level = LogLevel.Warning, Message = "Kategorie {Category} hat keine positiven Beispiele; keine Sortierung möglich.")]
     public static partial void NoExamples(ILogger logger, string category);
+
+    [LoggerMessage(EventId = 3010, Level = LogLevel.Warning, Message = "Die Beispiele der Kategorie {Category} stammen aus einem anderen Modell als dem eingestellten; {Count} Foto(s) wurden deshalb nicht bewertet. Die Kategorie muss neu angelernt werden.")]
+    public static partial void ExamplesFromAnotherModel(ILogger logger, string category, int count);
 
     [LoggerMessage(EventId = 3001, Level = LogLevel.Information, Message = "{Count} Vorschläge für Kategorie {Category} erstellt.")]
     public static partial void ProposalsCreated(ILogger logger, int count, string category);
