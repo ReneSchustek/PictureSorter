@@ -36,6 +36,14 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 - **Ein hereingezogener Eintrag, den das Dateisystem nicht annimmt, konnte die Auswahl
   abbrechen lassen.** Aus dem Explorer lässt sich alles hereinziehen; unbrauchbare
   Einträge werden jetzt gezählt und benannt statt durchgereicht.
+- **Eine einzelne unlesbare Datei beendete den ganzen Durchlauf.** Zieht ein
+  Virenscanner ein Foto während der Arbeit weg, ist es in einem Cloud-Ordner noch nicht
+  heruntergeladen oder fehlen die Rechte, stand am Ende eine Fehlermeldung statt eines
+  Ergebnisses — nach der vollen Wartezeit. Solche Fotos werden jetzt übersprungen und
+  im Protokoll benannt, der Rest wird zu Ende bearbeitet.
+- **Der Screenreader nannte mehrere Listen nur „Liste".** Das Protokollfeld, die
+  Bereichsauswahl auf der Startseite, das Gedächtnis, die Beispielbilder und die
+  Vorschläge haben jetzt einen sprechenden Namen.
 
 ## [1.4.6] - 2026-07-31
 
