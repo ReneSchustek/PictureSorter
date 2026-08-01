@@ -280,8 +280,8 @@ public sealed class SortViewModelTests
         await sut.SuggestPositivesCommand.ExecuteAsync(parameter: null).ConfigureAwait(true);
         await sut.SuggestNegativesCommand.ExecuteAsync(parameter: null).ConfigureAwait(true);
 
-        string[] passend = [.. sut.PositiveExamples.Items.Select(item => item.FilePath)];
-        Assert.DoesNotContain(sut.NegativeExamples.Items, item => passend.Contains(item.FilePath));
+        string[] matching = [.. sut.PositiveExamples.Items.Select(item => item.FilePath)];
+        Assert.DoesNotContain(sut.NegativeExamples.Items, item => matching.Contains(item.FilePath));
     }
 
     [Fact]
@@ -299,11 +299,11 @@ public sealed class SortViewModelTests
         sut.SourceFolder = SourceFolder;
 
         await sut.SuggestPositivesCommand.ExecuteAsync(parameter: null).ConfigureAwait(true);
-        int erster = source.LastSkip;
+        int first = source.LastSkip;
         sut.PositiveExamples.Clear();
         await sut.SuggestPositivesCommand.ExecuteAsync(parameter: null).ConfigureAwait(true);
 
-        Assert.Equal(0, erster);
+        Assert.Equal(0, first);
         Assert.True(source.LastSkip > 0, "Der zweite Schwung muss hinter dem ersten beginnen.");
     }
 
@@ -341,16 +341,16 @@ public sealed class SortViewModelTests
         _ = Directory.CreateDirectory(folder);
         try
         {
-            int zuViele = sut.PositiveExamples.Capacity + 5;
-            List<string> bilder = [];
-            for (int index = 0; index < zuViele; index++)
+            int tooMany = sut.PositiveExamples.Capacity + 5;
+            List<string> images = [];
+            for (int index = 0; index < tooMany; index++)
             {
-                string pfad = Path.Combine(folder, $"bild-{index}.jpg");
-                File.WriteAllBytes(pfad, [1, 2, 3]);
-                bilder.Add(pfad);
+                string path = Path.Combine(folder, $"bild-{index}.jpg");
+                File.WriteAllBytes(path, [1, 2, 3]);
+                images.Add(path);
             }
 
-            sut.AddDroppedImages(isPositive: true, bilder);
+            sut.AddDroppedImages(isPositive: true, images);
 
             Assert.Equal(sut.PositiveExamples.Capacity, sut.PositiveExamples.Items.Count);
             Assert.True(sut.PositiveExamples.IsFull);

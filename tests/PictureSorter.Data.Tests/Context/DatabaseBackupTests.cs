@@ -91,15 +91,15 @@ public sealed class DatabaseBackupTests : IDisposable
         IDbContextFactory<PictureSorterDbContext> factory =
             provider.GetRequiredService<IDbContextFactory<PictureSorterDbContext>>();
 
-        string[] alleMigrationen;
+        string[] allMigrations;
         PictureSorterDbContext context = await factory.CreateDbContextAsync(TestContext.Current.CancellationToken);
         await using (context.ConfigureAwait(true))
         {
-            alleMigrationen = [.. context.Database.GetMigrations()];
+            allMigrations = [.. context.Database.GetMigrations()];
 
             // Nur bis zur ersten Migration hochziehen – der Stand einer älteren
             // Programmfassung.
-            await context.GetService<IMigrator>().MigrateAsync(alleMigrationen[0], TestContext.Current.CancellationToken);
+            await context.GetService<IMigrator>().MigrateAsync(allMigrations[0], TestContext.Current.CancellationToken);
         }
 
         SqliteConnection.ClearAllPools();
@@ -108,16 +108,16 @@ public sealed class DatabaseBackupTests : IDisposable
             .InitializeAsync(CancellationToken.None);
 
         Assert.True(ready);
-        string erwartet = DatabaseBackup.BuildBackupPath(
+        string expected = DatabaseBackup.BuildBackupPath(
             Path.Combine(_dataDirectory, "picturesorter.db"),
-            alleMigrationen[1]);
-        Assert.True(File.Exists(erwartet), $"Keine Sicherung unter {erwartet}.");
+            allMigrations[1]);
+        Assert.True(File.Exists(expected), $"Keine Sicherung unter {expected}.");
 
         // Und die Migration ist danach wirklich durch.
-        PictureSorterDbContext migriert = await factory.CreateDbContextAsync(TestContext.Current.CancellationToken);
-        await using (migriert.ConfigureAwait(true))
+        PictureSorterDbContext migrated = await factory.CreateDbContextAsync(TestContext.Current.CancellationToken);
+        await using (migrated.ConfigureAwait(true))
         {
-            Assert.Empty(await migriert.Database.GetPendingMigrationsAsync(TestContext.Current.CancellationToken));
+            Assert.Empty(await migrated.Database.GetPendingMigrationsAsync(TestContext.Current.CancellationToken));
         }
     }
 

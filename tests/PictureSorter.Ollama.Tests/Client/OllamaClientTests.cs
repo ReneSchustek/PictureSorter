@@ -179,10 +179,10 @@ public sealed class OllamaClientTests : IDisposable
 
         _ = await sut.GenerateAsync("llava", "Beschreibe", ["base64"], CancellationToken.None);
 
-        string erwartet = string.Create(
+        string expected = string.Create(
             CultureInfo.InvariantCulture,
             $"\"num_predict\":{new OllamaOptions().MaxResponseTokens}");
-        Assert.Contains(erwartet, _handler!.LastRequestBody, StringComparison.Ordinal);
+        Assert.Contains(expected, _handler!.LastRequestBody, StringComparison.Ordinal);
     }
 
     // Der Handler entsteht nur hier, nie als lokale Variable eines Tests: So gehört

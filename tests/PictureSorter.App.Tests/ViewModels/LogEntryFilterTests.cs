@@ -88,15 +88,15 @@ public sealed class LogEntryFilterTests
     public void Apply_WithLeadingLinesWithoutHeader_KeepsThemAsOwnEntry()
     {
         // Der Viewer liest nur das Dateiende; die erste Zeile kann abgeschnitten sein.
-        string[] angeschnitten =
+        string[] truncated =
         [
             "…rest einer abgeschnittenen Zeile",
             "2026-07-26 10:00:00.000 [INFO ] PictureSorter.Start: Anwendung gestartet.",
         ];
 
-        IReadOnlyList<string> result = LogEntryFilter.Apply(angeschnitten, LogFilter.All, "abgeschnittenen");
+        IReadOnlyList<string> result = LogEntryFilter.Apply(truncated, LogFilter.All, "abgeschnittenen");
 
         string line = Assert.Single(result);
-        Assert.Equal(angeschnitten[0], line);
+        Assert.Equal(truncated[0], line);
     }
 }
