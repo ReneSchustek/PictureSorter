@@ -244,7 +244,7 @@ public sealed class PhotoSortingService : IPhotoSorter
             // ausgelöst und würde das Protokollieren sofort wieder abwürgen.
             if (moved.Count > 0)
             {
-                await RecordRunAsync(proposals[0], operation, moved, CancellationToken.None).ConfigureAwait(false);
+                await RecordRunAsync(proposals, operation, moved, CancellationToken.None).ConfigureAwait(false);
             }
         }
 
@@ -258,13 +258,25 @@ public sealed class PhotoSortingService : IPhotoSorter
     }
 
     // Alle Vorschläge eines Laufs stammen aus demselben Quellordner und derselben
-    // Kategorie; der erste Vorschlag liefert daher beides für den Lauf.
+    // Kategorie; der erste Vorschlag liefert daher beides für den Lauf. Die Annahme
+    // war bisher nur kommentiert. Träfe sie einmal nicht zu, stünden im Protokoll
+    // Ordner und Kategorie eines beliebigen Vorschlags – und das Rückgängigmachen
+    // arbeitete mit falschen Angaben. Deshalb wird sie jetzt geprüft.
     private Task RecordRunAsync(
-        SortProposal first,
+        IReadOnlyList<SortProposal> proposals,
         FileOperationMode operation,
         IReadOnlyList<SortRunItem> moved,
         CancellationToken cancellationToken)
     {
+        SortProposal first = proposals[0];
+        if (proposals.Any(proposal =>
+            !string.Equals(proposal.SourceFolder, first.SourceFolder, StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(proposal.CategoryName, first.CategoryName, StringComparison.Ordinal)))
+        {
+            throw new InvalidOperationException(
+                "Ein Sortierlauf muss aus einem Quellordner und einer Kategorie stammen.");
+        }
+
         SortRun run = new()
         {
             Id = Guid.NewGuid(),

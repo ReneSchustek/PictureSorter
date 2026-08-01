@@ -323,7 +323,7 @@ internal sealed class UpdateService : IUpdateCoordinator
             AllowedDownloadHosts,
             host => string.Equals(url.Host, host, StringComparison.OrdinalIgnoreCase));
 
-    private static void TryCleanUp(string directory)
+    private void TryCleanUp(string directory)
     {
         try
         {
@@ -334,7 +334,12 @@ internal sealed class UpdateService : IUpdateCoordinator
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            // Ein zurückgebliebener Temp-Ordner ist unkritisch.
+            // Ein zurückgebliebener Temp-Ordner ist unkritisch – aber spurlos
+            // verschwinden darf auch dieser Fehler nicht: Bleiben mehrere Ordner mit
+            // je hundert Megabyte liegen, will man später wissen, woher sie kommen.
+            // Der Pfad steht bereits in der Ausnahme; ihn zusätzlich unkenntlich zu
+            // machen kostete Arbeit, die bei abgeschalteter Protokollierung anfiele.
+            UpdateServiceLog.CleanUpFailed(_logger, ex);
         }
     }
 }
@@ -367,4 +372,7 @@ internal static partial class UpdateServiceLog
 
     [LoggerMessage(EventId = 5105, Level = LogLevel.Error, Message = "Aktualisierung abgebrochen: Die Download-Größe ({Bytes} Byte) überschreitet das Limit.")]
     public static partial void TooLarge(ILogger logger, long bytes);
+
+    [LoggerMessage(EventId = 5108, Level = LogLevel.Debug, Message = "Der Arbeitsordner der Aktualisierung konnte nicht entfernt werden.")]
+    public static partial void CleanUpFailed(ILogger logger, Exception exception);
 }
