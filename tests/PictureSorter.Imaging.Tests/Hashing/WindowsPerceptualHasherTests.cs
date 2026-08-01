@@ -28,9 +28,9 @@ public sealed class WindowsPerceptualHasherTests : IDisposable
     {
         string path = Path.Combine(_root, "bild.png");
         await TestImage.WriteGradientPngAsync(path, 32, 32);
-        string expected = Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(path)));
+        string expected = Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(path, TestContext.Current.CancellationToken)));
 
-        ImageFingerprint fingerprint = await _sut.ComputeAsync(path, CancellationToken.None);
+        ImageFingerprint fingerprint = await _sut.ComputeAsync(path, TestContext.Current.CancellationToken);
 
         Assert.Equal(expected, fingerprint.ContentHash);
         Assert.Equal(path, fingerprint.FilePath);
@@ -42,7 +42,7 @@ public sealed class WindowsPerceptualHasherTests : IDisposable
         string path = Path.Combine(_root, "bild.png");
         await TestImage.WriteGradientPngAsync(path, 32, 32);
 
-        ImageFingerprint fingerprint = await _sut.ComputeAsync(path, CancellationToken.None);
+        ImageFingerprint fingerprint = await _sut.ComputeAsync(path, TestContext.Current.CancellationToken);
 
         _ = Assert.NotNull(fingerprint.Perceptual);
     }
@@ -55,8 +55,8 @@ public sealed class WindowsPerceptualHasherTests : IDisposable
         string second = Path.Combine(_root, "b.png");
         File.Copy(first, second);
 
-        ImageFingerprint one = await _sut.ComputeAsync(first, CancellationToken.None);
-        ImageFingerprint two = await _sut.ComputeAsync(second, CancellationToken.None);
+        ImageFingerprint one = await _sut.ComputeAsync(first, TestContext.Current.CancellationToken);
+        ImageFingerprint two = await _sut.ComputeAsync(second, TestContext.Current.CancellationToken);
 
         Assert.Equal(one.ContentHash, two.ContentHash);
         Assert.Equal(one.Perceptual, two.Perceptual);
@@ -72,8 +72,8 @@ public sealed class WindowsPerceptualHasherTests : IDisposable
         string large = Path.Combine(_root, "large.png");
         await TestImage.WriteGradientPngAsync(large, 128, 128);
 
-        ImageFingerprint one = await _sut.ComputeAsync(small, CancellationToken.None);
-        ImageFingerprint two = await _sut.ComputeAsync(large, CancellationToken.None);
+        ImageFingerprint one = await _sut.ComputeAsync(small, TestContext.Current.CancellationToken);
+        ImageFingerprint two = await _sut.ComputeAsync(large, TestContext.Current.CancellationToken);
 
         Assert.NotEqual(one.ContentHash, two.ContentHash);
         Assert.Equal(0, one.Perceptual!.Value.DistanceTo(two.Perceptual!.Value));
@@ -90,8 +90,8 @@ public sealed class WindowsPerceptualHasherTests : IDisposable
         string falling = Path.Combine(_root, "hell-links.png");
         await TestImage.WriteGradientPngAsync(falling, 32, 32, invert: true);
 
-        ImageFingerprint one = await _sut.ComputeAsync(rising, CancellationToken.None);
-        ImageFingerprint two = await _sut.ComputeAsync(falling, CancellationToken.None);
+        ImageFingerprint one = await _sut.ComputeAsync(rising, TestContext.Current.CancellationToken);
+        ImageFingerprint two = await _sut.ComputeAsync(falling, TestContext.Current.CancellationToken);
 
         // 8×8 = 64 Bit; jedes Bit vergleicht zwei benachbarte Spalten. Der gespiegelte
         // Verlauf dreht jeden dieser Vergleiche um.
@@ -104,9 +104,9 @@ public sealed class WindowsPerceptualHasherTests : IDisposable
         // Eine kaputte oder falsch benannte Datei darf den Duplikat-Lauf nicht
         // abbrechen: Der exakte Vergleich bleibt möglich, der visuelle entfällt.
         string path = Path.Combine(_root, "kein-bild.jpg");
-        await File.WriteAllTextAsync(path, "Das ist in Wahrheit Text.");
+        await File.WriteAllTextAsync(path, "Das ist in Wahrheit Text.", TestContext.Current.CancellationToken);
 
-        ImageFingerprint fingerprint = await _sut.ComputeAsync(path, CancellationToken.None);
+        ImageFingerprint fingerprint = await _sut.ComputeAsync(path, TestContext.Current.CancellationToken);
 
         Assert.NotEmpty(fingerprint.ContentHash);
         Assert.Null(fingerprint.Perceptual);
@@ -115,12 +115,12 @@ public sealed class WindowsPerceptualHasherTests : IDisposable
     [Fact]
     public async Task ComputeAsync_WithoutPath_IsRejected() =>
         await Assert.ThrowsAsync<ArgumentException>(
-            () => _sut.ComputeAsync(" ", CancellationToken.None));
+            () => _sut.ComputeAsync(" ", TestContext.Current.CancellationToken));
 
     [Fact]
     public async Task ComputeAsync_ForMissingFile_Throws() =>
         await Assert.ThrowsAsync<FileNotFoundException>(
-            () => _sut.ComputeAsync(Path.Combine(_root, "fehlt.png"), CancellationToken.None));
+            () => _sut.ComputeAsync(Path.Combine(_root, "fehlt.png"), TestContext.Current.CancellationToken));
 
     public void Dispose()
     {

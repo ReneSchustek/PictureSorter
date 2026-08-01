@@ -37,7 +37,7 @@ public sealed class SortUndoIntegrationTests : IAsyncLifetime
     private SortUndoService _undo = null!;
     private FileOrganizer _organizer = null!;
 
-    public async Task InitializeAsync()
+    public async ValueTask InitializeAsync()
     {
         _photoFolder = Path.Combine(_root, "Fotos");
         _categoryFolder = Path.Combine(_photoFolder, Category);
@@ -62,7 +62,7 @@ public sealed class SortUndoIntegrationTests : IAsyncLifetime
         _undo = new SortUndoService(_journal, _memory, _organizer, NullLogger<SortUndoService>.Instance);
     }
 
-    public async Task DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
         await _provider.DisposeAsync().ConfigureAwait(false);
         SqliteConnection.ClearAllPools();
@@ -86,7 +86,7 @@ public sealed class SortUndoIntegrationTests : IAsyncLifetime
         {
             Assert.True(File.Exists(item.SourcePath));
             Assert.False(File.Exists(item.TargetPath));
-            Assert.Equal(Path.GetFileName(item.SourcePath), await File.ReadAllTextAsync(item.SourcePath));
+            Assert.Equal(Path.GetFileName(item.SourcePath), await File.ReadAllTextAsync(item.SourcePath, TestContext.Current.CancellationToken));
         }
 
         // Der leere Kategorie-Ordner ist verschwunden.
@@ -107,13 +107,13 @@ public sealed class SortUndoIntegrationTests : IAsyncLifetime
         // Foto im Quellordner – etwa vom Handy nachgeladen. Das Zurückholen darf es
         // nicht überschreiben.
         SortRunItem[] moved = await SortAsync("a.jpg");
-        await File.WriteAllTextAsync(moved[0].SourcePath, "ein anderes Foto");
+        await File.WriteAllTextAsync(moved[0].SourcePath, "ein anderes Foto", TestContext.Current.CancellationToken);
 
         UndoResult? result = await _undo.UndoLastRunAsync(CancellationToken.None);
 
         Assert.Equal(0, result!.Restored);
         Assert.Equal(1, result.Skipped);
-        Assert.Equal("ein anderes Foto", await File.ReadAllTextAsync(moved[0].SourcePath));
+        Assert.Equal("ein anderes Foto", await File.ReadAllTextAsync(moved[0].SourcePath, TestContext.Current.CancellationToken));
         Assert.True(File.Exists(moved[0].TargetPath));
 
         // Das sortierte Foto liegt weiter im Kategorie-Ordner – also gilt es auch

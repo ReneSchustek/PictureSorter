@@ -92,14 +92,14 @@ public sealed class DatabaseBackupTests : IDisposable
             provider.GetRequiredService<IDbContextFactory<PictureSorterDbContext>>();
 
         string[] alleMigrationen;
-        PictureSorterDbContext context = await factory.CreateDbContextAsync();
+        PictureSorterDbContext context = await factory.CreateDbContextAsync(TestContext.Current.CancellationToken);
         await using (context.ConfigureAwait(true))
         {
             alleMigrationen = [.. context.Database.GetMigrations()];
 
             // Nur bis zur ersten Migration hochziehen – der Stand einer älteren
             // Programmfassung.
-            await context.GetService<IMigrator>().MigrateAsync(alleMigrationen[0]);
+            await context.GetService<IMigrator>().MigrateAsync(alleMigrationen[0], TestContext.Current.CancellationToken);
         }
 
         SqliteConnection.ClearAllPools();
@@ -114,10 +114,10 @@ public sealed class DatabaseBackupTests : IDisposable
         Assert.True(File.Exists(erwartet), $"Keine Sicherung unter {erwartet}.");
 
         // Und die Migration ist danach wirklich durch.
-        PictureSorterDbContext migriert = await factory.CreateDbContextAsync();
+        PictureSorterDbContext migriert = await factory.CreateDbContextAsync(TestContext.Current.CancellationToken);
         await using (migriert.ConfigureAwait(true))
         {
-            Assert.Empty(await migriert.Database.GetPendingMigrationsAsync());
+            Assert.Empty(await migriert.Database.GetPendingMigrationsAsync(TestContext.Current.CancellationToken));
         }
     }
 

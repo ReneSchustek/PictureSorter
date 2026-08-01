@@ -63,7 +63,7 @@ public sealed class UpdateServiceTests : IDisposable
             client, new Uri("https://github.com/a/updater.exe"), _target, progress: null, CancellationToken.None);
 
         Assert.True(result);
-        Assert.Equal("inhalt", await File.ReadAllTextAsync(_target));
+        Assert.Equal("inhalt", await File.ReadAllTextAsync(_target, TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -111,7 +111,7 @@ public sealed class UpdateServiceTests : IDisposable
             client, new Uri("https://github.com/a/updater.exe"), _target, progress: null, CancellationToken.None);
 
         Assert.True(result);
-        Assert.Equal("inhalt", await File.ReadAllTextAsync(_target));
+        Assert.Equal("inhalt", await File.ReadAllTextAsync(_target, TestContext.Current.CancellationToken));
     }
 
     private (UpdateService Service, HttpClient Client) Setup(Func<HttpRequestMessage, HttpResponseMessage> responder)
