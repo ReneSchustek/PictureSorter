@@ -6,6 +6,22 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
+## [1.4.9] - 2026-08-01
+
+### Behoben
+
+- **Die Aktualisierung aus dem Programm heraus schlug immer fehl.** Sie lud die neue
+  Fassung vollständig herunter, prüfte sie und begann, die Dateien zu ersetzen — und
+  scheiterte dann zuverlässig an einer Laufzeitdatei, die ein Virenscanner im Speicher
+  abgebildet hält. Solche Dateien lässt Windows nicht überschreiben, dauerhaft nicht;
+  das Abwarten, auf das sich die Anwendung verließ, konnte nie zum Ziel führen. Die
+  alte Fassung wurde jedes Mal korrekt wiederhergestellt und der Grund gemeldet — aber
+  aktualisieren ließ sich das Programm nur über das Setup. Es legt die betroffene Datei
+  jetzt beiseite, statt sie zu überschreiben; das erlaubt Windows.
+- **Jede Aktualisierung ließ rund 325 MB im Temp-Ordner zurück.** Auch eine gelungene:
+  Der Helfer, der die Dateien ersetzt, läuft aus eben dem Ordner, den er löschen
+  müsste. Aufgeräumt wird jetzt beim nächsten Start.
+
 ## [1.4.8] - 2026-08-01
 
 ### Behoben
