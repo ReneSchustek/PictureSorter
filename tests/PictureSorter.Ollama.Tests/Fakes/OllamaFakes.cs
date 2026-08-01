@@ -55,10 +55,23 @@ internal sealed class FakeOllamaClient : IOllamaClient
     /// <summary>Der zuletzt übergebene Prompt.</summary>
     public string? LastPrompt { get; private set; }
 
-    public Task<IReadOnlyList<float>> EmbedAsync(string model, string text, CancellationToken cancellationToken) =>
-        _failure is not null
+    /// <summary>Der Text, aus dem zuletzt ein Vektor erzeugt werden sollte.</summary>
+    public string? LastEmbeddedText { get; private set; }
+
+    /// <summary>Das Modell, mit dem zuletzt ein Vektor erzeugt werden sollte.</summary>
+    public string? LastEmbeddingModel { get; private set; }
+
+    /// <summary>Die Bilder, die zuletzt an das Bild-Modell gingen.</summary>
+    public IReadOnlyList<string> LastImages { get; private set; } = [];
+
+    public Task<IReadOnlyList<float>> EmbedAsync(string model, string text, CancellationToken cancellationToken)
+    {
+        LastEmbeddedText = text;
+        LastEmbeddingModel = model;
+        return _failure is not null
             ? Task.FromException<IReadOnlyList<float>>(_failure)
             : Task.FromResult<IReadOnlyList<float>>([1.0f]);
+    }
 
     public Task<string> GenerateAsync(
         string model,
@@ -67,6 +80,7 @@ internal sealed class FakeOllamaClient : IOllamaClient
         CancellationToken cancellationToken)
     {
         LastPrompt = prompt;
+        LastImages = imagesBase64;
         return _failure is not null ? Task.FromException<string>(_failure) : Task.FromResult(_answer);
     }
 
