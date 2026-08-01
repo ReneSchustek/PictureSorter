@@ -6,7 +6,7 @@
   <PropertyGroup>
     <!-- Single Source of Truth für die Versionsnummer (siehe VERSION).
          Die CI kann diesen Wert beim Tag-Push überschreiben (-p:Version=…). -->
-    <Version>1.4.7</Version>
+    <Version>1.4.8</Version>
     <!-- Nullability: Null-Reference-Warnungen als Fehler -->
     <Nullable>enable</Nullable>
     <!-- Moderne using-Direktiven automatisch -->
