@@ -114,6 +114,124 @@ public sealed class UpdateServiceTests : IDisposable
         Assert.Equal("inhalt", await File.ReadAllTextAsync(_target, TestContext.Current.CancellationToken));
     }
 
+    [Fact]
+    public async Task DownloadToAsync_RedirectWithoutTarget_IsRejected()
+    {
+        // Ein 302 ohne Location-Kopfzeile ist keine gültige Weiterleitung. Ohne diese
+        // Prüfung liefe die Schleife mit derselben Adresse weiter.
+        (UpdateService service, HttpClient client) = Setup(_ => new HttpResponseMessage(HttpStatusCode.Found));
+
+        bool result = await service.DownloadToAsync(
+            client, new Uri("https://github.com/a/updater.exe"), _target, progress: null,
+            TestContext.Current.CancellationToken);
+
+        Assert.False(result);
+        Assert.False(File.Exists(_target));
+    }
+
+    [Fact]
+    public async Task DownloadToAsync_RedirectLoop_StopsAfterTheLimit()
+    {
+        // Ein Server, der immer wieder auf sich selbst verweist, darf die Anwendung
+        // nicht endlos beschäftigen.
+        (UpdateService service, HttpClient client) = Setup(_ => Redirect("https://github.com/im-kreis"));
+
+        bool result = await service.DownloadToAsync(
+            client, new Uri("https://github.com/a/updater.exe"), _target, progress: null,
+            TestContext.Current.CancellationToken);
+
+        Assert.False(result);
+        Assert.False(File.Exists(_target));
+    }
+
+    [Fact]
+    public async Task DownloadToAsync_OversizedBodyWithoutContentLength_IsStoppedWhileReading()
+    {
+        // Der gefährlichere Fall: Der Server verschweigt die Größe. Dann greift das
+        // Limit erst beim Lesen – aber es greift.
+        (UpdateService service, HttpClient client) = Setup(_ =>
+        {
+            HttpResponseMessage response = new(HttpStatusCode.OK)
+            {
+                Content = new StreamContent(new EndlessStream()),
+            };
+            response.Content.Headers.ContentLength = null;
+            return response;
+        });
+
+        _ = await Assert.ThrowsAsync<IOException>(() => service.DownloadToAsync(
+            client, new Uri("https://github.com/a/updater.exe"), _target, progress: null,
+            TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
+    public async Task DownloadAndLaunchUpdaterAsync_WithoutAvailableUpdate_DoesNothing()
+    {
+        (UpdateService service, _) = Setup(_ => Content("egal"));
+
+        bool started = await service.DownloadAndLaunchUpdaterAsync(
+            progress: null, TestContext.Current.CancellationToken);
+
+        Assert.False(started);
+    }
+
+    [Fact]
+    public async Task DownloadAndLaunchUpdaterAsync_WithForgedSignature_RefusesAndLeavesNothingBehind()
+    {
+        // Der Ernstfall der ganzen Kette: Jemand hat den Release-Kanal übernommen und
+        // ein eigenes Paket samt eigener Signatur hinterlegt. Ohne den privaten
+        // Schlüssel des Herausgebers darf nichts entpackt und nichts gestartet werden –
+        // und der Arbeitsordner muss danach wieder verschwunden sein.
+        string[] vorher = TempUpdateDirectories();
+        (UpdateService service, _) = SetupWithUpdate(_ => Content("ein untergeschobenes Paket"));
+
+        _ = await service.CheckAsync(TestContext.Current.CancellationToken);
+        bool started = await service.DownloadAndLaunchUpdaterAsync(
+            progress: null, TestContext.Current.CancellationToken);
+
+        Assert.False(started);
+        Assert.Equal(vorher.Length, TempUpdateDirectories().Length);
+    }
+
+    [Fact]
+    public async Task CheckAsync_WithNewerRelease_RemembersItAsAvailable()
+    {
+        (UpdateService service, _) = SetupWithUpdate(_ => Content("egal"));
+
+        UpdateInfo? info = await service.CheckAsync(TestContext.Current.CancellationToken);
+
+        Assert.NotNull(info);
+        Assert.NotNull(service.Available);
+    }
+
+    [Fact]
+    public async Task CheckAsync_WithoutNewerRelease_RemembersNothing()
+    {
+        (UpdateService service, _) = Setup(_ => Content("egal"));
+
+        _ = await service.CheckAsync(TestContext.Current.CancellationToken);
+
+        Assert.Null(service.Available);
+    }
+
+    private static string[] TempUpdateDirectories() =>
+        Directory.GetDirectories(Path.GetTempPath(), "PictureSorter-Update-*");
+
+    private (UpdateService Service, HttpClient Client) SetupWithUpdate(
+        Func<HttpRequestMessage, HttpResponseMessage> responder)
+    {
+        StubHandler handler = new(responder);
+        HttpClient client = new(handler);
+        _disposables.Add(handler);
+        _disposables.Add(client);
+        UpdateService service = new(
+            new AvailableChecker(),
+            new SingleClientFactory(client),
+            Path.GetDirectoryName(_target)!,
+            NullLogger<UpdateService>.Instance);
+        return (service, client);
+    }
+
     private (UpdateService Service, HttpClient Client) Setup(Func<HttpRequestMessage, HttpResponseMessage> responder)
     {
         StubHandler handler = new(responder);
@@ -162,6 +280,57 @@ public sealed class UpdateServiceTests : IDisposable
     {
         public Task<UpdateInfo?> CheckAsync(string currentVersion, CancellationToken cancellationToken) =>
             Task.FromResult<UpdateInfo?>(null);
+    }
+
+    /// <summary>Meldet eine neuere Fassung samt Paket- und Signaturadresse.</summary>
+    private sealed class AvailableChecker : IUpdateChecker
+    {
+        public Task<UpdateInfo?> CheckAsync(string currentVersion, CancellationToken cancellationToken) =>
+            Task.FromResult<UpdateInfo?>(new UpdateInfo
+            {
+                CurrentVersion = currentVersion,
+                LatestVersion = "99.0.0",
+                IsUpdateAvailable = true,
+                PackageDownloadUrl = new Uri("https://github.com/o/r/releases/download/v99/package.zip"),
+                SignatureDownloadUrl = new Uri("https://github.com/o/r/releases/download/v99/package.zip.sig"),
+            });
+    }
+
+    /// <summary>
+    /// Ein Strom ohne Ende. Bildet die Antwort nach, die ihre Größe verschweigt und
+    /// einfach weiterliefert.
+    /// </summary>
+    private sealed class EndlessStream : Stream
+    {
+        public override bool CanRead => true;
+
+        public override bool CanSeek => false;
+
+        public override bool CanWrite => false;
+
+        public override long Length => throw new NotSupportedException();
+
+        public override long Position
+        {
+            get => throw new NotSupportedException();
+            set => throw new NotSupportedException();
+        }
+
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            Array.Clear(buffer, offset, count);
+            return count;
+        }
+
+        public override void Flush()
+        {
+        }
+
+        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+
+        public override void SetLength(long value) => throw new NotSupportedException();
+
+        public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
     }
 
     private sealed class SingleClientFactory(HttpClient client) : IHttpClientFactory
