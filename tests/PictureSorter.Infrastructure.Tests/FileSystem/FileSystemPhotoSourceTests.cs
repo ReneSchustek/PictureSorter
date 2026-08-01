@@ -126,6 +126,26 @@ public sealed class FileSystemPhotoSourceTests : IDisposable
 
     // Nicht-asynchroner Helfer: synchrones Datei-Schreiben in einer async-Testmethode
     // löst sonst CA1849 aus.
+    [Fact]
+    public async Task GetPhotosAsync_WhenAFileDisappearsWhileReading_SkipsItAndKeepsTheRest()
+    {
+        // Genau so passiert es im Betrieb: Zwischen dem Auflisten und dem Lesen zieht
+        // ein Virenscanner die Datei weg. Bis hierher riss der Zugriff auf die
+        // Dateigröße den gesamten Lauf mit – für jede Funktion, die Fotos einliest.
+        Write("a.jpg");
+        Write("verschwindet.jpg");
+        Write("b.jpg");
+        FileSystemPhotoSource source = new(
+            new DeletingMetadataReader(Path.Combine(_root, "verschwindet.jpg")),
+            NullLogger<FileSystemPhotoSource>.Instance);
+
+        IReadOnlyList<Photo> photos = await source.GetPhotosAsync(
+            _root, includeSubfolders: false, skip: 0, maxCount: null, CancellationToken.None);
+
+        Assert.Equal(2, photos.Count);
+        Assert.DoesNotContain(photos, photo => photo.FileName == "verschwindet.jpg");
+    }
+
     private void Write(string relativePath)
     {
         string path = Path.Combine(_root, relativePath);
@@ -145,6 +165,21 @@ public sealed class FileSystemPhotoSourceTests : IDisposable
     {
         public Task<PhotoMetadata?> ReadAsync(string filePath, CancellationToken cancellationToken) =>
             Task.FromResult<PhotoMetadata?>(null);
+    }
+
+    // Löscht beim Lesen genau die eine Datei und trifft damit das reale Zeitfenster:
+    // Die Quelle hat sie bereits aufgelistet und fragt danach ihre Größe ab.
+    private sealed class DeletingMetadataReader(string pathToDelete) : IImageMetadataReader
+    {
+        public Task<PhotoMetadata?> ReadAsync(string filePath, CancellationToken cancellationToken)
+        {
+            if (string.Equals(filePath, pathToDelete, StringComparison.OrdinalIgnoreCase))
+            {
+                File.Delete(filePath);
+            }
+
+            return Task.FromResult<PhotoMetadata?>(null);
+        }
     }
 
     // Zählt die Zugriffe auf die Metadaten. Nur so lässt sich belegen, dass wirklich

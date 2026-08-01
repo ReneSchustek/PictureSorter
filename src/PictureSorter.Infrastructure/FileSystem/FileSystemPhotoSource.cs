@@ -61,7 +61,11 @@ public sealed class FileSystemPhotoSource : IPhotoSource
         foreach (string path in paths)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            photos.Add(await ReadPhotoAsync(path, cancellationToken).ConfigureAwait(false));
+            Photo? photo = await TryReadPhotoAsync(path, cancellationToken).ConfigureAwait(false);
+            if (photo is not null)
+            {
+                photos.Add(photo);
+            }
         }
 
         string redactedFolder = LogPaths.Redact(fullFolderPath);
@@ -108,6 +112,23 @@ public sealed class FileSystemPhotoSource : IPhotoSource
         return paths;
     }
 
+    // Zwischen dem Auflisten und dem Lesen kann die Datei verschwinden: Ein
+    // Virenscanner schiebt sie in Quarantäne, ein Cloud-Ordner räumt sie weg, jemand
+    // löscht sie im Explorer. Bis hierher riss der Zugriff auf die Dateigröße dann den
+    // gesamten Lauf mit – für alle Funktionen, die Fotos einlesen.
+    private async Task<Photo?> TryReadPhotoAsync(string path, CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await ReadPhotoAsync(path, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            PhotoSourceLog.Skipped(_logger, LogPaths.Redact(path), ex);
+            return null;
+        }
+    }
+
     private async Task<Photo> ReadPhotoAsync(string path, CancellationToken cancellationToken)
     {
         FileInfo info = new(path);
@@ -139,4 +160,7 @@ internal static partial class PhotoSourceLog
 {
     [LoggerMessage(EventId = 2300, Level = LogLevel.Information, Message = "{Count} Fotos in {Folder} gefunden.")]
     public static partial void Scanned(ILogger logger, int count, string folder);
+
+    [LoggerMessage(EventId = 2301, Level = LogLevel.Warning, Message = "Foto {File} übersprungen: beim Einlesen nicht mehr erreichbar.")]
+    public static partial void Skipped(ILogger logger, string file, Exception exception);
 }
