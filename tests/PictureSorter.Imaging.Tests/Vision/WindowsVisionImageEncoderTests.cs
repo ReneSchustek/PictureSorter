@@ -44,7 +44,7 @@ public sealed class WindowsVisionImageEncoderTests : IDisposable
     {
         // Ein heutiges Handyfoto bringt zweistellige Megabyte mit, die als Base64 noch
         // einmal wachsen. Das Modell rechnet ohnehin kleiner.
-        string path = Path.Combine(_root, "gross.png");
+        string path = Path.Combine(_root, "large.png");
         await TestImage.WriteGradientPngAsync(path, 2048, 1024);
 
         byte[] jpeg = await _sut.EncodeAsync(path, TestContext.Current.CancellationToken);
@@ -58,7 +58,7 @@ public sealed class WindowsVisionImageEncoderTests : IDisposable
     public async Task EncodeAsync_ForASmallImage_KeepsItsSize()
     {
         // Hochskalieren bringt dem Modell nichts und kostet nur Übertragung.
-        string path = Path.Combine(_root, "klein.png");
+        string path = Path.Combine(_root, "small.png");
         await TestImage.WriteGradientPngAsync(path, 120, 90);
 
         byte[] jpeg = await _sut.EncodeAsync(path, TestContext.Current.CancellationToken);
