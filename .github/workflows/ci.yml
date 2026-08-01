@@ -76,10 +76,10 @@ jobs:
           $onlyDe = $de | Where-Object { $_ -notin $en }
           $onlyEn = $en | Where-Object { $_ -notin $de }
           $leer = @(Empty 'de-DE') + @(Empty 'en-US')
-          if ($onlyDe) { Write-Error "Schluessel ohne englische Uebersetzung: $($onlyDe -join ', ')"; exit 1 }
-          if ($onlyEn) { Write-Error "Schluessel ohne deutsche Uebersetzung: $($onlyEn -join ', ')"; exit 1 }
+          if ($onlyDe) { Write-Error "Schlüssel ohne englische Übersetzung: $($onlyDe -join ', ')"; exit 1 }
+          if ($onlyEn) { Write-Error "Schlüssel ohne deutsche Übersetzung: $($onlyEn -join ', ')"; exit 1 }
           if ($leer)   { Write-Error "Leere Ressourcenwerte: $($leer -join ', ')"; exit 1 }
-          Write-Output "i18n vollstaendig: $($de.Count) Schluessel, de/en deckungsgleich."
+          Write-Output "i18n vollständig: $($de.Count) Schlüssel, de/en deckungsgleich."
 
       # `dotnet list package --vulnerable` meldet Funde nur im Text und endet immer
       # mit Exit-Code 0. Ohne die Auswertung unten wäre dieser Schritt ein Gate, das

@@ -69,12 +69,12 @@ public sealed class DatabaseBackupTests : IDisposable
         string databasePath = CreateDatabaseWithOneRow();
         DatabaseBackup backup = new(NullLogger<DatabaseBackup>.Instance);
         string backupPath = DatabaseBackup.BuildBackupPath(databasePath, "20260202000000_Zweite");
-        File.WriteAllText(backupPath, "aeltere Sicherung");
+        File.WriteAllText(backupPath, "ältere Sicherung");
 
         bool result = backup.TryCreate(databasePath, "20260202000000_Zweite");
 
         Assert.True(result);
-        Assert.Equal("aeltere Sicherung", File.ReadAllText(backupPath));
+        Assert.Equal("ältere Sicherung", File.ReadAllText(backupPath));
     }
 
     [Fact]

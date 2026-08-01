@@ -1,18 +1,18 @@
 name: Release
 
 # Baut beim Push eines Versions-Tags (z. B. v1.3.0) je Architektur die portable,
-# self-contained Variante, signiert sie und haengt sie an ein GitHub-Release; fuer
-# x64 zusaetzlich eine Setup.exe zur Weitergabe.
+# self-contained Variante, signiert sie und hängt sie an ein GitHub-Release; für
+# x64 zusätzlich eine Setup.exe zur Weitergabe.
 #
 # Die Signatur ist der Vertrauensanker der Update-Kette: Die Anwendung spielt nur
-# ein Paket ein, das mit dem privaten Schluessel des Herausgebers unterschrieben
-# wurde (siehe ReleaseSignatureVerifier). Fehlt der Schluessel, bricht dieser
-# Workflow ab - ein unsigniertes Release waere fuer jeden Client wertlos, und das
+# ein Paket ein, das mit dem privaten Schlüssel des Herausgebers unterschrieben
+# wurde (siehe ReleaseSignatureVerifier). Fehlt der Schlüssel, bricht dieser
+# Workflow ab - ein unsigniertes Release wäre für jeden Client wertlos, und das
 # soll auffallen, statt still zu passieren.
 #
 # Ein Code-Signing-Zertifikat einer CA gibt es weiterhin nicht: Windows SmartScreen
-# kann beim ersten Start warnen. Fuer die Echtheit der Updates ist das ohne Belang -
-# ein Zertifikat kann sich jeder besorgen, den privaten Schluessel hier nicht.
+# kann beim ersten Start warnen. Für die Echtheit der Updates ist das ohne Belang -
+# ein Zertifikat kann sich jeder besorgen, den privaten Schlüssel hier nicht.
 
 on:
   push:
@@ -58,7 +58,7 @@ jobs:
           "value=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           Write-Output "Version: $version"
 
-      - name: Portable-Variante veroeffentlichen (${{ matrix.rid }})
+      - name: Portable-Variante veröffentlichen (${{ matrix.rid }})
         shell: pwsh
         run: >-
           dotnet publish src/PictureSorter.App/PictureSorter.App.csproj
@@ -77,8 +77,8 @@ jobs:
           Compress-Archive -Path "publish/${{ matrix.rid }}/*" -DestinationPath $name -Force
           Write-Output "Erstellt: $name"
 
-      # Ohne Signatur laedt die Anwendung das Paket gar nicht erst herunter. Ein
-      # Release ohne Schluessel waere also ein Release, das niemand einspielen kann -
+      # Ohne Signatur lädt die Anwendung das Paket gar nicht erst herunter. Ein
+      # Release ohne Schlüssel wäre also ein Release, das niemand einspielen kann -
       # deshalb bricht der Lauf hier hart ab statt still weiterzumachen.
       - name: Paket signieren
         shell: pwsh
@@ -86,7 +86,7 @@ jobs:
           SIGNING_KEY: ${{ secrets.PICTURESORTER_SIGNING_KEY }}
         run: |
           if ([string]::IsNullOrWhiteSpace($env:SIGNING_KEY)) {
-            Write-Error 'Kein Signaturschluessel hinterlegt (Secret PICTURESORTER_SIGNING_KEY). Ohne Signatur kann kein Client das Update einspielen.'
+            Write-Error 'Kein Signaturschlüssel hinterlegt (Secret PICTURESORTER_SIGNING_KEY). Ohne Signatur kann kein Client das Update einspielen.'
             exit 1
           }
           $keyPath = Join-Path $env:RUNNER_TEMP 'picturesorter-signing-key.pem'
@@ -110,9 +110,9 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "ISCC fehlgeschlagen ($LASTEXITCODE)." }
           Get-ChildItem PictureSorter-Setup-*.exe | ForEach-Object { Write-Output "Erstellt: $($_.Name)" }
 
-      # Die drei Architektur-Laeufe legen ihre Dateien nur ab; das Release entsteht
-      # danach EINMAL im Job "veroeffentlichen". Frueher hat jeder Lauf das Release
-      # selbst angelegt bzw. bestueckt - liefen zwei gleichzeitig, erzeugte einer ein
+      # Die drei Architektur-Läufe legen ihre Dateien nur ab; das Release entsteht
+      # danach EINMAL im Job "veroeffentlichen". Früher hat jeder Lauf das Release
+      # selbst angelegt bzw. bestückt - liefen zwei gleichzeitig, erzeugte einer ein
       # zweites, unbenanntes Release, und dessen Dateien fehlten im eigentlichen. Bei
       # v1.4.5 ist genau das mit der ARM64-Fassung passiert.
       - name: Dateien ablegen
@@ -145,9 +145,9 @@ jobs:
           merge-multiple: true
 
       # Ein Release ohne die Setup.exe oder ohne eine der drei Architekturen ist
-      # unvollstaendig - und faellt niemandem auf, solange nur die eigene Architektur
-      # geprueft wird. Deshalb wird hier gezaehlt, bevor irgendetwas veroeffentlicht wird.
-      - name: Vollstaendigkeit pruefen
+      # unvollständig - und fällt niemandem auf, solange nur die eigene Architektur
+      # geprüft wird. Deshalb wird hier gezählt, bevor irgendetwas veröffentlicht wird.
+      - name: Vollständigkeit prüfen
         shell: bash
         run: |
           cd dateien
@@ -166,7 +166,7 @@ jobs:
               fehlt=1
             fi
           done
-          [ "$fehlt" -eq 0 ] || { echo "Das Release waere unvollstaendig - Abbruch."; exit 1; }
+          [ "$fehlt" -eq 0 ] || { echo "Das Release wäre unvollständig - Abbruch."; exit 1; }
           echo "Alle sieben Dateien vorhanden."
 
       - name: GitHub-Release anlegen
@@ -179,9 +179,9 @@ jobs:
             PictureSorter ${{ github.ref_name }}.
 
             Zum Installieren: PictureSorter-Setup-v${{ steps.version.outputs.value }}.exe
-            (keine Adminrechte noetig). Zum blossen Ausprobieren: das ZIP der passenden
+            (keine Adminrechte nötig). Zum bloßen Ausprobieren: das ZIP der passenden
             Architektur entpacken und PictureSorter.exe starten -- kein vorinstalliertes
-            .NET, keine Windows App Runtime noetig.
+            .NET, keine Windows App Runtime nötig.
 
-            Jedes ZIP traegt eine .sig-Datei: Die Anwendung spielt ein Update nur ein,
+            Jedes ZIP trägt eine .sig-Datei: Die Anwendung spielt ein Update nur ein,
             wenn diese Signatur zum Herausgeber passt.

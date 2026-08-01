@@ -82,7 +82,7 @@ bld/
 publish/
 dist/
 
-# Signaturschluessel: gehoert niemals ins Repository.
+# Signaturschlüssel: gehört niemals ins Repository.
 *.pem
 AppPackages/
 
