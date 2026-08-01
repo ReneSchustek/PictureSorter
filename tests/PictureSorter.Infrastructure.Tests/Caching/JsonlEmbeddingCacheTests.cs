@@ -27,8 +27,8 @@ public sealed class JsonlEmbeddingCacheTests : IDisposable
         using JsonlEmbeddingCache cache = CreateCache();
         ImageEmbedding embedding = new([0.1f, 0.2f, 0.3f], "nomic-embed-text");
 
-        await cache.SetAsync("schluessel-1", embedding, CancellationToken.None);
-        ImageEmbedding? loaded = await cache.GetAsync("schluessel-1", CancellationToken.None);
+        await cache.SetAsync("key-1", embedding, CancellationToken.None);
+        ImageEmbedding? loaded = await cache.GetAsync("key-1", CancellationToken.None);
 
         Assert.NotNull(loaded);
         Assert.Equal([0.1f, 0.2f, 0.3f], loaded!.Values);
