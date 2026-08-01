@@ -199,6 +199,15 @@ public partial class App : Microsoft.UI.Xaml.Application
     // in beiden Fällen einfach neu, nur eben mit der alten Fassung.
     private void ReportUpdateOutcome()
     {
+        // Erst aufräumen, dann melden: Der Arbeitsordner der Aktualisierung bleibt
+        // zwangsläufig liegen – der Helfer läuft aus ihm heraus und kann ihn nicht
+        // selbst löschen. Je Lauf sind das rund 325 MB.
+        int removed = UpdateInstaller.RemoveWorkingDirectories();
+        if (removed > 0)
+        {
+            AppLog.UpdateLeftoversRemoved(_logger!, removed);
+        }
+
         if (UpdateInstaller.TakeOutcome(GetDataDirectory()) is not { } outcome)
         {
             return;
@@ -404,4 +413,7 @@ internal static partial class AppLog
 
     [LoggerMessage(EventId = 1003, Level = LogLevel.Information, Message = "Neue Version verfügbar: {Version}.")]
     public static partial void UpdateAvailable(ILogger logger, string version);
+
+    [LoggerMessage(EventId = 1010, Level = LogLevel.Information, Message = "Arbeitsordner früherer Aktualisierungen entfernt: {Count}.")]
+    public static partial void UpdateLeftoversRemoved(ILogger logger, int count);
 }

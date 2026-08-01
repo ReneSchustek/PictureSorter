@@ -22,6 +22,7 @@ Anwendung braucht deshalb keine Administratorrechte.
 | Einstellungen (Design, Update-Verhalten) | `%LOCALAPPDATA%\PictureSorter\ui-settings.json` |
 | Zwischenstand eines vorbereiteten Updates | `%LOCALAPPDATA%\PictureSorter\pending-update.json` |
 | Embedding-Zwischenspeicher | `%LOCALAPPDATA%\PictureSorter\embedding-cache.jsonl` |
+| Arbeitsordner eines laufenden Updates | `%TEMP%\PictureSorter-Update-<Kennung>\` |
 
 Die Fotos selbst berührt die Anwendung nur an einer Stelle: beim Anwenden eines
 Sortiervorschlags. Alles andere ist lesend.
@@ -128,6 +129,16 @@ Programmdateien zu tauschen.
 * **Bleiben `.bak-update`-Dateien im Programmordner liegen**, wurde der Tausch
   unterbrochen. Sie enthalten den vorherigen Stand: Datei ohne die Endung
   wiederherstellen, dann die Sicherung löschen.
+* **`.alt-update`-Dateien sind dagegen unbedenklich.** Eine Datei, die ein anderer
+  Prozess – in aller Regel ein Virenscanner – im Speicher abgebildet hält, lässt
+  Windows nicht überschreiben, auch nach beliebigem Warten nicht. Der Tausch legt
+  sie deshalb unter diesem Namen beiseite und schreibt die neue an ihre Stelle.
+  Löschen lässt sie sich erst, wenn die Abbildung endet; das nächste Update räumt
+  sie weg. Sie von Hand zu entfernen ist gefahrlos.
+* **Der Arbeitsordner unter `%TEMP%` bleibt nach dem Tausch stehen** – der Helfer,
+  der die Dateien ersetzt, läuft aus eben diesem Ordner und kann ihn nicht selbst
+  entfernen. Er umfasst das entpackte Paket, also mehrere hundert Megabyte. Der
+  nächste Start der Anwendung räumt alle `PictureSorter-Update-*`-Ordner weg.
 * **Auf eine ältere Fassung zurück**: Das Setup der gewünschten Version erneut
   ausführen. Die Daten im Benutzerprofil bleiben unangetastet.
 

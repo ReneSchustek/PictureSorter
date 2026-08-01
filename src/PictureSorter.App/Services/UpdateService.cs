@@ -130,7 +130,9 @@ internal sealed class UpdateService : IUpdateCoordinator
         // In einen eigenen, frisch angelegten Ordner laden. Ein fester Pfad im
         // gemeinsamen Temp-Verzeichnis wäre für andere Prozesse beschreibbar – die
         // Datei könnte zwischen Prüfung und Start ausgetauscht werden.
-        string workingDirectory = Path.Combine(Path.GetTempPath(), "PictureSorter-Update-" + Guid.NewGuid().ToString("N"));
+        string workingDirectory = Path.Combine(
+            Path.GetTempPath(),
+            UpdateInstaller.WorkingDirectoryPrefix + Guid.NewGuid().ToString("N"));
         string packagePath = Path.Combine(workingDirectory, "package.zip");
         string signaturePath = Path.Combine(workingDirectory, "package.zip.sig");
         string stagingDirectory = Path.Combine(workingDirectory, "neu");
