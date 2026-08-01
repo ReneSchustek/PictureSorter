@@ -435,6 +435,69 @@ public sealed class PhotoSortingServiceTests
         _ = Assert.Single(proposals);
     }
 
+    [Fact]
+    public async Task CreateProposalsAsync_WithExamplesFromAnotherModel_MakesNoProposals()
+    {
+        // Die gespeicherten Beispiele stammen aus dem Modell „fake", die frisch
+        // erzeugten Vektoren aus einem anderen. Sie sind nicht vergleichbar – jedes
+        // Urteil daraus wäre geraten. Vorher wurde trotzdem gerechnet, solange nur die
+        // Vektorlänge zufällig übereinstimmte.
+        FakeImageClassifier classifier = new(new VisionVerdict { Matches = true, Confidence = 1.0 });
+        PhotoSortingService service = CreateService(
+            embedding: [1.0f, 0.0f, 0.0f],
+            classifier: classifier,
+            embeddingProvider: new FakeEmbeddingProvider(_ => [1.0f, 0.0f, 0.0f], model: "anderes-modell"));
+
+        IReadOnlyList<SortProposal> proposals = await service.CreateProposalsAsync(
+            SourceFolder, CreateCategory(), includeSubfolders: false, progress: null,
+            TestContext.Current.CancellationToken);
+
+        Assert.Empty(proposals);
+        Assert.Equal(0, classifier.CallCount);
+    }
+
+    [Fact]
+    public async Task CreateProposalsAsync_WithExamplesFromAnotherModel_RemembersNothing()
+    {
+        // Der eigentliche Schaden lag im Gedächtnis: Ein nicht vergleichbares Beispiel
+        // führte zu „passt nicht", und das wurde dauerhaft gemerkt. Der ganze Ordner
+        // wäre danach als erledigt abgehakt gewesen – auch nachdem das Modell wieder
+        // zurückgestellt ist, käme kein Foto je erneut zur Prüfung.
+        FakeSortMemory memory = new();
+        FakeImageClassifier classifier = new(new VisionVerdict { Matches = false, Confidence = 0.0 });
+        PhotoSortingService service = CreateService(
+            embedding: [1.0f, 0.0f, 0.0f],
+            classifier: classifier,
+            memory: memory,
+            embeddingProvider: new FakeEmbeddingProvider(_ => [1.0f, 0.0f, 0.0f], model: "anderes-modell"));
+
+        _ = await service.CreateProposalsAsync(
+            SourceFolder, CreateCategory(), includeSubfolders: false, progress: null,
+            TestContext.Current.CancellationToken);
+
+        Assert.Empty(memory.Records);
+    }
+
+    [Fact]
+    public async Task CreateProposalsAsync_WithExamplesOfDifferentLength_RemembersNothing()
+    {
+        // Derselbe Fall, andere Ursache: gleiches Modell, aber die gespeicherten
+        // Vektoren haben eine andere Länge. Auch das ist kein Urteil über das Bild.
+        FakeSortMemory memory = new();
+        FakeImageClassifier classifier = new(new VisionVerdict { Matches = false, Confidence = 0.0 });
+        PhotoSortingService service = CreateService(
+            embedding: [1.0f, 0.0f],
+            classifier: classifier,
+            memory: memory,
+            embeddingProvider: new FakeEmbeddingProvider(_ => [1.0f, 0.0f]));
+
+        _ = await service.CreateProposalsAsync(
+            SourceFolder, CreateCategory(), includeSubfolders: false, progress: null,
+            TestContext.Current.CancellationToken);
+
+        Assert.Empty(memory.Records);
+    }
+
     private static Category CreateCategory()
     {
         Category category = new("Familie", "Bilder meiner Familie", CategoryKind.Topic);

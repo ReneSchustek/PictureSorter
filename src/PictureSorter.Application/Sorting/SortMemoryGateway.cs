@@ -1,3 +1,4 @@
+using System.Data.Common;
 using Microsoft.Extensions.Logging;
 using PictureSorter.Core.Entities;
 using PictureSorter.Core.Enums;
@@ -212,9 +213,20 @@ public sealed class SortMemoryGateway
 
     // Datenbankprobleme (gesperrte Datei, defektes Schema) dürfen einen laufenden
     // Sortiervorgang nicht abbrechen. Ein Abbruch durch den Nutzer schon.
+    //
+    // Die DbException ist der entscheidende Eintrag: SQLite meldet eine gesperrte oder
+    // beschädigte Datei als SqliteException, und die erbt über DbException von
+    // ExternalException – nicht von IOException. Ohne sie lief die zugesagte
+    // Fehlertoleranz genau an der häufigsten Störung vorbei.
+    //
+    // Die Prüfung der inneren Ausnahme fängt den Schreibfall ab: Der Datenzugriff
+    // verpackt die Anbieter-Ausnahme in einen eigenen Typ, der nicht von DbException
+    // erbt. Ihn beim Namen zu nennen hieße, die Persistenz-Technologie in diese Schicht
+    // zu holen – deshalb wird stattdessen hineingesehen.
     private static bool IsRecoverable(Exception exception) =>
         exception is not OperationCanceledException
-        && exception is IOException or InvalidOperationException or TimeoutException;
+        && (exception is IOException or InvalidOperationException or TimeoutException or DbException
+            || exception.InnerException is DbException);
 }
 
 /// <summary>

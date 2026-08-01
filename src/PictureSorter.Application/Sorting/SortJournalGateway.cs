@@ -1,3 +1,4 @@
+using System.Data.Common;
 using Microsoft.Extensions.Logging;
 using PictureSorter.Core.Interfaces;
 using PictureSorter.Core.ValueObjects;
@@ -88,10 +89,15 @@ public sealed class SortJournalGateway
     }
 
     // Datenbankprobleme dürfen den Ablauf nicht abbrechen. Ein Abbruch durch die
-    // Nutzerin schon.
+    // Nutzerin schon. Zur Rolle der DbException und der inneren Ausnahme siehe
+    // <see cref="SortMemoryGateway"/> – hier wiegt es schwerer: Das Protokollieren
+    // läuft im finally-Block eines bereits ausgeführten Sortierlaufs. Eine Ausnahme
+    // von hier ersetzt jede ursprüngliche und macht aus einem erfolgreichen Lauf einen
+    // Absturz, nachdem die Fotos bereits verschoben sind.
     private static bool IsRecoverable(Exception exception) =>
         exception is not OperationCanceledException
-        && exception is IOException or InvalidOperationException or TimeoutException;
+        && (exception is IOException or InvalidOperationException or TimeoutException or DbException
+            || exception.InnerException is DbException);
 }
 
 /// <summary>
