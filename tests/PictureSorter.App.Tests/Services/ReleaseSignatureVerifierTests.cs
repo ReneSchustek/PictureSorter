@@ -6,8 +6,10 @@ namespace PictureSorter.App.Tests.Services;
 /// <summary>
 /// Tests des Vertrauensankers der Update-Kette. Er entscheidet, ob ein
 /// heruntergeladenes Paket ausgeführt wird – die schärfste Frage, die die Anwendung
-/// sich stellt. Zugelassen ist genau ein Unterzeichner: Selbst wer den Release-Kanal
-/// übernimmt, bekommt hier ohne den privaten Schlüssel kein Paket durch.
+/// sich stellt. Zugelassen sind nur die einkompilierten Unterzeichner: Selbst wer den
+/// Release-Kanal übernimmt, bekommt hier ohne deren privaten Schlüssel kein Paket durch.
+/// Mehrere Schlüssel sind erlaubt, weil ein Wechsel sonst jede ausgelieferte Fassung
+/// dauerhaft von Updates abschneiden würde.
 /// </summary>
 public sealed class ReleaseSignatureVerifierTests : IDisposable
 {
@@ -93,6 +95,52 @@ public sealed class ReleaseSignatureVerifierTests : IDisposable
             Path.Combine(_root, "gibt-es-nicht.zip"),
             [1, 2, 3, 4],
             Convert.ToBase64String(signer.ExportSubjectPublicKeyInfo())));
+    }
+
+    [Fact]
+    public void IsAuthentic_WithSignatureFromTheSuccessorKey_AcceptsThePackage()
+    {
+        // Der Schlüsselwechsel: Solange beide Schlüssel zugelassen sind, nimmt die
+        // Anwendung Pakete des alten wie des neuen Unterzeichners an. Ohne diesen
+        // Übergang wäre jede ausgelieferte Fassung nach einem Wechsel update-unfähig.
+        using ECDsa alt = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        using ECDsa neu = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        string[] zugelassen =
+        [
+            Convert.ToBase64String(alt.ExportSubjectPublicKeyInfo()),
+            Convert.ToBase64String(neu.ExportSubjectPublicKeyInfo()),
+        ];
+
+        Assert.True(ReleaseSignatureVerifier.IsAuthentic(_package, Sign(neu, _package), zugelassen));
+        Assert.True(ReleaseSignatureVerifier.IsAuthentic(_package, Sign(alt, _package), zugelassen));
+    }
+
+    [Fact]
+    public void IsAuthentic_WithSignatureFromAKeyThatWasRetired_RejectsThePackage()
+    {
+        // Nach abgeschlossenem Wechsel steht der alte Schlüssel nicht mehr in der Liste.
+        // Ab da darf seine Signatur nicht mehr durchgehen.
+        using ECDsa ausgemustert = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        using ECDsa aktuell = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        string[] zugelassen = [Convert.ToBase64String(aktuell.ExportSubjectPublicKeyInfo())];
+
+        Assert.False(ReleaseSignatureVerifier.IsAuthentic(_package, Sign(ausgemustert, _package), zugelassen));
+    }
+
+    [Fact]
+    public void IsAuthentic_WithoutAnyAcceptedKey_RejectsThePackage()
+    {
+        // Fail-closed auch hier: Eine leere Liste heißt „niemand ist zugelassen",
+        // nicht „jeder".
+        using ECDsa signer = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+
+        Assert.False(ReleaseSignatureVerifier.IsAuthentic(_package, Sign(signer, _package), []));
+    }
+
+    [Fact]
+    public void AcceptedPublicKeys_ContainsTheCompiledInKey()
+    {
+        Assert.Contains(ReleaseSignatureVerifier.PublicKeySpkiBase64, ReleaseSignatureVerifier.AcceptedPublicKeys);
     }
 
     [Fact]

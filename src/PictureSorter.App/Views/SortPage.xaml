@@ -308,7 +308,9 @@
                                     Text="Du kannst Bilder auch aus dem Explorer hierher ziehen (bis zu dreißig)."
                                     TextWrapping="Wrap" />
                                 <GridView
+                                    x:Uid="SortPage_ExampleList"
                                     MaxHeight="360"
+                                    AutomationProperties.Name="Beispielbilder"
                                     ItemsSource="{x:Bind ViewModel.ExampleCandidates}"
                                     SelectionMode="None">
                             <GridView.ItemTemplate>
@@ -421,7 +423,9 @@
                             Visibility="{x:Bind ViewModel.Wizard.ShowStandardActions, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
 
                         <ListView
+                            x:Uid="SortPage_ProposalList"
                             MaxHeight="360"
+                            AutomationProperties.Name="Vorschläge"
                             ItemsSource="{x:Bind ViewModel.Proposals}"
                             SelectionMode="None">
                             <ListView.ItemTemplate>

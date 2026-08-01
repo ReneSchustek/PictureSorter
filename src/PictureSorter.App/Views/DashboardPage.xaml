@@ -46,6 +46,8 @@
 
             <!-- Kacheln in die drei Bereiche -->
             <GridView
+                x:Uid="DashboardPage_Tiles"
+                AutomationProperties.Name="Bereiche"
                 IsItemClickEnabled="False"
                 SelectionMode="None">
                 <Button

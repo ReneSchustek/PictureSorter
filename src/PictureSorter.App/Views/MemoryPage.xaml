@@ -95,8 +95,10 @@
 
         <!-- Liste der gemerkten Entscheidungen -->
         <ListView
+            x:Uid="MemoryPage_ItemList"
             Grid.Row="2"
             Padding="24,4,24,16"
+            AutomationProperties.Name="Gemerkte Entscheidungen"
             ItemsSource="{x:Bind ViewModel.Items}"
             SelectionMode="None">
             <ListView.ItemTemplate>
