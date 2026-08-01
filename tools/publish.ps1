@@ -61,7 +61,7 @@ if (-not $iscc) {
     throw 'Inno Setup 6 (ISCC.exe) nicht gefunden. Installation: winget install JRSoftware.InnoSetup'
 }
 
-Write-Host "PictureSorter $Version ($Runtime) veroeffentlichen ..." -ForegroundColor Cyan
+Write-Host "PictureSorter $Version ($Runtime) veröffentlichen ..." -ForegroundColor Cyan
 if (Test-Path -LiteralPath $staging) { Remove-Item -LiteralPath $staging -Recurse -Force }
 
 & dotnet publish $project `

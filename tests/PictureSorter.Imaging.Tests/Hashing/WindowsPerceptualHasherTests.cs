@@ -67,9 +67,9 @@ public sealed class WindowsPerceptualHasherTests : IDisposable
     {
         // Dasselbe Motiv, neu skaliert: bit-verschieden, aber visuell gleich. Genau
         // das soll der Wahrnehmungs-Hash zusammenführen, wo der Inhalts-Hash aufgibt.
-        string small = Path.Combine(_root, "klein.png");
+        string small = Path.Combine(_root, "small.png");
         await TestImage.WriteGradientPngAsync(small, 32, 32);
-        string large = Path.Combine(_root, "gross.png");
+        string large = Path.Combine(_root, "large.png");
         await TestImage.WriteGradientPngAsync(large, 128, 128);
 
         ImageFingerprint one = await _sut.ComputeAsync(small, CancellationToken.None);

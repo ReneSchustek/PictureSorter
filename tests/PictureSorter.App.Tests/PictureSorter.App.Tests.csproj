@@ -20,8 +20,8 @@
     <SelfContained>true</SelfContained>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <!-- WindowsAppSDKSelfContained wird hier bewusst NICHT gesetzt: Die Eigenschaft
-         laesst das SDK seinen Auto-Initialisierer in die Kompilierung einschleusen. In
-         PictureSorter.App gehoert er hin, hier wuerde er dieselben Typen ein zweites Mal
+         lässt das SDK seinen Auto-Initialisierer in die Kompilierung einschleusen. In
+         PictureSorter.App gehört er hin, hier würde er dieselben Typen ein zweites Mal
          definieren (CS0436). Die Laufzeit-DLLs kommen ohnehin aus der App-Ausgabe. -->
   </PropertyGroup>
 

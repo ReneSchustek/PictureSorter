@@ -17,7 +17,7 @@ public sealed class GitHubUpdateCheckerTests : IDisposable
 {
     private const string Base = "https://github.com/ReneSchustek/PictureSorter/releases/download/v1.4.0/";
 
-    // Ein Release traegt je ein Paket fuer x64, x86 und ARM64, jedes mit seiner Signatur.
+    // Ein Release trägt je ein Paket für x64, x86 und ARM64, jedes mit seiner Signatur.
     private const string Release = """
         {
           "tag_name": "v1.4.0",
@@ -50,9 +50,9 @@ public sealed class GitHubUpdateCheckerTests : IDisposable
     [Fact]
     public async Task CheckAsync_PicksThePackageForTheRunningArchitecture()
     {
-        // Ein Release traegt je ein Paket fuer x64, x86 und ARM64. Greift der Checker
-        // das falsche, laedt die Anwendung ein Programm, das auf diesem Rechner nicht
-        // laeuft - und ersetzt sich damit selbst.
+        // Ein Release trägt je ein Paket für x64, x86 und ARM64. Greift der Checker
+        // das falsche, lädt die Anwendung ein Programm, das auf diesem Rechner nicht
+        // läuft - und ersetzt sich damit selbst.
         GitHubUpdateChecker sut = CreateSut(StubHttpMessageHandler.Json(Release));
 
         UpdateInfo? info = await sut.CheckAsync("1.3.0", CancellationToken.None);
@@ -64,7 +64,7 @@ public sealed class GitHubUpdateCheckerTests : IDisposable
     [Fact]
     public async Task CheckAsync_WithoutSignatureAsset_OffersNoPackage()
     {
-        // Ohne Signatur wuerde das Paket ohnehin abgelehnt. Dann soll die Anwendung
+        // Ohne Signatur würde das Paket ohnehin abgelehnt. Dann soll die Anwendung
         // es gar nicht erst herunterladen - der Hinweis auf die neue Version bleibt.
         GitHubUpdateChecker sut = CreateSut(StubHttpMessageHandler.Json(
             """{"tag_name":"v1.4.0","assets":[{"name":"PictureSorter-v1.4.0-win-x64.zip","browser_download_url":"https://github.com/x.zip"}]}"""));
@@ -149,7 +149,7 @@ public sealed class GitHubUpdateCheckerTests : IDisposable
     [Fact]
     public async Task CheckAsync_WithRelativeDownloadUrl_DropsIt()
     {
-        // Nur absolute Adressen sind brauchbar; alles andere waere spaeter ein
+        // Nur absolute Adressen sind brauchbar; alles andere wäre später ein
         // unbrauchbarer oder mehrdeutiger Download.
         GitHubUpdateChecker sut = CreateSut(StubHttpMessageHandler.Json(
             """{"tag_name":"v1.4.0","assets":[{"name":"PictureSorter-v1.4.0-win-x64.zip","browser_download_url":"/relativ/p.zip"},{"name":"PictureSorter-v1.4.0-win-x64.zip.sig","browser_download_url":"/relativ/p.zip.sig"}]}"""));

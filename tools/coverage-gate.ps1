@@ -5,18 +5,18 @@
 
 .DESCRIPTION
     Jedes Testprojekt schreibt einen eigenen Cobertura-Bericht, und mehrere davon
-    decken dieselben Dateien ab (etwa die Core-Schicht). Ein blosses Aufsummieren
-    zaehlte diese Zeilen doppelt und beschoenigte das Ergebnis. Das Skript
+    decken dieselben Dateien ab (etwa die Core-Schicht). Ein bloßes Aufsummieren
+    zählte diese Zeilen doppelt und beschönigte das Ergebnis. Das Skript
     vereinigt die Berichte deshalb je Datei und Zeile: Eine Zeile gilt als
     abgedeckt, sobald irgendein Testprojekt sie erreicht.
 
     Der Schwellwert sichert den erreichten Stand ab; er ist keine Zielmarke. Sinkt
-    die Abdeckung darunter, wurde ungetesteter Code hinzugefuegt.
+    die Abdeckung darunter, wurde ungetesteter Code hinzugefügt.
 
-    Die App-Schicht (Assembly "PictureSorter") zaehlt mit - ohne ihre Views,
-    WinUI-Konverter und oberflaechengebundenen Dienste: Die laufen ohne XAML-Host
-    nicht und wuerden die Zahl druecken, ohne etwas ueber die Testtiefe zu sagen.
-    Sie werden in der laufenden Anwendung geprueft, nicht im Testhost.
+    Die App-Schicht (Assembly "PictureSorter") zählt mit - ohne ihre Views,
+    WinUI-Konverter und oberflächengebundenen Dienste: Die laufen ohne XAML-Host
+    nicht und würden die Zahl drücken, ohne etwas über die Testtiefe zu sagen.
+    Sie werden in der laufenden Anwendung geprüft, nicht im Testhost.
 
 .PARAMETER ResultsDirectory
     Verzeichnis mit den Cobertura-Berichten (rekursiv).
@@ -37,9 +37,9 @@ if ($reports.Count -eq 0) {
     Write-Error "Keine Coverage-Berichte unter '$ResultsDirectory' gefunden."
 }
 
-# Schluessel: "Datei|Zeile" -> wurde die Zeile von irgendeinem Testprojekt erreicht?
+# Schlüssel: "Datei|Zeile" -> wurde die Zeile von irgendeinem Testprojekt erreicht?
 $lines = @{}
-# Zuordnung Datei -> Assembly, damit die Ausgabe je Schicht aufschluesseln kann.
+# Zuordnung Datei -> Assembly, damit die Ausgabe je Schicht aufschlüsseln kann.
 $assemblyOfFile = @{}
 
 foreach ($report in $reports) {
@@ -70,7 +70,7 @@ if ($lines.Count -eq 0) {
     Write-Error 'Die Coverage-Berichte enthalten keine Zeilen.'
 }
 
-# Je Assembly aufschluesseln.
+# Je Assembly aufschlüsseln.
 $perAssembly = @{}
 foreach ($entry in $lines.GetEnumerator()) {
     $file = $entry.Key.Split('|')[0]
@@ -96,7 +96,7 @@ foreach ($name in ($perAssembly.Keys | Sort-Object)) {
 
 Write-Output ''
 Write-Output ("Gesamt: {0} % ({1}/{2} Zeilen), gefordert: {3} %" -f $coverage, $covered, $total, $MinimumLineCoverage)
-Write-Output "Nicht enthalten: Views, WinUI-Konverter und oberflaechengebundene Dienste - sie laufen ohne XAML-Host nicht und werden in der Anwendung selbst geprueft."
+Write-Output "Nicht enthalten: Views, WinUI-Konverter und oberflächengebundene Dienste - sie laufen ohne XAML-Host nicht und werden in der Anwendung selbst geprüft."
 
 if ($coverage -lt $MinimumLineCoverage) {
     Write-Output ''

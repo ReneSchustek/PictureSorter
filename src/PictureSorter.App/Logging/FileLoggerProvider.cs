@@ -28,7 +28,7 @@ namespace PictureSorter.App.Logging;
 /// </summary>
 internal sealed class FileLoggerProvider : ILoggerProvider
 {
-    // Obergrenze je Tagesdatei (logging.md). Darüber wird die Datei zur Seite gelegt
+    // Obergrenze je Tagesdatei. Darüber wird die Datei zur Seite gelegt
     // und neu begonnen, damit ein Dauerfehler die Platte nicht vollschreibt.
     private const long MaxLogFileSizeBytes = 100L * 1024 * 1024;
 

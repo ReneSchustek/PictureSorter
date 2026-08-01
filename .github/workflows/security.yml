@@ -7,7 +7,7 @@ on:
     branches: [main]
   schedule:
     # Wöchentlicher Security-Scan, damit neue CVEs in unveränderten Abhängigkeiten
-    # auch ohne Push gefunden werden. Sonntag 04:00 UTC = außerhalb der Arbeitspaket-Arbeitszeit.
+    # auch ohne Push gefunden werden. Sonntag 04:00 UTC = außerhalb der Arbeitszeit.
     - cron: '0 4 * * 0'
   # Von Hand auslösbar: Ein Sicherheitsgate, das man nur durch einen Commit in Gang
   # setzen kann, wird nach einer Änderung an den Voraussetzungen nicht nachgeprüft --
