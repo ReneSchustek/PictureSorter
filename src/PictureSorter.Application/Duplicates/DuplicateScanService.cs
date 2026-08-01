@@ -92,7 +92,7 @@ public sealed class DuplicateScanService : IDuplicateScanner
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
                 // Eine einzelne unlesbare Datei darf den ganzen Lauf nicht beenden. Der
-                // Fall tritt im Alltag auf: Ein Virenscanner zieht die Datei waehrend des
+                // Fall tritt im Alltag auf: Ein Virenscanner zieht die Datei während des
                 // Laufs weg, ein Cloud-Ordner hat sie noch nicht heruntergeladen, oder die
                 // Rechte fehlen. Ohne diese Behandlung stand die Nutzerin nach Minuten
                 // Wartezeit vor einer Fehlermeldung statt vor einem Ergebnis.
