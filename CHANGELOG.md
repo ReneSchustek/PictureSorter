@@ -6,6 +6,8 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
+## [1.4.7] - 2026-08-01
+
 ### Geändert
 
 - **Die Beispiele werden nicht mehr vorab geladen, sondern in zwei getrennten Schritten
@@ -44,6 +46,18 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 - **Der Screenreader nannte mehrere Listen nur „Liste".** Das Protokollfeld, die
   Bereichsauswahl auf der Startseite, das Gedächtnis, die Beispielbilder und die
   Vorschläge haben jetzt einen sprechenden Namen.
+- **Nach einem Wechsel des Bilderkennungs-Modells galt ein Ordner dauerhaft als
+  abgehakt.** Die gespeicherten Beispiele stammten noch vom alten Modell und ließen
+  sich mit den neuen Werten nicht vergleichen. Statt das zu melden, merkte sich die
+  Anwendung jedes Foto als „passt nicht" — auch nach dem Zurückstellen auf das alte
+  Modell wäre der Ordner leer geblieben. Unvergleichbare Beispiele werden jetzt
+  übersprungen, nichts wird gemerkt, und die Zahl der betroffenen Fotos steht einmal
+  je Lauf im Protokoll. Wer das Modell wechselt, muss die Kategorie neu anlernen.
+- **Ein Datenbankfehler mitten im Sortieren beendete den ganzen Lauf.** Zugesagt war,
+  dass das Gedächtnis und das Protokoll der Sortierläufe eine Störung überstehen, ohne
+  die Arbeit abzubrechen — tatsächlich wurde die Fehlerart, mit der sich SQLite meldet,
+  gar nicht abgefangen. Jetzt wird sie es, und der Lauf geht weiter.
+- **Die Versionsangabe im Fußbereich klebte am rechten Rand.**
 
 ## [1.4.6] - 2026-07-31
 
