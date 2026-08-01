@@ -29,7 +29,6 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
 
     private readonly IPhotoSorter _sorter;
     private readonly ISortUndoService _undo;
-    private readonly IPhotoSource _photoSource;
     private readonly ICategoryTrainer _trainer;
     private readonly ICategoryRepository _categoryRepository;
     private readonly IFolderPicker _folderPicker;
@@ -39,13 +38,10 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     private readonly ILocalizer _localizer;
     private readonly ILogger<SortViewModel> _logger;
 
+    private readonly ExampleGatheringViewModel _gathering;
+
     private Category? _category;
     private CancellationTokenSource? _cancellation;
-
-    // Startpunkt des nächsten Vorschlags-Schwungs, für beide Seiten getrennt: Sie
-    // schöpfen aus demselben Ordner, sollen aber nicht dieselben Bilder vorschlagen.
-    private int _positiveOffset;
-    private int _negativeOffset;
 
     /// <summary>Expliziter Ablaufzustand der Sortier-Ansicht.</summary>
     [ObservableProperty]
@@ -149,7 +145,6 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
 
         _sorter = sorter;
         _undo = undo;
-        _photoSource = photoSource;
         _trainer = trainer;
         _categoryRepository = categoryRepository;
         _folderPicker = folderPicker;
@@ -166,6 +161,17 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
 
         // Die Vorschau kennt den Ablauf nur über den Delegaten – wie der Assistent.
         Proposals = new ProposalListViewModel(localizer, () => IsInteractive, OnProposalSelectionChanged);
+
+        // Die Beschaffung der Beispiele erfährt Ordner und Unterordner-Wahl ebenfalls
+        // über Delegaten; die Eingabe bleibt damit an genau einer Stelle.
+        _gathering = new ExampleGatheringViewModel(
+            photoSource,
+            folderPicker,
+            status,
+            localizer,
+            logger,
+            () => SourceFolder,
+            () => IncludeSubfolders);
 
         // Der Assistent kennt die Use-Cases nur über diese Delegaten (SRP). Er muss
         // vor den Anfangswerten stehen: deren Setter melden jede Änderung an den
@@ -288,8 +294,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         // Ordner und würden dort weiterwirken, wo sie niemand mehr erwartet. Der
         // Startpunkt beginnt wieder vorn – sonst überspränge der neue Ordner ohne
         // Grund seine ersten Bilder.
-        _positiveOffset = 0;
-        _negativeOffset = 0;
+        _gathering.ResetOffsets();
         if (!PositiveExamples.IsEmpty || !NegativeExamples.IsEmpty)
         {
             PositiveExamples.Clear();
@@ -358,8 +363,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         IsEventCategory = false;
         PositiveExamples.Clear();
         NegativeExamples.Clear();
-        _positiveOffset = 0;
-        _negativeOffset = 0;
+        _gathering.ResetOffsets();
         Proposals.Clear();
         State = SortState.Idle;
 
@@ -388,11 +392,11 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     /// Bildern eines gemischten Ordners oft kaum eines, das passt.
     /// </summary>
     [RelayCommand(CanExecute = nameof(CanLoadExamples))]
-    private Task SuggestPositivesAsync() => SuggestAsync(PositiveExamples, isPositive: true);
+    private Task SuggestPositivesAsync() => _gathering.SuggestAsync(PositiveExamples, NegativeExamples, isPositive: true);
 
     /// <summary>Holt einen Schwung Vorschläge für die Gegenbeispiele.</summary>
     [RelayCommand(CanExecute = nameof(CanLoadExamples))]
-    private Task SuggestNegativesAsync() => SuggestAsync(NegativeExamples, isPositive: false);
+    private Task SuggestNegativesAsync() => _gathering.SuggestAsync(NegativeExamples, PositiveExamples, isPositive: false);
 
     /// <summary>
     /// Öffnet den Auswahldialog für eigene passende Bilder. Anders als die Vorschläge
@@ -400,11 +404,11 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     /// kommen –, wohl aber einen ruhenden Ablauf.
     /// </summary>
     [RelayCommand(CanExecute = nameof(IsInteractive))]
-    private Task PickPositivesAsync() => PickAsync(PositiveExamples);
+    private Task PickPositivesAsync() => _gathering.PickAsync(PositiveExamples);
 
     /// <summary>Öffnet den Auswahldialog für eigene Gegenbeispiele.</summary>
     [RelayCommand(CanExecute = nameof(IsInteractive))]
-    private Task PickNegativesAsync() => PickAsync(NegativeExamples);
+    private Task PickNegativesAsync() => _gathering.PickAsync(NegativeExamples);
 
     /// <summary>
     /// Nimmt hereingezogene Bilddateien auf einer der beiden Seiten auf.
@@ -416,130 +420,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         ArgumentNullException.ThrowIfNull(paths);
 
         ExampleSetViewModel set = isPositive ? PositiveExamples : NegativeExamples;
-        ReportAdded(set, set.AddPaths(paths));
-    }
-
-    private async Task PickAsync(ExampleSetViewModel set)
-    {
-        // Voll ist voll: Erst gar keinen Dialog öffnen, statt den Nutzer auswählen zu
-        // lassen und die Auswahl anschließend wortlos zu verwerfen.
-        if (set.IsFull)
-        {
-            _status.Report(_localizer.Format("Examples_AlreadyFull", set.Capacity), StatusSeverity.Warning);
-            return;
-        }
-
-        IReadOnlyList<string> paths = await _folderPicker.PickImagesAsync(CancellationToken.None).ConfigureAwait(true);
-        if (paths.Count == 0)
-        {
-            return;
-        }
-
-        ReportAdded(set, set.AddPaths(paths));
-    }
-
-    private async Task SuggestAsync(ExampleSetViewModel set, bool isPositive)
-    {
-        if (set.IsFull)
-        {
-            _status.Report(_localizer.Format("Examples_AlreadyFull", set.Capacity), StatusSeverity.Warning);
-            return;
-        }
-
-        // Begin statt Report: Nur Begin schaltet den Fortschrittsbalken ein. Mit bloßem
-        // Text sah das Laden aus einem großen (oder aus der Cloud geholten) Ordner aus,
-        // als sei die Anwendung stehengeblieben.
-        using CancellationTokenSource cancellation = new();
-        _status.Begin(_localizer.Get("Sort_LoadingExamples"), cancellation.Cancel);
-        try
-        {
-            // Nur so viele Bilder einlesen, wie noch Platz haben. Das Ermitteln der
-            // Aufnahmedaten öffnet jede Datei einzeln; bei einem Ordner, dessen Bilder
-            // erst aus der Cloud geholt werden (iCloud-Fotos unter Windows), zieht jedes
-            // Öffnen einen vollständigen Download nach sich.
-            int offset = isPositive ? _positiveOffset : _negativeOffset;
-            IReadOnlyList<Photo> photos = await _photoSource
-                .GetPhotosAsync(SourceFolder, IncludeSubfolders, offset, set.RemainingSlots, cancellation.Token)
-                .ConfigureAwait(true);
-
-            // Am Ende des Ordners wieder von vorn: Sonst führte wiederholtes Nachfordern
-            // in eine leere Auswahl, aus der nur ein Ordnerwechsel führte.
-            if (photos.Count == 0 && offset > 0)
-            {
-                offset = 0;
-                photos = await _photoSource
-                    .GetPhotosAsync(SourceFolder, IncludeSubfolders, 0, set.RemainingSlots, cancellation.Token)
-                    .ConfigureAwait(true);
-            }
-
-            offset += photos.Count;
-            if (isPositive)
-            {
-                _positiveOffset = offset;
-            }
-            else
-            {
-                _negativeOffset = offset;
-            }
-
-            // Bilder, die auf der anderen Seite schon liegen, gehören nicht in die
-            // Vorschläge – sonst stünde dasselbe Foto als passend und als Gegenbeispiel.
-            ExampleSetViewModel otherSide = isPositive ? NegativeExamples : PositiveExamples;
-            ExampleSetViewModel.AddResult result =
-                set.Add(photos.Where(photo => !otherSide.Contains(photo.FullPath)));
-
-            if (result.Added == 0)
-            {
-                // „Keine Bilder im Ordner" nur, wenn der Ordner wirklich keines mehr
-                // hergab. Wurden welche gefunden und bloß übergangen – schon gewählt
-                // oder auf der anderen Seite –, muss die Meldung das sagen, sonst sucht
-                // die Nutzerin den Fehler im Ordner statt in ihrer Auswahl.
-                _status.Finish(
-                    photos.Count == 0
-                        ? _localizer.Get("Sort_NoImagesInFolder")
-                        : _localizer.Get("Examples_AllKnown"),
-                    StatusSeverity.Warning);
-                return;
-            }
-
-            _status.Finish(_localizer.Format("Examples_Added", result.Added, set.RemainingSlots), StatusSeverity.Success);
-        }
-        catch (OperationCanceledException)
-        {
-            _status.Finish(_localizer.Get("Sort_LoadExamplesCanceled"), StatusSeverity.Warning);
-        }
-        catch (DirectoryNotFoundException ex)
-        {
-            SortViewModelLog.LoadExamplesFailed(_logger, ex);
-            _status.Finish(_localizer.Get("Sort_FolderNotFound"), StatusSeverity.Error);
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-        {
-            SortViewModelLog.LoadExamplesFailed(_logger, ex);
-            _status.Finish(_localizer.Get("Sort_FolderUnreadable"), StatusSeverity.Error);
-        }
-    }
-
-    // Eine Meldung, die den Grund nennt: „nichts übernommen" ohne Erklärung wäre für
-    // die Zielnutzerin nicht von einem Fehler zu unterscheiden.
-    private void ReportAdded(ExampleSetViewModel set, ExampleSetViewModel.AddResult result)
-    {
-        if (result.Added > 0)
-        {
-            _status.Report(
-                _localizer.Format("Examples_Added", result.Added, set.RemainingSlots),
-                StatusSeverity.Success);
-            return;
-        }
-
-        string reason = result switch
-        {
-            { RejectedBecauseFull: > 0 } => _localizer.Format("Examples_AlreadyFull", set.Capacity),
-            { Unusable: > 0 } => _localizer.Get("Examples_NoImageFiles"),
-            _ => _localizer.Get("Examples_AllKnown"),
-        };
-
-        _status.Report(reason, StatusSeverity.Warning);
+        _gathering.AddDropped(set, paths);
     }
 
     [RelayCommand(CanExecute = nameof(CanLearn))]
@@ -851,8 +732,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     {
         PositiveExamples.Clear();
         NegativeExamples.Clear();
-        _positiveOffset = 0;
-        _negativeOffset = 0;
+        _gathering.ResetOffsets();
         Proposals.Clear();
         DisposeCancellation();
         GC.SuppressFinalize(this);
