@@ -6,6 +6,8 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
+## [1.4.10] - 2026-08-02
+
 ### Behoben
 
 - **Beim Aufräumen von Duplikaten ließ sich die letzte Kopie mitlöschen.** Wurden in
