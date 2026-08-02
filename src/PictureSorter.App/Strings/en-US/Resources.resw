@@ -506,7 +506,7 @@
     <value>Searching for duplicates… {0}/{1}</value>
   </data>
   <data name="Duplicates_GroupsFound" xml:space="preserve">
-    <value>{0} duplicate groups found. {1} marked for deletion.</value>
+    <value>{0} duplicate group(s) found. {1} marked for deletion.</value>
   </data>
   <data name="Duplicates_NoneFound" xml:space="preserve">
     <value>No duplicates found.</value>
@@ -533,7 +533,7 @@
     <value>Moving files to the recycle bin…</value>
   </data>
   <data name="Duplicates_Deleted" xml:space="preserve">
-    <value>{0} file(s) moved to the recycle bin. {1} groups remain.</value>
+    <value>{0} file(s) moved to the recycle bin. {1} group(s) remain.</value>
   </data>
   <data name="Duplicates_DeleteProgress" xml:space="preserve">
     <value>{0} of {1} files moved to the recycle bin …</value>
