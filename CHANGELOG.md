@@ -6,6 +6,24 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
+### Behoben
+
+- **Beim Aufräumen von Duplikaten ließ sich die letzte Kopie mitlöschen.** Wurden in
+  einer Gruppe alle Bilder zum Löschen vorgemerkt, verschwand am Ende auch das Motiv —
+  aus dem Aufräumen wurde ein Verlust. Das jeweils letzte verbleibende Bild einer Gruppe
+  lässt sich jetzt nicht mehr vormerken und ist als geschützt gekennzeichnet.
+- **Ein laufendes Löschen ließ sich nicht anhalten.** Wer die falsche Auswahl bestätigt
+  hatte, konnte nur zusehen. Der Stopp-Knopf wirkt jetzt auch hier, und die Statusleiste
+  zeigt, wie weit der Lauf ist.
+- **Die Duplikatsuche meldete auch bei einer einzigen Gruppe den Plural.**
+
+### Geändert
+
+- **Vor dem Sortieren steht ein Hinweis auf eine Sicherungskopie** — dort, wo er zählt:
+  unmittelbar vor dem Verschieben. Die Liesmich-Datei nennt ihn ebenfalls.
+- **Das installierbare Paket trägt jetzt den richtigen Herausgeber und Namen** statt
+  der Platzhalter aus der Projektvorlage.
+
 ## [1.4.9] - 2026-08-01
 
 ### Behoben

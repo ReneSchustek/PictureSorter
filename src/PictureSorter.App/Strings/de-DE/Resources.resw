@@ -506,7 +506,7 @@
     <value>Duplikate werden gesucht… {0}/{1}</value>
   </data>
   <data name="Duplicates_GroupsFound" xml:space="preserve">
-    <value>{0} Duplikat-Gruppen gefunden. {1} zum Löschen vorgemerkt.</value>
+    <value>{0} Duplikat-Gruppe(n) gefunden. {1} zum Löschen vorgemerkt.</value>
   </data>
   <data name="Duplicates_NoneFound" xml:space="preserve">
     <value>Keine Duplikate gefunden.</value>
@@ -533,7 +533,7 @@
     <value>Dateien werden in den Papierkorb verschoben…</value>
   </data>
   <data name="Duplicates_Deleted" xml:space="preserve">
-    <value>{0} Datei(en) in den Papierkorb verschoben. {1} Gruppen verbleiben.</value>
+    <value>{0} Datei(en) in den Papierkorb verschoben. {1} Gruppe(n) verbleiben.</value>
   </data>
   <data name="Duplicates_DeleteProgress" xml:space="preserve">
     <value>{0} von {1} Dateien in den Papierkorb verschoben …</value>
