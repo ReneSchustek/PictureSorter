@@ -6,6 +6,23 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
+## [1.4.11] - 2026-08-02
+
+### Behoben
+
+- **Die Kacheln der Startseite waren nur mit den Pfeiltasten erreichbar** und wurden von
+  Vorlesehilfen doppelt angekündigt. Jetzt sind es gewöhnliche Schaltflächen, die mit
+  der Tabulatortaste angesteuert werden.
+- **Zwei Textfarben waren zu blass:** der Untertitel der Kopfbereiche und weiße Schrift
+  auf hellem Akzent im dunklen Design. Beide sind jetzt gut lesbar.
+- **Scheiterte das Einrichten der lokalen KI, blieb das unbemerkt** — im Protokoll stand
+  nichts. Jetzt wird der Grund festgehalten.
+
+### Geändert
+
+- Die kleinste Schriftgröße in der Duplikat-Ansicht ist etwas größer.
+- Die Liesmich-Datei beginnt mit einem Schnellstart in drei Schritten.
+
 ## [1.4.10] - 2026-08-02
 
 ### Behoben
