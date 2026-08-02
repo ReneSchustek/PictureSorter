@@ -52,6 +52,13 @@
             <SolidColorBrush x:Key="AccentFillColorTertiaryBrush" Color="#3D83BB" />
             <SolidColorBrush x:Key="NavigationViewSelectionIndicatorForeground" Color="#4A9CC5" />
 
+            <!-- Dunkle Schrift auf der hellen Akzentfläche. Weiß auf #4A9CC5 ergibt nur
+                 3,06:1 und liegt damit unter dem geforderten Wert; die Fläche
+                 abzudunkeln nähme dem Dunkelmodus den Akzent. Dunkel auf hell dreht das
+                 Verhältnis um und kommt auf 6,0:1. -->
+            <SolidColorBrush x:Key="TextOnAccentFillColorPrimaryBrush" Color="#10161C" />
+            <SolidColorBrush x:Key="TextOnAccentFillColorSecondaryBrush" Color="#2A343D" />
+
             <SolidColorBrush x:Key="AppBackgroundBrush" Color="#1A1D21" />
             <SolidColorBrush x:Key="AppCardBackgroundBrush" Color="#262A30" />
             <SolidColorBrush x:Key="AppCardBorderBrush" Color="#363B43" />

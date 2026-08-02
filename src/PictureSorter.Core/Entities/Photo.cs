@@ -78,6 +78,7 @@ public sealed record Photo
 
         if (HasLocation)
         {
+            // Nicht-null gesichert: HasLocation ist genau dann wahr, wenn beide Werte gesetzt sind.
             string latitude = Latitude!.Value.ToString("0.####", CultureInfo.InvariantCulture);
             string longitude = Longitude!.Value.ToString("0.####", CultureInfo.InvariantCulture);
             parts.Add($"Aufnahmeort {latitude}, {longitude}");

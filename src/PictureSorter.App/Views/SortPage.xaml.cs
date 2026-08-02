@@ -183,8 +183,10 @@ internal sealed partial class SortPage : Page
         }
         catch (Exception ex) when (ex is System.IO.FileNotFoundException or InvalidOperationException)
         {
-            // Fehler wird über die Einstellungsseite sichtbar; hier nur Absturz vermeiden.
-            _ = ex;
+            // Der Nutzer sieht das Ergebnis ohnehin auf der Einstellungsseite. Ohne
+            // Protokolleintrag bliebe im Supportfall aber offen, ob das Skript gar
+            // nicht erst startete.
+            SortPageLog.SetupLaunchFailed(_logger, ex);
         }
     }
 }
@@ -196,4 +198,7 @@ internal static partial class SortPageLog
 {
     [LoggerMessage(EventId = 3430, Level = LogLevel.Warning, Message = "Hereingezogene Bilder konnten nicht übernommen werden.")]
     public static partial void DropFailed(ILogger logger, Exception exception);
+
+    [LoggerMessage(EventId = 3431, Level = LogLevel.Warning, Message = "Die Einrichtung der lokalen KI ließ sich nicht starten.")]
+    public static partial void SetupLaunchFailed(ILogger logger, Exception exception);
 }

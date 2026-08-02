@@ -44,12 +44,15 @@
                 FontWeight="SemiBold"
                 Text="Was möchtest du tun?" />
 
-            <!-- Kacheln in die drei Bereiche -->
-            <GridView
+            <!-- Kacheln in die drei Bereiche.
+                 Bewusst kein GridView: Dort steckte jede Schaltfläche zusätzlich in
+                 einem Listenelement. Ein Screenreader las damit zwei Rollen für ein
+                 Bedienelement vor, und die Kacheln waren nur über die Pfeiltasten
+                 erreichbar statt über Tab wie jede andere Schaltfläche. -->
+            <VariableSizedWrapGrid
                 x:Uid="DashboardPage_Tiles"
                 AutomationProperties.Name="Bereiche"
-                IsItemClickEnabled="False"
-                SelectionMode="None">
+                Orientation="Horizontal">
                 <Button
                     Margin="0,0,12,12"
                     AutomationProperties.Name="Fotos sortieren"
@@ -121,7 +124,7 @@
                             TextWrapping="Wrap" />
                     </StackPanel>
                 </Button>
-            </GridView>
+            </VariableSizedWrapGrid>
         </StackPanel>
     </ScrollViewer>
 </Page>
