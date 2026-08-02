@@ -14,7 +14,6 @@
         <!-- ───────────────────────── Hell ───────────────────────── -->
         <ResourceDictionary x:Key="Light">
             <!-- Akzent (Buttons, Auswahl, Links) -->
-            <Color x:Key="AppAccentColor">#2E6DA4</Color>
             <SolidColorBrush x:Key="AccentFillColorDefaultBrush" Color="#2E6DA4" />
             <SolidColorBrush x:Key="AccentFillColorSecondaryBrush" Color="#3D83BB" />
             <SolidColorBrush x:Key="AccentFillColorTertiaryBrush" Color="#1F5A8A" />
@@ -24,15 +23,10 @@
             <SolidColorBrush x:Key="AppBackgroundBrush" Color="#F3F4F6" />
             <SolidColorBrush x:Key="AppCardBackgroundBrush" Color="#FFFFFF" />
             <SolidColorBrush x:Key="AppCardBorderBrush" Color="#E2E5EA" />
-            <SolidColorBrush x:Key="AppStepActiveBrush" Color="#2E6DA4" />
-            <SolidColorBrush x:Key="AppStepInactiveBrush" Color="#C3C9D2" />
-            <SolidColorBrush x:Key="AppStepForegroundBrush" Color="#FFFFFF" />
 
             <!-- Dunkle Navigationsleiste gegen die helle Arbeitsfläche. Die Werte
                  gelten in beiden Designs, damit die Leiste ihren Charakter behält.
                  Kontrast Text (#F2F5F8) auf Pane (#233240): 12,1:1 – über WCAG AA. -->
-            <SolidColorBrush x:Key="AppNavPaneBackgroundBrush" Color="#233240" />
-            <SolidColorBrush x:Key="AppNavForegroundBrush" Color="#F2F5F8" />
             <SolidColorBrush x:Key="NavigationViewDefaultPaneBackground" Color="#233240" />
             <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="#233240" />
             <SolidColorBrush x:Key="NavigationViewItemForeground" Color="#F2F5F8" />
@@ -53,7 +47,6 @@
 
         <!-- ───────────────────────── Dunkel ───────────────────────── -->
         <ResourceDictionary x:Key="Dark">
-            <Color x:Key="AppAccentColor">#4A9CC5</Color>
             <SolidColorBrush x:Key="AccentFillColorDefaultBrush" Color="#4A9CC5" />
             <SolidColorBrush x:Key="AccentFillColorSecondaryBrush" Color="#5BB0D8" />
             <SolidColorBrush x:Key="AccentFillColorTertiaryBrush" Color="#3D83BB" />
@@ -62,15 +55,10 @@
             <SolidColorBrush x:Key="AppBackgroundBrush" Color="#1A1D21" />
             <SolidColorBrush x:Key="AppCardBackgroundBrush" Color="#262A30" />
             <SolidColorBrush x:Key="AppCardBorderBrush" Color="#363B43" />
-            <SolidColorBrush x:Key="AppStepActiveBrush" Color="#4A9CC5" />
-            <SolidColorBrush x:Key="AppStepInactiveBrush" Color="#4A5160" />
-            <SolidColorBrush x:Key="AppStepForegroundBrush" Color="#FFFFFF" />
 
             <!-- Im Dunkelmodus setzt sich die Leiste durch eine noch dunklere,
                  leicht blaustichige Fläche von der Arbeitsfläche ab.
                  Kontrast Text (#E8EDF2) auf Pane (#151B22): 14,4:1. -->
-            <SolidColorBrush x:Key="AppNavPaneBackgroundBrush" Color="#151B22" />
-            <SolidColorBrush x:Key="AppNavForegroundBrush" Color="#E8EDF2" />
             <SolidColorBrush x:Key="NavigationViewDefaultPaneBackground" Color="#151B22" />
             <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="#151B22" />
             <SolidColorBrush x:Key="NavigationViewItemForeground" Color="#E8EDF2" />

@@ -358,6 +358,9 @@
   <data name="SortPage_Step6Description.Text" xml:space="preserve">
     <value>Check the suggestions. For images you do not want, clear the checkbox – they are not moved and not suggested again. Click an image to see it full size.</value>
   </data>
+  <data name="SortPage_BackupHint.Text" xml:space="preserve">
+    <value>Before sorting for the first time: make a backup copy of your photos. A run can be undone completely, but a copy also protects against everything PictureSorter has no control over.</value>
+  </data>
   <data name="SortPage_ToggleAllButton.Content" xml:space="preserve">
     <value>Select/deselect all</value>
   </data>

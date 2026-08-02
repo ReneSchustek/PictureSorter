@@ -466,6 +466,11 @@
                             x:Uid="SortPage_Step6Description"
                             Text="Prüfe die Vorschläge. Bei Bildern, die du nicht möchtest, das Häkchen entfernen – sie werden nicht verschoben und nicht erneut vorgeschlagen. Klicke auf ein Bild, um es groß anzusehen."
                             TextWrapping="Wrap" />
+                        <TextBlock
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            x:Uid="SortPage_BackupHint"
+                            Text="Vor dem ersten Sortieren: Lege eine Sicherungskopie deiner Fotos an. Ein Lauf lässt sich zwar vollständig zurücknehmen, eine Kopie schützt aber auch vor allem, was PictureSorter nicht in der Hand hat."
+                            TextWrapping="Wrap" />
 
                         <Grid ColumnSpacing="8">
                             <Grid.ColumnDefinitions>

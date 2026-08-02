@@ -358,6 +358,9 @@
   <data name="SortPage_Step6Description.Text" xml:space="preserve">
     <value>Prüfe die Vorschläge. Bei Bildern, die du nicht möchtest, das Häkchen entfernen – sie werden nicht verschoben und nicht erneut vorgeschlagen. Klicke auf ein Bild, um es groß anzusehen.</value>
   </data>
+  <data name="SortPage_BackupHint.Text" xml:space="preserve">
+    <value>Vor dem ersten Sortieren: Lege eine Sicherungskopie deiner Fotos an. Ein Lauf lässt sich zwar vollständig zurücknehmen, eine Kopie schützt aber auch vor allem, was PictureSorter nicht in der Hand hat.</value>
+  </data>
   <data name="SortPage_ToggleAllButton.Content" xml:space="preserve">
     <value>Alle aus-/abwählen</value>
   </data>
