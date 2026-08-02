@@ -153,11 +153,26 @@ public sealed class DuplicateScanService : IDuplicateScanner
         }
     }
 
+    /// <summary>
+    /// Sammelt alle Bilder, die dem Startbild ähneln.
+    ///
+    /// Vergleicht jedes Bild mit jedem – der Aufwand wächst also im Quadrat zur Anzahl.
+    /// Das ist hier vertretbar: Verglichen werden nur die Wahrnehmungs-Hashes im
+    /// Arbeitsspeicher, und bereits zugeordnete Bilder fallen heraus. Teuer ist das
+    /// Einlesen der Bilder davor, nicht dieser Vergleich. Bei Ordnern jenseits einiger
+    /// zehntausend Fotos wäre eine Vorgruppierung nach Hash-Präfix nötig.
+    /// </summary>
+    /// <param name="candidates">Die noch nicht zugeordneten Bilder.</param>
+    /// <param name="clustered">Merkt, welche Bilder bereits in einer Gruppe stecken.</param>
+    /// <param name="seed">Das Startbild der Gruppe.</param>
+    /// <returns>Die Gruppe samt Startbild.</returns>
     private List<FingerprintedPhoto> CollectSimilar(
         List<FingerprintedPhoto> candidates,
         bool[] clustered,
         int seed)
     {
+        // Nicht-null gesichert: In die Kandidatenliste kommt nur, wer einen
+        // Wahrnehmungs-Hash hat (siehe AddSimilarGroups).
         PerceptualHash seedHash = candidates[seed].Fingerprint.Perceptual!.Value;
         List<FingerprintedPhoto> cluster = [candidates[seed]];
         clustered[seed] = true;

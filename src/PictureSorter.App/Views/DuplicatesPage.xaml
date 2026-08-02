@@ -100,12 +100,12 @@
                                                 Text="{x:Bind FileName}"
                                                 TextTrimming="CharacterEllipsis" />
                                             <TextBlock
-                                                FontSize="11"
+                                                FontSize="12"
                                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                 Text="{x:Bind SizeText}" />
                                             <TextBlock
                                                 MaxWidth="178"
-                                                FontSize="11"
+                                                FontSize="12"
                                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                 Text="{x:Bind MetadataText}"
                                                 TextTrimming="CharacterEllipsis" />
@@ -118,7 +118,7 @@
                                             <TextBlock
                                                 x:Uid="DuplicatesPage_LastCopyHint"
                                                 MaxWidth="178"
-                                                FontSize="11"
+                                                FontSize="12"
                                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                 TextWrapping="Wrap"
                                                 Visibility="{x:Bind IsLastRemainingCopy, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />

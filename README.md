@@ -23,6 +23,17 @@ Bildanalysen laufen vollständig offline auf dem eigenen Rechner.
 - **Nachvollziehbar**: Ein Protokoll in der Anwendung (*Einstellungen*) zeigt, was
   passiert ist; es lässt sich durchsuchen und auf Warnungen und Fehler eingrenzen.
 
+## Schnellstart
+
+1. `PictureSorter-Setup-v<Version>.exe` aus dem
+   [neuesten Release](https://github.com/ReneSchustek/PictureSorter/releases) ausführen.
+   Adminrechte braucht es nicht. Windows warnt beim ersten Start vor einem unbekannten
+   Herausgeber — über *Weitere Informationen* → *Trotzdem ausführen*.
+2. Anwendung starten. Fehlt die lokale KI, steht auf der Startseite ein Hinweis mit der
+   Schaltfläche, die sie einrichtet. Ohne KI funktioniert die Duplikat-Suche trotzdem.
+3. *Fotos sortieren* öffnen und dem Assistenten folgen. Vor dem Verschieben zeigt er
+   eine Vorschau; jeder Lauf lässt sich hinterher vollständig zurücknehmen.
+
 > **Vor dem ersten Sortierlauf eine Sicherungskopie der Fotos anlegen.**
 > PictureSorter verschiebt Dateien und kann jeden Lauf vollständig zurücknehmen —
 > gegen einen Plattenausfall oder ein versehentliches Löschen außerhalb der

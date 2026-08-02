@@ -41,9 +41,12 @@
                 <Setter Property="FontSize" Value="22" />
                 <Setter Property="FontWeight" Value="SemiBold" />
             </Style>
+            <!-- Volle Deckkraft: Bei 85 % mischte sich der Text mit dem Verlauf und kam
+                 am hellen Anfang (#2E6DA4) nur auf 4,45:1 – knapp unter dem geforderten
+                 Wert. Deckend sind es 5,5:1. Die Abstufung zum Titel trägt die
+                 Schriftgröße, nicht die Durchsichtigkeit. -->
             <Style x:Key="HeroSubtitleStyle" TargetType="TextBlock">
                 <Setter Property="Foreground" Value="{ThemeResource AppHeroForegroundBrush}" />
-                <Setter Property="Opacity" Value="0.85" />
                 <Setter Property="TextWrapping" Value="Wrap" />
             </Style>
 
