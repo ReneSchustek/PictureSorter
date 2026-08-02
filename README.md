@@ -135,7 +135,7 @@ Anwendungen update-unfähig** – sie kennen nur den alten Schlüssel.
 
 Standardmäßig läuft die App **unpaketiert** (F5/`dotnet run` ohne Deploy). Für ein
 installierbares MSIX-Paket ist eine **Signatur** nötig, deren Zertifikats-Subjekt
-exakt zum `Publisher` im `Package.appxmanifest` passt (`CN=AppPublisher`).
+exakt zum `Publisher` im `Package.appxmanifest` passt (`CN=Rene Schustek`).
 
 Das Projekt ist dafür vorbereitet (`AppxPackageSigningEnabled` + Verweis auf
 `PictureSorter.App_TemporaryKey.pfx`, nur für paketierte Builds). Der private
@@ -143,7 +143,7 @@ Testschlüssel ist bewusst **nicht** im Repository (`.gitignore`). So wird er ei
 erzeugt:
 
 ```pwsh
-$cert = New-SelfSignedCertificate -Type CodeSigningCert -Subject "CN=AppPublisher" `
+$cert = New-SelfSignedCertificate -Type CodeSigningCert -Subject "CN=Rene Schustek" `
   -CertStoreLocation "Cert:\CurrentUser\My" -KeyExportPolicy Exportable -KeyUsage DigitalSignature `
   -NotAfter (Get-Date).AddYears(5)
 $bytes = $cert.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Pfx)
@@ -167,7 +167,7 @@ sich per Doppelklick (App Installer) oder `Add-AppxPackage` installieren.
 
 > In **Visual Studio** entsteht derselbe Fehler, wenn kein Zertifikat hinterlegt
 > ist: Manifest-Designer → Reiter **Paketerstellung** → **Zertifikat auswählen…**
-> → **Testzertifikat erstellen…** (Subjekt `CN=AppPublisher`). Für die **Verteilung**
+> → **Testzertifikat erstellen…** (Subjekt `CN=Rene Schustek`). Für die **Verteilung**
 > ist das selbstsignierte Testzertifikat zu ersetzen und die Manifest-Identität
 > (`Name`, `Publisher`) auf die echten Store-/Signaturwerte zu setzen.
 
