@@ -116,7 +116,7 @@ jobs:
       # zweites, unbenanntes Release, und dessen Dateien fehlten im eigentlichen. Bei
       # v1.4.5 ist genau das mit der ARM64-Fassung passiert.
       - name: Dateien ablegen
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: paket-${{ matrix.rid }}
           if-no-files-found: error
@@ -139,7 +139,7 @@ jobs:
         run: echo "value=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
 
       - name: Dateien einsammeln
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           path: dateien
           merge-multiple: true
@@ -170,7 +170,7 @@ jobs:
           echo "Alle sieben Dateien vorhanden."
 
       - name: GitHub-Release anlegen
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: dateien/*
           draft: true
