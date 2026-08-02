@@ -61,13 +61,32 @@ internal sealed partial class DuplicatePhotoViewModel : ObservableObject
     /// <summary>
     /// Barrierefreier Name der Lösch-Auswahl. Ohne den Dateibezug hörte ein
     /// Screenreader in einer Gruppe nur wiederholt „Löschen"; hier wird klar,
-    /// welches Foto betroffen ist.
+    /// welches Foto betroffen ist. Ist das Foto die letzte Kopie, nennt der
+    /// Text auch den Grund der Sperre.
     /// </summary>
-    public string DeletionLabel => _localizer.Format("DuplicatePhoto_DeletionLabel", FileName);
+    public string DeletionLabel => IsLastRemainingCopy
+        ? _localizer.Format("DuplicatePhoto_DeletionLockedLabel", FileName)
+        : _localizer.Format("DuplicatePhoto_DeletionLabel", FileName);
+
+    /// <summary>
+    /// <see langword="true"/>, solange sich die Lösch-Auswahl umschalten lässt.
+    /// </summary>
+    public bool CanToggleDeletion => !IsLastRemainingCopy;
 
     /// <summary>
     /// <see langword="true"/>, wenn dieses Foto zum Löschen vorgemerkt ist.
     /// </summary>
     [ObservableProperty]
     public partial bool IsMarkedForDeletion { get; set; }
+
+    /// <summary>
+    /// <see langword="true"/>, wenn dieses Foto das einzige seiner Gruppe ist,
+    /// das nicht zum Löschen vorgemerkt ist. Die Auswahl wird dann gesperrt —
+    /// sonst ließe sich eine Gruppe vollständig vormerken, und aus dem
+    /// Aufräumen von Duplikaten würde der Verlust des Motivs.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanToggleDeletion))]
+    [NotifyPropertyChangedFor(nameof(DeletionLabel))]
+    public partial bool IsLastRemainingCopy { get; set; }
 }
