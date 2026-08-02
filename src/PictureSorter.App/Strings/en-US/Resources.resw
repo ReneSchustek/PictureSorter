@@ -145,6 +145,9 @@
   <data name="DuplicatesPage_DeleteCheckBox.Content" xml:space="preserve">
     <value>Delete</value>
   </data>
+  <data name="DuplicatesPage_LastCopyHint.Text" xml:space="preserve">
+    <value>Last copy – will be kept</value>
+  </data>
   <data name="MemoryPage_HeroTitle.Text" xml:space="preserve">
     <value>Memory</value>
   </data>
@@ -529,6 +532,12 @@
   <data name="Duplicates_Deleted" xml:space="preserve">
     <value>{0} file(s) moved to the recycle bin. {1} groups remain.</value>
   </data>
+  <data name="Duplicates_DeleteProgress" xml:space="preserve">
+    <value>{0} of {1} files moved to the recycle bin …</value>
+  </data>
+  <data name="Duplicates_DeleteCanceled" xml:space="preserve">
+    <value>Cancelled. {0} file(s) had already been moved to the recycle bin.</value>
+  </data>
   <data name="DuplicateGroup_KindExact" xml:space="preserve">
     <value>Identical</value>
   </data>
@@ -540,6 +549,9 @@
   </data>
   <data name="DuplicatePhoto_DeletionLabel" xml:space="preserve">
     <value>Mark “{0}” for deletion</value>
+  </data>
+  <data name="DuplicatePhoto_DeletionLockedLabel" xml:space="preserve">
+    <value>“{0}” is the last remaining copy and will not be deleted</value>
   </data>
   <data name="Memory_FilterAll" xml:space="preserve">
     <value>All</value>

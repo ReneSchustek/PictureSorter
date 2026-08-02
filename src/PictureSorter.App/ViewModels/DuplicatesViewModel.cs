@@ -106,9 +106,12 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
     public bool CanDelete => State is DuplicateState.Review && MarkedCount > 0;
 
     /// <summary>
-    /// Abbrechen ist möglich, solange eine Suche läuft.
+    /// Abbrechen ist möglich, solange eine Suche oder ein Löschlauf läuft. Beim
+    /// Löschen zählt das besonders: Wer bemerkt, dass er die falsche Auswahl
+    /// bestätigt hat, muss den Lauf anhalten können, bevor der Rest im
+    /// Papierkorb landet.
     /// </summary>
-    public bool CanCancel => State is DuplicateState.Scanning;
+    public bool CanCancel => State is DuplicateState.Scanning or DuplicateState.Deleting;
 
     [RelayCommand]
     private async Task BrowseAsync()
@@ -198,27 +201,53 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
     {
         using IDisposable? logScope = _logger.BeginScope("Löschen {CorrelationId}", NewCorrelationId());
         State = DuplicateState.Deleting;
-        _status.Report(_localizer.Get("Duplicates_Deleting"));
+        _status.Begin(_localizer.Get("Duplicates_Deleting"), Cancel);
+        _cancellation = new CancellationTokenSource();
 
         int deleted = 0;
-        foreach (DuplicatePhotoViewModel photo in marked)
+        int processed = 0;
+        bool canceled = false;
+
+        try
         {
-            try
+            foreach (DuplicatePhotoViewModel photo in marked)
             {
-                await _fileDeleter.DeleteAsync(photo.FilePath, CancellationToken.None).ConfigureAwait(true);
-                RemovePhoto(photo);
-                deleted++;
+                _cancellation.Token.ThrowIfCancellationRequested();
+
+                try
+                {
+                    await _fileDeleter.DeleteAsync(photo.FilePath, _cancellation.Token).ConfigureAwait(true);
+                    RemovePhoto(photo);
+                    deleted++;
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    DuplicatesLog.DeleteFailed(_logger, photo.FileName, ex);
+                }
+
+                processed++;
+                _status.ReportProgress(
+                    _localizer.Format("Duplicates_DeleteProgress", processed, marked.Count),
+                    processed * 100d / marked.Count);
             }
-            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-            {
-                DuplicatesLog.DeleteFailed(_logger, photo.FileName, ex);
-            }
+        }
+        catch (OperationCanceledException)
+        {
+            canceled = true;
+        }
+        finally
+        {
+            DisposeCancellation();
         }
 
         PruneEmptyGroups();
         UpdateMarkedCount();
         State = Groups.Count > 0 ? DuplicateState.Review : DuplicateState.Completed;
-        _status.Report(_localizer.Format("Duplicates_Deleted", deleted, Groups.Count));
+        _status.Finish(
+            canceled
+                ? _localizer.Format("Duplicates_DeleteCanceled", deleted)
+                : _localizer.Format("Duplicates_Deleted", deleted, Groups.Count),
+            canceled ? StatusSeverity.Warning : StatusSeverity.Success);
     }
 
     private void OnScanProgress(DuplicateScanProgress progress)

@@ -26,9 +26,18 @@ internal sealed class FakeFileDeleter : IFileDeleter
 {
     public List<string> Deleted { get; } = [];
 
+    /// <summary>
+    /// Läuft nach jedem gelöschten Pfad und bekommt deren Anzahl. Damit lässt sich
+    /// ein Abbruch mitten im Lauf auslösen, ohne den Ablauf mit Wartezeiten
+    /// nachzustellen.
+    /// </summary>
+    public Action<int>? AfterDelete { get; set; }
+
     public Task DeleteAsync(string filePath, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         Deleted.Add(filePath);
+        AfterDelete?.Invoke(Deleted.Count);
         return Task.CompletedTask;
     }
 }

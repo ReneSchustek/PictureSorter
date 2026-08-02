@@ -112,8 +112,16 @@
                                             <CheckBox
                                                 x:Uid="DuplicatesPage_DeleteCheckBox"
                                                 Content="Löschen"
-                                                AutomationProperties.Name="{x:Bind DeletionLabel}"
-                                                IsChecked="{x:Bind IsMarkedForDeletion, Mode=TwoWay}" />
+                                                AutomationProperties.Name="{x:Bind DeletionLabel, Mode=OneWay}"
+                                                IsChecked="{x:Bind IsMarkedForDeletion, Mode=TwoWay}"
+                                                IsEnabled="{x:Bind CanToggleDeletion, Mode=OneWay}" />
+                                            <TextBlock
+                                                x:Uid="DuplicatesPage_LastCopyHint"
+                                                MaxWidth="178"
+                                                FontSize="11"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                TextWrapping="Wrap"
+                                                Visibility="{x:Bind IsLastRemainingCopy, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                                         </StackPanel>
                                     </DataTemplate>
                                 </GridView.ItemTemplate>

@@ -68,6 +68,39 @@ public sealed class DuplicatesViewModelTests
         Assert.Equal(1, viewModel.MarkedCount);
     }
 
+    [Fact]
+    public async Task DeleteSelected_WhenCancelledMidRun_StopsAndKeepsTheRest()
+    {
+        FakeFileDeleter deleter = new();
+        using DuplicatesViewModel viewModel = CreateViewModel([ThreePhotoGroup()], deleter, confirmed: true);
+        viewModel.SourceFolder = @"C:\fotos";
+        await viewModel.ScanCommand.ExecuteAsync(parameter: null);
+        deleter.AfterDelete = count =>
+        {
+            if (count == 1)
+            {
+                viewModel.CancelCommand.Execute(parameter: null);
+            }
+        };
+
+        await viewModel.DeleteSelectedCommand.ExecuteAsync(parameter: null);
+
+        // Nur das erste vorgemerkte Bild ist weg; das zweite bleibt liegen.
+        _ = Assert.Single(deleter.Deleted);
+        Assert.Equal(2, viewModel.Groups[0].Photos.Count);
+        Assert.Equal(DuplicateState.Review, viewModel.State);
+    }
+
+    [Fact]
+    public async Task Delete_IsCancellableWhileRunning()
+    {
+        using DuplicatesViewModel viewModel = CreateViewModel([ThreePhotoGroup()], new FakeFileDeleter());
+
+        viewModel.State = DuplicateState.Deleting;
+
+        Assert.True(viewModel.CanCancel);
+    }
+
     private static DuplicateGroup ThreePhotoGroup() => new(
         DuplicateKind.Exact,
         [

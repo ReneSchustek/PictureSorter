@@ -145,6 +145,9 @@
   <data name="DuplicatesPage_DeleteCheckBox.Content" xml:space="preserve">
     <value>Löschen</value>
   </data>
+  <data name="DuplicatesPage_LastCopyHint.Text" xml:space="preserve">
+    <value>Letzte Kopie – bleibt erhalten</value>
+  </data>
   <data name="MemoryPage_HeroTitle.Text" xml:space="preserve">
     <value>Gedächtnis</value>
   </data>
@@ -529,6 +532,12 @@
   <data name="Duplicates_Deleted" xml:space="preserve">
     <value>{0} Datei(en) in den Papierkorb verschoben. {1} Gruppen verbleiben.</value>
   </data>
+  <data name="Duplicates_DeleteProgress" xml:space="preserve">
+    <value>{0} von {1} Dateien in den Papierkorb verschoben …</value>
+  </data>
+  <data name="Duplicates_DeleteCanceled" xml:space="preserve">
+    <value>Abgebrochen. {0} Datei(en) wurden bereits in den Papierkorb verschoben.</value>
+  </data>
   <data name="DuplicateGroup_KindExact" xml:space="preserve">
     <value>Identisch</value>
   </data>
@@ -540,6 +549,9 @@
   </data>
   <data name="DuplicatePhoto_DeletionLabel" xml:space="preserve">
     <value>„{0}“ zum Löschen vormerken</value>
+  </data>
+  <data name="DuplicatePhoto_DeletionLockedLabel" xml:space="preserve">
+    <value>„{0}“ ist die letzte verbleibende Kopie und wird nicht gelöscht</value>
   </data>
   <data name="Memory_FilterAll" xml:space="preserve">
     <value>Alle</value>
