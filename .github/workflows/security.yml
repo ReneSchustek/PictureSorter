@@ -56,9 +56,17 @@ jobs:
   dependency-review:
     name: Dependency Review (SCA)
     runs-on: ubuntu-latest
-    # Wie bei CodeQL: Die Aktion verlangt für private Repositories den
-    # Abhängigkeitsgraphen samt Advanced Security und bricht sonst ab.
-    if: github.event_name == 'pull_request' && github.event.repository.visibility == 'public'
+    # Die Prüfung vergleicht immer zwei Stände miteinander und braucht deshalb ein
+    # Ereignis, das eine Änderung mitbringt: einen Pull Request oder einen Push. Bei
+    # Zeitplan und Handauslösung gibt es keine Änderung zu vergleichen -- dort prüft
+    # der NuGet-Audit-Job den Gesamtstand, und Dependabot meldet neue Advisories auch
+    # ohne Lauf.
+    # Für private Repositories verlangt die Aktion zusätzlich Advanced Security und
+    # bricht sonst ab, ohne je etwas geprüft zu haben.
+    if: >-
+      github.event.repository.visibility == 'public'
+      && (github.event_name == 'pull_request'
+      || (github.event_name == 'push' && github.event.before != '0000000000000000000000000000000000000000'))
     permissions:
       contents: read
       pull-requests: write
@@ -67,11 +75,23 @@ jobs:
       - name: Quellcode auschecken
         uses: actions/checkout@v5
 
-      - name: Abhängigkeiten gegen GitHub Advisory Database prüfen
+      # Zwei Schritte statt einem, weil die Aktion die zu vergleichenden Stände nur
+      # beim Pull Request selbst kennt. Beim Push müssen sie ausdrücklich genannt
+      # werden, sonst bricht sie mit "base-ref is required" ab.
+      - name: Abhängigkeiten eines Pull Requests prüfen
+        if: github.event_name == 'pull_request'
         uses: actions/dependency-review-action@v5
         with:
           fail-on-severity: moderate
           comment-summary-in-pr: always
+
+      - name: Abhängigkeiten des veröffentlichten Standes prüfen
+        if: github.event_name == 'push'
+        uses: actions/dependency-review-action@v5
+        with:
+          fail-on-severity: moderate
+          base-ref: ${{ github.event.before }}
+          head-ref: ${{ github.sha }}
 
   vulnerable-packages:
     name: NuGet Vulnerability Audit (SCA)
