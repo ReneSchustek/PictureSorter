@@ -60,12 +60,6 @@
                 <Setter Property="VerticalContentAlignment" Value="Top" />
             </Style>
 
-            <!-- Bildkacheln: abgerundet, damit Fotos ruhiger wirken. -->
-            <Style x:Key="PhotoTileStyle" TargetType="Border">
-                <Setter Property="CornerRadius" Value="6" />
-                <Setter Property="Background" Value="{ThemeResource AppCardBorderBrush}" />
-            </Style>
-
             <!-- Leerzustand: erklärt, was als Nächstes zu tun ist, statt leerer Fläche. -->
             <Style x:Key="EmptyStateTitleStyle" TargetType="TextBlock">
                 <Setter Property="HorizontalAlignment" Value="Center" />

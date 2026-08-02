@@ -23,6 +23,12 @@ Bildanalysen laufen vollständig offline auf dem eigenen Rechner.
 - **Nachvollziehbar**: Ein Protokoll in der Anwendung (*Einstellungen*) zeigt, was
   passiert ist; es lässt sich durchsuchen und auf Warnungen und Fehler eingrenzen.
 
+> **Vor dem ersten Sortierlauf eine Sicherungskopie der Fotos anlegen.**
+> PictureSorter verschiebt Dateien und kann jeden Lauf vollständig zurücknehmen —
+> gegen einen Plattenausfall oder ein versehentliches Löschen außerhalb der
+> Anwendung hilft aber nur eine Kopie. Wie sich die Daten der Anwendung sichern
+> lassen, steht im [Betriebshandbuch](BETRIEB.md).
+
 ## Voraussetzungen
 
 - Windows 11 (Build 10.0.17763.0 oder neuer)
