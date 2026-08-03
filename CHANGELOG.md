@@ -6,6 +6,35 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
+## [1.6.0] - 2026-08-03
+
+### Hinzugefügt
+
+- **Sortieren allein nach Aufnahmedatum, ganz ohne KI.** Für einen Urlaub entscheidet der
+  Zeitraum, nicht das Motiv — bisher musste man trotzdem erst dreißig Beispielbilder
+  anlernen und danach jedes Foto des Ordners von der KI bewerten lassen. Beides entfällt
+  jetzt: Im zweiten Schritt lässt sich „Nur nach Aufnahmedatum sortieren" wählen, worauf
+  die Schritte 3 und 4 verschwinden. Gelesen werden nur noch die Metadaten der Dateien,
+  der Lauf dauert Sekunden statt Minuten.
+- Ohne Zeitraum läuft dieser Weg nicht los: Sonst stünde jedes Foto des Ordners als
+  Vorschlag zum Verschieben bereit.
+
+### Behoben
+
+- **Das Programm zeigte kein eigenes Symbol in der Titelleiste.** Die Symboldateien
+  fehlten in der ausgelieferten Fassung — im ZIP wie im Setup, und das von Anfang an.
+  Sie werden jetzt mitgeliefert.
+- **Nach einer Aktualisierung blieb auf dem Desktop und in der Taskleiste das alte
+  Symbol stehen.** Windows erfuhr vom Austausch der Programmdatei nichts und zeichnete
+  weiter aus seinem Zwischenspeicher. Die Aktualisierung meldet die Änderung jetzt selbst.
+
+### Geändert
+
+- **Laden und Auswerten sind voneinander unabhängig.** Das Laden wartete bisher, sobald
+  fünfzig Bilder auf Vorrat lagen; sein Tempo hing damit an dem der KI. Jetzt läuft es
+  durch, und die Auswertung nimmt sich, was fertig ist. Wer über eine langsame Leitung
+  arbeitet, setzt über `PhotoSource:PrefetchBuffer` wieder eine Grenze.
+
 ## [1.5.2] - 2026-08-03
 
 ### Behoben

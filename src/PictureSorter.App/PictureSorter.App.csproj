@@ -59,22 +59,30 @@
     <None Include="PictureSorter.App_TemporaryKey.pfx" />
   </ItemGroup>
 
+  <!-- CopyToOutputDirectory ist hier nicht schmückendes Beiwerk, sondern der
+       Unterschied zwischen „läuft bei mir" und „läuft beim Nutzer": Ohne die Angabe
+       gilt für Content-Items 'Never'. Das WinUI-Tooling legt die Dateien beim Bauen
+       trotzdem neben die EXE — beim 'dotnet publish' aber nicht. Der Assets-Ordner
+       fehlte dadurch in JEDEM ausgelieferten Paket (ZIP wie Setup), und
+       AppWindow.SetIcon("Assets/AppIcon.ico") lief ins Leere: Das Programm zeigte
+       beim Nutzer kein Symbol in der Titelleiste, während es in der Entwicklung
+       stets richtig aussah. -->
   <ItemGroup>
-    <Content Include="Assets\SplashScreen.scale-200.png" />
-    <Content Include="Assets\LockScreenLogo.scale-200.png" />
-    <Content Include="Assets\Square150x150Logo.scale-200.png" />
-    <Content Include="Assets\Square44x44Logo.scale-200.png" />
-    <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
-    <Content Include="Assets\StoreLogo.png" />
-    <Content Include="Assets\AppIcon.ico" />
+    <Content Include="Assets\SplashScreen.scale-200.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets\LockScreenLogo.scale-200.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets\Square150x150Logo.scale-200.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets\Square44x44Logo.scale-200.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets\StoreLogo.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets\AppIcon.ico" CopyToOutputDirectory="PreserveNewest" />
 
     <!-- Eigenes Bild für die Titelleiste, in genau der Größe, in der es dort erscheint
          (32 Punkte, und 64 für 200-%-Bildschirme). Aus der Symboldatei heraus musste
          WinUI die Anzeigegröße erst errechnen und traf sie um wenige Punkte nicht — das
          Symbol wurde dadurch sichtbar unscharf. -->
-    <Content Include="Assets\AppIconTitleBar.scale-100.png" />
-    <Content Include="Assets\AppIconTitleBar.scale-200.png" />
-    <Content Include="Assets\Wide310x150Logo.scale-200.png" />
+    <Content Include="Assets\AppIconTitleBar.scale-100.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets\AppIconTitleBar.scale-200.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets\Wide310x150Logo.scale-200.png" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <!-- SplashScreen-Logo wird ins Assembly eingebettet (nie zur Laufzeit aus einer
@@ -172,6 +180,20 @@
     <Error
       Condition="!Exists('$(PublishDir)$(AssemblyName).pri')"
       Text="Ressourcendatei $(AssemblyName).pri fehlt in der Veröffentlichung. Ohne sie startet die Anwendung nicht (XamlParseException im ersten Fenster)." />
+  </Target>
+
+  <!-- Dieselbe Falle, dritter Fall: Der Assets-Ordner fehlte in jedem ausgelieferten
+       Paket bis 1.5.2. Das Programm startete zwar, zeigte aber kein Symbol in der
+       Titelleiste, weil AppWindow.SetIcon("Assets/AppIcon.ico") eine Datei sucht,
+       die nur auf dem Entwicklungsrechner lag. Fehlt sie in der Ausgabe, soll die
+       Veröffentlichung abbrechen — auffallen würde es sonst erst beim Nutzer. -->
+  <Target Name="ValidateAppIconImPublish" AfterTargets="Publish">
+    <Error
+      Condition="!Exists('$(PublishDir)Assets\AppIcon.ico')"
+      Text="Assets\AppIcon.ico fehlt in der Veröffentlichung. Ohne die Datei zeigt AppWindow.SetIcon kein Symbol in der Titelleiste." />
+    <Error
+      Condition="!Exists('$(PublishDir)Assets\AppIconTitleBar.scale-100.png') or !Exists('$(PublishDir)Assets\AppIconTitleBar.scale-200.png')"
+      Text="Assets\AppIconTitleBar.scale-100.png bzw. .scale-200.png fehlen in der Veröffentlichung. Ohne sie bleibt das Symbol in der Titelleiste leer." />
   </Target>
 
   <!-- Dieselbe Falle in klein: Das Einrichtungsskript lag lange nur auf dem

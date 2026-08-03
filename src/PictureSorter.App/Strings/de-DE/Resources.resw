@@ -532,6 +532,30 @@
   <data name="Wizard_ActionAnalyze" xml:space="preserve">
     <value>Analyse starten ▶</value>
   </data>
+  <data name="Wizard_ActionFindByDate" xml:space="preserve">
+    <value>Fotos im Zeitraum suchen ▶</value>
+  </data>
+  <data name="Wizard_Step2TitleByDate" xml:space="preserve">
+    <value>Wie soll der Zielordner heißen?</value>
+  </data>
+  <data name="Wizard_Step5TitleByDate" xml:space="preserve">
+    <value>Zeitraum wählen</value>
+  </data>
+  <data name="Sort_DateScanning" xml:space="preserve">
+    <value>Fotos im gewählten Zeitraum werden gesucht …</value>
+  </data>
+  <data name="Sort_NoPhotosInRange" xml:space="preserve">
+    <value>Im gewählten Zeitraum liegt kein Foto.</value>
+  </data>
+  <data name="SortPage_FindByDateButton.Content" xml:space="preserve">
+    <value>Fotos im Zeitraum suchen</value>
+  </data>
+  <data name="SortPage_SortModeByDateCheck.Content" xml:space="preserve">
+    <value>Nur nach Aufnahmedatum sortieren (ohne KI)</value>
+  </data>
+  <data name="SortPage_SortModeByDateHint.Text" xml:space="preserve">
+    <value>Für einen Urlaub genügt das Datum. Dann werden weder Beispiele gebraucht noch Bilder von der KI angesehen — die Schritte 3 und 4 entfallen, und der Lauf dauert Sekunden statt Minuten.</value>
+  </data>
   <data name="Wizard_ActionSort" xml:space="preserve">
     <value>Sortieren</value>
   </data>

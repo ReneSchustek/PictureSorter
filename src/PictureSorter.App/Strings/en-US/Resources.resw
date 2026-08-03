@@ -532,6 +532,30 @@
   <data name="Wizard_ActionAnalyze" xml:space="preserve">
     <value>Start analysis ▶</value>
   </data>
+  <data name="Wizard_ActionFindByDate" xml:space="preserve">
+    <value>Find photos in range ▶</value>
+  </data>
+  <data name="Wizard_Step2TitleByDate" xml:space="preserve">
+    <value>What should the target folder be called?</value>
+  </data>
+  <data name="Wizard_Step5TitleByDate" xml:space="preserve">
+    <value>Choose a date range</value>
+  </data>
+  <data name="Sort_DateScanning" xml:space="preserve">
+    <value>Looking for photos in the chosen range …</value>
+  </data>
+  <data name="Sort_NoPhotosInRange" xml:space="preserve">
+    <value>No photo falls within the chosen range.</value>
+  </data>
+  <data name="SortPage_FindByDateButton.Content" xml:space="preserve">
+    <value>Find photos in range</value>
+  </data>
+  <data name="SortPage_SortModeByDateCheck.Content" xml:space="preserve">
+    <value>Sort by capture date only (no AI)</value>
+  </data>
+  <data name="SortPage_SortModeByDateHint.Text" xml:space="preserve">
+    <value>For a holiday the date is enough. No examples are needed and no image is shown to the AI — steps 3 and 4 are skipped and the run takes seconds instead of minutes.</value>
+  </data>
   <data name="Wizard_ActionSort" xml:space="preserve">
     <value>Sort</value>
   </data>

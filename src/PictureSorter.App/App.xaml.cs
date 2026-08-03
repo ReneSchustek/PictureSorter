@@ -113,6 +113,14 @@ public partial class App : Microsoft.UI.Xaml.Application
             AppLog.UpdateApplyFailed(_logger!, applied.FailedFile ?? "?", applied.Reason ?? "?");
         }
 
+        // Die getauschte EXE trägt das neue Symbol – die Shell weiß davon aber nichts und
+        // zeichnet auf dem Desktop und in der Taskleiste weiter das alte. Ein Setup meldet
+        // das selbst; die Aktualisierung aus dem Programm heraus muss es hier nachholen.
+        else if (!ShellIconRefresher.TryRefreshIcons())
+        {
+            AppLog.ShellRefreshFailed(_logger!);
+        }
+
         // Die Anwendung wieder aus dem Programmordner starten – nicht aus dem
         // Staging-Ordner, aus dem dieser Helfer läuft.
         try
@@ -417,4 +425,7 @@ internal static partial class AppLog
 
     [LoggerMessage(EventId = 1010, Level = LogLevel.Information, Message = "Arbeitsordner früherer Aktualisierungen entfernt: {Count}.")]
     public static partial void UpdateLeftoversRemoved(ILogger logger, int count);
+
+    [LoggerMessage(EventId = 1011, Level = LogLevel.Warning, Message = "Die Shell ließ sich nicht benachrichtigen; Desktop und Taskleiste zeigen das Symbol der alten Fassung bis zur nächsten Anmeldung.")]
+    public static partial void ShellRefreshFailed(ILogger logger);
 }

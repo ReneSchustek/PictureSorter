@@ -222,6 +222,97 @@ public sealed class PhotoSortingService : IPhotoSorter
     }
 
     /// <inheritdoc />
+    public async Task<IReadOnlyList<SortProposal>> CreateDateProposalsAsync(
+        string sourceFolder,
+        string targetFolderName,
+        bool includeSubfolders,
+        DateRange dateRange,
+        IProgress<SortProgress>? progress,
+        CancellationToken cancellationToken)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(sourceFolder);
+        ArgumentException.ThrowIfNullOrWhiteSpace(targetFolderName);
+
+        // Ohne Grenze wäre jedes Foto des Ordners ein Vorschlag — der teuerste denkbare
+        // Fehlgriff, wenn die Nutzerin danach auf „Verschieben" klickt. Ein verdrehter
+        // Zeitraum enthält ohnehin nichts. Beides wird hier abgewiesen und protokolliert,
+        // statt stillschweigend alles oder nichts zu liefern.
+        if (dateRange.IsUnbounded || dateRange.IsReversed)
+        {
+            SortingLog.DateRangeUnusable(_logger, dateRange.From?.ToString("d", CultureInfo.InvariantCulture) ?? "-", dateRange.To?.ToString("d", CultureInfo.InvariantCulture) ?? "-");
+            return [];
+        }
+
+        string targetFolder = Path.Combine(sourceFolder, SanitizeFolderName(targetFolderName));
+        IProgress<PhotoScanProgress>? gathering =
+            progress is null ? null : new GatheringProgress(progress);
+
+        List<SortProposal> proposals = [];
+        DateSortTally tally = new();
+
+        await foreach (ScannedPhoto scanned in _photoSource
+            .StreamPhotosAsync(sourceFolder, includeSubfolders, skip: 0, maxCount: null, gathering, cancellationToken)
+            .ConfigureAwait(false))
+        {
+            Photo photo = scanned.Photo;
+            tally.Processed++;
+
+            // Gleiche strenge Auslegung wie bei der Analyse: Drin ist nur, was nachweislich
+            // in den Zeitraum fällt. Ein Foto ohne Aufnahmedatum bleibt draußen.
+            if (photo.CapturedAt is not { } captured || !dateRange.Contains(captured))
+            {
+                tally.OutsideRange++;
+            }
+            else if (await _memory
+                .IsSettledAsync(sourceFolder, photo, targetFolderName, cancellationToken)
+                .ConfigureAwait(false))
+            {
+                tally.Skipped++;
+            }
+            else
+            {
+                // Konfidenz 1,0: Das Aufnahmedatum ist eine Tatsache, keine Schätzung.
+                // Anders als bei der KI gibt es hier keinen Grenzfall.
+                proposals.Add(new SortProposal
+                {
+                    Photo = photo,
+                    CategoryName = targetFolderName,
+                    SourceFolder = sourceFolder,
+                    TargetFolderPath = targetFolder,
+                    Confidence = 1.0,
+                    Method = ClassificationMethod.CaptureDate,
+                });
+            }
+
+            progress?.Report(new SortProgress(tally.Processed, scanned.Total, ScanPhase.Analyzing));
+        }
+
+        SortingLog.DateProposalsCreated(_logger, proposals.Count, targetFolderName);
+        if (tally.OutsideRange > 0)
+        {
+            SortingLog.PhotosOutsideDateRange(_logger, tally.OutsideRange);
+        }
+
+        if (tally.Skipped > 0)
+        {
+            SortingLog.PhotosSkippedByMemory(_logger, tally.Skipped);
+        }
+
+        return proposals;
+    }
+
+    // Die drei Zählstände eines Datums-Laufs. Als eigener Typ, damit die Schleife nicht
+    // drei lose Zähler mitschleppt — sequenziell durchlaufen, deshalb ohne Interlocked.
+    private sealed class DateSortTally
+    {
+        public int Processed { get; set; }
+
+        public int OutsideRange { get; set; }
+
+        public int Skipped { get; set; }
+    }
+
+    /// <inheritdoc />
     public async Task<int> ApplyProposalsAsync(
         IReadOnlyList<SortProposal> proposals,
         FileOperationMode operation,
@@ -618,6 +709,12 @@ internal static partial class SortingLog
 
     [LoggerMessage(EventId = 3001, Level = LogLevel.Information, Message = "{Count} Vorschläge für Kategorie {Category} erstellt.")]
     public static partial void ProposalsCreated(ILogger logger, int count, string category);
+
+    [LoggerMessage(EventId = 3012, Level = LogLevel.Information, Message = "{Count} Fotos allein nach Aufnahmedatum für Ordner {Folder} vorgeschlagen (ohne KI-Bewertung).")]
+    public static partial void DateProposalsCreated(ILogger logger, int count, string folder);
+
+    [LoggerMessage(EventId = 3013, Level = LogLevel.Warning, Message = "Sortieren nach Datum ohne brauchbaren Zeitraum (von {From} bis {To}); es wurde nichts vorgeschlagen.")]
+    public static partial void DateRangeUnusable(ILogger logger, string from, string to);
 
     [LoggerMessage(EventId = 3002, Level = LogLevel.Information, Message = "{Count} Vorschläge angewendet (Dry-Run: {DryRun}).")]
     public static partial void ProposalsApplied(ILogger logger, int count, bool dryRun);

@@ -109,6 +109,17 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     public partial DateTimeOffset? DateTo { get; set; }
 
     /// <summary>
+    /// <see langword="true"/>, wenn allein nach dem Aufnahmedatum sortiert wird — ohne
+    /// Anlernen und ohne einen einzigen KI-Aufruf.
+    ///
+    /// Der Weg für „alles aus diesem Urlaub in einen Ordner": Dort entscheidet der
+    /// Zeitraum, nicht das Motiv. Beispiele zu sammeln und jedes Foto von der KI bewerten
+    /// zu lassen wäre reine Wartezeit ohne besseres Ergebnis.
+    /// </summary>
+    [ObservableProperty]
+    public partial bool SortByDateOnly { get; set; }
+
+    /// <summary>
     /// Erkannte Zeiträume, in denen sich die Aufnahmen ballen — im Alltag Urlaube,
     /// Feiern, Ausflüge. Ein Klick übernimmt einen davon als Zeitraum.
     /// </summary>
@@ -282,6 +293,21 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         IsInteractive && !string.IsNullOrWhiteSpace(SourceFolder) && _category is not null;
 
     /// <summary>
+    /// Nach Datum sortiert werden kann, wenn Ordner, Zielordnername und ein brauchbarer
+    /// Zeitraum vorliegen.
+    ///
+    /// Der Zeitraum ist hier Pflicht, anders als bei der Analyse: Ohne ihn gäbe es kein
+    /// einziges Kriterium, und jedes Foto des Ordners stünde als Vorschlag zum
+    /// Verschieben bereit.
+    /// </summary>
+    public bool CanSortByDate =>
+        IsInteractive
+        && !string.IsNullOrWhiteSpace(SourceFolder)
+        && !string.IsNullOrWhiteSpace(CategoryName)
+        && HasDateRange
+        && !SelectedRange.IsReversed;
+
+    /// <summary>
     /// Anwenden ist möglich, wenn mindestens ein Vorschlag ausgewählt ist.
     /// </summary>
     public bool CanApply => State is SortState.Preview && Proposals.SelectedCount > 0;
@@ -310,7 +336,9 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(IsInteractive));
         OnPropertyChanged(nameof(CanUndo));
         OnPropertyChanged(nameof(CanSuggestTrips));
+        OnPropertyChanged(nameof(CanSortByDate));
         SuggestTripsCommand.NotifyCanExecuteChanged();
+        SortByDateCommand.NotifyCanExecuteChanged();
         UndoCommand.NotifyCanExecuteChanged();
         Wizard.NotifyStateChanged();
         Proposals.NotifyStateChanged();
@@ -346,11 +374,20 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         TripHint = string.Empty;
 
         OnPropertyChanged(nameof(CanSuggestTrips));
+        OnPropertyChanged(nameof(CanSortByDate));
         SuggestTripsCommand.NotifyCanExecuteChanged();
+        SortByDateCommand.NotifyCanExecuteChanged();
         Wizard.NotifyStateChanged();
     }
 
-    partial void OnCategoryNameChanged(string value) => Wizard.NotifyStateChanged();
+    partial void OnCategoryNameChanged(string value)
+    {
+        // Der Name ist beim Sortieren nach Datum der Name des Zielordners und damit
+        // Vorbedingung des Laufs.
+        OnPropertyChanged(nameof(CanSortByDate));
+        SortByDateCommand.NotifyCanExecuteChanged();
+        Wizard.NotifyStateChanged();
+    }
 
     // ── Anbindung des Assistenten (Delegaten) ──────────────────────────────────
 
@@ -361,7 +398,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         1 => IsInteractive && !string.IsNullOrWhiteSpace(CategoryName),
         2 => IsInteractive && PositiveExamples.Items.Count > 0,
         3 => CanLearn,
-        4 => CanAnalyze,
+        4 => SortByDateOnly ? CanSortByDate : CanAnalyze,
         5 => CanApply,
         _ => false,
     };
@@ -381,7 +418,15 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
                 await LearnAsync().ConfigureAwait(true);
                 return _category is not null;
             case 4:
-                await AnalyzeAsync().ConfigureAwait(true);
+                if (SortByDateOnly)
+                {
+                    await SortByDateAsync().ConfigureAwait(true);
+                }
+                else
+                {
+                    await AnalyzeAsync().ConfigureAwait(true);
+                }
+
                 return State is SortState.Preview;
             case 5:
                 await ApplyAsync().ConfigureAwait(true);
@@ -552,9 +597,29 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     /// </summary>
     public bool HasDateRange => DateFrom is not null || DateTo is not null;
 
-    partial void OnDateFromChanged(DateTimeOffset? value) => OnPropertyChanged(nameof(HasDateRange));
+    partial void OnDateFromChanged(DateTimeOffset? value) => NotifyDateRangeChanged();
 
-    partial void OnDateToChanged(DateTimeOffset? value) => OnPropertyChanged(nameof(HasDateRange));
+    partial void OnDateToChanged(DateTimeOffset? value) => NotifyDateRangeChanged();
+
+    // Beim Sortieren nach Datum ist der Zeitraum das einzige Kriterium: Ohne ihn bleibt
+    // der Aktionsknopf gesperrt, mit ihm wird er frei. Der Assistent muss das sofort
+    // mitbekommen – sonst tippt die Nutzerin ein Datum ein und der Knopf bleibt grau.
+    private void NotifyDateRangeChanged()
+    {
+        OnPropertyChanged(nameof(HasDateRange));
+        OnPropertyChanged(nameof(CanSortByDate));
+        SortByDateCommand.NotifyCanExecuteChanged();
+        Wizard.NotifyStateChanged();
+    }
+
+    partial void OnSortByDateOnlyChanged(bool value)
+    {
+        // Der Assistent blendet daraufhin die beiden Schritte zur Beispielauswahl aus.
+        Wizard.SkipsExampleSteps = value;
+        OnPropertyChanged(nameof(CanSortByDate));
+        SortByDateCommand.NotifyCanExecuteChanged();
+        Wizard.NotifyStateChanged();
+    }
 
     /// <summary>
     /// Durchsucht den Ordner nach Zeiträumen, in denen sich die Aufnahmen ballen, und
@@ -663,6 +728,58 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
             _status.Finish(
                 proposals.Count == 0
                     ? _localizer.Get("Sort_NoMatchingPhotos")
+                    : _localizer.Format("Sort_ProposalsFound", proposals.Count),
+                proposals.Count == 0 ? StatusSeverity.Warning : StatusSeverity.Success);
+        }
+        catch (OperationCanceledException)
+        {
+            State = SortState.Idle;
+            _status.Finish(_localizer.Get("Sort_AnalyzeCanceled"), StatusSeverity.Warning);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            SortViewModelLog.AnalyzeFailed(_logger, ex);
+            State = SortState.Error;
+            _status.Finish(_localizer.Get("Sort_AnalyzeFailed"), StatusSeverity.Error);
+        }
+        finally
+        {
+            DisposeCancellation();
+        }
+    }
+
+    // Der Zwilling von AnalyzeAsync ohne KI: Statt jedes Foto zu bewerten, entscheidet
+    // allein das Aufnahmedatum. Bewusst ein eigener Befehl statt eines Schalters in
+    // AnalyzeAsync — die beiden Wege teilen sich zwar den Ablauf, aber keine einzige
+    // Vorbedingung, und ein „if" mitten im Analyse-Pfad hätte beide unklar gemacht.
+    [RelayCommand(CanExecute = nameof(CanSortByDate))]
+    private async Task SortByDateAsync()
+    {
+        using IDisposable? logScope = _logger.BeginScope("Datums-Sortierung {CorrelationId}", NewCorrelationId());
+        State = SortState.Analyzing;
+        _status.Begin(_localizer.Get("Sort_DateScanning"), Cancel);
+        _analyzeProgress = default;
+        _analyzeThrottle.Reset();
+        _cancellation = new CancellationTokenSource();
+
+        try
+        {
+            Progress<SortProgress> progress = new(OnAnalyzeProgress);
+            IReadOnlyList<SortProposal> proposals = await _sorter
+                .CreateDateProposalsAsync(
+                    SourceFolder,
+                    CategoryName.Trim(),
+                    IncludeSubfolders,
+                    SelectedRange,
+                    progress,
+                    _cancellation.Token)
+                .ConfigureAwait(true);
+
+            Proposals.Replace(proposals);
+            State = SortState.Preview;
+            _status.Finish(
+                proposals.Count == 0
+                    ? _localizer.Get("Sort_NoPhotosInRange")
                     : _localizer.Format("Sort_ProposalsFound", proposals.Count),
                 proposals.Count == 0 ? StatusSeverity.Warning : StatusSeverity.Success);
         }

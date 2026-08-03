@@ -39,6 +39,43 @@ public interface IPhotoSorter
         CancellationToken cancellationToken);
 
     /// <summary>
+    /// Erzeugt Vorschläge allein aus dem Aufnahmedatum — ohne Kategorie, ohne angelernte
+    /// Beispiele und ohne einen einzigen KI-Aufruf.
+    ///
+    /// Der Weg für den häufigsten Fall überhaupt: „Alles aus diesem Urlaub in einen
+    /// Ordner." Dabei entscheidet der Zeitraum, nicht das Motiv, und die teure Bewertung
+    /// wäre nur verlorene Zeit. Gelesen werden ausschließlich die Metadaten der Dateien.
+    /// </summary>
+    /// <param name="sourceFolder">Absoluter Pfad des Quellordners.</param>
+    /// <param name="targetFolderName">
+    /// Name des Zielordners, der unterhalb des Quellordners entsteht (z. B. „Urlaub
+    /// Norwegen"). Unzulässige Zeichen werden ersetzt.
+    /// </param>
+    /// <param name="includeSubfolders">
+    /// <see langword="true"/>, um Unterordner einzubeziehen.
+    /// </param>
+    /// <param name="dateRange">
+    /// Der Zeitraum. Er muss mindestens eine Grenze haben: Ein unbegrenzter Zeitraum
+    /// würde den gesamten Ordner vorschlagen, was hier nie gewollt und deshalb
+    /// ausgeschlossen ist.
+    /// </param>
+    /// <param name="progress">
+    /// Optionaler Empfänger des Fortschritts (verarbeitete/gesamte Fotos).
+    /// </param>
+    /// <param name="cancellationToken">Token zum Abbrechen des Vorgangs.</param>
+    /// <returns>
+    /// Die Vorschläge für alle Fotos im Zeitraum; eine leere Liste, wenn der Zeitraum
+    /// unbegrenzt oder verdreht ist.
+    /// </returns>
+    Task<IReadOnlyList<SortProposal>> CreateDateProposalsAsync(
+        string sourceFolder,
+        string targetFolderName,
+        bool includeSubfolders,
+        DateRange dateRange,
+        IProgress<SortProgress>? progress,
+        CancellationToken cancellationToken);
+
+    /// <summary>
     /// Wendet eine Menge bestätigter Vorschläge an oder simuliert sie (Dry-Run).
     /// </summary>
     /// <param name="proposals">Die anzuwendenden Vorschläge.</param>

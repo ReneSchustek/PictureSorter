@@ -47,6 +47,15 @@ internal sealed partial class SortWizardViewModel : ObservableObject
     public partial bool IsGuided { get; set; }
 
     /// <summary>
+    /// <see langword="true"/>, wenn allein nach Aufnahmedatum sortiert wird. Dann
+    /// entfallen die beiden Schritte zur Beispielauswahl (passende Bilder und
+    /// Gegenbeispiele): Über die Zugehörigkeit entscheidet der Zeitraum, nicht das Motiv,
+    /// und ohne KI-Bewertung gibt es nichts anzulernen.
+    /// </summary>
+    [ObservableProperty]
+    public partial bool SkipsExampleSteps { get; set; }
+
+    /// <summary>
     /// Initialisiert den Assistenten mit den Rückrufen ins übergeordnete ViewModel.
     /// </summary>
     /// <param name="isInteractive">Liefert, ob gerade kein Vorgang läuft.</param>
@@ -106,10 +115,10 @@ internal sealed partial class SortWizardViewModel : ObservableObject
     public string StepTitle => CurrentStep switch
     {
         0 => _localizer.Get("Wizard_Step1Title"),
-        1 => _localizer.Get("Wizard_Step2Title"),
+        1 => _localizer.Get(SkipsExampleSteps ? "Wizard_Step2TitleByDate" : "Wizard_Step2Title"),
         2 => _localizer.Get("Wizard_Step3Title"),
         3 => _localizer.Get("Wizard_Step4Title"),
-        4 => _localizer.Get("Wizard_Step5Title"),
+        4 => _localizer.Get(SkipsExampleSteps ? "Wizard_Step5TitleByDate" : "Wizard_Step5Title"),
         _ => _localizer.Get("Wizard_Step6Title"),
     };
 
@@ -123,7 +132,7 @@ internal sealed partial class SortWizardViewModel : ObservableObject
         1 => _localizer.Get("Wizard_ActionNext"),
         2 => _localizer.Get("Wizard_ActionNext"),
         3 => _localizer.Get("Wizard_ActionLearn"),
-        4 => _localizer.Get("Wizard_ActionAnalyze"),
+        4 => _localizer.Get(SkipsExampleSteps ? "Wizard_ActionFindByDate" : "Wizard_ActionAnalyze"),
         _ => _localizer.Get("Wizard_ActionSort"),
     };
 
@@ -136,11 +145,21 @@ internal sealed partial class SortWizardViewModel : ObservableObject
     /// <summary><see langword="true"/>, wenn die Karte für Schritt 2 sichtbar ist.</summary>
     public bool ShowStep2 => !IsGuided || IsStep2;
 
-    /// <summary><see langword="true"/>, wenn die Karte für Schritt 3 sichtbar ist.</summary>
-    public bool ShowStep3 => !IsGuided || IsStep3;
+    /// <summary>
+    /// <see langword="true"/>, wenn die Karte für Schritt 3 sichtbar ist. Beim Sortieren
+    /// nach Datum entfällt sie ganz – auch in der Standard-Ansicht, in der sonst alle
+    /// Karten untereinander stehen.
+    /// </summary>
+    public bool ShowStep3 => !SkipsExampleSteps && (!IsGuided || IsStep3);
 
     /// <summary><see langword="true"/>, wenn die Karte für Schritt 4 sichtbar ist.</summary>
-    public bool ShowStep4 => !IsGuided || IsStep4;
+    public bool ShowStep4 => !SkipsExampleSteps && (!IsGuided || IsStep4);
+
+    /// <summary>
+    /// <see langword="true"/>, wenn die beiden Schritte zur Beispielauswahl zum Weg
+    /// gehören und deshalb in der Schrittleiste erscheinen.
+    /// </summary>
+    public bool ShowExampleSteps => !SkipsExampleSteps;
 
     /// <summary><see langword="true"/>, wenn die Karte für Schritt 5 sichtbar ist.</summary>
     public bool ShowStep5 => !IsGuided || IsStep5;
@@ -153,6 +172,18 @@ internal sealed partial class SortWizardViewModel : ObservableObject
     /// Aktionsknöpfe; im geführten Modus übernimmt der eine Aktionsknopf unten.
     /// </summary>
     public bool ShowStandardActions => !IsGuided;
+
+    /// <summary>
+    /// <see langword="true"/>, wenn die Analyse-Karte in der Standard-Ansicht ihren
+    /// KI-Knopf zeigt: nur außerhalb des geführten Modus und nur im Weg über das Motiv.
+    /// </summary>
+    public bool ShowStandardAnalyzeAction => ShowStandardActions && !SkipsExampleSteps;
+
+    /// <summary>
+    /// <see langword="true"/>, wenn dieselbe Karte stattdessen den Knopf für die Suche
+    /// allein über das Aufnahmedatum zeigt.
+    /// </summary>
+    public bool ShowStandardDateAction => ShowStandardActions && SkipsExampleSteps;
 
     /// <summary>
     /// <see langword="true"/>, wenn gerade kein Vorgang läuft (steuert u. a. die
@@ -184,10 +215,37 @@ internal sealed partial class SortWizardViewModel : ObservableObject
     /// <param name="step">Der Zielschritt (0-basiert).</param>
     public void GoToStep(int step)
     {
+        // Ein ausgeblendeter Schritt bleibt auch über die Schrittleiste unerreichbar:
+        // Seine Karte wäre unsichtbar und der Aktionsknopf ohne Wirkung – die Nutzerin
+        // stünde vor einer leeren Seite.
+        if (IsHidden(step))
+        {
+            return;
+        }
+
         if (_isInteractive() && step >= 0 && step <= MaxReachedStep && step != CurrentStep)
         {
             CurrentStep = step;
         }
+    }
+
+    /// <summary>
+    /// <see langword="true"/>, wenn der Schritt im aktuellen Weg gar nicht vorkommt.
+    /// </summary>
+    /// <param name="step">Der Schritt (0-basiert).</param>
+    /// <returns><see langword="true"/>, wenn er übersprungen wird.</returns>
+    public bool IsHidden(int step) => SkipsExampleSteps && step is 2 or 3;
+
+    // Führt über die ausgeblendeten Schritte hinweg. Ohne das landete die Nutzerin beim
+    // Sortieren nach Datum auf zwei Karten, die es in diesem Weg nicht gibt.
+    private int SkipHidden(int step, int direction)
+    {
+        while (IsHidden(step))
+        {
+            step += direction;
+        }
+
+        return step;
     }
 
     // Führt die eine Aktion des aktuellen Schritts aus und blättert bei Erfolg weiter.
@@ -205,7 +263,7 @@ internal sealed partial class SortWizardViewModel : ObservableObject
     {
         if (CurrentStep > 0)
         {
-            CurrentStep--;
+            CurrentStep = SkipHidden(CurrentStep - 1, -1);
         }
     }
 
@@ -225,7 +283,7 @@ internal sealed partial class SortWizardViewModel : ObservableObject
     {
         if (CurrentStep < StepCount - 1)
         {
-            CurrentStep++;
+            CurrentStep = SkipHidden(CurrentStep + 1, 1);
             if (CurrentStep > MaxReachedStep)
             {
                 MaxReachedStep = CurrentStep;
@@ -254,6 +312,27 @@ internal sealed partial class SortWizardViewModel : ObservableObject
         _onStepEntered(value);
     }
 
+    partial void OnSkipsExampleStepsChanged(bool value)
+    {
+        OnPropertyChanged(nameof(ShowStep3));
+        OnPropertyChanged(nameof(ShowStep4));
+        OnPropertyChanged(nameof(ShowExampleSteps));
+        OnPropertyChanged(nameof(ShowStandardAnalyzeAction));
+        OnPropertyChanged(nameof(ShowStandardDateAction));
+        OnPropertyChanged(nameof(StepTitle));
+        OnPropertyChanged(nameof(PrimaryActionLabel));
+
+        // Der Weg wird mitten im Ablauf gewechselt, und die Nutzerin steht gerade auf
+        // einem Schritt, den es jetzt nicht mehr gibt. Sie bliebe sonst vor einer leeren
+        // Karte stehen, deren Aktionsknopf nichts auslöst.
+        if (IsHidden(CurrentStep))
+        {
+            CurrentStep = SkipHidden(CurrentStep, 1);
+        }
+
+        NotifyStateChanged();
+    }
+
     partial void OnIsGuidedChanged(bool value)
     {
         OnPropertyChanged(nameof(ShowStep1));
@@ -263,5 +342,7 @@ internal sealed partial class SortWizardViewModel : ObservableObject
         OnPropertyChanged(nameof(ShowStep5));
         OnPropertyChanged(nameof(ShowStep6));
         OnPropertyChanged(nameof(ShowStandardActions));
+        OnPropertyChanged(nameof(ShowStandardAnalyzeAction));
+        OnPropertyChanged(nameof(ShowStandardDateAction));
     }
 }
