@@ -22,6 +22,12 @@ public enum ClassificationMethod
     VisionModel,
 
     /// <summary>
+    /// Zuordnung allein über das Aufnahmedatum, ohne jede KI-Bewertung. Der Weg für
+    /// „alles aus diesem Urlaub": Dort entscheidet der Zeitraum, nicht das Motiv.
+    /// </summary>
+    CaptureDate,
+
+    /// <summary>
     /// Manuell vom Nutzer bestätigt oder korrigiert.
     /// </summary>
     Manual,

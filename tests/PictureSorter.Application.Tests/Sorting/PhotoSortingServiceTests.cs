@@ -564,7 +564,7 @@ public sealed class PhotoSortingServiceTests
         [
             new Photo { FullPath = @"C:\fotos\ohne.jpg", FileName = "ohne.jpg", CapturedAt = null },
             Foto("drinnen.jpg", new DateOnly(2026, 7, 14)),
-            Foto("draussen.jpg", new DateOnly(2026, 1, 1)),
+            Foto("januar.jpg", new DateOnly(2026, 1, 1)),
         ];
         CountingEmbeddingProvider provider = new([1.0f, 0.0f, 0.0f]);
         PhotoSortingService service = CreateService(
@@ -1050,6 +1050,103 @@ public sealed class PhotoSortingServiceTests
             Embedding = new ImageEmbedding([1.0f, 0.0f, 0.0f], "fake"),
         });
         return category;
+    }
+
+    // ── Sortieren allein nach Aufnahmedatum (ohne KI) ──────────────────────────
+
+    // Ein Provider, der bei jedem Aufruf scheitert. Er ist der eigentliche Beweis dieses
+    // Abschnitts: Wenn der Datums-Lauf durchläuft, wurde die KI kein einziges Mal
+    // befragt — genau das ist der Sinn dieses Weges.
+    private static PhotoSortingService CreateDateOnlyService(
+        IReadOnlyList<Photo> photos,
+        FakeSortMemory? memory = null) =>
+        CreateService(
+            embedding: [1.0f, 0.0f, 0.0f],
+            classifier: new FakeImageClassifier(new VisionVerdict { Matches = true, Confidence = 1.0 }),
+            memory: memory,
+            embeddingProvider: new FakeEmbeddingProvider(
+                _ => throw new InvalidOperationException(
+                    "Beim Sortieren nach Datum darf kein Embedding erzeugt werden.")),
+            photos: photos);
+
+    [Fact]
+    public async Task CreateDateProposalsAsync_PhotoInRange_IsProposedWithoutAnyAiCall()
+    {
+        PhotoSortingService service = CreateDateOnlyService([Foto("urlaub.jpg", new DateOnly(2026, 7, 15))]);
+        DateRange range = new(new DateOnly(2026, 7, 12), new DateOnly(2026, 7, 21));
+
+        IReadOnlyList<SortProposal> proposals = await service.CreateDateProposalsAsync(
+            SourceFolder, "Urlaub Norwegen", includeSubfolders: false, range, progress: null, CancellationToken.None);
+
+        SortProposal proposal = Assert.Single(proposals);
+        Assert.Equal(ClassificationMethod.CaptureDate, proposal.Method);
+        Assert.Equal(1.0, proposal.Confidence);
+        Assert.Equal(Path.Combine(SourceFolder, "Urlaub Norwegen"), proposal.TargetFolderPath);
+    }
+
+    [Fact]
+    public async Task CreateDateProposalsAsync_PhotoOutsideRange_IsNotProposed()
+    {
+        PhotoSortingService service = CreateDateOnlyService([Foto("davor.jpg", new DateOnly(2026, 7, 11))]);
+        DateRange range = new(new DateOnly(2026, 7, 12), new DateOnly(2026, 7, 21));
+
+        IReadOnlyList<SortProposal> proposals = await service.CreateDateProposalsAsync(
+            SourceFolder, "Urlaub", includeSubfolders: false, range, progress: null, CancellationToken.None);
+
+        Assert.Empty(proposals);
+    }
+
+    [Fact]
+    public async Task CreateDateProposalsAsync_PhotoWithoutCaptureDate_IsNotProposed()
+    {
+        // Ohne Aufnahmedatum lässt sich das Foto dem Zeitraum nicht zuordnen. Es
+        // stillschweigend mitzunehmen wäre die gefährlichere Richtung.
+        PhotoSortingService service = CreateDateOnlyService([SamplePhoto]);
+        DateRange range = new(new DateOnly(2026, 7, 12), new DateOnly(2026, 7, 21));
+
+        IReadOnlyList<SortProposal> proposals = await service.CreateDateProposalsAsync(
+            SourceFolder, "Urlaub", includeSubfolders: false, range, progress: null, CancellationToken.None);
+
+        Assert.Empty(proposals);
+    }
+
+    [Fact]
+    public async Task CreateDateProposalsAsync_UnboundedRange_ProposesNothing()
+    {
+        // Ohne Grenze wäre jedes Foto des Ordners ein Vorschlag zum Verschieben.
+        PhotoSortingService service = CreateDateOnlyService([Foto("a.jpg", new DateOnly(2026, 7, 15))]);
+
+        IReadOnlyList<SortProposal> proposals = await service.CreateDateProposalsAsync(
+            SourceFolder, "Urlaub", includeSubfolders: false, DateRange.Unbounded, progress: null, CancellationToken.None);
+
+        Assert.Empty(proposals);
+    }
+
+    [Fact]
+    public async Task CreateDateProposalsAsync_ReversedRange_ProposesNothing()
+    {
+        PhotoSortingService service = CreateDateOnlyService([Foto("a.jpg", new DateOnly(2026, 7, 15))]);
+        DateRange reversed = new(new DateOnly(2026, 7, 21), new DateOnly(2026, 7, 12));
+
+        IReadOnlyList<SortProposal> proposals = await service.CreateDateProposalsAsync(
+            SourceFolder, "Urlaub", includeSubfolders: false, reversed, progress: null, CancellationToken.None);
+
+        Assert.Empty(proposals);
+    }
+
+    [Fact]
+    public async Task CreateDateProposalsAsync_BothBoundsIncluded_TakesFirstAndLastDay()
+    {
+        // Beide Enden gehören dazu: Sonst fielen ausgerechnet Anreise- und Abreisetag
+        // heraus, die die Nutzerin gerade eingetippt hat.
+        PhotoSortingService service = CreateDateOnlyService(
+            [Foto("erster.jpg", new DateOnly(2026, 7, 12)), Foto("letzter.jpg", new DateOnly(2026, 7, 21))]);
+        DateRange range = new(new DateOnly(2026, 7, 12), new DateOnly(2026, 7, 21));
+
+        IReadOnlyList<SortProposal> proposals = await service.CreateDateProposalsAsync(
+            SourceFolder, "Urlaub", includeSubfolders: false, range, progress: null, CancellationToken.None);
+
+        Assert.Equal(2, proposals.Count);
     }
 
     private static PhotoSortingService CreateService(

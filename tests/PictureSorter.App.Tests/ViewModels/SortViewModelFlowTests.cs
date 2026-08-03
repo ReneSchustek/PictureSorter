@@ -519,6 +519,19 @@ public sealed class SortViewModelFlowTests : IDisposable
             return [];
         }
 
+        public async Task<IReadOnlyList<SortProposal>> CreateDateProposalsAsync(
+            string sourceFolder,
+            string targetFolderName,
+            bool includeSubfolders,
+            DateRange dateRange,
+            IProgress<SortProgress>? progress,
+            CancellationToken cancellationToken)
+        {
+            _ = Started.Release();
+            await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
+            return [];
+        }
+
         public Task<int> ApplyProposalsAsync(
             IReadOnlyList<SortProposal> toApply,
             FileOperationMode operation,

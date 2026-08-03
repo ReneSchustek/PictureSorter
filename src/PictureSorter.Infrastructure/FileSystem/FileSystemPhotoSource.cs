@@ -97,18 +97,27 @@ public sealed class FileSystemPhotoSource : IPhotoSource
         // Anfang an in der Statusleiste statt erst nach dem letzten Bild.
         progress?.Report(new PhotoScanProgress(0, paths.Count));
 
-        // Begrenzter Puffer: Er ist der Vorlauf, den das Laden vor der Bewertung haben
-        // darf. Ohne Grenze zöge die Anwendung bei einem Cloud-Ordner alle 1100 Dateien
-        // auf Vorrat herunter, obwohl die Bewertung noch beim zwanzigsten Bild steht –
-        // Bandbreite und Plattenplatz für nichts. Ist der Puffer voll, warten die Leser,
-        // bis die Bewertung nachgezogen hat.
-        Channel<ScannedPhoto> channel = Channel.CreateBounded<ScannedPhoto>(
-            new BoundedChannelOptions(_options.PrefetchBuffer)
-            {
-                FullMode = BoundedChannelFullMode.Wait,
-                SingleReader = true,
-                SingleWriter = false,
-            });
+        // Ohne Grenze läuft das Laden durch und die Bewertung nimmt sich, was fertig ist –
+        // die beiden Abschnitte sind dann wirklich entkoppelt. Mit Grenze wartet das Laden,
+        // sobald der Vorrat voll ist; das schont die Leitung bei einem frühen Abbruch,
+        // koppelt seine Geschwindigkeit aber an die der KI (siehe PhotoSourceOptions).
+        //
+        // Gepuffert wird nur das Photo mit seinen Metadaten, nie der Bildinhalt. Ein großer
+        // Vorrat kostet deshalb Speicher im zweistelligen Megabyte-Bereich, nicht mehr.
+        Channel<ScannedPhoto> channel = _options.PrefetchBuffer <= 0
+            ? Channel.CreateUnbounded<ScannedPhoto>(
+                new UnboundedChannelOptions
+                {
+                    SingleReader = true,
+                    SingleWriter = false,
+                })
+            : Channel.CreateBounded<ScannedPhoto>(
+                new BoundedChannelOptions(_options.PrefetchBuffer)
+                {
+                    FullMode = BoundedChannelFullMode.Wait,
+                    SingleReader = true,
+                    SingleWriter = false,
+                });
 
         // Eigener Abbruch für die Leser: Bricht der Verbraucher vorzeitig ab (Abbruch
         // durch die Nutzerin), stünden sie sonst für immer am vollen Puffer.

@@ -11,6 +11,14 @@ Bildanalysen laufen vollständig offline auf dem eigenen Rechner.
   Beispielbilder bestätigen, den Rest sortiert die App selbst. Bei der Bewertung
   fließen neben dem Bild selbst auch die **Bildinformationen** ein – Aufnahmedatum,
   **Aufnahmeort (GPS)**, Kamera und Auflösung aus den EXIF-Daten.
+- **Sortieren nach Aufnahmedatum – ohne KI**: Für einen Urlaub entscheidet der
+  Zeitraum, nicht das Motiv. Im zweiten Schritt lässt sich *„Nur nach Aufnahmedatum
+  sortieren"* wählen; dann entfallen das Anlernen und jede Bildbewertung. Gelesen
+  werden nur die Bildinformationen, der Lauf dauert Sekunden statt Minuten. Ein
+  Zeitraum ist dabei Pflicht – ohne ihn stünde der ganze Ordner zum Verschieben bereit.
+- **Zeitraum-Filter mit Urlaubs-Vorschlägen**: Die App erkennt Zeiträume, in denen
+  sich die Aufnahmen ballen, und bietet sie zur Übernahme an. Fotos außerhalb kommen
+  der KI gar nicht erst vor.
 - **Duplikat-Erkennung** mit Bildvorschau: findet **bit-identische** Dateien und –
   über einen Wahrnehmungs-Hash – auch **visuell ähnliche** Bilder (skaliert oder
   neu komprimiert). In jeder Gruppe ist das beste Bild vorausgewählt zum Behalten,

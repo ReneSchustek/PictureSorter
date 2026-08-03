@@ -129,10 +129,13 @@
                     FontWeight="{x:Bind ViewModel.Wizard.IsStep2, Mode=OneWay, Converter={StaticResource BoolToFontWeightConverter}}"
                     IsEnabled="{x:Bind ViewModel.Wizard.MaxReachedStep, Mode=OneWay, Converter={StaticResource StepReachedConverter}, ConverterParameter=1}"
                     Tag="1" />
+                <!-- Die beiden Schritte zur Beispielauswahl entfallen, wenn allein nach
+                     Aufnahmedatum sortiert wird: Dann gibt es nichts anzulernen. -->
                 <TextBlock
                     VerticalAlignment="Center"
                     Foreground="{ThemeResource TextFillColorTertiaryBrush}"
-                    Text="▸" />
+                    Text="▸"
+                    Visibility="{x:Bind ViewModel.Wizard.ShowExampleSteps, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                 <HyperlinkButton
                     Padding="4,2"
                     Click="OnStepClick"
@@ -140,11 +143,13 @@
                     Content="3. Passende"
                     FontWeight="{x:Bind ViewModel.Wizard.IsStep3, Mode=OneWay, Converter={StaticResource BoolToFontWeightConverter}}"
                     IsEnabled="{x:Bind ViewModel.Wizard.MaxReachedStep, Mode=OneWay, Converter={StaticResource StepReachedConverter}, ConverterParameter=2}"
-                    Tag="2" />
+                    Tag="2"
+                    Visibility="{x:Bind ViewModel.Wizard.ShowExampleSteps, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                 <TextBlock
                     VerticalAlignment="Center"
                     Foreground="{ThemeResource TextFillColorTertiaryBrush}"
-                    Text="▸" />
+                    Text="▸"
+                    Visibility="{x:Bind ViewModel.Wizard.ShowExampleSteps, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                 <HyperlinkButton
                     Padding="4,2"
                     Click="OnStepClick"
@@ -152,7 +157,8 @@
                     Content="4. Gegenbeispiele"
                     FontWeight="{x:Bind ViewModel.Wizard.IsStep4, Mode=OneWay, Converter={StaticResource BoolToFontWeightConverter}}"
                     IsEnabled="{x:Bind ViewModel.Wizard.MaxReachedStep, Mode=OneWay, Converter={StaticResource StepReachedConverter}, ConverterParameter=3}"
-                    Tag="3" />
+                    Tag="3"
+                    Visibility="{x:Bind ViewModel.Wizard.ShowExampleSteps, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                 <TextBlock
                     VerticalAlignment="Center"
                     Foreground="{ThemeResource TextFillColorTertiaryBrush}"
@@ -244,27 +250,49 @@
                     Visibility="{x:Bind ViewModel.Wizard.ShowStep2, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                     <StackPanel Spacing="12">
                         <TextBlock x:Uid="SortPage_Step2Heading" FontWeight="SemiBold" Text="2. Kategorie beschreiben" />
+
+                        <!-- Die Wahl des Weges steht bewusst hier und nicht erst beim
+                             Zeitraum: Sie entscheidet darüber, ob überhaupt Beispiele
+                             gesammelt werden müssen. Weiter hinten gestellt, hätte die
+                             Nutzerin dreißig Bilder umsonst angelernt. -->
+                        <CheckBox
+                            x:Uid="SortPage_SortModeByDateCheck"
+                            Content="Nur nach Aufnahmedatum sortieren (ohne KI)"
+                            IsChecked="{x:Bind ViewModel.SortByDateOnly, Mode=TwoWay}" />
+                        <TextBlock
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            x:Uid="SortPage_SortModeByDateHint"
+                            Text="Für einen Urlaub genügt das Datum. Dann werden weder Beispiele gebraucht noch Bilder von der KI angesehen — die Schritte 3 und 4 entfallen, und der Lauf dauert Sekunden statt Minuten."
+                            TextWrapping="Wrap" />
+
                         <TextBlock
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             x:Uid="SortPage_Step2Description"
                             Text="Was sollen wir heraussuchen? Gib der Gruppe einen Namen und beschreibe in eigenen Worten, was darauf zu sehen ist."
-                            TextWrapping="Wrap" />
+                            TextWrapping="Wrap"
+                            Visibility="{x:Bind ViewModel.Wizard.ShowExampleSteps, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                         <TextBox
                             x:Uid="SortPage_CategoryNameBox"
                             Header="Name der Gruppe"
                             PlaceholderText="z. B. Familie"
                             Text="{x:Bind ViewModel.CategoryName, Mode=TwoWay}" />
+
+                        <!-- Beschreibung und Ereignis-Kennzeichen wirken ausschließlich auf
+                             die KI-Bewertung; beim Sortieren nach Datum wären sie zwei
+                             Felder ohne jede Wirkung. -->
                         <TextBox
                             x:Uid="SortPage_CategoryDescriptionBox"
                             Header="Beschreibung (in eigenen Worten)"
                             AcceptsReturn="True"
                             PlaceholderText="z. B. Bilder, auf denen meine Familie zu sehen ist"
                             Text="{x:Bind ViewModel.CategoryDescription, Mode=TwoWay}"
-                            TextWrapping="Wrap" />
+                            TextWrapping="Wrap"
+                            Visibility="{x:Bind ViewModel.Wizard.ShowExampleSteps, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                         <CheckBox
                             x:Uid="SortPage_EventCategoryCheck"
                             Content="Ereignis-Gruppe (Ordnername erhält das Aufnahmedatum, z. B. „Urlaub 14.07.25“)"
-                            IsChecked="{x:Bind ViewModel.IsEventCategory, Mode=TwoWay}" />
+                            IsChecked="{x:Bind ViewModel.IsEventCategory, Mode=TwoWay}"
+                            Visibility="{x:Bind ViewModel.Wizard.ShowExampleSteps, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                     </StackPanel>
                 </Border>
 
@@ -497,12 +525,21 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
 
+                        <!-- In der Standard-Ansicht trägt die Karte ihren eigenen Knopf.
+                             Welcher der beiden gilt, hängt am gewählten Weg: Der eine legt
+                             jedes Foto der KI vor, der andere sieht nur auf das Datum. -->
                         <Button
                             Command="{x:Bind ViewModel.AnalyzeCommand}"
                             x:Uid="SortPage_AnalyzeButton"
                             Content="Analysieren"
                             Style="{ThemeResource AccentButtonStyle}"
-                            Visibility="{x:Bind ViewModel.Wizard.ShowStandardActions, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            Visibility="{x:Bind ViewModel.Wizard.ShowStandardAnalyzeAction, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                        <Button
+                            Command="{x:Bind ViewModel.SortByDateCommand}"
+                            x:Uid="SortPage_FindByDateButton"
+                            Content="Fotos im Zeitraum suchen"
+                            Style="{ThemeResource AccentButtonStyle}"
+                            Visibility="{x:Bind ViewModel.Wizard.ShowStandardDateAction, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                     </StackPanel>
                 </Border>
 
