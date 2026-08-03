@@ -27,6 +27,11 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 - **Nach einer Aktualisierung blieb auf dem Desktop und in der Taskleiste das alte
   Symbol stehen.** Windows erfuhr vom Austausch der Programmdatei nichts und zeichnete
   weiter aus seinem Zwischenspeicher. Die Aktualisierung meldet die Änderung jetzt selbst.
+- **Die Oberfläche stand zu Beginn eines Laufs still, und „Stopp" wirkte erst mit
+  Verzögerung.** Das Durchsuchen des Ordners lief auf demselben Strang wie die Bedienung;
+  bei vielen Bildern oder einem Ordner aus der Cloud dauerte das spürbar. Analysieren,
+  Anlernen, Sortieren und die Suche nach Datum laufen jetzt vollständig im Hintergrund —
+  die Anwendung bleibt bedienbar und hält sofort an.
 
 ### Geändert
 

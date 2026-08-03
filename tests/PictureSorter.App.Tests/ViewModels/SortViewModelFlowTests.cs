@@ -499,6 +499,124 @@ public sealed class SortViewModelFlowTests : IDisposable
         Assert.True(sut.HasUndoableRun);
     }
 
+    // ── Sortieren allein nach Aufnahmedatum ────────────────────────────────────
+
+    [Fact]
+    public void SortByDate_WithoutADateRange_StaysBlocked()
+    {
+        using SortViewModel sut = CreateSut();
+        sut.SortByDateOnly = true;
+        sut.SourceFolder = SourceFolder;
+        sut.CategoryName = "Urlaub";
+
+        // Ohne Zeitraum gäbe es kein Kriterium — jedes Foto des Ordners stünde zum
+        // Verschieben bereit. Genau deshalb bleibt der Knopf gesperrt.
+        Assert.False(sut.CanSortByDate);
+
+        sut.DateFrom = new DateTimeOffset(2026, 7, 12, 0, 0, 0, TimeSpan.Zero);
+
+        Assert.True(sut.CanSortByDate);
+    }
+
+    [Fact]
+    public void SortByDate_WithAReversedRange_StaysBlocked()
+    {
+        using SortViewModel sut = CreateSut();
+        sut.SortByDateOnly = true;
+        sut.SourceFolder = SourceFolder;
+        sut.CategoryName = "Urlaub";
+        sut.DateFrom = new DateTimeOffset(2026, 7, 21, 0, 0, 0, TimeSpan.Zero);
+        sut.DateTo = new DateTimeOffset(2026, 7, 12, 0, 0, 0, TimeSpan.Zero);
+
+        Assert.False(sut.CanSortByDate);
+    }
+
+    [Fact]
+    public void SortByDateOnly_TellsTheWizardToSkipTheExampleSteps()
+    {
+        using SortViewModel sut = CreateSut();
+
+        Assert.False(sut.Wizard.SkipsExampleSteps);
+
+        sut.SortByDateOnly = true;
+
+        Assert.True(sut.Wizard.SkipsExampleSteps);
+    }
+
+    [Fact]
+    public async Task SortByDate_WithARange_ShowsThePreviewAndUsesTheNameAsTargetFolder()
+    {
+        FakePhotoSorter sorter = new(CreateProposals(1));
+        using SortViewModel sut = CreateSut(sorter);
+        sut.SortByDateOnly = true;
+        sut.SourceFolder = SourceFolder;
+        sut.CategoryName = "  Urlaub Norwegen  ";
+        sut.DateFrom = new DateTimeOffset(2026, 7, 12, 0, 0, 0, TimeSpan.Zero);
+        sut.DateTo = new DateTimeOffset(2026, 7, 21, 0, 0, 0, TimeSpan.Zero);
+
+        await sut.SortByDateCommand.ExecuteAsync(parameter: null);
+
+        Assert.Equal(SortState.Preview, sut.State);
+        _ = Assert.Single(sut.Proposals.Items);
+
+        // Der eingetippte Name wird beschnitten weitergereicht — sonst entstünde ein
+        // Ordner mit führendem Leerzeichen.
+        Assert.Equal("Urlaub Norwegen", sorter.LastDateTargetFolder);
+    }
+
+    [Fact]
+    public async Task SortByDate_WhenNothingIsFound_ReturnsToPreviewWithAWarning()
+    {
+        FakePhotoSorter sorter = new([]);
+        using SortViewModel sut = CreateSut(sorter);
+        sut.SortByDateOnly = true;
+        sut.SourceFolder = SourceFolder;
+        sut.CategoryName = "Urlaub";
+        sut.DateFrom = new DateTimeOffset(2026, 7, 12, 0, 0, 0, TimeSpan.Zero);
+
+        await sut.SortByDateCommand.ExecuteAsync(parameter: null);
+
+        Assert.Equal(SortState.Preview, sut.State);
+        Assert.Empty(sut.Proposals.Items);
+    }
+
+    [Fact]
+    public async Task SortByDate_WhenTheFolderCannotBeRead_ReportsTheErrorAndStaysUsable()
+    {
+        using SortViewModel sut = CreateSut(
+            new FailingPhotoSorter(new UnauthorizedAccessException("kein Zugriff")));
+        sut.SortByDateOnly = true;
+        sut.SourceFolder = SourceFolder;
+        sut.CategoryName = "Urlaub";
+        sut.DateFrom = new DateTimeOffset(2026, 7, 12, 0, 0, 0, TimeSpan.Zero);
+
+        await sut.SortByDateCommand.ExecuteAsync(parameter: null);
+
+        Assert.Equal(SortState.Error, sut.State);
+        Assert.True(sut.IsInteractive);
+    }
+
+    [Fact]
+    public async Task SortByDate_WhenCanceled_ReturnsToIdle()
+    {
+        BlockingPhotoSorter sorter = new();
+        using SortViewModel sut = CreateSut(sorter);
+        sut.SortByDateOnly = true;
+        sut.SourceFolder = SourceFolder;
+        sut.CategoryName = "Urlaub";
+        sut.DateFrom = new DateTimeOffset(2026, 7, 12, 0, 0, 0, TimeSpan.Zero);
+
+        Task running = sut.SortByDateCommand.ExecuteAsync(parameter: null);
+        await sorter.Started.WaitAsync(TestContext.Current.CancellationToken);
+
+        Assert.True(sut.CanCancel);
+
+        sut.CancelCommand.Execute(parameter: null);
+        await running.ConfigureAwait(true);
+
+        Assert.Equal(SortState.Idle, sut.State);
+    }
+
     // ── Testhilfen ─────────────────────────────────────────────────────────────
 
     /// <summary>Blockiert die Analyse, bis der Abbruch angefordert wird.</summary>

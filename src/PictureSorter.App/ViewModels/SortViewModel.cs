@@ -305,7 +305,14 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         && !string.IsNullOrWhiteSpace(SourceFolder)
         && !string.IsNullOrWhiteSpace(CategoryName)
         && HasDateRange
-        && !SelectedRange.IsReversed;
+        && !IsDateRangeReversed;
+
+    // Bewusst NICHT über SelectedRange geprüft: Das verwirft einen verdrehten Zeitraum
+    // bereits und liefert „ohne Grenze" zurück. Für die Analyse ist das richtig — dort
+    // entscheidet die Kategorie, und ohne Zeitraum werden eben alle Fotos geprüft. Hier
+    // wäre die Prüfung damit wirkungslos gewesen: Wer sich beim Tippen vertut, bekäme
+    // einen freigegebenen Knopf und danach wortlos „kein Foto gefunden".
+    private bool IsDateRangeReversed => new DateRange(ToDay(DateFrom), ToDay(DateTo)).IsReversed;
 
     /// <summary>
     /// Anwenden ist möglich, wenn mindestens ein Vorschlag ausgewählt ist.
@@ -539,9 +546,16 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
                 stand.Total == 0 ? 0 : stand.Processed * 100d / stand.Total));
 
             CategoryKind kind = IsEventCategory ? CategoryKind.Event : CategoryKind.Topic;
-            Category category = await _trainer
-                .TrainAsync(CategoryName.Trim(), CategoryDescription.Trim(), kind, examples, progress, _cancellation.Token)
-                .ConfigureAwait(true);
+            string name = CategoryName.Trim();
+            string description = CategoryDescription.Trim();
+            CancellationToken token = _cancellation.Token;
+
+            // Jedes Beispiel ist ein vollständiger Aufruf des Bild-Modells. Ohne den
+            // Wechsel auf einen Hintergrund-Thread bliebe die Oberfläche währenddessen
+            // stehen und der Stopp-Knopf ohne Wirkung.
+            Category category = await Task.Run(
+                () => _trainer.TrainAsync(name, description, kind, examples, progress, token),
+                token).ConfigureAwait(true);
 
             await PersistCategoryAsync(category, _cancellation.Token).ConfigureAwait(true);
             SetActiveCategory(category);
@@ -718,10 +732,24 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         try
         {
             Progress<SortProgress> progress = new(OnAnalyzeProgress);
-            IReadOnlyList<SortProposal> proposals = await _sorter
-                .CreateProposalsAsync(
-                    SourceFolder, _category!, IncludeSubfolders, SelectedRange, progress, _cancellation.Token)
-                .ConfigureAwait(true);
+
+            // Task.Run ist hier kein Zierrat: Der Aufruf läuft bis zum ersten echten
+            // Wartepunkt auf dem Oberflächen-Thread, und dazu gehört das rekursive
+            // Durchsuchen des Ordners. Bei einem großen oder in der Cloud liegenden
+            // Ordner steht die Anwendung so lange still — der Stopp-Knopf lässt sich
+            // zwar drücken, wird aber erst bearbeitet, wenn das Durchsuchen fertig ist.
+            // Die Werte werden vorher gelesen, damit im Hintergrund keine
+            // Oberflächen-Eigenschaften mehr angefasst werden.
+            string folder = SourceFolder;
+            bool withSubfolders = IncludeSubfolders;
+            DateRange range = SelectedRange;
+            Category category = _category!;
+            CancellationToken token = _cancellation.Token;
+
+            IReadOnlyList<SortProposal> proposals = await Task.Run(
+                () => _sorter.CreateProposalsAsync(
+                    folder, category, withSubfolders, range, progress, token),
+                token).ConfigureAwait(true);
 
             Proposals.Replace(proposals);
             State = SortState.Preview;
@@ -765,15 +793,19 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         try
         {
             Progress<SortProgress> progress = new(OnAnalyzeProgress);
-            IReadOnlyList<SortProposal> proposals = await _sorter
-                .CreateDateProposalsAsync(
-                    SourceFolder,
-                    CategoryName.Trim(),
-                    IncludeSubfolders,
-                    SelectedRange,
-                    progress,
-                    _cancellation.Token)
-                .ConfigureAwait(true);
+
+            // Wie bei der Analyse: erst herunter vom Oberflächen-Thread, sonst blockiert
+            // das Durchsuchen des Ordners die Bedienung samt Stopp-Knopf.
+            string folder = SourceFolder;
+            string targetFolder = CategoryName.Trim();
+            bool withSubfolders = IncludeSubfolders;
+            DateRange range = SelectedRange;
+            CancellationToken token = _cancellation.Token;
+
+            IReadOnlyList<SortProposal> proposals = await Task.Run(
+                () => _sorter.CreateDateProposalsAsync(
+                    folder, targetFolder, withSubfolders, range, progress, token),
+                token).ConfigureAwait(true);
 
             Proposals.Replace(proposals);
             State = SortState.Preview;
@@ -823,9 +855,12 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
                 ? FileOperationMode.Copy
                 : FileOperationMode.Move;
 
-            int moved = await _sorter
-                .ApplyProposalsAsync(selected, operation, dryRun: false, _cancellation.Token)
-                .ConfigureAwait(true);
+            // Auch das Verschieben selbst gehört nicht auf den Oberflächen-Thread: Es
+            // fasst jede Datei einzeln an und schreibt dabei ins Protokoll.
+            CancellationToken token = _cancellation.Token;
+            int moved = await Task.Run(
+                () => _sorter.ApplyProposalsAsync(selected, operation, dryRun: false, token),
+                token).ConfigureAwait(true);
 
             // Abgewählte Vorschläge dauerhaft merken, damit sie nicht erneut erscheinen.
             if (rejected.Count > 0)
