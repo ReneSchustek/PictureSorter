@@ -38,6 +38,55 @@ public sealed class StatusBarViewModelTests
     }
 
     [Fact]
+    public void ReportPipelineProgress_ShowsBothBarsWithTheirOwnValues()
+    {
+        // Zwei Balken sind nur dann eine Auskunft, wenn beide ihren eigenen Stand tragen:
+        // Bei einem Ordner aus der Cloud ist genau das die Frage — bremst die Leitung
+        // oder die KI?
+        StatusBarViewModel status = new(new ReswLocalizer());
+        status.Begin("Start", () => { });
+
+        status.ReportPipelineProgress("Bild 40 von 1100 analysiert…", 55.0, 4.0);
+
+        Assert.True(status.ShowsBothPhases);
+        Assert.False(status.IsIndeterminate);
+        Assert.Equal(55.0, status.GatherValue);
+        Assert.Equal(4.0, status.ProgressValue);
+        Assert.Equal("Bild 40 von 1100 analysiert…", status.Message);
+    }
+
+    [Fact]
+    public void ReportProgress_HidesTheSecondBarAgain()
+    {
+        // Läufe mit nur einem Abschnitt (Anlernen, Löschen, Zurückholen) behalten den
+        // einzelnen Balken. Bliebe der zweite stehen, zeigte er dort dauerhaft den
+        // veralteten Stand des vorigen Laufs.
+        StatusBarViewModel status = new(new ReswLocalizer());
+        status.Begin("Start", () => { });
+        status.ReportPipelineProgress("Kette", 55.0, 4.0);
+
+        status.ReportProgress("Einzelner Abschnitt", 30.0);
+
+        Assert.False(status.ShowsBothPhases);
+        Assert.Equal(30.0, status.ProgressValue);
+    }
+
+    [Fact]
+    public void Finish_ResetsBothBars()
+    {
+        StatusBarViewModel status = new(new ReswLocalizer());
+        status.Begin("Start", () => { });
+        status.ReportPipelineProgress("Kette", 55.0, 4.0);
+
+        status.Finish("Fertig", StatusSeverity.Success);
+
+        Assert.False(status.IsBusy);
+        Assert.False(status.ShowsBothPhases);
+        Assert.Equal(0, status.GatherValue);
+        Assert.Equal(0, status.ProgressValue);
+    }
+
+    [Fact]
     public void Stop_InvokesRegisteredCancelAction()
     {
         StatusBarViewModel status = new(new ReswLocalizer());

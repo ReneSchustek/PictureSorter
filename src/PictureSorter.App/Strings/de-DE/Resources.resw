@@ -346,6 +346,24 @@
   <data name="SortPage_Step4Description.Text" xml:space="preserve">
     <value>Am hilfreichsten sind Bilder, die dem Motiv nahe kommen, aber nicht gemeint sind. Dieser Schritt ist freiwillig.</value>
   </data>
+  <data name="SortPage_DateRangeHeading.Text" xml:space="preserve">
+    <value>Zeitraum (freiwillig)</value>
+  </data>
+  <data name="SortPage_DateRangeDescription.Text" xml:space="preserve">
+    <value>Beschränkt die Analyse auf Fotos aus diesen Tagen — praktisch für einen Urlaub. Bilder außerhalb sieht sich die KI gar nicht erst an, der Lauf wird dadurch deutlich kürzer. Ohne Angabe werden alle Fotos geprüft.</value>
+  </data>
+  <data name="SortPage_DateFromPicker.Header" xml:space="preserve">
+    <value>Von</value>
+  </data>
+  <data name="SortPage_DateToPicker.Header" xml:space="preserve">
+    <value>Bis</value>
+  </data>
+  <data name="SortPage_ClearDateRangeButton.Content" xml:space="preserve">
+    <value>Aufheben</value>
+  </data>
+  <data name="SortPage_SuggestTripsButton.Content" xml:space="preserve">
+    <value>Urlaube vorschlagen</value>
+  </data>
   <data name="SortPage_AnalyzeButton.Content" xml:space="preserve">
     <value>Analysieren</value>
   </data>
@@ -378,6 +396,9 @@
   </data>
   <data name="Common_CancelRequested" xml:space="preserve">
     <value>Abbruch angefordert…</value>
+  </data>
+  <data name="Common_GatherProgress" xml:space="preserve">
+    <value>Bild {0} von {1} erfasst…</value>
   </data>
   <data name="Common_Version" xml:space="preserve">
     <value>Version {0}</value>
@@ -415,11 +436,41 @@
   <data name="Sort_AiUnavailable" xml:space="preserve">
     <value>Die KI (Ollama) ist nicht erreichbar. Beispiele konnten nicht gelernt werden.</value>
   </data>
+  <data name="Sort_DateRangeHeading" xml:space="preserve">
+    <value>Zeitraum (freiwillig)</value>
+  </data>
+  <data name="Sort_DateRangeDescription" xml:space="preserve">
+    <value>Beschränkt die Analyse auf Fotos aus diesen Tagen — praktisch für einen Urlaub. Bilder außerhalb sieht sich die KI gar nicht erst an, der Lauf wird dadurch deutlich kürzer. Ohne Angabe werden alle Fotos geprüft.</value>
+  </data>
+  <data name="Sort_DateRangeCleared" xml:space="preserve">
+    <value>Zeitraum aufgehoben; es werden wieder alle Fotos geprüft.</value>
+  </data>
+  <data name="Sort_DateRangeTaken" xml:space="preserve">
+    <value>Zeitraum übernommen: {0}</value>
+  </data>
+  <data name="Sort_SearchingTrips" xml:space="preserve">
+    <value>Es wird nach Urlauben gesucht…</value>
+  </data>
+  <data name="Sort_TripsFound" xml:space="preserve">
+    <value>{0} Zeiträume gefunden. Einen anklicken, um ihn zu übernehmen.</value>
+  </data>
+  <data name="Sort_NoTripsFound" xml:space="preserve">
+    <value>Keine zusammenhängenden Zeiträume gefunden. Entweder sind die Fotos gleichmäßig über die Zeit verteilt, oder ihnen fehlt das Aufnahmedatum.</value>
+  </data>
+  <data name="Sort_TripSearchCanceled" xml:space="preserve">
+    <value>Die Suche nach Urlauben wurde abgebrochen.</value>
+  </data>
+  <data name="Sort_TripRange" xml:space="preserve">
+    <value>{0} bis {1} · {2} Tage · {3} Fotos</value>
+  </data>
+  <data name="Sort_TripSingleDay" xml:space="preserve">
+    <value>{0} · ein Tag · {1} Fotos</value>
+  </data>
   <data name="Sort_Analyzing" xml:space="preserve">
     <value>Fotos werden analysiert…</value>
   </data>
   <data name="Sort_AnalyzeProgress" xml:space="preserve">
-    <value>{0} von {1} Fotos analysiert…</value>
+    <value>Bild {0} von {1} analysiert…</value>
   </data>
   <data name="Sort_NoMatchingPhotos" xml:space="preserve">
     <value>Keine passenden Fotos gefunden.</value>
@@ -503,7 +554,7 @@
     <value>Duplikate werden gesucht…</value>
   </data>
   <data name="Duplicates_ScanProgress" xml:space="preserve">
-    <value>Duplikate werden gesucht… {0}/{1}</value>
+    <value>Bild {0} von {1} auf Duplikate geprüft…</value>
   </data>
   <data name="Duplicates_GroupsFound" xml:space="preserve">
     <value>{0} Duplikat-Gruppe(n) gefunden. {1} zum Löschen vorgemerkt.</value>
@@ -660,6 +711,12 @@
   </data>
   <data name="MainWindow_AppVersionText.AutomationProperties.Name" xml:space="preserve">
     <value>Programmversion</value>
+  </data>
+  <data name="MainWindow_GatherLabel.Text" xml:space="preserve">
+    <value>Laden</value>
+  </data>
+  <data name="MainWindow_AnalyzeLabel.Text" xml:space="preserve">
+    <value>Analyse</value>
   </data>
   <data name="SortPage_DropCaption" xml:space="preserve">
     <value>Als passende Bilder übernehmen</value>

@@ -64,9 +64,28 @@ internal sealed partial class StatusBarViewModel : ObservableObject
 
     /// <summary>
     /// Fortschritt in Prozent (0–100), wenn <see cref="IsIndeterminate"/> falsch ist.
+    /// Bei einem Lauf mit zwei Abschnitten (<see cref="ShowsBothPhases"/>) ist das der
+    /// Stand der Auswertung.
     /// </summary>
     [ObservableProperty]
     public partial double ProgressValue { get; set; }
+
+    /// <summary>
+    /// Stand des Ladens in Prozent (0–100) für den zweiten Balken.
+    /// </summary>
+    [ObservableProperty]
+    public partial double GatherValue { get; set; }
+
+    /// <summary>
+    /// <see langword="true"/>, wenn Laden und Auswerten gleichzeitig laufen und deshalb
+    /// zwei beschriftete Balken zu sehen sind.
+    ///
+    /// Nur dann sind zwei Balken eine Auskunft: Liefen die Abschnitte nacheinander, stünde
+    /// der eine stets bei 0 % und der andere bei 100 %. Für Läufe mit nur einem Abschnitt
+    /// (Anlernen, Löschen, Zurückholen) bleibt es beim einzelnen, unbeschrifteten Balken.
+    /// </summary>
+    [ObservableProperty]
+    public partial bool ShowsBothPhases { get; set; }
 
     /// <summary>
     /// Die laufende Programmversion, dauerhaft im Fußbereich sichtbar. Ohne sie lässt
@@ -101,6 +120,8 @@ internal sealed partial class StatusBarViewModel : ObservableObject
         Severity = StatusSeverity.Informational;
         Message = message;
         IsIndeterminate = true;
+        ShowsBothPhases = false;
+        GatherValue = 0;
         ProgressValue = 0;
         IsBusy = true;
     }
@@ -125,7 +146,27 @@ internal sealed partial class StatusBarViewModel : ObservableObject
     {
         Message = message;
         IsIndeterminate = false;
+        ShowsBothPhases = false;
         ProgressValue = Math.Clamp(percent, 0, 100);
+    }
+
+    /// <summary>
+    /// Meldet einen Lauf, bei dem Laden und Auswerten gleichzeitig laufen: zwei
+    /// beschriftete Balken statt eines.
+    ///
+    /// Ohne die Trennung wäre nicht zu erkennen, wer gerade bremst — die Leitung oder die
+    /// KI. Genau das ist bei einem Ordner aus der Cloud die Frage, die zählt.
+    /// </summary>
+    /// <param name="message">Der Statustext.</param>
+    /// <param name="gatherPercent">Stand des Ladens in Prozent (0–100).</param>
+    /// <param name="analyzePercent">Stand der Auswertung in Prozent (0–100).</param>
+    public void ReportPipelineProgress(string message, double gatherPercent, double analyzePercent)
+    {
+        Message = message;
+        IsIndeterminate = false;
+        ShowsBothPhases = true;
+        GatherValue = Math.Clamp(gatherPercent, 0, 100);
+        ProgressValue = Math.Clamp(analyzePercent, 0, 100);
     }
 
     /// <summary>
@@ -138,6 +179,7 @@ internal sealed partial class StatusBarViewModel : ObservableObject
     {
         Message = message;
         IsIndeterminate = true;
+        ShowsBothPhases = false;
         ProgressValue = 0;
     }
 
@@ -152,6 +194,8 @@ internal sealed partial class StatusBarViewModel : ObservableObject
         Message = message;
         IsBusy = false;
         IsIndeterminate = true;
+        ShowsBothPhases = false;
+        GatherValue = 0;
         ProgressValue = 0;
         _cancelAction = null;
     }

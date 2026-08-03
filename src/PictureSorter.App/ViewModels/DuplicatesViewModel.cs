@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using PictureSorter.App.Services;
 using PictureSorter.Application.Services;
+using PictureSorter.Core.Enums;
 using PictureSorter.Core.Interfaces;
 using PictureSorter.Core.ValueObjects;
 
@@ -129,6 +130,8 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
         using IDisposable? logScope = _logger.BeginScope("Duplikatsuche {CorrelationId}", NewCorrelationId());
         State = DuplicateState.Scanning;
         _status.Begin(_localizer.Get("Duplicates_Scanning"), Cancel);
+        _scanProgress = default;
+        _scanThrottle.Reset();
         ClearGroups();
         _cancellation = new CancellationTokenSource();
 
@@ -250,12 +253,34 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
             canceled ? StatusSeverity.Warning : StatusSeverity.Success);
     }
 
+    // Bis hierher wurde der Zählstand nur als Text gemeldet; der Balken lief daneben
+    // unbestimmt weiter und zeigte nichts an. Jetzt tragen zwei Balken den tatsächlichen
+    // Anteil – einer je Abschnitt, weil Laden und Prüfen gleichzeitig laufen.
+    private ScanProgressPair _scanProgress;
+
+    // Siehe ProgressThrottle: Ungefiltert bringen die Meldungen beider Abschnitte den
+    // Oberflächen-Faden zum Erliegen, und die Statusleiste steht dann still.
+    private readonly ProgressThrottle _scanThrottle = new(TimeSpan.FromMilliseconds(100));
+
     private void OnScanProgress(DuplicateScanProgress progress)
     {
-        if (progress.Total > 0)
+        if (progress.Total <= 0)
         {
-            _status.Report(_localizer.Format("Duplicates_ScanProgress", progress.Processed, progress.Total));
+            return;
         }
+
+        _scanProgress = _scanProgress.With(progress.Phase, progress.Processed, progress.Total);
+
+        if (!_scanThrottle.ShouldReport(progress.Processed >= progress.Total))
+        {
+            return;
+        }
+
+        string message = _scanProgress.HasAnalyzed
+            ? _localizer.Format("Duplicates_ScanProgress", _scanProgress.Analyzed, _scanProgress.Total)
+            : _localizer.Format("Common_GatherProgress", _scanProgress.Gathered, _scanProgress.Total);
+
+        _status.ReportPipelineProgress(message, _scanProgress.GatherPercent, _scanProgress.AnalyzePercent);
     }
 
     private void PopulateGroups(IReadOnlyList<DuplicateGroup> groups)

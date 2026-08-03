@@ -446,6 +446,57 @@
                             x:Uid="SortPage_Step5Description"
                             Text="Jetzt sieht sich PictureSorter alle Fotos im Ordner an und schlägt vor, welche zur Gruppe passen. Das kann je nach Anzahl etwas dauern."
                             TextWrapping="Wrap" />
+
+                        <!-- Zeitraum: schränkt die Analyse ein, bevor der teure Teil
+                             beginnt. Fotos außerhalb kommen der KI gar nicht erst vor. -->
+                        <TextBlock
+                            x:Uid="SortPage_DateRangeHeading"
+                            FontWeight="SemiBold"
+                            Text="Zeitraum (freiwillig)" />
+                        <TextBlock
+                            x:Uid="SortPage_DateRangeDescription"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Text="Beschränkt die Analyse auf Fotos aus diesen Tagen — praktisch für einen Urlaub. Bilder außerhalb sieht sich die KI gar nicht erst an, der Lauf wird dadurch deutlich kürzer. Ohne Angabe werden alle Fotos geprüft."
+                            TextWrapping="Wrap" />
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <DatePicker
+                                x:Uid="SortPage_DateFromPicker"
+                                Header="Von"
+                                SelectedDate="{x:Bind ViewModel.DateFrom, Mode=TwoWay}" />
+                            <DatePicker
+                                x:Uid="SortPage_DateToPicker"
+                                Header="Bis"
+                                SelectedDate="{x:Bind ViewModel.DateTo, Mode=TwoWay}" />
+                            <Button
+                                x:Uid="SortPage_ClearDateRangeButton"
+                                VerticalAlignment="Bottom"
+                                Command="{x:Bind ViewModel.ClearDateRangeCommand}"
+                                Content="Aufheben" />
+                        </StackPanel>
+
+                        <!-- Urlaube vorschlagen: reine Rechnerei auf den Aufnahmedaten,
+                             ohne KI. Wo zwischen zwei Aufnahmen eine längere Pause liegt,
+                             endet ein Zeitraum. -->
+                        <Button
+                            x:Uid="SortPage_SuggestTripsButton"
+                            Command="{x:Bind ViewModel.SuggestTripsCommand}"
+                            Content="Urlaube vorschlagen" />
+                        <TextBlock
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Text="{x:Bind ViewModel.TripHint, Mode=OneWay}"
+                            TextWrapping="Wrap"
+                            Visibility="{x:Bind ViewModel.TripHint, Mode=OneWay, Converter={StaticResource StringToVisibilityConverter}}" />
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.TripSuggestions}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:TripSuggestionViewModel">
+                                    <HyperlinkButton
+                                        Command="{Binding ElementName=SortPageRoot, Path=ViewModel.UseTripSuggestionCommand}"
+                                        CommandParameter="{x:Bind}"
+                                        Content="{x:Bind Label}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
                         <Button
                             Command="{x:Bind ViewModel.AnalyzeCommand}"
                             x:Uid="SortPage_AnalyzeButton"

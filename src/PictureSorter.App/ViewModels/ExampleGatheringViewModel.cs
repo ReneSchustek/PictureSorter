@@ -193,9 +193,15 @@ internal sealed class ExampleGatheringViewModel
         bool isPositive,
         CancellationToken cancellationToken)
     {
+        // Auch hier zählt der Balken mit: Bei einem Ordner, dessen Bilder erst aus der
+        // Cloud geholt werden, dauert schon ein Schwung von wenigen Bildern spürbar lange.
+        Progress<PhotoScanProgress> progress = new(stand => _status.ReportProgress(
+            _localizer.Format("Common_GatherProgress", stand.Processed, stand.Total),
+            stand.Total == 0 ? 0 : stand.Processed * 100d / stand.Total));
+
         int offset = isPositive ? _positiveOffset : _negativeOffset;
         IReadOnlyList<Photo> photos = await _photoSource
-            .GetPhotosAsync(_sourceFolder(), _includeSubfolders(), offset, set.RemainingSlots, cancellationToken)
+            .GetPhotosAsync(_sourceFolder(), _includeSubfolders(), offset, set.RemainingSlots, progress, cancellationToken)
             .ConfigureAwait(true);
 
         // Am Ende des Ordners wieder von vorn: Sonst führte wiederholtes Nachfordern in
@@ -204,7 +210,7 @@ internal sealed class ExampleGatheringViewModel
         {
             offset = 0;
             photos = await _photoSource
-                .GetPhotosAsync(_sourceFolder(), _includeSubfolders(), 0, set.RemainingSlots, cancellationToken)
+                .GetPhotosAsync(_sourceFolder(), _includeSubfolders(), 0, set.RemainingSlots, progress, cancellationToken)
                 .ConfigureAwait(true);
         }
 

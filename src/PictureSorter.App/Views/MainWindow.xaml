@@ -26,8 +26,13 @@
             IsBackButtonVisible="False"
             IsPaneToggleButtonVisible="True"
             PaneToggleRequested="TitleBar_PaneToggleRequested">
+            <!-- Ein eigenes Bild in genau der Anzeigegröße statt der Symboldatei: Aus
+                 der .ico traf WinUI die Größe um rund 8 % daneben und rechnete um – das
+                 Symbol wurde dadurch sichtbar unscharf. Die scale-100/scale-200-Paare
+                 wählt Windows nach der Bildschirmskalierung selbst aus, sodass es auch
+                 bei 200 % Punkt für Punkt sitzt. -->
             <TitleBar.IconSource>
-                <ImageIconSource ImageSource="ms-appx:///Assets/AppIcon.ico" />
+                <ImageIconSource ImageSource="ms-appx:///Assets/AppIconTitleBar.png" />
             </TitleBar.IconSource>
         </TitleBar>
 
@@ -125,9 +130,36 @@
                 VerticalAlignment="Center"
                 Orientation="Horizontal"
                 Spacing="12">
-                <ProgressBar
-                    Width="180"
+                <!-- Zwei Balken, sobald Laden und Auswerten gleichzeitig laufen: Sonst
+                     wäre nicht zu erkennen, wer bremst – die Leitung oder die KI. Die
+                     Farbe unterscheidet sie zusätzlich zur Beschriftung, nicht statt
+                     ihrer: Wer Grün und Blau nicht auseinanderhält, liest den Text. -->
+                <TextBlock
+                    x:Uid="MainWindow_GatherLabel"
                     VerticalAlignment="Center"
+                    Opacity="0.7"
+                    Style="{ThemeResource CaptionTextBlockStyle}"
+                    Text="Laden"
+                    Visibility="{Binding ShowsBothPhases, Converter={StaticResource BoolToVisibilityConverter}}" />
+                <ProgressBar
+                    Width="120"
+                    VerticalAlignment="Center"
+                    AutomationProperties.Name="Fortschritt des Ladens"
+                    Foreground="{ThemeResource SystemFillColorSuccessBrush}"
+                    Maximum="100"
+                    Value="{Binding GatherValue}"
+                    Visibility="{Binding ShowsBothPhases, Converter={StaticResource BoolToVisibilityConverter}}" />
+                <TextBlock
+                    x:Uid="MainWindow_AnalyzeLabel"
+                    VerticalAlignment="Center"
+                    Opacity="0.7"
+                    Style="{ThemeResource CaptionTextBlockStyle}"
+                    Text="Analyse"
+                    Visibility="{Binding ShowsBothPhases, Converter={StaticResource BoolToVisibilityConverter}}" />
+                <ProgressBar
+                    Width="140"
+                    VerticalAlignment="Center"
+                    AutomationProperties.Name="Fortschritt der Auswertung"
                     IsIndeterminate="{Binding IsIndeterminate}"
                     Maximum="100"
                     Value="{Binding ProgressValue}"

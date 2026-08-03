@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Globalization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -77,6 +78,7 @@ public sealed class PhotoSortingService : IPhotoSorter
         string sourceFolder,
         Category category,
         bool includeSubfolders,
+        DateRange dateRange,
         IProgress<SortProgress>? progress,
         CancellationToken cancellationToken)
     {
@@ -96,60 +98,116 @@ public sealed class PhotoSortingService : IPhotoSorter
         IReadOnlyList<ImageEmbedding> negatives =
             [.. category.Examples.Where(example => !example.IsPositive).Select(example => example.Embedding)];
 
-        IReadOnlyList<Photo> photos = await _photoSource
-            .GetPhotosAsync(sourceFolder, includeSubfolders, skip: 0, maxCount: null, cancellationToken)
-            .ConfigureAwait(false);
+        // Eine Kette statt zweier Abschnitte nacheinander: Die Quelle reicht jedes Bild
+        // weiter, sobald es eingelesen ist, und die Bewertung greift es sofort auf. Vorher
+        // wurde erst der ganze Ordner geladen — bei tausend Bildern aus der Cloud
+        // minutenlang —, und erst danach fing die Bewertung überhaupt an. Jetzt läuft
+        // beides nebeneinander, und der Zählstand der Bewertung bewegt sich nach Sekunden
+        // statt nach Minuten.
+        //
+        // Mehrere Fotos gleichzeitig bewerten: Jede Bewertung ist ein Aufruf des
+        // Bild-Modells und dauert Sekunden, in denen die Anwendung nur wartet. Der Grad
+        // der Gleichzeitigkeit ist eingestellt, nicht geraten — Ollama arbeitet nur eine
+        // begrenzte Zahl von Anfragen wirklich gleichzeitig ab, alles darüber wartet dort
+        // in der Schlange und läuft irgendwann ins Zeitlimit.
+        IProgress<PhotoScanProgress>? gathering =
+            progress is null ? null : new GatheringProgress(progress);
 
-        int total = photos.Count;
-        progress?.Report(new SortProgress(0, total));
-
-        List<SortProposal> proposals = [];
+        // Die Vorschläge kommen an ihren Platz, nicht ans Ende einer Liste: Sonst hinge
+        // die Reihenfolge der Vorschau davon ab, welches Foto zufällig zuerst fertig wird.
+        // Die Gesamtzahl steht erst mit dem ersten Bild fest, deshalb ein Wörterbuch statt
+        // eines Feldes fester Länge.
+        ConcurrentDictionary<int, SortProposal> found = new();
         int processed = 0;
         int skipped = 0;
+        int outsideRange = 0;
         int incompatible = 0;
+        Lock progressGate = new();
 
-        foreach (Photo photo in photos)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            if (await _memory.IsSettledAsync(sourceFolder, photo, category.Name, cancellationToken).ConfigureAwait(false))
+        await Parallel.ForEachAsync(
+            _photoSource.StreamPhotosAsync(
+                sourceFolder, includeSubfolders, skip: 0, maxCount: null, gathering, cancellationToken),
+            new ParallelOptions
             {
-                skipped++;
-                processed++;
-                progress?.Report(new SortProgress(processed, total));
-                continue;
-            }
-
-            Evaluation evaluation = await EvaluateAsync(photo, category, positives, negatives, sourceFolder, cancellationToken)
-                .ConfigureAwait(false);
-
-            if (evaluation.Proposal is not null)
+                MaxDegreeOfParallelism = _options.MaxParallelEvaluations,
+                CancellationToken = cancellationToken,
+            },
+            async (scanned, token) =>
             {
-                proposals.Add(evaluation.Proposal);
-            }
+                Photo photo = scanned.Photo;
 
-            if (evaluation.ExamplesIncompatible)
-            {
-                incompatible++;
-            }
+                // Zählen und Melden unter einem Schloss, damit sich die Meldungen nicht
+                // gegenseitig überholen und der Zählstand sichtbar zurückspringt.
+                void ReportProcessed()
+                {
+                    lock (progressGate)
+                    {
+                        processed++;
+                        progress?.Report(new SortProgress(processed, scanned.Total, ScanPhase.Analyzing));
+                    }
+                }
 
-            // Nur ein tatsächlich gefälltes Urteil wird gemerkt. Bei einem KI-Ausfall
-            // bleibt das Foto ungemerkt, damit der nächste Lauf es erneut versucht.
-            if (evaluation.WasEvaluated)
-            {
-                await _memory
-                    .RememberEvaluationAsync(sourceFolder, photo, category.Name, evaluation.Proposal, cancellationToken)
+                // Der Zeitraum wird vor allem anderen geprüft: Er kostet nichts und spart
+                // den teuersten Schritt. Wer nach einem Urlaub sucht, lässt die KI so über
+                // hundert statt über tausend Bilder laufen.
+                //
+                // Ein Foto ohne Aufnahmedatum kann es nicht geben — die Foto-Quelle
+                // greift ersatzweise auf die Änderungszeit der Datei zurück. Sollte doch
+                // eines ohne Datum ankommen, bleibt es drin: Lieber einmal zu viel
+                // bewertet als ein gesuchtes Bild stillschweigend übergangen.
+                if (!dateRange.IsUnbounded
+                    && photo.CapturedAt is { } aufgenommen
+                    && !dateRange.Contains(aufgenommen))
+                {
+                    _ = Interlocked.Increment(ref outsideRange);
+                    ReportProcessed();
+                    return;
+                }
+
+                if (await _memory.IsSettledAsync(sourceFolder, photo, category.Name, token).ConfigureAwait(false))
+                {
+                    _ = Interlocked.Increment(ref skipped);
+                    ReportProcessed();
+                    return;
+                }
+
+                Evaluation evaluation = await EvaluateAsync(photo, category, positives, negatives, sourceFolder, token)
                     .ConfigureAwait(false);
-            }
 
-            processed++;
-            progress?.Report(new SortProgress(processed, total));
-        }
+                if (evaluation.Proposal is not null)
+                {
+                    _ = found.TryAdd(scanned.Index, evaluation.Proposal);
+                }
+
+                if (evaluation.ExamplesIncompatible)
+                {
+                    _ = Interlocked.Increment(ref incompatible);
+                }
+
+                // Nur ein tatsächlich gefälltes Urteil wird gemerkt. Bei einem KI-Ausfall
+                // bleibt das Foto ungemerkt, damit der nächste Lauf es erneut versucht.
+                if (evaluation.WasEvaluated)
+                {
+                    await _memory
+                        .RememberEvaluationAsync(sourceFolder, photo, category.Name, evaluation.Proposal, token)
+                        .ConfigureAwait(false);
+                }
+
+                ReportProcessed();
+            }).ConfigureAwait(false);
+
+        List<SortProposal> proposals =
+            [.. found.OrderBy(entry => entry.Key).Select(entry => entry.Value)];
 
         SortingLog.ProposalsCreated(_logger, proposals.Count, category.Name);
         if (skipped > 0)
         {
             SortingLog.PhotosSkippedByMemory(_logger, skipped);
+        }
+
+        if (outsideRange > 0)
+        {
+            SortingLog.PhotosOutsideDateRange(_logger, outsideRange);
         }
 
         // Einmal je Lauf, nicht je Foto: Sonst stünde dieselbe Meldung tausendfach im
@@ -505,6 +563,17 @@ public sealed class PhotoSortingService : IPhotoSorter
     }
 
     /// <summary>
+    /// Reicht den Fortschritt des Einlesens als Fortschritt des Laufs weiter, gekennzeichnet
+    /// als Erfassungs-Abschnitt. Bewusst kein <see cref="Progress{T}"/>: Das schaltete ein
+    /// zweites Mal auf den Oberflächen-Thread um, was der äußere Empfänger bereits tut.
+    /// </summary>
+    private sealed class GatheringProgress(IProgress<SortProgress> target) : IProgress<PhotoScanProgress>
+    {
+        public void Report(PhotoScanProgress value) =>
+            target.Report(new SortProgress(value.Processed, value.Total, ScanPhase.Gathering));
+    }
+
+    /// <summary>
     /// Ergebnis einer Foto-Bewertung. Unterscheidet ausdrücklich zwischen „von der
     /// KI abgelehnt" (Urteil, wird gemerkt) und „nicht bewertet" (KI-Ausfall, wird
     /// nicht gemerkt).
@@ -560,6 +629,9 @@ internal static partial class SortingLog
 
     [LoggerMessage(EventId = 3004, Level = LogLevel.Information, Message = "{Count} Fotos aus dem Gedächtnis übersprungen (bereits entschieden).")]
     public static partial void PhotosSkippedByMemory(ILogger logger, int count);
+
+    [LoggerMessage(EventId = 3011, Level = LogLevel.Information, Message = "{Count} Fotos lagen außerhalb des gewählten Zeitraums und wurden nicht bewertet.")]
+    public static partial void PhotosOutsideDateRange(ILogger logger, int count);
 
     [LoggerMessage(EventId = 3005, Level = LogLevel.Information, Message = "{Count} Vorschläge abgewählt und gemerkt.")]
     public static partial void ProposalsIgnored(ILogger logger, int count);

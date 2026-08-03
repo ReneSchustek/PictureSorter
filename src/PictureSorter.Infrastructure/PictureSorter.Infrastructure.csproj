@@ -20,6 +20,11 @@
     <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.10" />
     <!-- Options-Pattern für die Update-Konfiguration aus appsettings.json. -->
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.10" />
+
+    <!-- Prüft die Grenzen der Einlese-Einstellungen beim Start. Ein Grad der
+         Gleichzeitigkeit von 0 aus einer verstellten appsettings.json ließe sonst erst
+         mitten im Lauf eine Ausnahme fliegen. -->
+    <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="10.0.10" />
   </ItemGroup>
 
   <ItemGroup>

@@ -368,6 +368,7 @@ public partial class App : Microsoft.UI.Xaml.Application
 
         _ = services.Configure<SortingOptions>(configuration.GetSection(SortingOptions.SectionName));
         _ = services.Configure<DuplicateScanOptions>(configuration.GetSection(DuplicateScanOptions.SectionName));
+        _ = services.Configure<TripDetectionOptions>(configuration.GetSection(TripDetectionOptions.SectionName));
         _ = services.AddPictureSorterOllama(configuration);
         _ = services.AddPictureSorterImaging();
         _ = services.AddPictureSorterInfrastructure(configuration, dataDirectory);

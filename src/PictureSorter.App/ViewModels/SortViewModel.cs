@@ -29,6 +29,8 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
 
     private readonly IPhotoSorter _sorter;
     private readonly ISortUndoService _undo;
+    private readonly IPhotoSource _photoSource;
+    private readonly ITripDetector _tripDetector;
     private readonly ICategoryTrainer _trainer;
     private readonly ICategoryRepository _categoryRepository;
     private readonly IFolderPicker _folderPicker;
@@ -91,6 +93,34 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     public partial bool CopyInsteadOfMove { get; set; }
 
     /// <summary>
+    /// Erster Tag des Zeitraums, auf den die Analyse beschränkt wird; leer für „ohne
+    /// Anfang". Fotos außerhalb kommen der KI gar nicht erst vor — bei einem Ordner mit
+    /// tausend Bildern verkürzt das den Lauf um ein Vielfaches.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ClearDateRangeCommand))]
+    public partial DateTimeOffset? DateFrom { get; set; }
+
+    /// <summary>
+    /// Letzter Tag des Zeitraums (eingeschlossen); leer für „ohne Ende".
+    /// </summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ClearDateRangeCommand))]
+    public partial DateTimeOffset? DateTo { get; set; }
+
+    /// <summary>
+    /// Erkannte Zeiträume, in denen sich die Aufnahmen ballen — im Alltag Urlaube,
+    /// Feiern, Ausflüge. Ein Klick übernimmt einen davon als Zeitraum.
+    /// </summary>
+    public ObservableCollection<TripSuggestionViewModel> TripSuggestions { get; } = [];
+
+    /// <summary>
+    /// Hinweis zur Urlaubssuche (etwa „nichts gefunden"); leer, solange nichts zu sagen ist.
+    /// </summary>
+    [ObservableProperty]
+    public partial string TripHint { get; set; }
+
+    /// <summary>
     /// Zusammenfassung des Laufs, der zurückgenommen werden kann (leer, wenn keiner
     /// vorliegt).
     /// </summary>
@@ -109,7 +139,8 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     /// </summary>
     /// <param name="sorter">Der Sortierdienst.</param>
     /// <param name="undo">Nimmt den letzten Sortierlauf zurück.</param>
-    /// <param name="photoSource">Quelle der Beispielfotos.</param>
+    /// <param name="photoSource">Quelle der Fotos (Beispiele und Urlaubssuche).</param>
+    /// <param name="tripDetector">Erkennt Zeiträume, in denen sich Aufnahmen ballen.</param>
     /// <param name="trainer">Lernt das Kategorie-Profil aus Beispielen.</param>
     /// <param name="categoryRepository">Persistiert die gelernten Kategorien.</param>
     /// <param name="folderPicker">Der Ordnerauswahl-Dialog.</param>
@@ -122,6 +153,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         IPhotoSorter sorter,
         ISortUndoService undo,
         IPhotoSource photoSource,
+        ITripDetector tripDetector,
         ICategoryTrainer trainer,
         ICategoryRepository categoryRepository,
         IFolderPicker folderPicker,
@@ -134,6 +166,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         ArgumentNullException.ThrowIfNull(sorter);
         ArgumentNullException.ThrowIfNull(undo);
         ArgumentNullException.ThrowIfNull(photoSource);
+        ArgumentNullException.ThrowIfNull(tripDetector);
         ArgumentNullException.ThrowIfNull(trainer);
         ArgumentNullException.ThrowIfNull(categoryRepository);
         ArgumentNullException.ThrowIfNull(folderPicker);
@@ -145,6 +178,8 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
 
         _sorter = sorter;
         _undo = undo;
+        _photoSource = photoSource;
+        _tripDetector = tripDetector;
         _trainer = trainer;
         _categoryRepository = categoryRepository;
         _folderPicker = folderPicker;
@@ -190,6 +225,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         CategoryName = string.Empty;
         CategoryDescription = string.Empty;
         UndoSummary = string.Empty;
+        TripHint = string.Empty;
     }
 
     /// <summary>
@@ -273,6 +309,8 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     {
         OnPropertyChanged(nameof(IsInteractive));
         OnPropertyChanged(nameof(CanUndo));
+        OnPropertyChanged(nameof(CanSuggestTrips));
+        SuggestTripsCommand.NotifyCanExecuteChanged();
         UndoCommand.NotifyCanExecuteChanged();
         Wizard.NotifyStateChanged();
         Proposals.NotifyStateChanged();
@@ -302,6 +340,13 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
             LearnCommand.NotifyCanExecuteChanged();
         }
 
+        // Die Vorschläge stammen aus dem vorigen Ordner. Blieben sie stehen, führten sie
+        // im neuen zu einem Zeitraum, in dem dort womöglich kein einziges Foto liegt.
+        TripSuggestions.Clear();
+        TripHint = string.Empty;
+
+        OnPropertyChanged(nameof(CanSuggestTrips));
+        SuggestTripsCommand.NotifyCanExecuteChanged();
         Wizard.NotifyStateChanged();
     }
 
@@ -361,6 +406,10 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         CategoryName = string.Empty;
         CategoryDescription = string.Empty;
         IsEventCategory = false;
+        DateFrom = null;
+        DateTo = null;
+        TripSuggestions.Clear();
+        TripHint = string.Empty;
         PositiveExamples.Clear();
         NegativeExamples.Clear();
         _gathering.ResetOffsets();
@@ -471,19 +520,142 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         }
     }
 
+    /// <summary>
+    /// Der eingestellte Zeitraum. Aus den beiden Datumsfeldern; ein verdrehter Zeitraum
+    /// (Anfang nach Ende) wird verworfen, statt wortlos nichts zu finden.
+    /// </summary>
+    private DateRange SelectedRange
+    {
+        get
+        {
+            DateRange bereich = new(ToDay(DateFrom), ToDay(DateTo));
+            return bereich.IsReversed ? DateRange.Unbounded : bereich;
+        }
+    }
+
+    private static DateOnly? ToDay(DateTimeOffset? wert) =>
+        wert is { } vorhanden ? DateOnly.FromDateTime(vorhanden.LocalDateTime) : null;
+
+    /// <summary>
+    /// Nimmt die Beschränkung auf einen Zeitraum wieder zurück.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(HasDateRange))]
+    private void ClearDateRange()
+    {
+        DateFrom = null;
+        DateTo = null;
+        _status.Report(_localizer.Get("Sort_DateRangeCleared"));
+    }
+
+    /// <summary>
+    /// <see langword="true"/>, wenn mindestens eine Grenze gesetzt ist.
+    /// </summary>
+    public bool HasDateRange => DateFrom is not null || DateTo is not null;
+
+    partial void OnDateFromChanged(DateTimeOffset? value) => OnPropertyChanged(nameof(HasDateRange));
+
+    partial void OnDateToChanged(DateTimeOffset? value) => OnPropertyChanged(nameof(HasDateRange));
+
+    /// <summary>
+    /// Durchsucht den Ordner nach Zeiträumen, in denen sich die Aufnahmen ballen, und
+    /// bietet sie zur Auswahl an.
+    ///
+    /// Dafür müssen die Aufnahmedaten aller Bilder gelesen werden — dieselbe Arbeit wie
+    /// der Ladeteil einer Analyse, nur ohne KI danach. Der Fortschrittsbalken zeigt sie an.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanSuggestTrips))]
+    private async Task SuggestTripsAsync()
+    {
+        using CancellationTokenSource abbruch = new();
+        _status.Begin(_localizer.Get("Sort_SearchingTrips"), abbruch.Cancel);
+        TripSuggestions.Clear();
+        TripHint = string.Empty;
+
+        try
+        {
+            Progress<PhotoScanProgress> fortschritt = new(stand => _status.ReportProgress(
+                _localizer.Format("Common_GatherProgress", stand.Processed, stand.Total),
+                stand.Total == 0 ? 0 : stand.Processed * 100d / stand.Total));
+
+            IReadOnlyList<Photo> photos = await _photoSource
+                .GetPhotosAsync(SourceFolder, IncludeSubfolders, skip: 0, maxCount: null, fortschritt, abbruch.Token)
+                .ConfigureAwait(true);
+
+            foreach (TripSuggestion vorschlag in _tripDetector.Detect(photos))
+            {
+                TripSuggestions.Add(new TripSuggestionViewModel(vorschlag, _localizer));
+            }
+
+            if (TripSuggestions.Count == 0)
+            {
+                // Ohne Erklärung stünde die Nutzerin vor einer leeren Liste und wüsste
+                // nicht, ob die Suche gelaufen ist.
+                TripHint = _localizer.Get("Sort_NoTripsFound");
+                _status.Finish(_localizer.Get("Sort_NoTripsFound"), StatusSeverity.Warning);
+                return;
+            }
+
+            _status.Finish(
+                _localizer.Format("Sort_TripsFound", TripSuggestions.Count),
+                StatusSeverity.Success);
+        }
+        catch (OperationCanceledException)
+        {
+            _status.Finish(_localizer.Get("Sort_TripSearchCanceled"), StatusSeverity.Warning);
+        }
+        catch (DirectoryNotFoundException ex)
+        {
+            SortViewModelLog.TripSearchFailed(_logger, ex);
+            _status.Finish(_localizer.Get("Sort_FolderNotFound"), StatusSeverity.Error);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            SortViewModelLog.TripSearchFailed(_logger, ex);
+            _status.Finish(_localizer.Get("Sort_FolderUnreadable"), StatusSeverity.Error);
+        }
+    }
+
+    /// <summary>
+    /// Urlaube lassen sich suchen, wenn ein Ordner gewählt ist und nichts läuft.
+    /// </summary>
+    public bool CanSuggestTrips => IsInteractive && !string.IsNullOrWhiteSpace(SourceFolder);
+
+    /// <summary>
+    /// Übernimmt einen Vorschlag als Zeitraum.
+    /// </summary>
+    /// <param name="suggestion">Der gewählte Vorschlag.</param>
+    [RelayCommand]
+    private void UseTripSuggestion(TripSuggestionViewModel? suggestion)
+    {
+        if (suggestion is null)
+        {
+            return;
+        }
+
+        DateFrom = ToOffset(suggestion.Range.From);
+        DateTo = ToOffset(suggestion.Range.To);
+        _status.Report(_localizer.Format("Sort_DateRangeTaken", suggestion.Label), StatusSeverity.Success);
+    }
+
+    private static DateTimeOffset? ToOffset(DateOnly? tag) =>
+        tag is { } vorhanden ? new DateTimeOffset(vorhanden.ToDateTime(TimeOnly.MinValue)) : null;
+
     [RelayCommand(CanExecute = nameof(CanAnalyze))]
     private async Task AnalyzeAsync()
     {
         using IDisposable? logScope = _logger.BeginScope("Analyse {CorrelationId}", NewCorrelationId());
         State = SortState.Analyzing;
         _status.Begin(_localizer.Get("Sort_Analyzing"), Cancel);
+        _analyzeProgress = default;
+        _analyzeThrottle.Reset();
         _cancellation = new CancellationTokenSource();
 
         try
         {
             Progress<SortProgress> progress = new(OnAnalyzeProgress);
             IReadOnlyList<SortProposal> proposals = await _sorter
-                .CreateProposalsAsync(SourceFolder, _category!, IncludeSubfolders, progress, _cancellation.Token)
+                .CreateProposalsAsync(
+                    SourceFolder, _category!, IncludeSubfolders, SelectedRange, progress, _cancellation.Token)
                 .ConfigureAwait(true);
 
             Proposals.Replace(proposals);
@@ -669,12 +841,36 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
 
     // ── Hilfsfunktionen ────────────────────────────────────────────────────────
 
+    // Laden und Bewerten laufen gleichzeitig; jeder Abschnitt meldet für sich. Die beiden
+    // Stände werden deshalb hier gehalten und bei jeder Meldung gemeinsam an die
+    // Statusleiste gegeben – sonst setzte die eine Meldung den Balken der anderen zurück.
+    private ScanProgressPair _analyzeProgress;
+
+    // Nicht jede Meldung wird gezeichnet: Bei tausend Bildern kämen zweitausend an, und
+    // seit beide Abschnitte gleichzeitig laufen, kommen sie auch gleichzeitig. Ungefiltert
+    // bringt das den Oberflächen-Faden zum Erliegen.
+    private readonly ProgressThrottle _analyzeThrottle = new(TimeSpan.FromMilliseconds(100));
+
     private void OnAnalyzeProgress(SortProgress progress)
     {
-        double percent = progress.Total > 0 ? progress.Processed * 100.0 / progress.Total : 0;
-        _status.ReportProgress(
-            _localizer.Format("Sort_AnalyzeProgress", progress.Processed, progress.Total),
-            percent);
+        // Der Stand wird immer mitgeschrieben, auch wenn er nicht gezeichnet wird: Sonst
+        // zeigte die nächste durchgelassene Meldung einen veralteten Wert des jeweils
+        // anderen Abschnitts.
+        _analyzeProgress = _analyzeProgress.With(progress.Phase, progress.Processed, progress.Total);
+
+        if (!_analyzeThrottle.ShouldReport(progress.Processed >= progress.Total))
+        {
+            return;
+        }
+
+        // Der Text nennt die Bewertung, sobald sie läuft: Sie bestimmt die Gesamtdauer.
+        // Nur solange noch kein Bild bewertet ist, steht dort das Laden – sonst stünde in
+        // den ersten Sekunden „Bild 0 von 1100 analysiert".
+        string message = _analyzeProgress.HasAnalyzed
+            ? _localizer.Format("Sort_AnalyzeProgress", _analyzeProgress.Analyzed, _analyzeProgress.Total)
+            : _localizer.Format("Common_GatherProgress", _analyzeProgress.Gathered, _analyzeProgress.Total);
+
+        _status.ReportPipelineProgress(message, _analyzeProgress.GatherPercent, _analyzeProgress.AnalyzePercent);
     }
 
     // Kurze Korrelations-ID je Vorgang. Als Logging-Scope geöffnet, verknüpft sie
@@ -758,4 +954,7 @@ internal static partial class SortViewModelLog
 
     [LoggerMessage(EventId = 3104, Level = LogLevel.Error, Message = "Das Zurückholen der Fotos ist fehlgeschlagen.")]
     public static partial void UndoFailed(ILogger logger, Exception exception);
+
+    [LoggerMessage(EventId = 3105, Level = LogLevel.Error, Message = "Die Suche nach Urlaubs-Zeiträumen ist fehlgeschlagen.")]
+    public static partial void TripSearchFailed(ILogger logger, Exception exception);
 }
