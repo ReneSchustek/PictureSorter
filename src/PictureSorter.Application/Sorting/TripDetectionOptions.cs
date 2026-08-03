@@ -14,11 +14,17 @@ public sealed class TripDetectionOptions
     public const string SectionName = "TripDetection";
 
     /// <summary>
-    /// Wie viele Tage ohne ein einziges Foto einen Zeitraum beenden.
+    /// Wie viele Tage ohne ein einziges Foto ein Zeitraum überbrücken darf, bevor er endet.
     ///
-    /// Zwei ist bewusst knapp: Auf einer Reise wird fast täglich fotografiert, und ein
-    /// einzelner Regentag ohne Bilder soll den Urlaub nicht in zwei Vorschläge zerlegen.
-    /// Bei einem größeren Wert wachsen benachbarte Wochenenden zu einem Block zusammen.
+    /// Zwei heißt: Ein einzelner Tag ohne Bilder — Regentag, langer Anfahrtstag —
+    /// überbrückt der Vorschlag, statt die Reise in zwei Teile zu zerlegen. Genau das ist
+    /// im Alltag der häufigere Fall.
+    ///
+    /// Der Preis: Ein Alltagsfoto, das genau zwei Tage vor der Abreise entstanden ist,
+    /// wird mit hineingezogen und lässt den Vorschlag zwei Tage zu früh beginnen. Das ist
+    /// die harmlosere Seite — der Vorschlag ist ein Angebot, und die beiden Datumsfelder
+    /// lassen sich von Hand nachziehen. Ein zerrissener Urlaub dagegen sieht nach einem
+    /// Fehler aus.
     /// </summary>
     [Range(1, 60)]
     public int MaxGapDays { get; set; } = 2;

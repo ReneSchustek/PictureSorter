@@ -151,13 +151,14 @@ public sealed class PhotoSortingService : IPhotoSorter
                 // den teuersten Schritt. Wer nach einem Urlaub sucht, lässt die KI so über
                 // hundert statt über tausend Bilder laufen.
                 //
-                // Ein Foto ohne Aufnahmedatum kann es nicht geben — die Foto-Quelle
-                // greift ersatzweise auf die Änderungszeit der Datei zurück. Sollte doch
-                // eines ohne Datum ankommen, bleibt es drin: Lieber einmal zu viel
-                // bewertet als ein gesuchtes Bild stillschweigend übergangen.
+                // „Von–bis" gilt streng: Drin ist nur, was nachweislich in den Zeitraum
+                // fällt. Ein Foto ohne Aufnahmedatum bleibt also draußen — es lässt sich
+                // nicht zuordnen, und ein Zeitraum, der stillschweigend Unbestimmtes
+                // durchlässt, wäre keine verlässliche Angabe. In der Praxis tritt der Fall
+                // kaum auf: Die Foto-Quelle greift ersatzweise auf die Änderungszeit der
+                // Datei zurück, liefert also praktisch immer ein Datum.
                 if (!dateRange.IsUnbounded
-                    && photo.CapturedAt is { } aufgenommen
-                    && !dateRange.Contains(aufgenommen))
+                    && !(photo.CapturedAt is { } aufgenommen && dateRange.Contains(aufgenommen)))
                 {
                     _ = Interlocked.Increment(ref outsideRange);
                     ReportProcessed();
