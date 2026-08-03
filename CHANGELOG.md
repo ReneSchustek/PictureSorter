@@ -6,6 +6,15 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
+## [1.5.2] - 2026-08-03
+
+### Behoben
+
+- **Ein Zeitraum gilt jetzt streng von Tag bis Tag.** Fotos ohne Aufnahmedatum wurden
+  bisher auch dann bewertet, wenn sie außerhalb lagen — die Angabe war damit eine
+  ungefähre statt einer Grenze. Drin ist nur noch, was nachweislich in den Zeitraum
+  fällt. Ohne Zeitraum ändert sich nichts: Dort werden solche Fotos wie bisher geprüft.
+
 ## [1.5.1] - 2026-08-03
 
 ### Behoben

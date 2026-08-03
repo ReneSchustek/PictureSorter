@@ -555,13 +555,15 @@ public sealed class PhotoSortingServiceTests
     }
 
     [Fact]
-    public async Task CreateProposalsAsync_WithDateRange_KeepsPhotosWithoutACaptureDate()
+    public async Task CreateProposalsAsync_WithDateRange_LeavesOutPhotosWithoutACaptureDate()
     {
-        // Lieber einmal zu viel bewertet als ein gesuchtes Bild stillschweigend übergangen:
-        // Ohne Datum lässt sich nicht entscheiden, ob es dazugehört.
+        // „Von–bis" gilt streng: Drin ist nur, was nachweislich in den Zeitraum fällt.
+        // Ein Foto ohne Aufnahmedatum lässt sich nicht zuordnen und bleibt draußen —
+        // sonst wäre die Angabe keine verlässliche Grenze, sondern eine ungefähre.
         IReadOnlyList<Photo> photos =
         [
             new Photo { FullPath = @"C:\fotos\ohne.jpg", FileName = "ohne.jpg", CapturedAt = null },
+            Foto("drinnen.jpg", new DateOnly(2026, 7, 14)),
             Foto("draussen.jpg", new DateOnly(2026, 1, 1)),
         ];
         CountingEmbeddingProvider provider = new([1.0f, 0.0f, 0.0f]);
@@ -571,13 +573,38 @@ public sealed class PhotoSortingServiceTests
             embeddingProvider: provider,
             photos: photos);
 
-        _ = await service.CreateProposalsAsync(
+        IReadOnlyList<SortProposal> proposals = await service.CreateProposalsAsync(
             SourceFolder,
             CreateCategory(),
             includeSubfolders: false,
             new DateRange(new DateOnly(2026, 7, 12), new DateOnly(2026, 7, 26)),
             progress: null,
             TestContext.Current.CancellationToken);
+
+        Assert.Equal(1, provider.CallCount);
+        SortProposal vorschlag = Assert.Single(proposals);
+        Assert.Equal("drinnen.jpg", vorschlag.Photo.FileName);
+    }
+
+    [Fact]
+    public async Task CreateProposalsAsync_WithoutDateRange_StillEvaluatesPhotosWithoutACaptureDate()
+    {
+        // Ohne Zeitraum gibt es keine Grenze, an der ein fehlendes Datum scheitern könnte —
+        // solche Fotos werden ganz normal bewertet.
+        IReadOnlyList<Photo> photos =
+        [
+            new Photo { FullPath = @"C:\fotos\ohne.jpg", FileName = "ohne.jpg", CapturedAt = null },
+        ];
+        CountingEmbeddingProvider provider = new([1.0f, 0.0f, 0.0f]);
+        PhotoSortingService service = CreateService(
+            [1.0f, 0.0f, 0.0f],
+            new FakeImageClassifier(new VisionVerdict { Matches = true, Confidence = 0.9 }),
+            embeddingProvider: provider,
+            photos: photos);
+
+        _ = await service.CreateProposalsAsync(
+            SourceFolder, CreateCategory(), includeSubfolders: false, DateRange.Unbounded,
+            progress: null, TestContext.Current.CancellationToken);
 
         Assert.Equal(1, provider.CallCount);
     }

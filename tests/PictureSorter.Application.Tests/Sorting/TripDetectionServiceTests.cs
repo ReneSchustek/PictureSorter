@@ -32,7 +32,10 @@ public sealed class TripDetectionServiceTests
     [Fact]
     public void Detect_KeepsATripTogetherAcrossASingleQuietDay()
     {
-        // Ein Regentag ohne Bilder darf den Urlaub nicht in zwei Vorschläge zerlegen.
+        // Der Grund für die Voreinstellung: Ein Regentag oder ein langer Anfahrtstag ohne
+        // Bilder darf den Urlaub nicht in zwei Vorschläge zerlegen — das sähe nach einem
+        // Fehler aus. Ein Vorschlag, der ein paar Tage zu weit greift, ist die harmlosere
+        // Seite; die Datumsfelder lassen sich nachziehen.
         List<Photo> fotos =
         [
             .. Tage(new DateOnly(2026, 7, 12), 4, 3),
@@ -44,6 +47,22 @@ public sealed class TripDetectionServiceTests
 
         Assert.Equal(new DateOnly(2026, 7, 12), vorschlag.Range.From);
         Assert.Equal(new DateOnly(2026, 7, 20), vorschlag.Range.To);
+    }
+
+    [Fact]
+    public void Detect_WithATighterTolerance_SplitsAtTheQuietDay()
+    {
+        // Belegt, dass die Einstellung wirkt: Mit nur einem Tag Toleranz zerfällt dieselbe
+        // Reise in zwei Vorschläge.
+        List<Photo> fotos =
+        [
+            .. Tage(new DateOnly(2026, 7, 12), 4, 3),
+            .. Tage(new DateOnly(2026, 7, 17), 4, 3),
+        ];
+        TripDetectionService dienst = new(
+            Options.Create(new TripDetectionOptions { MaxGapDays = 1, MinPhotos = 8 }));
+
+        Assert.Equal(2, dienst.Detect(fotos).Count);
     }
 
     [Fact]
@@ -104,8 +123,10 @@ public sealed class TripDetectionServiceTests
         Assert.Equal(10, vorschlag.DayCount);
     }
 
+    // Bewusst mit den Voreinstellungen der Anwendung: Sonst prüften die Tests ein
+    // Verhalten, das ausgeliefert gar nicht eintritt.
     private static TripDetectionService CreateService() =>
-        new(Options.Create(new TripDetectionOptions { MaxGapDays = 2, MinPhotos = 8 }));
+        new(Options.Create(new TripDetectionOptions()));
 
     // Erzeugt Fotos an aufeinanderfolgenden Tagen, je Tag die angegebene Anzahl.
     private static IEnumerable<Photo> Tage(DateOnly beginn, int tage, int proTag) =>
