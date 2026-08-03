@@ -229,6 +229,122 @@ public sealed class SortWizardViewModelTests
         Assert.False(wizard.CanGoBack);
     }
 
+    // ── Weg ohne KI: die beiden Beispiel-Schritte entfallen ────────────────────
+
+    [Fact]
+    public async Task SkipsExampleSteps_GoingForward_JumpsFromCategoryToDateRange()
+    {
+        SortWizardViewModel wizard = Create(run: _ => Task.FromResult(true));
+        wizard.SkipsExampleSteps = true;
+
+        // Schritt 1 → 2, dann muss der nächste Schritt der Zeitraum sein (Index 4).
+        await wizard.PrimaryActionCommand.ExecuteAsync(parameter: null);
+        await wizard.PrimaryActionCommand.ExecuteAsync(parameter: null);
+
+        Assert.Equal(4, wizard.CurrentStep);
+        Assert.True(wizard.IsStep5);
+        Assert.Equal(4, wizard.MaxReachedStep);
+    }
+
+    [Fact]
+    public async Task SkipsExampleSteps_GoingBack_JumpsFromDateRangeToCategory()
+    {
+        SortWizardViewModel wizard = Create(run: _ => Task.FromResult(true));
+        wizard.SkipsExampleSteps = true;
+        await wizard.PrimaryActionCommand.ExecuteAsync(parameter: null);
+        await wizard.PrimaryActionCommand.ExecuteAsync(parameter: null);
+
+        wizard.GoBackCommand.Execute(parameter: null);
+
+        Assert.Equal(1, wizard.CurrentStep);
+        Assert.True(wizard.IsStep2);
+    }
+
+    [Fact]
+    public void SkipsExampleSteps_HidesBothExampleCards()
+    {
+        SortWizardViewModel wizard = Create();
+        wizard.IsGuided = false;
+
+        // In der Standard-Ansicht sind sonst alle Karten sichtbar; die beiden
+        // Beispiel-Karten müssen trotzdem verschwinden.
+        Assert.True(wizard.ShowStep3);
+        Assert.True(wizard.ShowStep4);
+
+        wizard.SkipsExampleSteps = true;
+
+        Assert.False(wizard.ShowStep3);
+        Assert.False(wizard.ShowStep4);
+        Assert.False(wizard.ShowExampleSteps);
+    }
+
+    [Fact]
+    public void SkipsExampleSteps_GoToStep_RefusesAHiddenStep()
+    {
+        SortWizardViewModel wizard = Create();
+        wizard.SkipsExampleSteps = true;
+        wizard.MaxReachedStep = 5;
+
+        wizard.GoToStep(2);
+
+        Assert.Equal(0, wizard.CurrentStep);
+        Assert.True(wizard.IsHidden(2));
+        Assert.True(wizard.IsHidden(3));
+        Assert.False(wizard.IsHidden(4));
+    }
+
+    [Fact]
+    public void SkipsExampleSteps_WhileStandingOnAHiddenStep_MovesToTheNextVisibleOne()
+    {
+        SortWizardViewModel wizard = Create();
+        wizard.MaxReachedStep = 3;
+        wizard.GoToStep(3);
+        Assert.Equal(3, wizard.CurrentStep);
+
+        // Der Weg wird mitten im Ablauf gewechselt: Die Nutzerin darf nicht auf einer
+        // Karte stehen bleiben, die es jetzt nicht mehr gibt.
+        wizard.SkipsExampleSteps = true;
+
+        Assert.Equal(4, wizard.CurrentStep);
+    }
+
+    [Fact]
+    public void SkipsExampleSteps_ChangesTitleAndActionLabel()
+    {
+        SortWizardViewModel wizard = Create();
+        wizard.MaxReachedStep = 4;
+        wizard.GoToStep(4);
+        string withAi = wizard.PrimaryActionLabel;
+        string titleWithAi = wizard.StepTitle;
+
+        wizard.SkipsExampleSteps = true;
+
+        Assert.NotEqual(withAi, wizard.PrimaryActionLabel);
+        Assert.NotEqual(titleWithAi, wizard.StepTitle);
+        Assert.NotEmpty(wizard.PrimaryActionLabel);
+    }
+
+    [Fact]
+    public void StandardActions_ShowExactlyOneButtonPerMode()
+    {
+        SortWizardViewModel wizard = Create();
+        wizard.IsGuided = false;
+
+        Assert.True(wizard.ShowStandardAnalyzeAction);
+        Assert.False(wizard.ShowStandardDateAction);
+
+        wizard.SkipsExampleSteps = true;
+
+        Assert.False(wizard.ShowStandardAnalyzeAction);
+        Assert.True(wizard.ShowStandardDateAction);
+
+        // Im geführten Modus trägt keine Karte einen eigenen Knopf.
+        wizard.IsGuided = true;
+
+        Assert.False(wizard.ShowStandardAnalyzeAction);
+        Assert.False(wizard.ShowStandardDateAction);
+    }
+
     private static SortWizardViewModel Create(
         Func<bool>? isInteractive = null,
         Func<int, bool>? canRun = null,
