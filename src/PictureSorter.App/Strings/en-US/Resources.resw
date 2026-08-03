@@ -346,6 +346,24 @@
   <data name="SortPage_Step4Description.Text" xml:space="preserve">
     <value>Most useful are images that come close to the subject but are not meant. This step is optional.</value>
   </data>
+  <data name="SortPage_DateRangeHeading.Text" xml:space="preserve">
+    <value>Date range (optional)</value>
+  </data>
+  <data name="SortPage_DateRangeDescription.Text" xml:space="preserve">
+    <value>Limits the analysis to photos from these days — handy for a holiday. Images outside are never shown to the AI, which shortens the run considerably. Without a range, all photos are checked.</value>
+  </data>
+  <data name="SortPage_DateFromPicker.Header" xml:space="preserve">
+    <value>From</value>
+  </data>
+  <data name="SortPage_DateToPicker.Header" xml:space="preserve">
+    <value>To</value>
+  </data>
+  <data name="SortPage_ClearDateRangeButton.Content" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+  <data name="SortPage_SuggestTripsButton.Content" xml:space="preserve">
+    <value>Suggest holidays</value>
+  </data>
   <data name="SortPage_AnalyzeButton.Content" xml:space="preserve">
     <value>Analyze</value>
   </data>
@@ -378,6 +396,9 @@
   </data>
   <data name="Common_CancelRequested" xml:space="preserve">
     <value>Cancellation requested…</value>
+  </data>
+  <data name="Common_GatherProgress" xml:space="preserve">
+    <value>Image {0} of {1} read…</value>
   </data>
   <data name="Common_Version" xml:space="preserve">
     <value>Version {0}</value>
@@ -415,11 +436,41 @@
   <data name="Sort_AiUnavailable" xml:space="preserve">
     <value>The AI (Ollama) cannot be reached. The examples could not be learned.</value>
   </data>
+  <data name="Sort_DateRangeHeading" xml:space="preserve">
+    <value>Date range (optional)</value>
+  </data>
+  <data name="Sort_DateRangeDescription" xml:space="preserve">
+    <value>Limits the analysis to photos from these days — handy for a holiday. Images outside are never shown to the AI, which shortens the run considerably. Without a range, all photos are checked.</value>
+  </data>
+  <data name="Sort_DateRangeCleared" xml:space="preserve">
+    <value>Date range removed; all photos will be checked again.</value>
+  </data>
+  <data name="Sort_DateRangeTaken" xml:space="preserve">
+    <value>Date range applied: {0}</value>
+  </data>
+  <data name="Sort_SearchingTrips" xml:space="preserve">
+    <value>Searching for holidays…</value>
+  </data>
+  <data name="Sort_TripsFound" xml:space="preserve">
+    <value>{0} date ranges found. Click one to apply it.</value>
+  </data>
+  <data name="Sort_NoTripsFound" xml:space="preserve">
+    <value>No connected date ranges found. Either the photos are spread evenly over time, or they have no capture date.</value>
+  </data>
+  <data name="Sort_TripSearchCanceled" xml:space="preserve">
+    <value>The search for holidays was cancelled.</value>
+  </data>
+  <data name="Sort_TripRange" xml:space="preserve">
+    <value>{0} to {1} · {2} days · {3} photos</value>
+  </data>
+  <data name="Sort_TripSingleDay" xml:space="preserve">
+    <value>{0} · one day · {1} photos</value>
+  </data>
   <data name="Sort_Analyzing" xml:space="preserve">
     <value>Analysing photos…</value>
   </data>
   <data name="Sort_AnalyzeProgress" xml:space="preserve">
-    <value>{0} of {1} photos analysed…</value>
+    <value>Image {0} of {1} analysed…</value>
   </data>
   <data name="Sort_NoMatchingPhotos" xml:space="preserve">
     <value>No matching photos found.</value>
@@ -503,7 +554,7 @@
     <value>Searching for duplicates…</value>
   </data>
   <data name="Duplicates_ScanProgress" xml:space="preserve">
-    <value>Searching for duplicates… {0}/{1}</value>
+    <value>Image {0} of {1} checked for duplicates…</value>
   </data>
   <data name="Duplicates_GroupsFound" xml:space="preserve">
     <value>{0} duplicate group(s) found. {1} marked for deletion.</value>
@@ -660,6 +711,12 @@
   </data>
   <data name="MainWindow_AppVersionText.AutomationProperties.Name" xml:space="preserve">
     <value>Application version</value>
+  </data>
+  <data name="MainWindow_GatherLabel.Text" xml:space="preserve">
+    <value>Loading</value>
+  </data>
+  <data name="MainWindow_AnalyzeLabel.Text" xml:space="preserve">
+    <value>Analysis</value>
   </data>
   <data name="SortPage_DropCaption" xml:space="preserve">
     <value>Use as matching images</value>

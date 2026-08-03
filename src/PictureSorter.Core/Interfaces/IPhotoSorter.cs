@@ -19,6 +19,12 @@ public interface IPhotoSorter
     /// <param name="includeSubfolders">
     /// <see langword="true"/>, um Unterordner einzubeziehen.
     /// </param>
+    /// <param name="dateRange">
+    /// Beschränkt die Bewertung auf Fotos, deren Aufnahmedatum in diesen Zeitraum fällt —
+    /// etwa auf die zwei Wochen eines Urlaubs. Die übrigen Fotos werden gar nicht erst der
+    /// KI vorgelegt, was den Lauf um ein Vielfaches verkürzt.
+    /// <see cref="DateRange.Unbounded"/> für „alle Fotos".
+    /// </param>
     /// <param name="progress">
     /// Optionaler Empfänger des Analyse-Fortschritts (verarbeitete/gesamte Fotos).
     /// </param>
@@ -28,6 +34,7 @@ public interface IPhotoSorter
         string sourceFolder,
         Category category,
         bool includeSubfolders,
+        DateRange dateRange,
         IProgress<SortProgress>? progress,
         CancellationToken cancellationToken);
 

@@ -510,6 +510,7 @@ public sealed class SortViewModelFlowTests : IDisposable
             string sourceFolder,
             Category category,
             bool includeSubfolders,
+            DateRange dateRange,
             IProgress<SortProgress>? progress,
             CancellationToken cancellationToken)
         {
@@ -566,6 +567,7 @@ public sealed class SortViewModelFlowTests : IDisposable
             sorter ?? new FakePhotoSorter([]),
             undo ?? new FakeSortUndoService(),
             photoSource ?? new FakePhotoSource([examplePhoto]),
+            new TripDetectionService(Options.Create(new TripDetectionOptions())),
             trainer ?? new FakeCategoryTrainer(CreateCategory()),
             new FakeCategoryRepository(),
             folderPicker ?? new FakeFolderPicker(SourceFolder),

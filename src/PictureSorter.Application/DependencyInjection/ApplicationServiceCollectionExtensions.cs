@@ -31,6 +31,9 @@ public static class ApplicationServiceCollectionExtensions
         _ = services.AddTransient<IDuplicateScanner, DuplicateScanService>();
         _ = services.AddTransient<ISortUndoService, SortUndoService>();
 
+        // Zustandslose Rechnerei auf den Aufnahmedaten, ohne KI-Abhängigkeit: Singleton.
+        _ = services.AddSingleton<ITripDetector, TripDetectionService>();
+
         return services;
     }
 }

@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using PictureSorter.App.Services;
 using PictureSorter.Application.Services;
 using PictureSorter.Core.Entities;
@@ -113,6 +114,7 @@ internal sealed class FakePhotoSorter(IReadOnlyList<SortProposal> proposals) : I
         string sourceFolder,
         Category category,
         bool includeSubfolders,
+        DateRange dateRange,
         IProgress<SortProgress>? progress,
         CancellationToken cancellationToken)
     {
@@ -209,11 +211,39 @@ internal sealed class FakePhotoSource(IReadOnlyList<Photo> photos) : IPhotoSourc
         bool includeSubfolders,
         int skip,
         int? maxCount,
+        IProgress<PhotoScanProgress>? progress,
         CancellationToken cancellationToken)
     {
         LastMaxCount = maxCount;
         LastSkip = skip;
-        return Task.FromResult<IReadOnlyList<Photo>>([.. photos.Skip(skip).Take(maxCount ?? int.MaxValue)]);
+
+        // Bewusst ohne Fortschrittsmeldung: Das ViewModel reicht hier ein
+        // <see cref="Progress{T}"/> herein, das ohne Synchronisationskontext über den
+        // Thread-Pool meldet – die Meldung träfe also womöglich erst nach der
+        // Abschlussmeldung ein und überschriebe sie. Der Zählstand des Einlesens wird
+        // deshalb dort geprüft, wo er deterministisch ist: an der Dateisystem-Quelle.
+        return Task.FromResult<IReadOnlyList<Photo>>(
+            [.. photos.Skip(skip).Take(maxCount ?? int.MaxValue)]);
+    }
+
+    public async IAsyncEnumerable<ScannedPhoto> StreamPhotosAsync(
+        string folderPath,
+        bool includeSubfolders,
+        int skip,
+        int? maxCount,
+        IProgress<PhotoScanProgress>? progress,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        LastMaxCount = maxCount;
+        LastSkip = skip;
+
+        IReadOnlyList<Photo> found = [.. photos.Skip(skip).Take(maxCount ?? int.MaxValue)];
+        for (int index = 0; index < found.Count; index++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            await Task.Yield();
+            yield return new ScannedPhoto(found[index], index, found.Count);
+        }
     }
 }
 

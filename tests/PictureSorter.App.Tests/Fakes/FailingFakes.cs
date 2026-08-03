@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using PictureSorter.Application.Services;
 using PictureSorter.Core.Entities;
 using PictureSorter.Core.Enums;
@@ -17,8 +18,27 @@ internal sealed class FailingPhotoSource(Exception failure) : IPhotoSource
         bool includeSubfolders,
         int skip,
         int? maxCount,
+        IProgress<PhotoScanProgress>? progress,
         CancellationToken cancellationToken) =>
         Task.FromException<IReadOnlyList<Photo>>(failure);
+
+    public async IAsyncEnumerable<ScannedPhoto> StreamPhotosAsync(
+        string folderPath,
+        bool includeSubfolders,
+        int skip,
+        int? maxCount,
+        IProgress<PhotoScanProgress>? progress,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        await Task.Yield();
+        throw failure;
+
+        // Unerreichbar, aber nötig: Ohne yield ist die Methode kein Iterator und der
+        // Fehler flöge bereits beim Erzeugen der Aufzählung statt beim Auslesen.
+#pragma warning disable CS0162 // Unerreichbarer Code entdeckt
+        yield break;
+#pragma warning restore CS0162
+    }
 }
 
 /// <summary>Scheitert beim Erstellen der Vorschläge oder beim Anwenden.</summary>
@@ -28,6 +48,7 @@ internal sealed class FailingPhotoSorter(Exception failure, bool failOnApply = f
         string sourceFolder,
         Category category,
         bool includeSubfolders,
+        DateRange dateRange,
         IProgress<SortProgress>? progress,
         CancellationToken cancellationToken) =>
         failOnApply
@@ -55,6 +76,7 @@ internal sealed class FailingApplySorter(IReadOnlyList<SortProposal> proposals, 
         string sourceFolder,
         Category category,
         bool includeSubfolders,
+        DateRange dateRange,
         IProgress<SortProgress>? progress,
         CancellationToken cancellationToken) =>
         Task.FromResult(proposals);

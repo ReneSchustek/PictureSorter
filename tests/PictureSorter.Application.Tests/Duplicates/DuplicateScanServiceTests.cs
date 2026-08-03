@@ -112,7 +112,52 @@ public sealed class DuplicateScanServiceTests
             progress: reported,
             CancellationToken.None);
 
-        Assert.Equal(2, reported.Reports.Count);
+        // Zwei Meldungen mit Zählstand im Abschnitt „Auswerten" – eine je Datei, die
+        // gesperrte eingeschlossen. Der Balken erreicht also das Ende.
+        Assert.Equal(
+            [new DuplicateScanProgress(1, 2, ScanPhase.Analyzing), new DuplicateScanProgress(2, 2, ScanPhase.Analyzing)],
+            reported.Reports.Where(report => report.Phase == ScanPhase.Analyzing && report.Processed > 0));
+    }
+
+    [Fact]
+    public async Task ScanAsync_ReportsGatheringBeforeAnalysing()
+    {
+        // Das Einlesen der Dateien geht der Auswertung voraus und dauert bei einem großen
+        // Ordner am längsten. Bis hierher lief es stumm: Der Balken zeigte erst etwas an,
+        // als dieser Abschnitt längst vorbei war.
+        Dictionary<string, ImageFingerprint> fingerprints = new(StringComparer.Ordinal)
+        {
+            [@"C:\f\a.jpg"] = Fingerprint(@"C:\f\a.jpg", "A", null),
+            [@"C:\f\b.jpg"] = Fingerprint(@"C:\f\b.jpg", "B", null),
+        };
+        DuplicateScanService service = CreateService(fingerprints);
+        RecordingProgress<DuplicateScanProgress> reported = new();
+
+        _ = await service.ScanAsync(@"C:\f", includeSubfolders: false, reported, CancellationToken.None);
+
+        Assert.Contains(new DuplicateScanProgress(2, 2, ScanPhase.Gathering), reported.Reports);
+        Assert.True(
+            reported.Reports.FindIndex(report => report.Phase == ScanPhase.Gathering)
+            < reported.Reports.FindIndex(report => report.Phase == ScanPhase.Analyzing),
+            "Das Einlesen muss vor der Auswertung gemeldet werden.");
+    }
+
+    [Fact]
+    public async Task ScanAsync_ReportsTheTotalBeforeTheFirstFileIsRead()
+    {
+        // Die Gesamtzahl muss von Anfang an feststehen – „Bild 1 von 1100" ist die
+        // Auskunft, auf die es wartet, nicht ein Balken ohne Bezugsgröße.
+        Dictionary<string, ImageFingerprint> fingerprints = new(StringComparer.Ordinal)
+        {
+            [@"C:\f\a.jpg"] = Fingerprint(@"C:\f\a.jpg", "A", null),
+            [@"C:\f\b.jpg"] = Fingerprint(@"C:\f\b.jpg", "B", null),
+        };
+        DuplicateScanService service = CreateService(fingerprints);
+        RecordingProgress<DuplicateScanProgress> reported = new();
+
+        _ = await service.ScanAsync(@"C:\f", includeSubfolders: false, reported, CancellationToken.None);
+
+        Assert.Equal(new DuplicateScanProgress(0, 2, ScanPhase.Gathering), reported.Reports[0]);
     }
 
     private static ImageFingerprint Fingerprint(string path, string contentHash, PerceptualHash? perceptual) =>

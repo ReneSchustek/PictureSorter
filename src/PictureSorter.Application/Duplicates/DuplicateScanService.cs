@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PictureSorter.Core.Diagnostics;
@@ -53,12 +54,16 @@ public sealed class DuplicateScanService : IDuplicateScanner
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(folderPath);
 
-        IReadOnlyList<Photo> photos = await _photoSource
-            .GetPhotosAsync(folderPath, includeSubfolders, skip: 0, maxCount: null, cancellationToken)
-            .ConfigureAwait(false);
+        // Auch hier eine Kette: Jedes eingelesene Bild bekommt seinen Fingerabdruck,
+        // sobald es da ist, statt dass erst der ganze Ordner geladen wird.
+        IProgress<PhotoScanProgress>? gathering =
+            progress is null ? null : new GatheringProgress(progress);
 
-        IReadOnlyList<FingerprintedPhoto> fingerprinted =
-            await FingerprintAsync(photos, progress, cancellationToken).ConfigureAwait(false);
+        IReadOnlyList<FingerprintedPhoto> fingerprinted = await FingerprintAsync(
+            _photoSource.StreamPhotosAsync(
+                folderPath, includeSubfolders, skip: 0, maxCount: null, gathering, cancellationToken),
+            progress,
+            cancellationToken).ConfigureAwait(false);
 
         List<DuplicateGroup> groups = [];
         HashSet<string> consumed = [];
@@ -75,34 +80,50 @@ public sealed class DuplicateScanService : IDuplicateScanner
     }
 
     private async Task<IReadOnlyList<FingerprintedPhoto>> FingerprintAsync(
-        IReadOnlyList<Photo> photos,
+        IAsyncEnumerable<ScannedPhoto> photos,
         IProgress<DuplicateScanProgress>? progress,
         CancellationToken cancellationToken)
     {
-        List<FingerprintedPhoto> result = new(photos.Count);
-        for (int index = 0; index < photos.Count; index++)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            Photo photo = photos[index];
-            try
-            {
-                ImageFingerprint fingerprint = await _hasher.ComputeAsync(photo.FullPath, cancellationToken).ConfigureAwait(false);
-                result.Add(new FingerprintedPhoto(photo, fingerprint));
-            }
-            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-            {
-                // Eine einzelne unlesbare Datei darf den ganzen Lauf nicht beenden. Der
-                // Fall tritt im Alltag auf: Ein Virenscanner zieht die Datei während des
-                // Laufs weg, ein Cloud-Ordner hat sie noch nicht heruntergeladen, oder die
-                // Rechte fehlen. Ohne diese Behandlung stand die Nutzerin nach Minuten
-                // Wartezeit vor einer Fehlermeldung statt vor einem Ergebnis.
-                DuplicateLog.Skipped(_logger, LogPaths.Redact(photo.FullPath), ex);
-            }
+        // An seinen Platz statt ans Ende einer Liste: Die Reihenfolge des Ordners
+        // bestimmt, welches Bild innerhalb einer Gruppe zuerst steht – sie darf nicht
+        // davon abhängen, welcher Fingerabdruck zufällig zuerst fertig wird.
+        ConcurrentDictionary<int, FingerprintedPhoto> buffer = new();
+        int processed = 0;
+        Lock progressGate = new();
 
-            progress?.Report(new DuplicateScanProgress(index + 1, photos.Count));
-        }
+        await Parallel.ForEachAsync(
+            photos,
+            new ParallelOptions
+            {
+                MaxDegreeOfParallelism = _options.MaxParallelFingerprints,
+                CancellationToken = cancellationToken,
+            },
+            async (scanned, token) =>
+            {
+                Photo photo = scanned.Photo;
+                try
+                {
+                    ImageFingerprint fingerprint = await _hasher.ComputeAsync(photo.FullPath, token).ConfigureAwait(false);
+                    _ = buffer.TryAdd(scanned.Index, new FingerprintedPhoto(photo, fingerprint));
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    // Eine einzelne unlesbare Datei darf den ganzen Lauf nicht beenden. Der
+                    // Fall tritt im Alltag auf: Ein Virenscanner zieht die Datei während des
+                    // Laufs weg, ein Cloud-Ordner hat sie noch nicht heruntergeladen, oder die
+                    // Rechte fehlen. Ohne diese Behandlung stand die Nutzerin nach Minuten
+                    // Wartezeit vor einer Fehlermeldung statt vor einem Ergebnis.
+                    DuplicateLog.Skipped(_logger, LogPaths.Redact(photo.FullPath), ex);
+                }
 
-        return result;
+                lock (progressGate)
+                {
+                    processed++;
+                    progress?.Report(new DuplicateScanProgress(processed, scanned.Total));
+                }
+            }).ConfigureAwait(false);
+
+        return [.. buffer.OrderBy(entry => entry.Key).Select(entry => entry.Value)];
     }
 
     private static void AddExactGroups(
@@ -205,6 +226,16 @@ public sealed class DuplicateScanService : IDuplicateScanner
             .Select(item => item.Photo)];
 
     private sealed record FingerprintedPhoto(Photo Photo, ImageFingerprint Fingerprint);
+
+    /// <summary>
+    /// Reicht den Fortschritt des Einlesens als Fortschritt der Suche weiter, gekennzeichnet
+    /// als Erfassungs-Abschnitt.
+    /// </summary>
+    private sealed class GatheringProgress(IProgress<DuplicateScanProgress> target) : IProgress<PhotoScanProgress>
+    {
+        public void Report(PhotoScanProgress value) =>
+            target.Report(new DuplicateScanProgress(value.Processed, value.Total, ScanPhase.Gathering));
+    }
 }
 
 /// <summary>

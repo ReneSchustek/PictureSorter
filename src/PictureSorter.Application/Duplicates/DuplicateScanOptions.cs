@@ -25,4 +25,12 @@ public sealed class DuplicateScanOptions
     /// </summary>
     [Range(0, 64)]
     public int MaxHammingDistance { get; set; } = 8;
+
+    /// <summary>
+    /// Wie viele Bilder gleichzeitig ihren Fingerabdruck bekommen. Dabei wird jedes Bild
+    /// geladen, verkleinert und durchgerechnet — das wartet teils auf die Platte, teils
+    /// auf den Prozessor, und beides lässt sich übereinanderlegen.
+    /// </summary>
+    [Range(1, 32)]
+    public int MaxParallelFingerprints { get; set; } = 4;
 }

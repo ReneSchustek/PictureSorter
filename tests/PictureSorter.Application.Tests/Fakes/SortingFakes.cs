@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using PictureSorter.Core.Entities;
 using PictureSorter.Core.Enums;
 using PictureSorter.Core.Exceptions;
@@ -14,8 +15,44 @@ internal sealed class FakePhotoSource(IReadOnlyList<Photo> photos) : IPhotoSourc
         bool includeSubfolders,
         int skip,
         int? maxCount,
-        CancellationToken cancellationToken) =>
-        Task.FromResult<IReadOnlyList<Photo>>([.. photos.Skip(skip).Take(maxCount ?? int.MaxValue)]);
+        IProgress<PhotoScanProgress>? progress,
+        CancellationToken cancellationToken)
+    {
+        IReadOnlyList<Photo> found = [.. photos.Skip(skip).Take(maxCount ?? int.MaxValue)];
+
+        // Wie die echte Quelle: zuerst die Gesamtzahl, dann je eingelesener Datei.
+        progress?.Report(new PhotoScanProgress(0, found.Count));
+        for (int index = 0; index < found.Count; index++)
+        {
+            progress?.Report(new PhotoScanProgress(index + 1, found.Count));
+        }
+
+        return Task.FromResult(found);
+    }
+
+    public async IAsyncEnumerable<ScannedPhoto> StreamPhotosAsync(
+        string folderPath,
+        bool includeSubfolders,
+        int skip,
+        int? maxCount,
+        IProgress<PhotoScanProgress>? progress,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        IReadOnlyList<Photo> found = [.. photos.Skip(skip).Take(maxCount ?? int.MaxValue)];
+        progress?.Report(new PhotoScanProgress(0, found.Count));
+
+        for (int index = 0; index < found.Count; index++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            // Ein Taktwechsel je Bild: Ohne ihn liefe die ganze Kette synchron durch, und
+            // der Test prüfte ein Verhalten, das es im Betrieb nicht gibt.
+            await Task.Yield();
+
+            progress?.Report(new PhotoScanProgress(index + 1, found.Count));
+            yield return new ScannedPhoto(found[index], index, found.Count);
+        }
+    }
 }
 
 /// <summary>Erzeugt Embeddings über eine Testfunktion.</summary>
@@ -29,11 +66,16 @@ internal sealed class FakeEmbeddingProvider(Func<Photo, float[]> vectorFactory, 
 /// <summary>Liefert einen festen Vektor und zählt, wie oft er angefordert wurde.</summary>
 internal sealed class CountingEmbeddingProvider(float[] vector, string model = "fake") : IEmbeddingProvider
 {
-    public int CallCount { get; private set; }
+    private int _callCount;
+
+    // Interlocked, weil der Sortierdienst mehrere Fotos gleichzeitig bewertet: Ein
+    // gewöhnliches ++ verlöre Aufrufe, und der Test meldete zu wenige KI-Anfragen —
+    // ausgerechnet die Zahl, um die es hier geht.
+    public int CallCount => Volatile.Read(ref _callCount);
 
     public Task<ImageEmbedding> CreateEmbeddingAsync(Photo photo, CancellationToken cancellationToken)
     {
-        CallCount++;
+        _ = Interlocked.Increment(ref _callCount);
         return Task.FromResult(new ImageEmbedding(vector, model));
     }
 }
@@ -239,34 +281,60 @@ internal sealed class FakeSortJournal : ISortJournal
     }
 }
 
-/// <summary>Hält das Sortier-Gedächtnis im Speicher; legt die Einträge offen.</summary>
+/// <summary>
+/// Hält das Sortier-Gedächtnis im Speicher; legt die Einträge offen.
+///
+/// Jeder Zugriff läuft unter einem Schloss. Das echte Repository ist thread-sicher —
+/// es erzeugt je Aufruf einen eigenen Datenbank-Kontext —, und der Sortierdienst
+/// bewertet mehrere Fotos gleichzeitig. Ohne das Schloss beschriebe der Fake ein
+/// Verhalten, das es nicht gibt: Die Liste geriete unter gleichzeitigem Zugriff
+/// durcheinander, und der Test schlüge dort fehl, wo der Betrieb tadellos läuft.
+/// </summary>
 internal sealed class FakeSortMemory : ISortMemory
 {
-    public List<SortMemoryRecord> Records { get; } = [];
+    private readonly Lock _gate = new();
+    private readonly List<SortMemoryRecord> _records = [];
+
+    /// <summary>Die gemerkten Einträge (Kopie; der Zugriff läuft unter dem Schloss).</summary>
+    public IList<SortMemoryRecord> Records => _records;
 
     public Task<IReadOnlyList<SortMemoryRecord>> GetForFolderAsync(
         string folderPath,
-        CancellationToken cancellationToken) =>
-        Task.FromResult<IReadOnlyList<SortMemoryRecord>>(
-            [.. Records.Where(record => record.FolderPath == folderPath)]);
+        CancellationToken cancellationToken)
+    {
+        lock (_gate)
+        {
+            return Task.FromResult<IReadOnlyList<SortMemoryRecord>>(
+                [.. _records.Where(record => record.FolderPath == folderPath)]);
+        }
+    }
 
     public Task<SortMemoryRecord?> GetAsync(
         string folderPath,
         string fileSignature,
         string categoryName,
-        CancellationToken cancellationToken) =>
-        Task.FromResult(Records.Find(record =>
-            record.FolderPath == folderPath
-            && record.FileSignature == fileSignature
-            && record.CategoryName == categoryName));
+        CancellationToken cancellationToken)
+    {
+        lock (_gate)
+        {
+            return Task.FromResult(_records.Find(record =>
+                record.FolderPath == folderPath
+                && record.FileSignature == fileSignature
+                && record.CategoryName == categoryName));
+        }
+    }
 
     public Task UpsertAsync(SortMemoryRecord record, CancellationToken cancellationToken)
     {
-        _ = Records.RemoveAll(existing =>
-            existing.FolderPath == record.FolderPath
-            && existing.FileSignature == record.FileSignature
-            && existing.CategoryName == record.CategoryName);
-        Records.Add(record);
+        lock (_gate)
+        {
+            _ = _records.RemoveAll(existing =>
+                existing.FolderPath == record.FolderPath
+                && existing.FileSignature == record.FileSignature
+                && existing.CategoryName == record.CategoryName);
+            _records.Add(record);
+        }
+
         return Task.CompletedTask;
     }
 
@@ -276,21 +344,34 @@ internal sealed class FakeSortMemory : ISortMemory
         string categoryName,
         CancellationToken cancellationToken)
     {
-        _ = Records.RemoveAll(record =>
-            record.FolderPath == folderPath
-            && record.FileSignature == fileSignature
-            && record.CategoryName == categoryName);
+        lock (_gate)
+        {
+            _ = _records.RemoveAll(record =>
+                record.FolderPath == folderPath
+                && record.FileSignature == fileSignature
+                && record.CategoryName == categoryName);
+        }
+
         return Task.CompletedTask;
     }
 
     public Task ClearFolderAsync(string folderPath, CancellationToken cancellationToken)
     {
-        _ = Records.RemoveAll(record => record.FolderPath == folderPath);
+        lock (_gate)
+        {
+            _ = _records.RemoveAll(record => record.FolderPath == folderPath);
+        }
+
         return Task.CompletedTask;
     }
 
-    public Task<IReadOnlyList<SortMemoryRecord>> GetAllAsync(CancellationToken cancellationToken) =>
-        Task.FromResult<IReadOnlyList<SortMemoryRecord>>([.. Records]);
+    public Task<IReadOnlyList<SortMemoryRecord>> GetAllAsync(CancellationToken cancellationToken)
+    {
+        lock (_gate)
+        {
+            return Task.FromResult<IReadOnlyList<SortMemoryRecord>>([.. _records]);
+        }
+    }
 }
 
 /// <summary>Liefert eine feste Zeit, damit Zeitstempel im Test deterministisch sind.</summary>

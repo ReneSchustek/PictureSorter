@@ -54,6 +54,14 @@ public static class InfrastructureServiceCollectionExtensions
             client.MaxResponseContentBufferSize = 16L * 1024 * 1024;
         });
 
+        // Einlesen der Bilddateien: Der Grad der Gleichzeitigkeit gehört in die
+        // Konfiguration, weil er von der Art des Speichers abhängt (Cloud-Ordner
+        // verträgt viel, eine mechanische Platte wenig).
+        _ = services
+            .AddOptions<PhotoSourceOptions>()
+            .Bind(configuration.GetSection(PhotoSourceOptions.SectionName))
+            .ValidateDataAnnotations();
+
         // Zustandslose Dateisystem-Infrastruktur: Singleton.
         _ = services.AddSingleton<IFileDeleter, RecycleBinFileDeleter>();
         _ = services.AddSingleton<IPhotoSource, FileSystemPhotoSource>();

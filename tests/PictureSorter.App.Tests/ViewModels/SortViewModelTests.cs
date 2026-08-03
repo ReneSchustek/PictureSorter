@@ -423,6 +423,7 @@ public sealed class SortViewModelTests
             sorter,
             undo ?? new FakeSortUndoService(),
             photoSource ?? new FakePhotoSource([examplePhoto]),
+            new TripDetectionService(Options.Create(new TripDetectionOptions())),
             new FakeCategoryTrainer(CreateCategory()),
             new FakeCategoryRepository(),
             new FakeFolderPicker(SourceFolder),

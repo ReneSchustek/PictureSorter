@@ -6,6 +6,67 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
+## [1.5.0] - 2026-08-03
+
+### Hinzugefügt
+
+- **Zeitraum für die Analyse.** Zwei Datumsfelder im Analyse-Schritt begrenzen die Suche
+  auf Fotos aus diesen Tagen, beide Tage eingeschlossen. Bilder außerhalb werden gar nicht
+  erst bewertet — wer in einem großen Ordner einen Urlaub sucht, wartet dadurch erheblich
+  kürzer. Ohne Angabe bleibt alles wie bisher. Fotos ohne Aufnahmedatum werden immer
+  mitgeprüft.
+- **„Urlaube vorschlagen".** Findet Zeiträume, in denen sich die Aufnahmen ballen, und
+  bietet sie zum Anklicken an: „12.07.2026 bis 21.07.2026 · 10 Tage · 30 Fotos". Ein Klick
+  trägt den Zeitraum in die Datumsfelder ein. Ein einzelner Tag ohne Bilder trennt einen
+  Urlaub nicht auf, vereinzelte Alltagsfotos werden übergangen. Die Schwellwerte stehen in
+  der `appsettings.json` (`TripDetection:MaxGapDays`, `TripDetection:MinPhotos`).
+- **Zwei Fortschrittsbalken**, solange Laden und Auswerten gleichzeitig laufen: ein grüner
+  für „Laden", einer in der Akzentfarbe für „Analyse". Damit ist zu sehen, worauf gewartet
+  wird — bei Fotos aus der Cloud auf die Leitung, sonst auf die KI. Beide Balken sind
+  beschriftet, die Farbe kommt nur hinzu. Bei Vorgängen mit nur einem Abschnitt bleibt es
+  beim einzelnen Balken.
+
+### Geändert
+
+- **Laden und Auswerten laufen jetzt nebeneinander.** Bisher wurde erst der ganze Ordner
+  eingelesen und danach bewertet; bei vielen Bildern vergingen so Minuten, bevor sich beim
+  Bewerten überhaupt etwas tat. Jetzt beginnt die Bewertung beim ersten fertigen Bild.
+- **Mehrere Bilder werden gleichzeitig geladen und bewertet.** Das verkürzt lange Läufe
+  spürbar, besonders bei Ordnern, deren Bilder erst aus der Cloud geholt werden
+  (iCloud-Fotos, OneDrive). Dasselbe gilt für die Duplikatsuche.
+- Das Laden hält höchstens fünfzig Bilder auf Vorrat. Ohne diese Grenze würde ein
+  Cloud-Ordner vollständig heruntergeladen, obwohl die Bewertung erst am Anfang steht.
+- Die Grenzwerte stehen in der `appsettings.json` (`PhotoSource:MaxParallelReads`,
+  `PhotoSource:PrefetchBuffer`, `Sorting:MaxParallelEvaluations`,
+  `Duplicates:MaxParallelFingerprints`). Bei der Bewertung ist der Wert bewusst
+  zurückhaltend: Ollama arbeitet nur eine begrenzte Zahl von Anfragen gleichzeitig ab,
+  alles darüber wartet dort in der Schlange und läuft irgendwann ins Zeitlimit.
+- Die Fortschrittsmeldungen nennen einheitlich das laufende Bild: „Bild 5 von 1100
+  analysiert".
+- **Neues Programmsymbol:** der Förderturm mit Kamera und Fotos, dunkles Petrol auf heller
+  Fläche. Es hebt sich auf der dunklen Taskleiste ab und fügt sich zwischen die übrigen
+  Programme ein. In der Titelleiste erscheint es größer und scharf. Dieselbe Datei gilt für
+  Taskleiste, Titelleiste, Verknüpfungen und Installationsprogramm.
+
+### Behoben
+
+- **Der Fortschritt der Analyse erschien viel zu spät.** Bevor das erste Bild bewertet
+  wird, liest die Anwendung die Aufnahmedaten aller Dateien — bei vielen Bildern der
+  längste Teil des Laufs. Er lief bisher ohne jede Rückmeldung ab; zu sehen war nur ein
+  durchlaufender Balken ohne Zahlen. Jetzt zählt er von Anfang an mit („Bild 5 von 1100
+  erfasst"). Betrifft die Analyse, die Duplikatsuche und das Laden der Beispielbilder.
+- **Die Duplikatsuche zeigte ihren Fortschritt nur als Text**, der Balken daneben stand für
+  nichts. Jetzt zeigt er den tatsächlichen Anteil.
+- **Bei großen Ordnern erstarrte die Anzeige, statt den Fortschritt zu zeigen.** Die
+  Statusleiste wurde für jedes einzelne Bild neu gezeichnet und kam damit nicht mehr nach.
+  Sie wird jetzt nur noch wenige Male je Sekunde aufgefrischt; der Endstand eines
+  Abschnitts kommt immer an.
+- **Die Ergebnisliste der Duplikatsuche konnte die Anwendung zum Absturz bringen.** Bei
+  Ordnern mit vielen doppelten Bildern wurden sämtliche Gruppen samt Vorschaubildern auf
+  einmal aufgebaut. Die Oberfläche stand dabei minutenlang, und ab einigen hundert Gruppen
+  brach der Aufbau ganz ab — das Ergebnis eines langen Laufs war damit verloren. Die Liste
+  baut jetzt nur noch auf, was sichtbar ist.
+
 ## [1.4.11] - 2026-08-02
 
 ### Behoben

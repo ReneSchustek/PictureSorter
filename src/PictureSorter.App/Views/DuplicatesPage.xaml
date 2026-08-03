@@ -70,19 +70,43 @@
             </StackPanel>
         </StackPanel>
 
-        <ScrollViewer Grid.Row="1">
-            <ItemsControl ItemsSource="{x:Bind ViewModel.Groups}">
-                <ItemsControl.ItemTemplate>
+        <!-- Eine ListView statt ScrollViewer+ItemsControl: Nur sie virtualisiert. Vorher
+             wurde jede gefundene Gruppe sofort erzeugt – bei einem Ordner mit vielen
+             Duplikaten hunderte Gruppen mit tausenden Vorschaubildern auf einen Schlag.
+             Die Oberfläche stand dabei minutenlang, und ab einigen hundert Gruppen brach
+             der Aufbau mit „Layout cycle detected" ab.
+
+             Innen ein ItemsRepeater statt einer GridView: Eine GridView bringt einen
+             eigenen ScrollViewer mit. In der unbegrenzten Höhe des äußeren ScrollViewers
+             konnte ihre Messung nicht zur Ruhe kommen – genau das war der Layout-Zyklus.
+             Der ItemsRepeater legt die Kacheln ohne eigenen Scroller aus. -->
+        <ListView
+            Grid.Row="1"
+            IsItemClickEnabled="False"
+            ItemsSource="{x:Bind ViewModel.Groups}"
+            ScrollViewer.HorizontalScrollMode="Disabled"
+            SelectionMode="None">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                    <Setter Property="Padding" Value="0" />
+                </Style>
+            </ListView.ItemContainerStyle>
+            <ListView.ItemTemplate>
                     <DataTemplate x:DataType="vm:DuplicateGroupViewModel">
                         <StackPanel Margin="0,0,0,16" Spacing="8">
                             <TextBlock
                                 FontWeight="SemiBold"
                                 Text="{x:Bind Header}" />
-                            <GridView
-                                IsItemClickEnabled="False"
-                                ItemsSource="{x:Bind Photos}"
-                                SelectionMode="None">
-                                <GridView.ItemTemplate>
+                            <ItemsRepeater ItemsSource="{x:Bind Photos}">
+                                <ItemsRepeater.Layout>
+                                    <UniformGridLayout
+                                        MinColumnSpacing="8"
+                                        MinItemHeight="300"
+                                        MinItemWidth="190"
+                                        MinRowSpacing="8" />
+                                </ItemsRepeater.Layout>
+                                <ItemsRepeater.ItemTemplate>
                                     <DataTemplate x:DataType="vm:DuplicatePhotoViewModel">
                                         <StackPanel
                                             Width="190"
@@ -124,12 +148,11 @@
                                                 Visibility="{x:Bind IsLastRemainingCopy, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                                         </StackPanel>
                                     </DataTemplate>
-                                </GridView.ItemTemplate>
-                            </GridView>
+                                </ItemsRepeater.ItemTemplate>
+                            </ItemsRepeater>
                         </StackPanel>
                     </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </ScrollViewer>
+            </ListView.ItemTemplate>
+        </ListView>
     </Grid>
 </Page>

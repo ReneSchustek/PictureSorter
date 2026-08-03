@@ -67,6 +67,13 @@
     <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
     <Content Include="Assets\StoreLogo.png" />
     <Content Include="Assets\AppIcon.ico" />
+
+    <!-- Eigenes Bild für die Titelleiste, in genau der Größe, in der es dort erscheint
+         (32 Punkte, und 64 für 200-%-Bildschirme). Aus der Symboldatei heraus musste
+         WinUI die Anzeigegröße erst errechnen und traf sie um wenige Punkte nicht — das
+         Symbol wurde dadurch sichtbar unscharf. -->
+    <Content Include="Assets\AppIconTitleBar.scale-100.png" />
+    <Content Include="Assets\AppIconTitleBar.scale-200.png" />
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
   </ItemGroup>
 

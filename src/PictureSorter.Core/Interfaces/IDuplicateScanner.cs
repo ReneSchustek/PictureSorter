@@ -1,3 +1,4 @@
+using PictureSorter.Core.Enums;
 using PictureSorter.Core.ValueObjects;
 
 namespace PictureSorter.Core.Interfaces;
@@ -35,4 +36,11 @@ public interface IDuplicateScanner
 /// </summary>
 /// <param name="Processed">Anzahl bereits verarbeiteter Dateien.</param>
 /// <param name="Total">Gesamtzahl der zu verarbeitenden Dateien.</param>
-public readonly record struct DuplicateScanProgress(int Processed, int Total);
+/// <param name="Phase">
+/// Der Abschnitt, auf den sich die Zahlen beziehen: erst das Einlesen der Dateien,
+/// danach das Berechnen der Fingerabdrücke.
+/// </param>
+public readonly record struct DuplicateScanProgress(
+    int Processed,
+    int Total,
+    ScanPhase Phase = ScanPhase.Analyzing);
