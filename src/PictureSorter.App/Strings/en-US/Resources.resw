@@ -509,10 +509,10 @@
     <value>Move</value>
   </data>
   <data name="Wizard_Step1Title" xml:space="preserve">
-    <value>Step 1 of 5: Choose the folder with your photos</value>
+    <value>Step 1 of 6: Choose the folder with your photos</value>
   </data>
   <data name="Wizard_Step2Title" xml:space="preserve">
-    <value>Step 2 of 5: Describe the category</value>
+    <value>Step 2 of 6: Describe the category</value>
   </data>
   <data name="Wizard_Step3Title" xml:space="preserve">
     <value>Step 3 of 6: Choose matching images</value>

@@ -509,10 +509,10 @@
     <value>Verschieben</value>
   </data>
   <data name="Wizard_Step1Title" xml:space="preserve">
-    <value>Schritt 1 von 5: Ordner mit Fotos wählen</value>
+    <value>Schritt 1 von 6: Ordner mit Fotos wählen</value>
   </data>
   <data name="Wizard_Step2Title" xml:space="preserve">
-    <value>Schritt 2 von 5: Kategorie beschreiben</value>
+    <value>Schritt 2 von 6: Kategorie beschreiben</value>
   </data>
   <data name="Wizard_Step3Title" xml:space="preserve">
     <value>Schritt 3 von 6: Passende Bilder wählen</value>
