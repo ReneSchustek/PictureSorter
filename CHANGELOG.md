@@ -6,6 +6,14 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
+## [1.5.1] - 2026-08-03
+
+### Behoben
+
+- **Die ersten beiden Schritte des Assistenten zählten falsch.** Sie meldeten „von 5",
+  obwohl es sechs Schritte sind — die Überschriften waren beim Aufteilen der
+  Beispielauswahl nicht nachgezogen worden.
+
 ## [1.5.0] - 2026-08-03
 
 ### Hinzugefügt
