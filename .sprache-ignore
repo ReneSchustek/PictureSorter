@@ -1,0 +1,51 @@
+﻿# Wörter, die der Sprachprüfer zu Unrecht als Ersatzschreibung meldet.
+#
+# Er sucht nach vier Buchstabenfolgen, die als Ersatz für Umlaute und ß dienen. Die
+# stehen aber auch in ganz richtig geschriebenen deutschen Wörtern — nach jedem kurzen
+# Vokal, in „dauerhaft", in „neue" — und in englischen Bezeichnern, die bleiben sollen.
+#
+# Ein Wort gehört nur hierher, wenn es mit Umlaut oder ß geschrieben falsch wirkt.
+# Im Zweifel einmal mit Umlaut hinschreiben und ansehen.
+
+# --- Deutsch: „ss" nach kurzem Vokal, völlig regulär -------------------------
+abgeschlossen
+abgeschlossene
+abgeschlossenen
+abgeschlossener
+Abschluss
+Abschlussmeldung
+aussah
+aussehen
+Datumssuche
+Einzelergebnis
+Einzelergebnisse
+Fassung
+Paketfassung
+Programmfassung
+erschlossen
+Gedächtnis
+Gedächtnisses
+offenlässt
+Schluss
+Textschlüssel
+Urlaubssuche
+verlässlich
+verlässliche
+wusste
+wussten
+zurücklassen
+
+# --- Deutsch: die Folge steht mitten im Wort, nicht als Ersatz ---------------
+Dauerhaft
+Dauerhaftes
+neue
+neuen
+neuer
+neues
+Quellgenerierte
+sequenziell
+
+# --- Englisch: Bezeichner, die englisch bleiben ------------------------------
+Classification
+Classifier
+Guessing

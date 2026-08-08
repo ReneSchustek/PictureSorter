@@ -853,6 +853,66 @@
   <data name="Sort_UndoFailed" xml:space="preserve">
     <value>Moving the photos back failed.</value>
   </data>
+  <data name="Sort_LearnFailed" xml:space="preserve">
+    <value>Learning the group failed.</value>
+  </data>
+  <data name="SortPage_ResumeBar.Title" xml:space="preserve">
+    <value>Last analysis</value>
+  </data>
+  <data name="SortPage_DiscardRunButton.Content" xml:space="preserve">
+    <value>Discard</value>
+  </data>
+  <data name="Sort_ResumeAction" xml:space="preserve">
+    <value>Continue</value>
+  </data>
+  <data name="Sort_RestoreAction" xml:space="preserve">
+    <value>Bring back result</value>
+  </data>
+  <data name="Sort_ResumeSummary" xml:space="preserve">
+    <value>The analysis for “{0}” stopped at {1} of {2} photos (last activity {3}). Continuing skips everything that has already been checked.</value>
+  </data>
+  <data name="Sort_RestoreSummary" xml:space="preserve">
+    <value>The analysis for “{0}” is done: {1} of {2} photos checked ({3}). The result can be brought back without any new computation.</value>
+  </data>
+  <data name="Sort_Resuming" xml:space="preserve">
+    <value>Continuing the analysis…</value>
+  </data>
+  <data name="Sort_ResumeCategoryMissing" xml:space="preserve">
+    <value>The group “{0}” no longer exists. Without its example photos the run cannot continue – create it again.</value>
+  </data>
+  <data name="Sort_DiscardRunTitle" xml:space="preserve">
+    <value>Discard analysis</value>
+  </data>
+  <data name="Sort_DiscardRunMessage" xml:space="preserve">
+    <value>The analysis for “{0}” with {1} checked photos will be discarded. A new analysis will then start from scratch. Continue?</value>
+  </data>
+  <data name="Sort_DiscardRunPrimary" xml:space="preserve">
+    <value>Discard</value>
+  </data>
+  <data name="Sort_RunDiscarded" xml:space="preserve">
+    <value>The analysis was discarded.</value>
+  </data>
+  <data name="SortPage_RecoverButton.Content" xml:space="preserve">
+    <value>Bring back suggestions from an earlier analysis</value>
+  </data>
+  <data name="SortPage_PauseButton.Content" xml:space="preserve">
+    <value>Pause the analysis</value>
+  </data>
+  <data name="SortPage_PauseHint.Text" xml:space="preserve">
+    <value>Your progress is kept. You can carry on from exactly this point later – even after restarting the computer.</value>
+  </data>
+  <data name="Sort_Pausing" xml:space="preserve">
+    <value>Pausing the analysis…</value>
+  </data>
+  <data name="Sort_AnalyzePaused" xml:space="preserve">
+    <value>Analysis paused. Your progress is saved – “Continue” picks up exactly where it stopped.</value>
+  </data>
+  <data name="Sort_Recovering" xml:space="preserve">
+    <value>Looking for earlier suggestions…</value>
+  </data>
+  <data name="Sort_NothingRemembered" xml:space="preserve">
+    <value>There are no earlier suggestions for “{0}” in this folder. Either nothing has been analysed here yet, or the photos have since been moved or renamed.</value>
+  </data>
   <data name="About_LogNoMatch" xml:space="preserve">
     <value>No entry matches the selection.</value>
   </data>

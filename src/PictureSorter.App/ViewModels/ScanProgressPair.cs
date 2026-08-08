@@ -13,18 +13,29 @@ namespace PictureSorter.App.ViewModels;
 /// <param name="Gathered">Anzahl der bereits geladenen Bilder.</param>
 /// <param name="Analyzed">Anzahl der bereits ausgewerteten Bilder.</param>
 /// <param name="Total">Gesamtzahl der Bilder; Bezugsgröße beider Balken.</param>
-internal readonly record struct ScanProgressPair(int Gathered, int Analyzed, int Total)
+/// <param name="GatherDone">Der Ladeabschnitt hat sich als beendet gemeldet.</param>
+/// <param name="AnalyzeDone">Der Auswertungsabschnitt hat sich als beendet gemeldet.</param>
+internal readonly record struct ScanProgressPair(
+    int Gathered,
+    int Analyzed,
+    int Total,
+    bool GatherDone = false,
+    bool AnalyzeDone = false)
 {
     /// <summary>
     /// <see langword="true"/>, sobald das erste Bild ausgewertet ist.
     /// </summary>
     public bool HasAnalyzed => Analyzed > 0;
 
-    /// <summary>Stand des Ladens in Prozent (0–100).</summary>
-    public double GatherPercent => Total > 0 ? Gathered * 100.0 / Total : 0;
+    /// <summary>
+    /// Stand des Ladens in Prozent (0–100). Ein beendeter Abschnitt steht bei 100 %, auch
+    /// wenn weniger Bilder gezählt wurden als der Ordner Dateien hat — dann waren die
+    /// übrigen Dateien keine lesbaren Bilder, und mehr wird es nicht mehr.
+    /// </summary>
+    public double GatherPercent => Percent(Gathered, GatherDone);
 
     /// <summary>Stand der Auswertung in Prozent (0–100).</summary>
-    public double AnalyzePercent => Total > 0 ? Analyzed * 100.0 / Total : 0;
+    public double AnalyzePercent => Percent(Analyzed, AnalyzeDone);
 
     /// <summary>
     /// Übernimmt die Meldung eines Abschnitts und lässt den anderen unberührt.
@@ -32,10 +43,13 @@ internal readonly record struct ScanProgressPair(int Gathered, int Analyzed, int
     /// <param name="phase">Der meldende Abschnitt.</param>
     /// <param name="processed">Dessen Zählstand.</param>
     /// <param name="total">Die Gesamtzahl der Bilder.</param>
+    /// <param name="isFinal">Die Abschlussmeldung dieses Abschnitts.</param>
     /// <returns>Der fortgeschriebene Stand.</returns>
-    public ScanProgressPair With(ScanPhase phase, int processed, int total) => phase switch
+    public ScanProgressPair With(ScanPhase phase, int processed, int total, bool isFinal = false) => phase switch
     {
-        ScanPhase.Gathering => this with { Gathered = processed, Total = total },
-        _ => this with { Analyzed = processed, Total = total },
+        ScanPhase.Gathering => this with { Gathered = processed, Total = total, GatherDone = GatherDone || isFinal },
+        _ => this with { Analyzed = processed, Total = total, AnalyzeDone = AnalyzeDone || isFinal },
     };
+
+    private double Percent(int processed, bool done) => done ? 100 : Total > 0 ? processed * 100.0 / Total : 0;
 }

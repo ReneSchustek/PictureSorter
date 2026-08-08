@@ -409,7 +409,9 @@ public sealed class SortViewModelTests
         FakePhotoSorter sorter,
         FakeSortUndoService? undo = null,
         bool confirms = true,
-        FakePhotoSource? photoSource = null)
+        FakePhotoSource? photoSource = null,
+        FakeAnalysisJournal? journal = null,
+        SortMemoryRecovery? recovery = null)
     {
         Photo examplePhoto = new()
         {
@@ -422,6 +424,8 @@ public sealed class SortViewModelTests
         return new SortViewModel(
             sorter,
             undo ?? new FakeSortUndoService(),
+            journal ?? new FakeAnalysisJournal(),
+            recovery ?? RecoveryFactory.Create(),
             photoSource ?? new FakePhotoSource([examplePhoto]),
             new TripDetectionService(Options.Create(new TripDetectionOptions())),
             new FakeCategoryTrainer(CreateCategory()),

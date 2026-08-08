@@ -76,6 +76,33 @@ public interface IPhotoSorter
         CancellationToken cancellationToken);
 
     /// <summary>
+    /// Setzt einen protokollierten Lauf fort oder holt sein Ergebnis zurück.
+    ///
+    /// Für beides gibt es nur diesen einen Weg, weil es derselbe Vorgang ist: Was im
+    /// Protokoll steht, wird übernommen; nur der Rest kommt der KI überhaupt vor. Bei
+    /// einem abgeschlossenen Lauf ist der Rest leer — dann entsteht die Vorschau ohne
+    /// einen einzigen KI-Aufruf, statt tagelang neu zu rechnen.
+    ///
+    /// Die Angaben des Laufs (Ordner, Unterordner, Zeitraum) kommen aus dem Protokoll
+    /// und nicht aus der Oberfläche: Ein fortgesetzter Lauf muss dieselbe Frage
+    /// beantworten wie der unterbrochene.
+    /// </summary>
+    /// <param name="run">Der protokollierte Lauf.</param>
+    /// <param name="category">
+    /// Die angelernte Kategorie. Nur bei einem Lauf über das Motiv erforderlich; fehlt
+    /// sie dort (etwa weil sie gelöscht wurde), wird nichts geliefert und der Grund
+    /// protokolliert.
+    /// </param>
+    /// <param name="progress">Optionaler Empfänger des Fortschritts.</param>
+    /// <param name="cancellationToken">Token zum Abbrechen des Vorgangs.</param>
+    /// <returns>Die Vorschläge des Laufs — die übernommenen und die neu ermittelten.</returns>
+    Task<IReadOnlyList<SortProposal>> ResumeAsync(
+        AnalysisRun run,
+        Category? category,
+        IProgress<SortProgress>? progress,
+        CancellationToken cancellationToken);
+
+    /// <summary>
     /// Wendet eine Menge bestätigter Vorschläge an oder simuliert sie (Dry-Run).
     /// </summary>
     /// <param name="proposals">Die anzuwendenden Vorschläge.</param>

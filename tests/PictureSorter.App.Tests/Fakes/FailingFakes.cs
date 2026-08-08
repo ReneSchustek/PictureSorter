@@ -55,6 +55,15 @@ internal sealed class FailingPhotoSorter(Exception failure, bool failOnApply = f
             ? Task.FromResult<IReadOnlyList<SortProposal>>([])
             : Task.FromException<IReadOnlyList<SortProposal>>(failure);
 
+    public Task<IReadOnlyList<SortProposal>> ResumeAsync(
+        AnalysisRun run,
+        Category? category,
+        IProgress<SortProgress>? progress,
+        CancellationToken cancellationToken) =>
+        failOnApply
+            ? Task.FromResult<IReadOnlyList<SortProposal>>([])
+            : Task.FromException<IReadOnlyList<SortProposal>>(failure);
+
     public Task<IReadOnlyList<SortProposal>> CreateProposalsAsync(
         string sourceFolder,
         Category category,
@@ -83,6 +92,13 @@ internal sealed class FailingPhotoSorter(Exception failure, bool failOnApply = f
 /// </summary>
 internal sealed class FailingApplySorter(IReadOnlyList<SortProposal> proposals, Exception failure) : IPhotoSorter
 {
+    public Task<IReadOnlyList<SortProposal>> ResumeAsync(
+        AnalysisRun run,
+        Category? category,
+        IProgress<SortProgress>? progress,
+        CancellationToken cancellationToken) =>
+        Task.FromResult(proposals);
+
     public Task<IReadOnlyList<SortProposal>> CreateDateProposalsAsync(
         string sourceFolder,
         string targetFolderName,

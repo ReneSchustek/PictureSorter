@@ -853,6 +853,66 @@
   <data name="Sort_UndoFailed" xml:space="preserve">
     <value>Das Zurückholen ist fehlgeschlagen.</value>
   </data>
+  <data name="Sort_LearnFailed" xml:space="preserve">
+    <value>Das Anlernen ist fehlgeschlagen.</value>
+  </data>
+  <data name="SortPage_ResumeBar.Title" xml:space="preserve">
+    <value>Letzte Analyse</value>
+  </data>
+  <data name="SortPage_DiscardRunButton.Content" xml:space="preserve">
+    <value>Verwerfen</value>
+  </data>
+  <data name="Sort_ResumeAction" xml:space="preserve">
+    <value>Fortsetzen</value>
+  </data>
+  <data name="Sort_RestoreAction" xml:space="preserve">
+    <value>Ergebnis zurückholen</value>
+  </data>
+  <data name="Sort_ResumeSummary" xml:space="preserve">
+    <value>Die Analyse zu „{0}“ ist bei {1} von {2} Fotos stehengeblieben (zuletzt {3}). Fortsetzen überspringt alles, was bereits geprüft ist.</value>
+  </data>
+  <data name="Sort_RestoreSummary" xml:space="preserve">
+    <value>Die Analyse zu „{0}“ ist fertig: {1} von {2} Fotos geprüft ({3}). Das Ergebnis lässt sich ohne neue Berechnung zurückholen.</value>
+  </data>
+  <data name="Sort_Resuming" xml:space="preserve">
+    <value>Analyse wird fortgesetzt…</value>
+  </data>
+  <data name="Sort_ResumeCategoryMissing" xml:space="preserve">
+    <value>Die Gruppe „{0}“ gibt es nicht mehr. Ohne ihre Beispielbilder lässt sich der Lauf nicht fortsetzen – lege sie neu an.</value>
+  </data>
+  <data name="Sort_DiscardRunTitle" xml:space="preserve">
+    <value>Analyse verwerfen</value>
+  </data>
+  <data name="Sort_DiscardRunMessage" xml:space="preserve">
+    <value>Die Analyse zu „{0}“ mit {1} geprüften Fotos wird verworfen. Eine neue Analyse fängt dann wieder von vorn an. Fortfahren?</value>
+  </data>
+  <data name="Sort_DiscardRunPrimary" xml:space="preserve">
+    <value>Verwerfen</value>
+  </data>
+  <data name="Sort_RunDiscarded" xml:space="preserve">
+    <value>Die Analyse wurde verworfen.</value>
+  </data>
+  <data name="SortPage_RecoverButton.Content" xml:space="preserve">
+    <value>Vorschläge einer früheren Analyse zurückholen</value>
+  </data>
+  <data name="SortPage_PauseButton.Content" xml:space="preserve">
+    <value>Analyse anhalten</value>
+  </data>
+  <data name="SortPage_PauseHint.Text" xml:space="preserve">
+    <value>Der Stand bleibt erhalten. Du kannst später genau hier weitermachen – auch nach einem Neustart des Rechners.</value>
+  </data>
+  <data name="Sort_Pausing" xml:space="preserve">
+    <value>Die Analyse wird angehalten…</value>
+  </data>
+  <data name="Sort_AnalyzePaused" xml:space="preserve">
+    <value>Analyse angehalten. Der Stand ist gespeichert – über „Fortsetzen“ geht es genau hier weiter.</value>
+  </data>
+  <data name="Sort_Recovering" xml:space="preserve">
+    <value>Frühere Vorschläge werden gesucht…</value>
+  </data>
+  <data name="Sort_NothingRemembered" xml:space="preserve">
+    <value>Zu „{0}“ liegen in diesem Ordner keine früheren Vorschläge vor. Entweder wurde hier noch nicht analysiert, oder die Fotos sind inzwischen verschoben oder umbenannt worden.</value>
+  </data>
   <data name="About_LogNoMatch" xml:space="preserve">
     <value>Kein Eintrag passt zur Auswahl.</value>
   </data>

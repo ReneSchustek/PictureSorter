@@ -25,6 +25,7 @@ public sealed class PhotoSortingService : IPhotoSorter
     private readonly IFileOrganizer _fileOrganizer;
     private readonly SortMemoryGateway _memory;
     private readonly SortJournalGateway _journal;
+    private readonly IAnalysisJournal _analysisJournal;
     private readonly IClock _clock;
     private readonly SortingOptions _options;
     private readonly ILogger<PhotoSortingService> _logger;
@@ -38,6 +39,9 @@ public sealed class PhotoSortingService : IPhotoSorter
     /// <param name="fileOrganizer">Datei-Verschiebung.</param>
     /// <param name="memory">Zugriff auf das Sortier-Gedächtnis.</param>
     /// <param name="journal">Protokoll der Sortierläufe (Grundlage des Rückgängigmachens).</param>
+    /// <param name="analysisJournal">
+    /// Protokoll der Analyseläufe (Grundlage des Fortsetzens und Wiederherstellens).
+    /// </param>
     /// <param name="clock">Testbare Zeitquelle für den Zeitstempel des Laufs.</param>
     /// <param name="options">Schwellwerte der Sortierlogik.</param>
     /// <param name="logger">Der Logger.</param>
@@ -48,6 +52,7 @@ public sealed class PhotoSortingService : IPhotoSorter
         IFileOrganizer fileOrganizer,
         SortMemoryGateway memory,
         SortJournalGateway journal,
+        IAnalysisJournal analysisJournal,
         IClock clock,
         IOptions<SortingOptions> options,
         ILogger<PhotoSortingService> logger)
@@ -58,6 +63,7 @@ public sealed class PhotoSortingService : IPhotoSorter
         ArgumentNullException.ThrowIfNull(fileOrganizer);
         ArgumentNullException.ThrowIfNull(memory);
         ArgumentNullException.ThrowIfNull(journal);
+        ArgumentNullException.ThrowIfNull(analysisJournal);
         ArgumentNullException.ThrowIfNull(clock);
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(logger);
@@ -68,13 +74,14 @@ public sealed class PhotoSortingService : IPhotoSorter
         _fileOrganizer = fileOrganizer;
         _memory = memory;
         _journal = journal;
+        _analysisJournal = analysisJournal;
         _clock = clock;
         _options = options.Value;
         _logger = logger;
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<SortProposal>> CreateProposalsAsync(
+    public Task<IReadOnlyList<SortProposal>> CreateProposalsAsync(
         string sourceFolder,
         Category category,
         bool includeSubfolders,
@@ -84,6 +91,46 @@ public sealed class PhotoSortingService : IPhotoSorter
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(sourceFolder);
         ArgumentNullException.ThrowIfNull(category);
+
+        AnalysisRun run = NewRun(sourceFolder, category.Name, byDateOnly: false, includeSubfolders, dateRange);
+        return RunAnalysisAsync(run, category, resume: false, progress, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public Task<IReadOnlyList<SortProposal>> ResumeAsync(
+        AnalysisRun run,
+        Category? category,
+        IProgress<SortProgress>? progress,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(run);
+
+        if (run.ByDateOnly)
+        {
+            return RunDateAnalysisAsync(run, resume: true, progress, cancellationToken);
+        }
+
+        // Ohne die Kategorie fehlen die angelernten Beispiele; ein Vergleich wäre geraten.
+        // Das passiert, wenn die Kategorie zwischenzeitlich gelöscht wurde.
+        if (category is null)
+        {
+            SortingLog.ResumeWithoutCategory(_logger, run.CategoryName);
+            return Task.FromResult<IReadOnlyList<SortProposal>>([]);
+        }
+
+        return RunAnalysisAsync(run, category, resume: true, progress, cancellationToken);
+    }
+
+    private async Task<IReadOnlyList<SortProposal>> RunAnalysisAsync(
+        AnalysisRun run,
+        Category category,
+        bool resume,
+        IProgress<SortProgress>? progress,
+        CancellationToken cancellationToken)
+    {
+        string sourceFolder = run.SourceFolder;
+        bool includeSubfolders = run.IncludeSubfolders;
+        DateRange dateRange = run.Range;
 
         IReadOnlyList<ImageEmbedding> positives =
             [.. category.Examples.Where(example => example.IsPositive).Select(example => example.Embedding)];
@@ -113,116 +160,204 @@ public sealed class PhotoSortingService : IPhotoSorter
         IProgress<PhotoScanProgress>? gathering =
             progress is null ? null : new GatheringProgress(progress);
 
-        // Die Vorschläge kommen an ihren Platz, nicht ans Ende einer Liste: Sonst hinge
-        // die Reihenfolge der Vorschau davon ab, welches Foto zufällig zuerst fertig wird.
-        // Die Gesamtzahl steht erst mit dem ersten Bild fest, deshalb ein Wörterbuch statt
-        // eines Feldes fester Länge.
-        ConcurrentDictionary<int, SortProposal> found = new();
-        int processed = 0;
-        int skipped = 0;
-        int outsideRange = 0;
-        int incompatible = 0;
-        Lock progressGate = new();
+        AnalysisTally tally = new(progress);
 
-        await Parallel.ForEachAsync(
-            _photoSource.StreamPhotosAsync(
-                sourceFolder, includeSubfolders, skip: 0, maxCount: null, gathering, cancellationToken),
-            new ParallelOptions
-            {
-                MaxDegreeOfParallelism = _options.MaxParallelEvaluations,
-                CancellationToken = cancellationToken,
-            },
-            async (scanned, token) =>
-            {
-                Photo photo = scanned.Photo;
+        // Beim Fortsetzen sind die bereits gefällten Urteile die eigentliche Ersparnis:
+        // Jedes von ihnen steht für einen KI-Aufruf, der nicht noch einmal stattfindet.
+        IReadOnlyDictionary<string, AnalysisRunItem> decided =
+            await LoadDecidedAsync(run, resume, cancellationToken).ConfigureAwait(false);
 
-                // Zählen und Melden unter einem Schloss, damit sich die Meldungen nicht
-                // gegenseitig überholen und der Zählstand sichtbar zurückspringt.
-                void ReportProcessed()
-                {
-                    lock (progressGate)
-                    {
-                        processed++;
-                        progress?.Report(new SortProgress(processed, scanned.Total, ScanPhase.Analyzing));
-                    }
-                }
+        using AnalysisRunRecorder recorder = new(_analysisJournal, _logger);
+        await StartRecordingAsync(recorder, run, resume, cancellationToken).ConfigureAwait(false);
 
-                // Der Zeitraum wird vor allem anderen geprüft: Er kostet nichts und spart
-                // den teuersten Schritt. Wer nach einem Urlaub sucht, lässt die KI so über
-                // hundert statt über tausend Bilder laufen.
-                //
-                // „Von–bis" gilt streng: Drin ist nur, was nachweislich in den Zeitraum
-                // fällt. Ein Foto ohne Aufnahmedatum bleibt also draußen — es lässt sich
-                // nicht zuordnen, und ein Zeitraum, der stillschweigend Unbestimmtes
-                // durchlässt, wäre keine verlässliche Angabe. In der Praxis tritt der Fall
-                // kaum auf: Die Foto-Quelle greift ersatzweise auf die Änderungszeit der
-                // Datei zurück, liefert also praktisch immer ein Datum.
-                if (!dateRange.IsUnbounded
-                    && !(photo.CapturedAt is { } aufgenommen && dateRange.Contains(aufgenommen)))
-                {
-                    _ = Interlocked.Increment(ref outsideRange);
-                    ReportProcessed();
-                    return;
-                }
-
-                if (await _memory.IsSettledAsync(sourceFolder, photo, category.Name, token).ConfigureAwait(false))
-                {
-                    _ = Interlocked.Increment(ref skipped);
-                    ReportProcessed();
-                    return;
-                }
-
-                Evaluation evaluation = await EvaluateAsync(photo, category, positives, negatives, sourceFolder, token)
-                    .ConfigureAwait(false);
-
-                if (evaluation.Proposal is not null)
-                {
-                    _ = found.TryAdd(scanned.Index, evaluation.Proposal);
-                }
-
-                if (evaluation.ExamplesIncompatible)
-                {
-                    _ = Interlocked.Increment(ref incompatible);
-                }
-
-                // Nur ein tatsächlich gefälltes Urteil wird gemerkt. Bei einem KI-Ausfall
-                // bleibt das Foto ungemerkt, damit der nächste Lauf es erneut versucht.
-                if (evaluation.WasEvaluated)
-                {
-                    await _memory
-                        .RememberEvaluationAsync(sourceFolder, photo, category.Name, evaluation.Proposal, token)
-                        .ConfigureAwait(false);
-                }
-
-                ReportProcessed();
-            }).ConfigureAwait(false);
-
-        List<SortProposal> proposals =
-            [.. found.OrderBy(entry => entry.Key).Select(entry => entry.Value)];
-
-        SortingLog.ProposalsCreated(_logger, proposals.Count, category.Name);
-        if (skipped > 0)
+        try
         {
-            SortingLog.PhotosSkippedByMemory(_logger, skipped);
+            await Parallel.ForEachAsync(
+                _photoSource.StreamPhotosAsync(
+                    sourceFolder, includeSubfolders, skip: 0, maxCount: null, gathering, cancellationToken),
+                new ParallelOptions
+                {
+                    MaxDegreeOfParallelism = _options.MaxParallelEvaluations,
+                    CancellationToken = cancellationToken,
+                },
+                (scanned, token) => EvaluateScannedAsync(
+                    scanned,
+                    new AnalysisPass(run, category, positives, negatives, decided, recorder, tally),
+                    token)).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            await recorder.FinishAsync(AnalysisRunState.Paused, null, _clock.UtcNow).ConfigureAwait(false);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            // Der Grund wird festgehalten, bevor die Ausnahme weiterzieht: Sonst stünde im
+            // Protokoll ein Lauf, der einfach aufhört, und niemand wüsste warum.
+            await recorder.FinishAsync(AnalysisRunState.Failed, ex.Message, _clock.UtcNow).ConfigureAwait(false);
+            throw;
         }
 
-        if (outsideRange > 0)
+        await recorder.FinishAsync(AnalysisRunState.Completed, null, _clock.UtcNow).ConfigureAwait(false);
+        tally.ReportFinished();
+
+        IReadOnlyList<SortProposal> proposals = tally.Proposals;
+        LogTally(tally, category.Name, proposals.Count);
+        return proposals;
+    }
+
+    // Bewertet ein einzelnes Foto. Eigene Methode, weil sie die ganze fachliche
+    // Entscheidung trägt — im Schleifenkörper stand sie zwischen Zählern und Meldungen
+    // und war dort kaum noch zu erkennen.
+    private async ValueTask EvaluateScannedAsync(
+        ScannedPhoto scanned,
+        AnalysisPass pass,
+        CancellationToken cancellationToken)
+    {
+        Photo photo = scanned.Photo;
+        string signature = photo.ComputeSignature();
+        AnalysisTally tally = pass.Tally;
+
+        // Liegt aus diesem Lauf bereits ein Urteil vor, wird es übernommen. Die Signatur
+        // schließt Pfad, Größe und Aufnahmezeit ein — eine veränderte Datei trägt eine
+        // andere und wird deshalb zu Recht neu bewertet.
+        if (pass.Decided.TryGetValue(signature, out AnalysisRunItem? earlier))
         {
-            SortingLog.PhotosOutsideDateRange(_logger, outsideRange);
+            if (earlier.Outcome is AnalysisOutcome.Proposed)
+            {
+                tally.Add(
+                    scanned.Index,
+                    CreateProposal(photo, pass.Category, pass.SourceFolder, earlier.Confidence, earlier.Method));
+            }
+
+            tally.CountReused();
+            tally.ReportProcessed(scanned.Total);
+            return;
+        }
+
+        // Der Zeitraum wird vor allem anderen geprüft: Er kostet nichts und spart den
+        // teuersten Schritt. Wer nach einem Urlaub sucht, lässt die KI so über hundert
+        // statt über tausend Bilder laufen.
+        //
+        // „Von–bis" gilt streng: Drin ist nur, was nachweislich in den Zeitraum fällt. Ein
+        // Foto ohne Aufnahmedatum bleibt also draußen — es lässt sich nicht zuordnen, und
+        // ein Zeitraum, der stillschweigend Unbestimmtes durchlässt, wäre keine
+        // verlässliche Angabe. In der Praxis tritt der Fall kaum auf: Die Foto-Quelle
+        // greift ersatzweise auf die Änderungszeit der Datei zurück.
+        if (!pass.Range.IsUnbounded
+            && !(photo.CapturedAt is { } aufgenommen && pass.Range.Contains(aufgenommen)))
+        {
+            await CountAndRecordAsync(pass, photo, signature, AnalysisOutcome.OutsideRange, scanned, cancellationToken)
+                .ConfigureAwait(false);
+            return;
+        }
+
+        if (await _memory.IsSettledAsync(pass.SourceFolder, photo, pass.Category.Name, cancellationToken)
+            .ConfigureAwait(false))
+        {
+            await CountAndRecordAsync(pass, photo, signature, AnalysisOutcome.SkippedByMemory, scanned, cancellationToken)
+                .ConfigureAwait(false);
+            return;
+        }
+
+        Evaluation evaluation = await EvaluateAsync(
+            photo, pass.Category, pass.Positives, pass.Negatives, pass.SourceFolder, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (evaluation.Proposal is not null)
+        {
+            tally.Add(scanned.Index, evaluation.Proposal);
+        }
+
+        if (evaluation.ExamplesIncompatible)
+        {
+            tally.CountIncompatible();
+        }
+
+        // Nur ein tatsächlich gefälltes Urteil wird gemerkt. Bei einem KI-Ausfall bleibt
+        // das Foto ungemerkt, damit der nächste Lauf es erneut versucht.
+        if (evaluation.WasEvaluated)
+        {
+            await _memory
+                .RememberEvaluationAsync(pass.SourceFolder, photo, pass.Category.Name, evaluation.Proposal, cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        await RecordAsync(
+            pass.Recorder,
+            photo,
+            signature,
+            ToOutcome(evaluation),
+            evaluation.Proposal?.Confidence ?? 0.0,
+            evaluation.Proposal?.Method ?? ClassificationMethod.Manual,
+            scanned.Total,
+            cancellationToken).ConfigureAwait(false);
+
+        tally.ReportProcessed(scanned.Total);
+    }
+
+    private async Task CountAndRecordAsync(
+        AnalysisPass pass,
+        Photo photo,
+        string signature,
+        AnalysisOutcome outcome,
+        ScannedPhoto scanned,
+        CancellationToken cancellationToken)
+    {
+        pass.Tally.Count(outcome);
+        await RecordAsync(
+            pass.Recorder, photo, signature, outcome, 0.0, ClassificationMethod.Manual, scanned.Total, cancellationToken)
+            .ConfigureAwait(false);
+        pass.Tally.ReportProcessed(scanned.Total);
+    }
+
+    private void LogTally(AnalysisTally tally, string categoryName, int proposalCount)
+    {
+        SortingLog.ProposalsCreated(_logger, proposalCount, categoryName);
+        if (tally.Skipped > 0)
+        {
+            SortingLog.PhotosSkippedByMemory(_logger, tally.Skipped);
+        }
+
+        if (tally.OutsideRange > 0)
+        {
+            SortingLog.PhotosOutsideDateRange(_logger, tally.OutsideRange);
+        }
+
+        if (tally.Reused > 0)
+        {
+            SortingLog.ResultsReused(_logger, tally.Reused);
         }
 
         // Einmal je Lauf, nicht je Foto: Sonst stünde dieselbe Meldung tausendfach im
         // Protokoll und die Ursache ginge darin unter.
-        if (incompatible > 0)
+        if (tally.Incompatible > 0)
         {
-            SortingLog.ExamplesFromAnotherModel(_logger, category.Name, incompatible);
+            SortingLog.ExamplesFromAnotherModel(_logger, categoryName, tally.Incompatible);
         }
+    }
 
-        return proposals;
+    /// <summary>
+    /// Alles, was während eines Laufs gleich bleibt. Bündelt die sieben Angaben, die die
+    /// Bewertung eines einzelnen Fotos braucht — sonst hätte die Methode eine Parameter-
+    /// liste, die niemand mehr liest.
+    /// </summary>
+    private sealed record AnalysisPass(
+        AnalysisRun Run,
+        Category Category,
+        IReadOnlyList<ImageEmbedding> Positives,
+        IReadOnlyList<ImageEmbedding> Negatives,
+        IReadOnlyDictionary<string, AnalysisRunItem> Decided,
+        AnalysisRunRecorder Recorder,
+        AnalysisTally Tally)
+    {
+        public string SourceFolder => Run.SourceFolder;
+
+        public DateRange Range => Run.Range;
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<SortProposal>> CreateDateProposalsAsync(
+    public Task<IReadOnlyList<SortProposal>> CreateDateProposalsAsync(
         string sourceFolder,
         string targetFolderName,
         bool includeSubfolders,
@@ -232,6 +367,20 @@ public sealed class PhotoSortingService : IPhotoSorter
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(sourceFolder);
         ArgumentException.ThrowIfNullOrWhiteSpace(targetFolderName);
+
+        AnalysisRun run = NewRun(sourceFolder, targetFolderName, byDateOnly: true, includeSubfolders, dateRange);
+        return RunDateAnalysisAsync(run, resume: false, progress, cancellationToken);
+    }
+
+    private async Task<IReadOnlyList<SortProposal>> RunDateAnalysisAsync(
+        AnalysisRun run,
+        bool resume,
+        IProgress<SortProgress>? progress,
+        CancellationToken cancellationToken)
+    {
+        string sourceFolder = run.SourceFolder;
+        string targetFolderName = run.CategoryName;
+        DateRange dateRange = run.Range;
 
         // Ohne Grenze wäre jedes Foto des Ordners ein Vorschlag — der teuerste denkbare
         // Fehlgriff, wenn die Nutzerin danach auf „Verschieben" klickt. Ein verdrehter
@@ -249,43 +398,71 @@ public sealed class PhotoSortingService : IPhotoSorter
 
         List<SortProposal> proposals = [];
         DateSortTally tally = new();
+        int total = 0;
 
-        await foreach (ScannedPhoto scanned in _photoSource
-            .StreamPhotosAsync(sourceFolder, includeSubfolders, skip: 0, maxCount: null, gathering, cancellationToken)
-            .ConfigureAwait(false))
+        IReadOnlyDictionary<string, AnalysisRunItem> decided =
+            await LoadDecidedAsync(run, resume, cancellationToken).ConfigureAwait(false);
+
+        using AnalysisRunRecorder recorder = new(_analysisJournal, _logger);
+        await StartRecordingAsync(recorder, run, resume, cancellationToken).ConfigureAwait(false);
+
+        try
         {
-            Photo photo = scanned.Photo;
-            tally.Processed++;
-
-            // Gleiche strenge Auslegung wie bei der Analyse: Drin ist nur, was nachweislich
-            // in den Zeitraum fällt. Ein Foto ohne Aufnahmedatum bleibt draußen.
-            if (photo.CapturedAt is not { } captured || !dateRange.Contains(captured))
-            {
-                tally.OutsideRange++;
-            }
-            else if (await _memory
-                .IsSettledAsync(sourceFolder, photo, targetFolderName, cancellationToken)
+            await foreach (ScannedPhoto scanned in _photoSource
+                .StreamPhotosAsync(sourceFolder, run.IncludeSubfolders, skip: 0, maxCount: null, gathering, cancellationToken)
                 .ConfigureAwait(false))
             {
-                tally.Skipped++;
-            }
-            else
-            {
-                // Konfidenz 1,0: Das Aufnahmedatum ist eine Tatsache, keine Schätzung.
-                // Anders als bei der KI gibt es hier keinen Grenzfall.
-                proposals.Add(new SortProposal
-                {
-                    Photo = photo,
-                    CategoryName = targetFolderName,
-                    SourceFolder = sourceFolder,
-                    TargetFolderPath = targetFolder,
-                    Confidence = 1.0,
-                    Method = ClassificationMethod.CaptureDate,
-                });
-            }
+                Photo photo = scanned.Photo;
+                string signature = photo.ComputeSignature();
+                tally.Processed++;
+                total = scanned.Total;
 
-            progress?.Report(new SortProgress(tally.Processed, scanned.Total, ScanPhase.Analyzing));
+                if (decided.TryGetValue(signature, out AnalysisRunItem? earlier))
+                {
+                    if (earlier.Outcome is AnalysisOutcome.Proposed)
+                    {
+                        proposals.Add(CreateDateProposal(photo, targetFolderName, sourceFolder, targetFolder));
+                    }
+
+                    tally.Reused++;
+                }
+                else if (photo.CapturedAt is not { } captured || !dateRange.Contains(captured))
+                {
+                    // Gleiche strenge Auslegung wie bei der Analyse: Drin ist nur, was
+                    // nachweislich in den Zeitraum fällt. Ein Foto ohne Aufnahmedatum
+                    // bleibt draußen.
+                    tally.OutsideRange++;
+                    await RecordAsync(recorder, photo, signature, AnalysisOutcome.OutsideRange, 0.0, ClassificationMethod.CaptureDate, scanned.Total, cancellationToken).ConfigureAwait(false);
+                }
+                else if (await _memory
+                    .IsSettledAsync(sourceFolder, photo, targetFolderName, cancellationToken)
+                    .ConfigureAwait(false))
+                {
+                    tally.Skipped++;
+                    await RecordAsync(recorder, photo, signature, AnalysisOutcome.SkippedByMemory, 0.0, ClassificationMethod.CaptureDate, scanned.Total, cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    proposals.Add(CreateDateProposal(photo, targetFolderName, sourceFolder, targetFolder));
+                    await RecordAsync(recorder, photo, signature, AnalysisOutcome.Proposed, 1.0, ClassificationMethod.CaptureDate, scanned.Total, cancellationToken).ConfigureAwait(false);
+                }
+
+                progress?.Report(new SortProgress(tally.Processed, scanned.Total, ScanPhase.Analyzing));
+            }
         }
+        catch (OperationCanceledException)
+        {
+            await recorder.FinishAsync(AnalysisRunState.Paused, null, _clock.UtcNow).ConfigureAwait(false);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            await recorder.FinishAsync(AnalysisRunState.Failed, ex.Message, _clock.UtcNow).ConfigureAwait(false);
+            throw;
+        }
+
+        await recorder.FinishAsync(AnalysisRunState.Completed, null, _clock.UtcNow).ConfigureAwait(false);
+        progress?.Report(new SortProgress(tally.Processed, total, ScanPhase.Analyzing, IsFinal: true));
 
         SortingLog.DateProposalsCreated(_logger, proposals.Count, targetFolderName);
         if (tally.OutsideRange > 0)
@@ -298,11 +475,32 @@ public sealed class PhotoSortingService : IPhotoSorter
             SortingLog.PhotosSkippedByMemory(_logger, tally.Skipped);
         }
 
+        if (tally.Reused > 0)
+        {
+            SortingLog.ResultsReused(_logger, tally.Reused);
+        }
+
         return proposals;
     }
 
-    // Die drei Zählstände eines Datums-Laufs. Als eigener Typ, damit die Schleife nicht
-    // drei lose Zähler mitschleppt — sequenziell durchlaufen, deshalb ohne Interlocked.
+    // Konfidenz 1,0: Das Aufnahmedatum ist eine Tatsache, keine Schätzung. Anders als bei
+    // der KI gibt es hier keinen Grenzfall.
+    private static SortProposal CreateDateProposal(
+        Photo photo,
+        string targetFolderName,
+        string sourceFolder,
+        string targetFolder) => new()
+        {
+            Photo = photo,
+            CategoryName = targetFolderName,
+            SourceFolder = sourceFolder,
+            TargetFolderPath = targetFolder,
+            Confidence = 1.0,
+            Method = ClassificationMethod.CaptureDate,
+        };
+
+    // Die Zählstände eines Datums-Laufs. Als eigener Typ, damit die Schleife nicht
+    // lose Zähler mitschleppt — sequenziell durchlaufen, deshalb ohne Interlocked.
     private sealed class DateSortTally
     {
         public int Processed { get; set; }
@@ -310,7 +508,117 @@ public sealed class PhotoSortingService : IPhotoSorter
         public int OutsideRange { get; set; }
 
         public int Skipped { get; set; }
+
+        public int Reused { get; set; }
     }
+
+    // ── Das Protokoll des Laufs ────────────────────────────────────────────────
+
+    private AnalysisRun NewRun(
+        string sourceFolder,
+        string categoryName,
+        bool byDateOnly,
+        bool includeSubfolders,
+        DateRange dateRange)
+    {
+        DateTimeOffset now = _clock.UtcNow;
+        return new AnalysisRun
+        {
+            Id = Guid.NewGuid(),
+            SourceFolder = sourceFolder,
+            CategoryName = categoryName,
+            ByDateOnly = byDateOnly,
+            IncludeSubfolders = includeSubfolders,
+            RangeFrom = dateRange.From,
+            RangeTo = dateRange.To,
+            State = AnalysisRunState.Running,
+            StartedAt = now,
+            LastProgressAt = now,
+        };
+    }
+
+    private static Task StartRecordingAsync(
+        AnalysisRunRecorder recorder,
+        AnalysisRun run,
+        bool resume,
+        CancellationToken cancellationToken)
+    {
+        if (!resume)
+        {
+            return recorder.BeginAsync(run, cancellationToken);
+        }
+
+        // Ein fortgesetzter Lauf wird weitergeschrieben, nicht neu angelegt: Sonst
+        // zerfiele eine Analyse in mehrere Bruchstücke, und keines wüsste vom anderen.
+        recorder.Continue(run.Id);
+        return Task.CompletedTask;
+    }
+
+    // Liest die bereits gefällten Urteile eines fortzusetzenden Laufs. „Nicht bewertet"
+    // zählt ausdrücklich nicht dazu: Dort hat ein Ausfall der KI oder eine unlesbare Datei
+    // ein Urteil verhindert, und ein einmaliger Aussetzer darf nicht dauerhaft
+    // festgeschrieben werden.
+    private async Task<IReadOnlyDictionary<string, AnalysisRunItem>> LoadDecidedAsync(
+        AnalysisRun run,
+        bool resume,
+        CancellationToken cancellationToken)
+    {
+        if (!resume)
+        {
+            return new Dictionary<string, AnalysisRunItem>(StringComparer.Ordinal);
+        }
+
+        IReadOnlyList<AnalysisRunItem> items =
+            await _analysisJournal.GetItemsAsync(run.Id, cancellationToken).ConfigureAwait(false);
+
+        Dictionary<string, AnalysisRunItem> decided = new(StringComparer.Ordinal);
+        foreach (AnalysisRunItem item in items)
+        {
+            if (item.Outcome is AnalysisOutcome.NotEvaluated)
+            {
+                _ = decided.Remove(item.FileSignature);
+                continue;
+            }
+
+            // Das jüngste Urteil gilt: Das Protokoll ist ein Journal, kein Bestand.
+            decided[item.FileSignature] = item;
+        }
+
+        return decided;
+    }
+
+    private Task RecordAsync(
+        AnalysisRunRecorder recorder,
+        Photo photo,
+        string signature,
+        AnalysisOutcome outcome,
+        double confidence,
+        ClassificationMethod method,
+        int total,
+        CancellationToken cancellationToken)
+    {
+        DateTimeOffset now = _clock.UtcNow;
+        return recorder.RecordAsync(
+            new AnalysisRunItem
+            {
+                FileSignature = signature,
+                PhotoPath = photo.FullPath,
+                Outcome = outcome,
+                Confidence = confidence,
+                Method = method,
+                DecidedAt = now,
+            },
+            total,
+            now,
+            cancellationToken);
+    }
+
+    private static AnalysisOutcome ToOutcome(Evaluation evaluation) => evaluation switch
+    {
+        { Proposal: not null } => AnalysisOutcome.Proposed,
+        { WasEvaluated: true } => AnalysisOutcome.Rejected,
+        _ => AnalysisOutcome.NotEvaluated,
+    };
 
     /// <inheritdoc />
     public async Task<int> ApplyProposalsAsync(
@@ -709,6 +1017,12 @@ internal static partial class SortingLog
 
     [LoggerMessage(EventId = 3001, Level = LogLevel.Information, Message = "{Count} Vorschläge für Kategorie {Category} erstellt.")]
     public static partial void ProposalsCreated(ILogger logger, int count, string category);
+
+    [LoggerMessage(EventId = 3014, Level = LogLevel.Information, Message = "{Count} Fotos aus dem Protokoll des Laufs übernommen; sie wurden nicht erneut bewertet.")]
+    public static partial void ResultsReused(ILogger logger, int count);
+
+    [LoggerMessage(EventId = 3015, Level = LogLevel.Warning, Message = "Der Lauf zur Kategorie {Category} lässt sich nicht fortsetzen: Die Kategorie ist nicht mehr vorhanden und müsste neu angelernt werden.")]
+    public static partial void ResumeWithoutCategory(ILogger logger, string category);
 
     [LoggerMessage(EventId = 3012, Level = LogLevel.Information, Message = "{Count} Fotos allein nach Aufnahmedatum für Ordner {Folder} vorgeschlagen (ohne KI-Bewertung).")]
     public static partial void DateProposalsCreated(ILogger logger, int count, string folder);

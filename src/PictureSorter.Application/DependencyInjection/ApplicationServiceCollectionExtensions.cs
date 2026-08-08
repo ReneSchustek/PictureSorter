@@ -24,6 +24,7 @@ public static class ApplicationServiceCollectionExtensions
         // Kapseln den fehlertoleranten Zugriff auf Gedächtnis und Lauf-Protokoll.
         _ = services.AddTransient<SortMemoryGateway>();
         _ = services.AddTransient<SortJournalGateway>();
+        _ = services.AddTransient<SortMemoryRecovery>();
 
         // Transient, da die Dienste an den transienten KI-Providern hängen.
         _ = services.AddTransient<IPhotoSorter, PhotoSortingService>();
