@@ -330,6 +330,32 @@ public sealed class SortViewModelFlowTests : IDisposable
         Assert.Empty(sut.Proposals.Items);
     }
 
+    [Theory]
+    [InlineData(typeof(InvalidOperationException))]
+    [InlineData(typeof(TimeoutException))]
+    [InlineData(typeof(OutOfMemoryException))]
+    public async Task Analyze_WhenSomethingUnexpectedGoesWrong_LeavesTheViewUsable(Type failureType)
+    {
+        // Ein Lauf über tausende Bilder darf unter keinen Umständen stumm stehenbleiben.
+        // Gefangen wurden früher nur der Abbruch und zwei Datei-Ausnahmen — jede andere
+        // ließ den Zustand auf „läuft" stehen. Damit war jeder Knopf gesperrt, die
+        // Statusleiste blieb beim letzten Zählstand hängen, und der Stopp-Knopf löste
+        // nichts mehr aus. Es gab keinen Weg zurück außer dem Beenden des Programms.
+        Exception failure = (Exception)Activator.CreateInstance(failureType)!;
+        StatusBarViewModel status = new(new ReswLocalizer());
+        using SortViewModel sut = CreateSut(new FailingPhotoSorter(failure), status: status);
+        await PrepareLearnedCategoryAsync(sut);
+
+        await sut.AnalyzeCommand.ExecuteAsync(parameter: null);
+
+        Assert.Equal(SortState.Error, sut.State);
+        Assert.True(sut.IsInteractive);
+
+        // Und die Statusleiste sagt, was los ist, statt bei „läuft" stehenzubleiben.
+        Assert.False(status.IsBusy);
+        Assert.Equal(StatusSeverity.Error, status.Severity);
+    }
+
     [Fact]
     public async Task Analyze_WhenCanceled_ReturnsToTheIdleState()
     {
@@ -650,6 +676,17 @@ public sealed class SortViewModelFlowTests : IDisposable
             return [];
         }
 
+        public async Task<IReadOnlyList<SortProposal>> ResumeAsync(
+            AnalysisRun run,
+            Category? category,
+            IProgress<SortProgress>? progress,
+            CancellationToken cancellationToken)
+        {
+            _ = Started.Release();
+            await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
+            return [];
+        }
+
         public Task<int> ApplyProposalsAsync(
             IReadOnlyList<SortProposal> toApply,
             FileOperationMode operation,
@@ -668,6 +705,304 @@ public sealed class SortViewModelFlowTests : IDisposable
         return path;
     }
 
+    // ── Anhalten, Fortsetzen, Zurückholen ──────────────────────────────────────
+
+    [Fact]
+    public async Task RefreshResumeState_WithAPausedRun_OffersToContinue()
+    {
+        FakeAnalysisJournal journal = new();
+        journal.Seed(PausedRun());
+        using SortViewModel sut = CreateSut(journal: journal);
+
+        await sut.RefreshResumeStateCommand.ExecuteAsync(parameter: null);
+
+        Assert.True(sut.HasResumableRun);
+        Assert.Contains("3472", sut.ResumeSummary, StringComparison.Ordinal);
+        Assert.NotEmpty(sut.ResumeActionLabel);
+    }
+
+    [Fact]
+    public async Task RefreshResumeState_WithoutAnyRun_OffersNothing()
+    {
+        using SortViewModel sut = CreateSut();
+
+        await sut.RefreshResumeStateCommand.ExecuteAsync(parameter: null);
+
+        Assert.False(sut.HasResumableRun);
+        Assert.Empty(sut.ResumeSummary);
+    }
+
+    [Fact]
+    public async Task Resume_TakesOverTheSettingsOfTheRunAndShowsTheResult()
+    {
+        FakeAnalysisJournal journal = new();
+        journal.Seed(PausedRun());
+        FakePhotoSorter sorter = new(CreateProposals(3));
+        using SortViewModel sut = CreateSut(sorter, journal: journal);
+
+        // Die Gruppe ist angelernt und gespeichert — so wie sie es beim ursprünglichen
+        // Lauf war. Ohne sie ließe sich nicht fortsetzen, das prüft der nächste Test.
+        await PrepareLearnedCategoryAsync(sut);
+        await sut.RefreshResumeStateCommand.ExecuteAsync(parameter: null);
+
+        await sut.ResumeCommand.ExecuteAsync(parameter: null);
+
+        // Die Angaben des Laufs gelten, nicht die der Oberfläche: Ein fortgesetzter Lauf
+        // muss dieselbe Frage beantworten wie der unterbrochene.
+        Assert.Equal(SourceFolder, sut.SourceFolder);
+        Assert.Equal("Familie", sut.CategoryName);
+        Assert.NotNull(sorter.ResumedRun);
+        Assert.Equal(SortState.Preview, sut.State);
+        Assert.Equal(3, sut.Proposals.Items.Count);
+
+        // Und die Nutzerin landet direkt bei der Vorschau — sie hat um das Ergebnis
+        // gebeten, nicht um den Weg dorthin.
+        Assert.True(sut.Wizard.IsStep6);
+    }
+
+    [Fact]
+    public async Task Resume_WhenTheCategoryIsGone_SaysSoInsteadOfGuessing()
+    {
+        FakeAnalysisJournal journal = new();
+        journal.Seed(PausedRun() with { CategoryName = "Gibt es nicht mehr" });
+        using SortViewModel sut = CreateSut(journal: journal);
+        await sut.RefreshResumeStateCommand.ExecuteAsync(parameter: null);
+
+        await sut.ResumeCommand.ExecuteAsync(parameter: null);
+
+        Assert.Equal(SortState.Idle, sut.State);
+        Assert.Empty(sut.Proposals.Items);
+    }
+
+    [Fact]
+    public async Task DiscardRun_RemovesTheOfferAfterConfirmation()
+    {
+        FakeAnalysisJournal journal = new();
+        journal.Seed(PausedRun());
+        using SortViewModel sut = CreateSut(journal: journal);
+        await sut.RefreshResumeStateCommand.ExecuteAsync(parameter: null);
+
+        await sut.DiscardRunCommand.ExecuteAsync(parameter: null);
+
+        _ = Assert.Single(journal.Discarded);
+        Assert.False(sut.HasResumableRun);
+    }
+
+    [Fact]
+    public async Task DiscardRun_WhenTheUserSaysNo_KeepsTheRun()
+    {
+        FakeAnalysisJournal journal = new();
+        journal.Seed(PausedRun());
+        using SortViewModel sut = CreateSut(journal: journal, confirms: false);
+        await sut.RefreshResumeStateCommand.ExecuteAsync(parameter: null);
+
+        await sut.DiscardRunCommand.ExecuteAsync(parameter: null);
+
+        Assert.Empty(journal.Discarded);
+        Assert.True(sut.HasResumableRun);
+    }
+
+    [Fact]
+    public async Task RefreshResumeState_WhenTheJournalIsBroken_OpensThePageAnyway()
+    {
+        // Der Hinweis wird beim Anzeigen der Seite geholt. Eine gesperrte Datenbank darf
+        // die Sortierseite nicht mitreißen.
+        using SortViewModel sut = CreateSut(journal: new BrokenAnalysisJournal());
+
+        await sut.RefreshResumeStateCommand.ExecuteAsync(parameter: null);
+
+        Assert.False(sut.HasResumableRun);
+    }
+
+    [Fact]
+    public void RecoverFromMemory_WithoutFolderOrName_StaysDisabled()
+    {
+        using SortViewModel sut = CreateSut();
+
+        Assert.False(sut.CanRecoverFromMemory);
+
+        sut.SourceFolder = SourceFolder;
+        Assert.False(sut.CanRecoverFromMemory);
+
+        sut.CategoryName = "Familie";
+        Assert.True(sut.CanRecoverFromMemory);
+    }
+
+    [Fact]
+    public async Task RecoverFromMemory_WithNothingRemembered_ReturnsToTheIdleState()
+    {
+        using SortViewModel sut = CreateSut();
+        sut.SourceFolder = SourceFolder;
+        sut.CategoryName = "Familie";
+
+        await sut.RecoverFromMemoryCommand.ExecuteAsync(parameter: null);
+
+        Assert.Equal(SortState.Idle, sut.State);
+        Assert.Empty(sut.Proposals.Items);
+        Assert.True(sut.IsInteractive);
+    }
+
+    [Fact]
+    public async Task RecoverFromMemory_BringsBackTheProposalsOfAnEarlierRun()
+    {
+        // Der Weg für Läufe, zu denen es kein Protokoll gibt — etwa aus einer älteren
+        // Fassung oder nach einem Absturz. Die Urteile stehen im Gedächtnis, und von dort
+        // kommen die Vorschläge zurück, ohne dass ein Bild erneut bewertet wird.
+        string imagePath = CreateImage("gerettet.jpg");
+        FakeSortMemory memory = new();
+        memory.Records.Add(RememberedProposal(imagePath));
+
+        using SortViewModel sut = CreateSut(recovery: RecoveryFactory.Create(memory));
+        sut.SourceFolder = _imageFolder;
+        sut.CategoryName = "Familie";
+
+        await sut.RecoverFromMemoryCommand.ExecuteAsync(parameter: null);
+
+        Assert.Equal(SortState.Preview, sut.State);
+        _ = Assert.Single(sut.Proposals.Items);
+        Assert.True(sut.Wizard.IsStep6);
+    }
+
+    [Fact]
+    public async Task Analyze_WhenTheAiIsUnavailable_SaysSoInsteadOfBlamingTheFolder()
+    {
+        // Bekannte Störungen bekommen den Text, der die Nutzerin weiterbringt. Vorher
+        // stand bei jedem Fehler dasselbe da: „Analyse fehlgeschlagen".
+        StatusBarViewModel status = new(new ReswLocalizer());
+        using SortViewModel sut = CreateSut(
+            new FailingPhotoSorter(new AiUnavailableException("Ollama antwortet nicht")),
+            status: status);
+        await PrepareLearnedCategoryAsync(sut);
+
+        await sut.AnalyzeCommand.ExecuteAsync(parameter: null);
+
+        Assert.Equal(SortState.Error, sut.State);
+        Assert.Contains("Ollama", status.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task Analyze_WhenTheFolderIsGone_NamesTheFolder()
+    {
+        StatusBarViewModel status = new(new ReswLocalizer());
+        using SortViewModel sut = CreateSut(
+            new FailingPhotoSorter(new DirectoryNotFoundException("weg")),
+            status: status);
+        await PrepareLearnedCategoryAsync(sut);
+
+        await sut.AnalyzeCommand.ExecuteAsync(parameter: null);
+
+        Assert.Equal(SortState.Error, sut.State);
+        Assert.Contains("Ordner", status.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task Cancel_DuringAnalysis_SaysPausingInsteadOfCanceling()
+    {
+        // Seit jedes Ergebnis im Protokoll steht, geht beim Anhalten nichts verloren —
+        // und die Meldung muss das sagen, sonst traut sich niemand.
+        StatusBarViewModel status = new(new ReswLocalizer());
+        BlockingPhotoSorter sorter = new();
+        using SortViewModel sut = CreateSut(sorter, status: status);
+        await PrepareLearnedCategoryAsync(sut);
+
+        Task analysis = sut.AnalyzeCommand.ExecuteAsync(parameter: null);
+        await sorter.Started.WaitAsync(TestContext.Current.CancellationToken);
+
+        sut.CancelCommand.Execute(parameter: null);
+        await analysis.ConfigureAwait(true);
+
+        Assert.Equal(SortState.Idle, sut.State);
+        Assert.False(status.IsBusy);
+    }
+
+    [Fact]
+    public async Task SuggestTrips_WithClusteredPhotos_OffersThePeriod()
+    {
+        // Die Urlaubssuche liest die Aufnahmedaten aller Bilder — dieselbe Arbeit wie der
+        // Ladeteil einer Analyse. Danach steht ein Zeitraum zur Auswahl, und ein Klick
+        // übernimmt ihn.
+        IReadOnlyList<Photo> photos = [.. Enumerable.Range(0, 10).Select(index => new Photo
+        {
+            FullPath = Path.Combine(SourceFolder, $"urlaub{index}.jpg"),
+            FileName = $"urlaub{index}.jpg",
+            CapturedAt = new DateTimeOffset(2026, 7, 12, 10, 0, 0, TimeSpan.Zero).AddDays(index),
+        })];
+        using SortViewModel sut = CreateSut(photoSource: new FakePhotoSource(photos));
+        sut.SourceFolder = SourceFolder;
+
+        await sut.SuggestTripsCommand.ExecuteAsync(parameter: null);
+
+        TripSuggestionViewModel suggestion = Assert.Single(sut.TripSuggestions);
+        Assert.Empty(sut.TripHint);
+
+        sut.UseTripSuggestionCommand.Execute(suggestion);
+
+        Assert.Equal(new DateOnly(2026, 7, 12), DateOnly.FromDateTime(sut.DateFrom!.Value.LocalDateTime));
+        Assert.Equal(new DateOnly(2026, 7, 21), DateOnly.FromDateTime(sut.DateTo!.Value.LocalDateTime));
+    }
+
+    [Fact]
+    public async Task SuggestTrips_WithoutAnyCluster_ExplainsTheEmptyList()
+    {
+        // Ohne Erklärung stünde die Nutzerin vor einer leeren Liste und wüsste nicht, ob
+        // die Suche überhaupt gelaufen ist.
+        using SortViewModel sut = CreateSut(photoSource: new FakePhotoSource([]));
+        sut.SourceFolder = SourceFolder;
+
+        await sut.SuggestTripsCommand.ExecuteAsync(parameter: null);
+
+        Assert.Empty(sut.TripSuggestions);
+        Assert.NotEmpty(sut.TripHint);
+    }
+
+    [Fact]
+    public void UseTripSuggestion_WithoutSuggestion_ChangesNothing()
+    {
+        using SortViewModel sut = CreateSut();
+
+        sut.UseTripSuggestionCommand.Execute(parameter: null);
+
+        Assert.Null(sut.DateFrom);
+        Assert.Null(sut.DateTo);
+    }
+
+    private SortMemoryRecord RememberedProposal(string imagePath)
+    {
+        FileInfo info = new(imagePath);
+        Photo photo = new()
+        {
+            FullPath = info.FullName,
+            FileName = info.Name,
+            SizeBytes = info.Length,
+            CapturedAt = new DateTimeOffset(info.LastWriteTimeUtc, TimeSpan.Zero),
+        };
+
+        return new SortMemoryRecord
+        {
+            FolderPath = _imageFolder,
+            FileSignature = photo.ComputeSignature(),
+            PhotoPath = photo.FullPath,
+            CategoryName = "Familie",
+            Status = SortMemoryStatus.Proposed,
+            Confidence = 0.88,
+            UpdatedAt = new DateTimeOffset(2026, 8, 6, 21, 0, 0, TimeSpan.Zero),
+        };
+    }
+
+    private static AnalysisRun PausedRun() => new()
+    {
+        Id = new Guid("44444444-4444-4444-4444-444444444444"),
+        SourceFolder = SourceFolder,
+        CategoryName = "Familie",
+        ByDateOnly = false,
+        IncludeSubfolders = false,
+        State = AnalysisRunState.Paused,
+        StartedAt = new DateTimeOffset(2026, 8, 6, 20, 0, 0, TimeSpan.Zero),
+        LastProgressAt = new DateTimeOffset(2026, 8, 6, 23, 30, 0, TimeSpan.Zero),
+        TotalPhotos = 4130,
+        DecidedPhotos = 3472,
+    };
+
     private static async Task PrepareLearnedCategoryAsync(SortViewModel sut)
     {
         sut.SourceFolder = SourceFolder;
@@ -684,7 +1019,10 @@ public sealed class SortViewModelFlowTests : IDisposable
         IFolderPicker? folderPicker = null,
         bool confirms = true,
         int bulkThreshold = 50,
-        int maxExamplesPerSide = 15)
+        int maxExamplesPerSide = 15,
+        IAnalysisJournal? journal = null,
+        SortMemoryRecovery? recovery = null,
+        StatusBarViewModel? status = null)
     {
         Photo examplePhoto = new()
         {
@@ -697,13 +1035,15 @@ public sealed class SortViewModelFlowTests : IDisposable
         return new SortViewModel(
             sorter ?? new FakePhotoSorter([]),
             undo ?? new FakeSortUndoService(),
+            journal ?? new FakeAnalysisJournal(),
+            recovery ?? RecoveryFactory.Create(),
             photoSource ?? new FakePhotoSource([examplePhoto]),
             new TripDetectionService(Options.Create(new TripDetectionOptions())),
             trainer ?? new FakeCategoryTrainer(CreateCategory()),
             new FakeCategoryRepository(),
             folderPicker ?? new FakeFolderPicker(SourceFolder),
             new StubConfirmationService(confirms),
-            new StatusBarViewModel(localizer),
+            status ?? new StatusBarViewModel(localizer),
             Options.Create(new SortingOptions
             {
                 BulkConfirmationThreshold = bulkThreshold,

@@ -36,6 +36,16 @@ public sealed class PictureSorterDbContext : DbContext
     /// </summary>
     internal DbSet<SortRunItemEntity> SortRunItems => Set<SortRunItemEntity>();
 
+    /// <summary>
+    /// Die protokollierten Analyseläufe (Grundlage des Fortsetzens).
+    /// </summary>
+    internal DbSet<AnalysisRunEntity> AnalysisRuns => Set<AnalysisRunEntity>();
+
+    /// <summary>
+    /// Die Einzelergebnisse der Analyseläufe.
+    /// </summary>
+    internal DbSet<AnalysisRunItemEntity> AnalysisRunItems => Set<AnalysisRunItemEntity>();
+
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

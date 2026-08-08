@@ -441,7 +441,7 @@ public sealed class PhotoSortingServiceTests
             TestContext.Current.CancellationToken);
 
         Assert.Empty(proposals);
-        Assert.Equal(new SortProgress(1, 1), reported.Reports[^1]);
+        Assert.Equal(new SortProgress(1, 1, ScanPhase.Analyzing, IsFinal: true), reported.Reports[^1]);
     }
 
     [Fact]
@@ -528,7 +528,7 @@ public sealed class PhotoSortingServiceTests
             reported,
             TestContext.Current.CancellationToken);
 
-        Assert.Equal(new SortProgress(3, 3, ScanPhase.Analyzing), reported.Reports[^1]);
+        Assert.Equal(new SortProgress(3, 3, ScanPhase.Analyzing, IsFinal: true), reported.Reports[^1]);
     }
 
     [Fact]
@@ -701,7 +701,7 @@ public sealed class PhotoSortingServiceTests
             @"C:\fotos", CreateCategory(), includeSubfolders: false, DateRange.Unbounded, reported,
             TestContext.Current.CancellationToken);
 
-        Assert.Equal(new SortProgress(12, 12, ScanPhase.Analyzing), reported.Reports[^1]);
+        Assert.Equal(new SortProgress(12, 12, ScanPhase.Analyzing, IsFinal: true), reported.Reports[^1]);
     }
 
     [Fact]
@@ -771,7 +771,7 @@ public sealed class PhotoSortingServiceTests
                 $"Es waren {report.Processed} Bilder bewertet, aber erst {loaded} geladen.");
         }
 
-        Assert.Equal(new SortProgress(20, 20, ScanPhase.Analyzing), reported.Reports[^1]);
+        Assert.Equal(new SortProgress(20, 20, ScanPhase.Analyzing, IsFinal: true), reported.Reports[^1]);
     }
 
     /// <summary>
@@ -1157,7 +1157,8 @@ public sealed class PhotoSortingServiceTests
         IEmbeddingProvider? embeddingProvider = null,
         FakeSortJournal? journal = null,
         IReadOnlyList<Photo>? photos = null,
-        IPhotoSource? source = null)
+        IPhotoSource? source = null,
+        FakeAnalysisJournal? analysisJournal = null)
     {
         IPhotoSource photoSource = source ?? new FakePhotoSource(photos ?? [SamplePhoto]);
         IOptions<SortingOptions> options = Options.Create(new SortingOptions());
@@ -1179,6 +1180,7 @@ public sealed class PhotoSortingServiceTests
             organizer ?? new FakeFileOrganizer(),
             gateway,
             journalGateway,
+            analysisJournal ?? new FakeAnalysisJournal(),
             clock,
             options,
             NullLogger<PhotoSortingService>.Instance);

@@ -122,6 +122,20 @@ internal sealed class FakePhotoSorter(IReadOnlyList<SortProposal> proposals) : I
         return Task.FromResult(proposals);
     }
 
+    /// <summary>Der Lauf, der zuletzt fortgesetzt werden sollte.</summary>
+    public AnalysisRun? ResumedRun { get; private set; }
+
+    public Task<IReadOnlyList<SortProposal>> ResumeAsync(
+        AnalysisRun run,
+        Category? category,
+        IProgress<SortProgress>? progress,
+        CancellationToken cancellationToken)
+    {
+        ResumedRun = run;
+        progress?.Report(new SortProgress(proposals.Count, proposals.Count, ScanPhase.Analyzing, IsFinal: true));
+        return Task.FromResult(proposals);
+    }
+
     /// <summary>Der Zielordnername des zuletzt angeforderten Datums-Laufs.</summary>
     public string? LastDateTargetFolder { get; private set; }
 

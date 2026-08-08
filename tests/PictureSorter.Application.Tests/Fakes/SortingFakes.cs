@@ -55,6 +55,48 @@ internal sealed class FakePhotoSource(IReadOnlyList<Photo> photos) : IPhotoSourc
     }
 }
 
+/// <summary>
+/// Liefert weniger Fotos, als der Ordner Dateien enthält — so, wie die echte Quelle es
+/// tut, wenn eine Datei vom Virenscanner weggeräumt wurde oder ihr Codec fehlt.
+///
+/// Genau dieser Fall lässt den Zählstand der Bewertung die Gesamtzahl nie erreichen. Er
+/// gehört in die Tests, weil er in der Anzeige wie ein Stillstand aussah.
+/// </summary>
+internal sealed class PartialPhotoSource(IReadOnlyList<Photo> photos, int total) : IPhotoSource
+{
+    public Task<IReadOnlyList<Photo>> GetPhotosAsync(
+        string folderPath,
+        bool includeSubfolders,
+        int skip,
+        int? maxCount,
+        IProgress<PhotoScanProgress>? progress,
+        CancellationToken cancellationToken) => Task.FromResult(photos);
+
+    public async IAsyncEnumerable<ScannedPhoto> StreamPhotosAsync(
+        string folderPath,
+        bool includeSubfolders,
+        int skip,
+        int? maxCount,
+        IProgress<PhotoScanProgress>? progress,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        progress?.Report(new PhotoScanProgress(0, total));
+
+        for (int index = 0; index < photos.Count; index++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            await Task.Yield();
+
+            // Gezählt werden die bearbeiteten Dateien, nicht die brauchbaren — auch die
+            // ausgefallene zählt mit.
+            progress?.Report(new PhotoScanProgress(index + 1, total));
+            yield return new ScannedPhoto(photos[index], index, total);
+        }
+
+        progress?.Report(new PhotoScanProgress(total, total));
+    }
+}
+
 /// <summary>Erzeugt Embeddings über eine Testfunktion.</summary>
 internal sealed class FakeEmbeddingProvider(Func<Photo, float[]> vectorFactory, string model = "fake")
     : IEmbeddingProvider
@@ -278,6 +320,133 @@ internal sealed class FakeSortJournal : ISortJournal
     {
         _ = Undone.Add(runId);
         return Task.CompletedTask;
+    }
+}
+
+/// <summary>
+/// Hält das Protokoll der Analyseläufe im Speicher und legt es offen.
+///
+/// Wie beim Gedächtnis läuft jeder Zugriff unter einem Schloss: Der Sortierdienst
+/// bewertet mehrere Fotos gleichzeitig und schreibt aus mehreren Fäden ins Protokoll.
+/// Ohne das Schloss beschriebe der Fake ein Verhalten, das es nicht gibt.
+/// </summary>
+internal sealed class FakeAnalysisJournal : IAnalysisJournal
+{
+    private readonly Lock _gate = new();
+    private readonly List<AnalysisRun> _runs = [];
+    private readonly Dictionary<Guid, List<AnalysisRunItem>> _items = [];
+
+    /// <summary>Die angelegten Läufe in der Reihenfolge ihrer Anlage.</summary>
+    public IReadOnlyList<AnalysisRun> Runs
+    {
+        get
+        {
+            lock (_gate)
+            {
+                return [.. _runs];
+            }
+        }
+    }
+
+    /// <summary>Die protokollierten Ergebnisse eines Laufs.</summary>
+    /// <param name="runId">Kennung des Laufs.</param>
+    /// <returns>Die Ergebnisse.</returns>
+    public IReadOnlyList<AnalysisRunItem> ItemsOf(Guid runId)
+    {
+        lock (_gate)
+        {
+            return _items.TryGetValue(runId, out List<AnalysisRunItem>? items) ? [.. items] : [];
+        }
+    }
+
+    public Task StartAsync(AnalysisRun run, CancellationToken cancellationToken)
+    {
+        lock (_gate)
+        {
+            _runs.Add(run);
+            _items[run.Id] = [];
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task AppendAsync(
+        Guid runId,
+        IReadOnlyList<AnalysisRunItem> items,
+        int totalPhotos,
+        DateTimeOffset at,
+        CancellationToken cancellationToken)
+    {
+        lock (_gate)
+        {
+            if (!_items.TryGetValue(runId, out List<AnalysisRunItem>? stored))
+            {
+                return Task.CompletedTask;
+            }
+
+            stored.AddRange(items);
+            Replace(runId, run => run with
+            {
+                LastProgressAt = at,
+                TotalPhotos = totalPhotos > 0 ? totalPhotos : run.TotalPhotos,
+                DecidedPhotos = stored.Count,
+            });
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task FinishAsync(
+        Guid runId,
+        AnalysisRunState state,
+        string? failureReason,
+        DateTimeOffset at,
+        CancellationToken cancellationToken)
+    {
+        lock (_gate)
+        {
+            Replace(runId, run => run with
+            {
+                State = state,
+                FailureReason = failureReason,
+                FinishedAt = at,
+                LastProgressAt = at,
+            });
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task<AnalysisRun?> GetLatestAsync(CancellationToken cancellationToken)
+    {
+        lock (_gate)
+        {
+            return Task.FromResult(_runs.Count == 0 ? null : _runs[^1]);
+        }
+    }
+
+    public Task<IReadOnlyList<AnalysisRunItem>> GetItemsAsync(Guid runId, CancellationToken cancellationToken) =>
+        Task.FromResult(ItemsOf(runId));
+
+    public Task DiscardAsync(Guid runId, CancellationToken cancellationToken)
+    {
+        lock (_gate)
+        {
+            _ = _runs.RemoveAll(run => run.Id == runId);
+            _ = _items.Remove(runId);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    // Läuft stets unter dem Schloss des Aufrufers.
+    private void Replace(Guid runId, Func<AnalysisRun, AnalysisRun> update)
+    {
+        int index = _runs.FindIndex(run => run.Id == runId);
+        if (index >= 0)
+        {
+            _runs[index] = update(_runs[index]);
+        }
     }
 }
 

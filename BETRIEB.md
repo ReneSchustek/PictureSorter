@@ -1,4 +1,4 @@
-# Betriebshandbuch
+﻿# Betriebshandbuch
 
 Was im Betrieb zu tun ist, wenn etwas schiefgeht: wo die Daten liegen, wie man sie
 sichert, wie man einen fehlgeschlagenen Sortierlauf oder ein misslungenes Update
@@ -16,7 +16,7 @@ Anwendung braucht deshalb keine Administratorrechte.
 
 | Inhalt | Ort |
 |---|---|
-| Datenbank (Sortier-Gedächtnis, Protokoll der Sortierläufe) | `%LOCALAPPDATA%\PictureSorter\picturesorter.db` |
+| Datenbank (Sortier-Gedächtnis, Protokoll der Sortier- und Analyseläufe) | `%LOCALAPPDATA%\PictureSorter\picturesorter.db` |
 | Sicherungen vor einer Migration | `%LOCALAPPDATA%\PictureSorter\picturesorter.vor-<Migration>.bak` |
 | Tägliche Protokolldateien | `%LOCALAPPDATA%\PictureSorter\logs\picturesorter-JJJJ-MM-TT.log` |
 | Einstellungen (Design, Update-Verhalten) | `%LOCALAPPDATA%\PictureSorter\ui-settings.json` |
@@ -114,6 +114,41 @@ nicht zurückkonnten. Ein zweiter Versuch würde an denselben Hindernissen schei
 Protokoll nach Ereignis `3700` suchen („Der Sortierlauf … konnte nicht protokolliert
 werden"). Dann ist die Datenbank beim Schreiben nicht erreichbar gewesen; die Fotos
 liegen im Kategorie-Ordner und müssen von Hand zurückgeschoben werden.
+
+---
+
+## 4a. Eine Analyse anhalten, fortsetzen oder zurückholen
+
+Ein Lauf über tausende Fotos dauert je nach Rechner viele Stunden. Er muss deshalb
+nicht in einem Stück durchlaufen.
+
+**Anhalten:** *Fotos sortieren* → im Analyse-Schritt **Analyse anhalten**. Der Stand
+wird weggeschrieben; der Rechner darf danach heruntergefahren werden.
+
+**Fortsetzen:** Beim Öffnen der Sortierseite erscheint oben die Leiste *Letzte
+Analyse* mit dem Stand („bei 3.472 von 4.130 Fotos stehengeblieben, zuletzt …").
+**Fortsetzen** nimmt Ordner, Gruppe und Zeitraum aus dem Protokoll und legt der KI
+nur noch das vor, worüber kein Urteil vorliegt. Ist die Gruppe zwischenzeitlich
+gelöscht worden, sagt die Anwendung das und setzt nicht fort — ohne die
+Beispielbilder wäre jedes Urteil geraten.
+
+**Zurückholen:** Bei einem abgeschlossenen Lauf heißt derselbe Knopf **Ergebnis
+zurückholen**. Es wird kein Bild neu bewertet; nur die Dateien werden erneut
+eingelesen.
+
+**Verwerfen:** Der Knopf daneben entfernt den Lauf samt seiner Ergebnisse, nach
+Rückfrage. Eine neue Analyse fängt danach wieder von vorn an.
+
+**Ein Lauf ohne Protokoll** — etwa aus einer Fassung vor 1.7.0 oder nach einem
+Absturz — lässt sich trotzdem retten: Ordner und Gruppenname eingeben, dann im
+Analyse-Schritt **Vorschläge einer früheren Analyse zurückholen**. Die Urteile
+stammen dann aus dem Sortier-Gedächtnis. Voraussetzung: Die Fotos liegen unverändert
+an ihrem Platz — Pfad, Größe und Aufnahmezeit bilden ihre Kennung.
+
+**Wenn kein Lauf angeboten wird**, obwohl analysiert wurde: Im Protokoll nach
+Ereignis `5200` suchen („Das Protokoll des Analyselaufs konnte nicht geschrieben
+werden"). Dann war die Datenbank während des Laufs nicht erreichbar; der Weg über
+das Sortier-Gedächtnis greift trotzdem.
 
 ---
 

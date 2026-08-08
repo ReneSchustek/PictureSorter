@@ -53,6 +53,36 @@
                 </InfoBar.ActionButton>
             </InfoBar>
 
+            <!--
+                Angebot, einen protokollierten Analyselauf fortzusetzen oder sein Ergebnis
+                zurückzuholen. Steht neben dem Rückgängig-Hinweis und aus demselben Grund
+                oben: Ein Lauf über tausende Bilder dauert Stunden bis Tage und übersteht
+                einen Neustart nur, weil er im Protokoll steht.
+            -->
+            <InfoBar
+                x:Uid="SortPage_ResumeBar"
+                IsClosable="False"
+                IsOpen="{x:Bind ViewModel.HasResumableRun, Mode=OneWay}"
+                Message="{x:Bind ViewModel.ResumeSummary, Mode=OneWay}"
+                Severity="Informational"
+                Title="Letzte Analyse">
+                <InfoBar.ActionButton>
+                    <Button
+                        AutomationProperties.Name="Analyse fortsetzen oder Ergebnis zurückholen"
+                        Command="{x:Bind ViewModel.ResumeCommand}"
+                        Content="{x:Bind ViewModel.ResumeActionLabel, Mode=OneWay}"
+                        Style="{ThemeResource AccentButtonStyle}" />
+                </InfoBar.ActionButton>
+
+                <!-- Der zweite Weg gehört sichtbar daneben: Wer neu anfangen will, soll
+                     nicht raten müssen, wie er den Hinweis loswird. -->
+                <Button
+                    Margin="0,8,0,8"
+                    x:Uid="SortPage_DiscardRunButton"
+                    Command="{x:Bind ViewModel.DiscardRunCommand}"
+                    Content="Verwerfen" />
+            </InfoBar>
+
             <Border Style="{StaticResource HeroBorderStyle}">
                 <Grid ColumnSpacing="12">
                     <Grid.ColumnDefinitions>
@@ -540,6 +570,33 @@
                             Content="Fotos im Zeitraum suchen"
                             Style="{ThemeResource AccentButtonStyle}"
                             Visibility="{x:Bind ViewModel.Wizard.ShowStandardDateAction, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+                        <!-- Während des Laufs: anhalten. Bewusst hier und nicht nur als
+                             Stopp in der Statusleiste — bei einem Lauf über Stunden ist
+                             das die Frage, die sich stellt, und die Nutzerin muss sehen,
+                             dass dabei nichts verlorengeht. -->
+                        <StackPanel
+                            Spacing="4"
+                            Visibility="{x:Bind ViewModel.CanCancel, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <Button
+                                Command="{x:Bind ViewModel.CancelCommand}"
+                                x:Uid="SortPage_PauseButton"
+                                Content="Analyse anhalten" />
+                            <TextBlock
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                x:Uid="SortPage_PauseHint"
+                                Text="Der Stand bleibt erhalten. Du kannst später genau hier weitermachen – auch nach einem Neustart des Rechners."
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+
+                        <!-- Eine frühere Analyse desselben Ordners hat ihre Urteile im
+                             Gedächtnis hinterlassen — auch dann, wenn sie abgestürzt ist.
+                             Hier kommen sie zurück, ohne dass ein einziges Bild erneut
+                             durch die KI läuft. -->
+                        <HyperlinkButton
+                            Command="{x:Bind ViewModel.RecoverFromMemoryCommand}"
+                            x:Uid="SortPage_RecoverButton"
+                            Content="Vorschläge einer früheren Analyse zurückholen" />
                     </StackPanel>
                 </Border>
 
