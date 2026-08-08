@@ -27,7 +27,7 @@ public sealed class AnalysisJournalTests
     public async Task CreateProposalsAsync_WritesEveryDecisionAndClosesTheRun()
     {
         FakeAnalysisJournal journal = new();
-        PhotoSortingService service = CreateService(journal, [Foto("a.jpg"), Foto("b.jpg"), Foto("c.jpg")]);
+        PhotoAnalysisService service = CreateService(journal, [Foto("a.jpg"), Foto("b.jpg"), Foto("c.jpg")]);
 
         _ = await service.CreateProposalsAsync(
             SourceFolder, CreateCategory(), includeSubfolders: false, DateRange.Unbounded, progress: null, CancellationToken.None);
@@ -47,7 +47,7 @@ public sealed class AnalysisJournalTests
         // Bricht ab, sobald das erste Foto bewertet ist — genau der Fall „Nutzerin hält
         // an, weil der Rechner nicht drei Tage laufen soll".
         CancelingEmbeddingProvider provider = new([1.0f, 0.0f, 0.0f], cancellation);
-        PhotoSortingService service = CreateService(
+        PhotoAnalysisService service = CreateService(
             journal,
             [Foto("a.jpg"), Foto("b.jpg"), Foto("c.jpg")],
             embeddingProvider: provider);
@@ -71,14 +71,14 @@ public sealed class AnalysisJournalTests
         // einziges Mal befragt — anders lässt sich das nicht beweisen.
         FakeAnalysisJournal journal = new();
         IReadOnlyList<Photo> photos = [Foto("a.jpg"), Foto("b.jpg")];
-        PhotoSortingService first = CreateService(journal, photos);
+        PhotoAnalysisService first = CreateService(journal, photos);
 
         IReadOnlyList<SortProposal> original = await first.CreateProposalsAsync(
             SourceFolder, CreateCategory(), includeSubfolders: false, DateRange.Unbounded, progress: null, CancellationToken.None);
         Assert.Equal(2, original.Count);
 
         AnalysisRun run = Assert.Single(journal.Runs);
-        PhotoSortingService second = CreateService(
+        PhotoAnalysisService second = CreateService(
             journal,
             photos,
             embeddingProvider: new ThrowingEmbeddingProvider());
@@ -96,7 +96,7 @@ public sealed class AnalysisJournalTests
     public async Task ResumeAsync_WithoutTheCategory_DeliversNothingInsteadOfGuessing()
     {
         FakeAnalysisJournal journal = new();
-        PhotoSortingService service = CreateService(journal, [Foto("a.jpg")]);
+        PhotoAnalysisService service = CreateService(journal, [Foto("a.jpg")]);
         AnalysisRun run = NewRun(byDateOnly: false);
 
         IReadOnlyList<SortProposal> proposals =
@@ -110,7 +110,7 @@ public sealed class AnalysisJournalTests
     {
         // Das Protokoll ist eine Zugabe, kein Kernbestandteil: Eine gesperrte Datenbank
         // darf einen Lauf, der Tage dauert, nicht abbrechen.
-        PhotoSortingService service = CreateService(new BrokenAnalysisJournal(), [Foto("a.jpg")]);
+        PhotoAnalysisService service = CreateService(new BrokenAnalysisJournal(), [Foto("a.jpg")]);
 
         IReadOnlyList<SortProposal> proposals = await service.CreateProposalsAsync(
             SourceFolder, CreateCategory(), includeSubfolders: false, DateRange.Unbounded, progress: null, CancellationToken.None);
@@ -126,7 +126,7 @@ public sealed class AnalysisJournalTests
         // Abschlussmeldung muss trotzdem kommen, sonst bliebe die Anzeige kurz vor dem
         // Ende stehen und wäre von einem Stillstand nicht zu unterscheiden.
         FakeAnalysisJournal journal = new();
-        PhotoSortingService service = CreateService(
+        PhotoAnalysisService service = CreateService(
             journal,
             [Foto("a.jpg"), Foto("b.jpg")],
             source: new PartialPhotoSource([Foto("a.jpg"), Foto("b.jpg")], total: 3));
@@ -144,7 +144,7 @@ public sealed class AnalysisJournalTests
     public async Task CreateDateProposalsAsync_WritesTheRunAsWell()
     {
         FakeAnalysisJournal journal = new();
-        PhotoSortingService service = CreateService(
+        PhotoAnalysisService service = CreateService(
             journal,
             [FotoAm("urlaub.jpg", new DateOnly(2026, 7, 15))]);
 
@@ -171,7 +171,7 @@ public sealed class AnalysisJournalTests
             FotoAm("drin.jpg", new DateOnly(2026, 7, 15)),
             FotoAm("winter.jpg", new DateOnly(2026, 1, 1)),
         ];
-        PhotoSortingService service = CreateService(journal, photos);
+        PhotoAnalysisService service = CreateService(journal, photos);
         DateRange range = new(new DateOnly(2026, 7, 1), new DateOnly(2026, 7, 31));
 
         IReadOnlyList<SortProposal> first = await service.CreateDateProposalsAsync(
@@ -207,7 +207,7 @@ public sealed class AnalysisJournalTests
             },
             CancellationToken.None);
 
-        PhotoSortingService service = CreateService(journal, [photo], memory: memory);
+        PhotoAnalysisService service = CreateService(journal, [photo], memory: memory);
 
         IReadOnlyList<SortProposal> proposals = await service.CreateDateProposalsAsync(
             SourceFolder,
@@ -228,7 +228,7 @@ public sealed class AnalysisJournalTests
         // Ein Lauf, der einfach aufhört, wäre im Protokoll nicht von einem laufenden zu
         // unterscheiden. Der Grund wird festgehalten, bevor die Ausnahme weiterzieht.
         FakeAnalysisJournal journal = new();
-        PhotoSortingService service = CreateService(
+        PhotoAnalysisService service = CreateService(
             journal,
             [],
             source: new ThrowingPhotoSource(new TimeoutException("Das Netzlaufwerk antwortet nicht.")));
@@ -250,7 +250,7 @@ public sealed class AnalysisJournalTests
     public async Task CreateProposalsAsync_WhenTheSourceFails_MarksTheRunAsFailed()
     {
         FakeAnalysisJournal journal = new();
-        PhotoSortingService service = CreateService(
+        PhotoAnalysisService service = CreateService(
             journal,
             [],
             source: new ThrowingPhotoSource(new TimeoutException("Das Netzlaufwerk antwortet nicht.")));
@@ -266,7 +266,7 @@ public sealed class AnalysisJournalTests
     public async Task ResumeAsync_ForADateRunWithoutUsableRange_DeliversNothing()
     {
         FakeAnalysisJournal journal = new();
-        PhotoSortingService service = CreateService(journal, [FotoAm("a.jpg", new DateOnly(2026, 7, 15))]);
+        PhotoAnalysisService service = CreateService(journal, [FotoAm("a.jpg", new DateOnly(2026, 7, 15))]);
 
         IReadOnlyList<SortProposal> proposals = await service.ResumeAsync(
             NewRun(byDateOnly: true), category: null, progress: null, CancellationToken.None);
@@ -314,7 +314,7 @@ public sealed class AnalysisJournalTests
         LastProgressAt = new DateTimeOffset(2026, 8, 6, 22, 0, 0, TimeSpan.Zero),
     };
 
-    private static PhotoSortingService CreateService(
+    private static PhotoAnalysisService CreateService(
         IAnalysisJournal journal,
         IReadOnlyList<Photo> photos,
         IEmbeddingProvider? embeddingProvider = null,
@@ -323,17 +323,15 @@ public sealed class AnalysisJournalTests
     {
         FakeClock clock = new(new DateTimeOffset(2026, 8, 8, 8, 0, 0, TimeSpan.Zero));
 
-        return new PhotoSortingService(
+        return new PhotoAnalysisService(
             source ?? new FakePhotoSource(photos),
             embeddingProvider ?? new FakeEmbeddingProvider(_ => [1.0f, 0.0f, 0.0f]),
             new FakeImageClassifier(new VisionVerdict { Matches = false, Confidence = 0.0 }),
-            new FakeFileOrganizer(),
             new SortMemoryGateway(memory ?? new FakeSortMemory(), clock, NullLogger<SortMemoryGateway>.Instance),
-            new SortJournalGateway(new FakeSortJournal(), NullLogger<SortJournalGateway>.Instance),
             journal,
             clock,
             Options.Create(new SortingOptions()),
-            NullLogger<PhotoSortingService>.Instance);
+            NullLogger<PhotoAnalysisService>.Instance);
     }
 
     /// <summary>Scheitert schon beim Einlesen des Ordners.</summary>

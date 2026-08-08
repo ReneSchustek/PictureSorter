@@ -17,7 +17,7 @@ public sealed class FolderNameSanitizationTests
     [InlineData("")]
     public void SanitizeFolderName_PathEscapingOrEmptyNames_FallBackToNeutral(string name)
     {
-        string result = PhotoSortingService.SanitizeFolderName(name);
+        string result = TargetFolderNaming.SanitizeFolderName(name);
 
         Assert.Equal("Sonstige", result);
     }
@@ -28,7 +28,7 @@ public sealed class FolderNameSanitizationTests
     [InlineData("Foto: Strand", "Foto_ Strand")]
     public void SanitizeFolderName_InvalidCharacters_AreReplaced(string name, string expected)
     {
-        string result = PhotoSortingService.SanitizeFolderName(name);
+        string result = TargetFolderNaming.SanitizeFolderName(name);
 
         Assert.Equal(expected, result);
     }
@@ -39,7 +39,7 @@ public sealed class FolderNameSanitizationTests
     [InlineData("Oma & Opa")]
     public void SanitizeFolderName_ValidNames_ArePreserved(string name)
     {
-        string result = PhotoSortingService.SanitizeFolderName(name);
+        string result = TargetFolderNaming.SanitizeFolderName(name);
 
         Assert.Equal(name, result);
     }
@@ -55,7 +55,7 @@ public sealed class FolderNameSanitizationTests
         // Windows hält diese Namen für Geräte, unabhängig von Groß-/Kleinschreibung und
         // Endung. Ein Ordner dieses Namens lässt sich nicht anlegen – die Nutzerin sähe
         // eine Fehlermeldung, die ihr nichts sagt.
-        string result = PhotoSortingService.SanitizeFolderName(name);
+        string result = TargetFolderNaming.SanitizeFolderName(name);
 
         Assert.Equal(expected, result);
     }
@@ -68,7 +68,7 @@ public sealed class FolderNameSanitizationTests
         // Windows schneidet Punkte am Ende beim Anlegen still ab. Bliebe der Punkt im
         // Namen stehen, wiche der protokollierte Pfad vom tatsächlichen ab – und genau
         // der Pfad ist die Grundlage des Rückgängigmachens.
-        string result = PhotoSortingService.SanitizeFolderName(name);
+        string result = TargetFolderNaming.SanitizeFolderName(name);
 
         Assert.Equal(expected, result);
     }

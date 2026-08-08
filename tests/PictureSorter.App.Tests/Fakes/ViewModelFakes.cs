@@ -8,6 +8,12 @@ using PictureSorter.Core.ValueObjects;
 
 namespace PictureSorter.App.Tests.Fakes;
 
+/// <summary>
+/// Beide Verträge in einem Doppel. Die Sortier-Ansicht braucht das Erzeugen und das
+/// Anwenden; ein Test soll dafür trotzdem nur ein Objekt bauen müssen.
+/// </summary>
+internal interface ITestSorter : IPhotoAnalyzer, IProposalApplier;
+
 /// <summary>Liefert eine feste Liste von Duplikat-Gruppen und meldet Fortschritt.</summary>
 internal sealed class FakeDuplicateScanner(IReadOnlyList<DuplicateGroup> groups) : IDuplicateScanner
 {
@@ -101,7 +107,7 @@ internal sealed class StubConfirmationService(bool result) : IConfirmationServic
 /// <summary>
 /// Liefert feste Vorschläge und protokolliert, was angewendet bzw. abgewählt wurde.
 /// </summary>
-internal sealed class FakePhotoSorter(IReadOnlyList<SortProposal> proposals) : IPhotoSorter
+internal sealed class FakePhotoSorter(IReadOnlyList<SortProposal> proposals) : ITestSorter
 {
     public List<SortProposal> Applied { get; } = [];
 

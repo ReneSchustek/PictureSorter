@@ -168,7 +168,7 @@ public sealed class SortMemoryRecovery
         CategoryKind kind,
         Photo photo)
     {
-        string folderName = PhotoSortingService.SanitizeFolderName(categoryName);
+        string folderName = TargetFolderNaming.SanitizeFolderName(categoryName);
         if (kind == CategoryKind.Event && photo.CapturedAt is { } captured)
         {
             folderName = $"{folderName} {captured.ToString("dd.MM.yy", System.Globalization.CultureInfo.InvariantCulture)}";

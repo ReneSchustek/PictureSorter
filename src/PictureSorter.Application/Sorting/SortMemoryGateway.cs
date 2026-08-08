@@ -10,7 +10,7 @@ namespace PictureSorter.Application.Sorting;
 /// <summary>
 /// Kapselt den Zugriff auf das dauerhafte Sortier-Gedächtnis für den Sortierablauf.
 ///
-/// Zwei Gründe für diese Klasse: Sie hält den <see cref="PhotoSortingService"/>
+/// Zwei Gründe für diese Klasse: Sie hält den <see cref="PhotoAnalysisService"/>
 /// frei von Persistenz-Details (Signaturbildung, Zeitstempel), und sie macht jeden
 /// Zugriff fehlertolerant. Das Gedächtnis ist eine Beschleunigung, kein
 /// Kernbestandteil — ist die Datenbank nicht verfügbar, sortiert die Anwendung

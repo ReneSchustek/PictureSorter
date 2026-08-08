@@ -28,7 +28,8 @@ namespace PictureSorter.App.ViewModels;
 internal sealed partial class SortViewModel : ObservableObject, IDisposable
 {
 
-    private readonly IPhotoSorter _sorter;
+    private readonly IPhotoAnalyzer _analyzer;
+    private readonly IProposalApplier _applier;
     private readonly ISortUndoService _undo;
     private readonly IAnalysisJournal _analysisJournal;
     private readonly SortMemoryRecovery _recovery;
@@ -151,7 +152,8 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     /// <summary>
     /// Initialisiert das ViewModel.
     /// </summary>
-    /// <param name="sorter">Der Sortierdienst.</param>
+    /// <param name="analyzer">Erzeugt die Sortiervorschläge.</param>
+    /// <param name="applier">Wendet bestätigte Vorschläge an.</param>
     /// <param name="undo">Nimmt den letzten Sortierlauf zurück.</param>
     /// <param name="analysisJournal">Protokoll der Analyseläufe (Fortsetzen und Zurückholen).</param>
     /// <param name="recovery">Holt frühere Vorschläge aus dem Sortier-Gedächtnis zurück.</param>
@@ -166,7 +168,8 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     /// <param name="localizer">Die Textquelle.</param>
     /// <param name="logger">Der Logger.</param>
     public SortViewModel(
-        IPhotoSorter sorter,
+        IPhotoAnalyzer analyzer,
+        IProposalApplier applier,
         ISortUndoService undo,
         IAnalysisJournal analysisJournal,
         SortMemoryRecovery recovery,
@@ -181,7 +184,8 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         ILocalizer localizer,
         ILogger<SortViewModel> logger)
     {
-        ArgumentNullException.ThrowIfNull(sorter);
+        ArgumentNullException.ThrowIfNull(analyzer);
+        ArgumentNullException.ThrowIfNull(applier);
         ArgumentNullException.ThrowIfNull(undo);
         ArgumentNullException.ThrowIfNull(analysisJournal);
         ArgumentNullException.ThrowIfNull(recovery);
@@ -196,7 +200,8 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         ArgumentNullException.ThrowIfNull(localizer);
         ArgumentNullException.ThrowIfNull(logger);
 
-        _sorter = sorter;
+        _analyzer = analyzer;
+        _applier = applier;
         _undo = undo;
         _analysisJournal = analysisJournal;
         _recovery = recovery;
@@ -785,7 +790,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         CancellationToken token = _cancellation!.Token;
 
         IReadOnlyList<SortProposal> proposals = await Task.Run(
-            () => _sorter.CreateProposalsAsync(
+            () => _analyzer.CreateProposalsAsync(
                 folder, category, withSubfolders, range, progress, token),
             token).ConfigureAwait(true);
 
@@ -827,7 +832,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         CancellationToken token = _cancellation!.Token;
 
         IReadOnlyList<SortProposal> proposals = await Task.Run(
-            () => _sorter.CreateDateProposalsAsync(
+            () => _analyzer.CreateDateProposalsAsync(
                 folder, targetFolder, withSubfolders, range, progress, token),
             token).ConfigureAwait(true);
 
@@ -878,13 +883,13 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         // fasst jede Datei einzeln an und schreibt dabei ins Protokoll.
         CancellationToken token = _cancellation!.Token;
         int moved = await Task.Run(
-            () => _sorter.ApplyProposalsAsync(selected, operation, dryRun: false, token),
+            () => _applier.ApplyProposalsAsync(selected, operation, dryRun: false, token),
             token).ConfigureAwait(true);
 
         // Abgewählte Vorschläge dauerhaft merken, damit sie nicht erneut erscheinen.
         if (rejected.Count > 0)
         {
-            await _sorter.IgnoreProposalsAsync(rejected, token).ConfigureAwait(true);
+            await _applier.IgnoreProposalsAsync(rejected, token).ConfigureAwait(true);
         }
 
         Proposals.Clear();
@@ -990,7 +995,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         CancellationToken token = _cancellation!.Token;
 
         IReadOnlyList<SortProposal> proposals = await Task.Run(
-            () => _sorter.ResumeAsync(run, category, progress, token),
+            () => _analyzer.ResumeAsync(run, category, progress, token),
             token).ConfigureAwait(true);
 
         ShowProposals(proposals, "Sort_NoMatchingPhotos");

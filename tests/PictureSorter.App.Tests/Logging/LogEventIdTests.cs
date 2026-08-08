@@ -61,6 +61,6 @@ public sealed class LogEventIdTests
         typeof(PictureSorterDbContext).Assembly,
         typeof(FileOrganizer).Assembly,
         typeof(OllamaClient).Assembly,
-        typeof(Application.Sorting.PhotoSortingService).Assembly,
+        typeof(Application.Sorting.PhotoAnalysisService).Assembly,
     ];
 }

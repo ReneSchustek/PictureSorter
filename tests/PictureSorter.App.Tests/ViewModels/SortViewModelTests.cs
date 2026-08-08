@@ -406,7 +406,7 @@ public sealed class SortViewModelTests
     }
 
     private static SortViewModel CreateSut(
-        FakePhotoSorter sorter,
+        ITestSorter sorter,
         FakeSortUndoService? undo = null,
         bool confirms = true,
         FakePhotoSource? photoSource = null,
@@ -422,6 +422,7 @@ public sealed class SortViewModelTests
         ReswLocalizer localizer = new();
 
         return new SortViewModel(
+            sorter,
             sorter,
             undo ?? new FakeSortUndoService(),
             journal ?? new FakeAnalysisJournal(),
