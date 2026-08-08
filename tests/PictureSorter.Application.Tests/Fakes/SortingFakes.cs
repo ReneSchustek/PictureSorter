@@ -459,7 +459,7 @@ internal sealed class FakeAnalysisJournal : IAnalysisJournal
 /// Verhalten, das es nicht gibt: Die Liste geriete unter gleichzeitigem Zugriff
 /// durcheinander, und der Test schlüge dort fehl, wo der Betrieb tadellos läuft.
 /// </summary>
-internal sealed class FakeSortMemory : ISortMemory
+internal class FakeSortMemory : ISortMemory
 {
     private readonly Lock _gate = new();
     private readonly List<SortMemoryRecord> _records = [];
@@ -478,7 +478,7 @@ internal sealed class FakeSortMemory : ISortMemory
         }
     }
 
-    public Task<SortMemoryRecord?> GetAsync(
+    public virtual Task<SortMemoryRecord?> GetAsync(
         string folderPath,
         string fileSignature,
         string categoryName,

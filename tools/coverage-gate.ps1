@@ -27,7 +27,7 @@
 [CmdletBinding()]
 param(
     [string] $ResultsDirectory = 'TestResults',
-    [double] $MinimumLineCoverage = 94.0
+    [double] $MinimumLineCoverage = 95.0
 )
 
 $ErrorActionPreference = 'Stop'

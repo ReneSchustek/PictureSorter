@@ -54,7 +54,7 @@ jobs:
       # gezählt, sobald zwei Projekte sie erreichen.
       - name: Coverage-Gate
         shell: pwsh
-        run: ./tools/coverage-gate.ps1 -MinimumLineCoverage 94
+        run: ./tools/coverage-gate.ps1 -MinimumLineCoverage 95
 
       # Erzwingt, dass die Sprachressourcen deckungsgleich und vollständig sind:
       # jeder Schlüssel muss in de-DE UND en-US existieren und darf nicht leer sein.
