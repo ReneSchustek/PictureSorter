@@ -6,6 +6,42 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
+## [1.7.0] - 2026-08-08
+
+### Hinzugefügt
+
+- **Analysen lassen sich anhalten und später fortsetzen.** Ein Ordner mit tausenden
+  Fotos beschäftigt die KI je nach Rechner viele Stunden. Bisher hieß das: durchlaufen
+  lassen oder von vorn anfangen. Jetzt hält ein Klick den Lauf an, der Stand bleibt
+  gespeichert, und „Fortsetzen" macht genau dort weiter — auch nach einem Neustart des
+  Rechners und auch Tage später. Kein Foto, über das schon ein Urteil vorliegt, wird der
+  KI ein zweites Mal vorgelegt.
+- **Das Ergebnis einer fertigen Analyse lässt sich zurückholen**, ohne dass ein einziges
+  Bild neu berechnet wird. Wer das Programm nach der Analyse schließt, verliert die
+  Vorschläge damit nicht mehr.
+- **Vorschläge aus früheren Läufen kommen zurück, auch ohne Protokoll.** Was die KI
+  entschieden hat, stand schon immer im Gedächtnis des Programms — genutzt wurde davon
+  bisher nur die Ablehnung. Ein Knopf im Analyse-Schritt holt jetzt auch die Vorschläge
+  zurück, selbst aus einem Lauf, der abgestürzt oder stehengeblieben ist.
+- **Jede Analyse führt ein Protokoll:** Ordner, Gruppe, Zeitraum, Beginn, letzte Bewegung,
+  Ende und das Urteil zu jedem einzelnen Foto. Geschrieben wird fortlaufend, nicht am
+  Ende — was einmal entschieden ist, überlebt auch einen Stromausfall.
+
+### Behoben
+
+- **Eine unerwartete Störung ließ das Programm stumm stehenbleiben.** Erwischt wurden nur
+  drei Arten von Fehlern; bei jeder anderen blieb die Anzeige beim zuletzt gezählten Bild
+  stehen, alle Knöpfe waren gesperrt, und der Stopp-Knopf löste nichts mehr aus. Von einem
+  Stillstand war das nicht zu unterscheiden, und es half nur noch das Beenden des
+  Programms — nach womöglich Tagen Arbeit. Jetzt endet jeder Lauf mit einer verständlichen
+  Meldung und einer bedienbaren Oberfläche. Bekannte Ursachen werden beim Namen genannt,
+  statt pauschal „fehlgeschlagen" zu melden.
+- **Der Fortschritt kam am Ende nicht an.** Ließ sich auch nur eine Datei nicht einlesen —
+  Virenscanner, Cloud-Ordner, fehlender Codec —, blieb die Anzeige für immer kurz vor dem
+  Ende stehen. Der Abschluss wird jetzt ausdrücklich gemeldet.
+- Die Paketfassung war seit der vorletzten Auslieferung nicht mit der Programmfassung
+  mitgezogen worden.
+
 ## [1.6.0] - 2026-08-03
 
 ### Hinzugefügt
