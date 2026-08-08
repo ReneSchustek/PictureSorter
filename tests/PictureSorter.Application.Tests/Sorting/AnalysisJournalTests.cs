@@ -274,6 +274,61 @@ public sealed class AnalysisJournalTests
         Assert.Empty(proposals);
     }
 
+    [Fact]
+    public async Task ResumeAsync_TriesAgainWhatWasNotEvaluated()
+    {
+        // Ein Ausfall der Bilderkennung ist kein Urteil über das Bild. Steht im Protokoll
+        // „nicht bewertet", muss der zweite Anlauf es erneut versuchen — sonst schriebe ein
+        // einmaliger Aussetzer das Ergebnis dauerhaft fest.
+        FakeAnalysisJournal journal = new();
+        Photo photo = Foto("a.jpg");
+        AnalysisRun run = NewRun(byDateOnly: false);
+        await journal.StartAsync(run, CancellationToken.None);
+        await journal.AppendAsync(
+            run.Id,
+            [new AnalysisRunItem
+            {
+                FileSignature = photo.ComputeSignature(),
+                PhotoPath = photo.FullPath,
+                Outcome = AnalysisOutcome.NotEvaluated,
+                Confidence = 0.0,
+                Method = ClassificationMethod.Manual,
+                DecidedAt = new DateTimeOffset(2026, 8, 6, 21, 0, 0, TimeSpan.Zero),
+            }],
+            1,
+            new DateTimeOffset(2026, 8, 6, 21, 0, 0, TimeSpan.Zero),
+            CancellationToken.None);
+
+        PhotoAnalysisService service = CreateService(journal, [photo]);
+
+        IReadOnlyList<SortProposal> proposals =
+            await service.ResumeAsync(run, CreateCategory(), progress: null, CancellationToken.None);
+
+        // Erneut bewertet und diesmal zugeordnet.
+        _ = Assert.Single(proposals);
+    }
+
+    [Fact]
+    public async Task CreateDateProposalsAsync_WhenPaused_MarksTheRunAsPaused()
+    {
+        FakeAnalysisJournal journal = new();
+        using CancellationTokenSource cancellation = new();
+        PhotoAnalysisService service = CreateService(
+            journal,
+            [FotoAm("a.jpg", new DateOnly(2026, 7, 15)), FotoAm("b.jpg", new DateOnly(2026, 7, 16))],
+            memory: new CancelingSortMemory(cancellation));
+
+        _ = await Assert.ThrowsAnyAsync<OperationCanceledException>(() => service.CreateDateProposalsAsync(
+            SourceFolder,
+            "Urlaub",
+            includeSubfolders: false,
+            new DateRange(new DateOnly(2026, 7, 1), new DateOnly(2026, 7, 31)),
+            progress: null,
+            cancellation.Token));
+
+        Assert.Equal(AnalysisRunState.Paused, journal.Runs[^1].State);
+    }
+
     // ── Testhilfen ─────────────────────────────────────────────────────────────
 
     private static Photo Foto(string name) => new()
@@ -332,6 +387,20 @@ public sealed class AnalysisJournalTests
             clock,
             Options.Create(new SortingOptions()),
             NullLogger<PhotoAnalysisService>.Instance);
+    }
+
+    /// <summary>Löst beim ersten Nachschlagen den Abbruch aus.</summary>
+    private sealed class CancelingSortMemory(CancellationTokenSource cancellation) : FakeSortMemory
+    {
+        public override async Task<SortMemoryRecord?> GetAsync(
+            string folderPath,
+            string fileSignature,
+            string categoryName,
+            CancellationToken cancellationToken)
+        {
+            await cancellation.CancelAsync().ConfigureAwait(false);
+            return await base.GetAsync(folderPath, fileSignature, categoryName, cancellationToken).ConfigureAwait(false);
+        }
     }
 
     /// <summary>Scheitert schon beim Einlesen des Ordners.</summary>

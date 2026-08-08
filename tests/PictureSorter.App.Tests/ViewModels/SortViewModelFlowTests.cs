@@ -966,6 +966,67 @@ public sealed class SortViewModelFlowTests : IDisposable
         Assert.Null(sut.DateTo);
     }
 
+    [Fact]
+    public async Task SuggestTrips_WhenTheFolderIsGone_SaysSo()
+    {
+        // Die Urlaubssuche liest jede Datei des Ordners. Verschwindet er zwischen Wahl und
+        // Klick, muss die Anwendung das benennen statt stumm nichts zu finden.
+        StatusBarViewModel status = new(new ReswLocalizer());
+        using SortViewModel sut = CreateSut(
+            photoSource: new ThrowingPhotoSource(new DirectoryNotFoundException("weg")),
+            status: status);
+        sut.SourceFolder = SourceFolder;
+
+        await sut.SuggestTripsCommand.ExecuteAsync(parameter: null);
+
+        Assert.Equal(StatusSeverity.Error, status.Severity);
+        Assert.Empty(sut.TripSuggestions);
+    }
+
+    [Fact]
+    public async Task SuggestTrips_WhenTheFolderIsUnreadable_SaysSo()
+    {
+        StatusBarViewModel status = new(new ReswLocalizer());
+        using SortViewModel sut = CreateSut(
+            photoSource: new ThrowingPhotoSource(new UnauthorizedAccessException()),
+            status: status);
+        sut.SourceFolder = SourceFolder;
+
+        await sut.SuggestTripsCommand.ExecuteAsync(parameter: null);
+
+        Assert.Equal(StatusSeverity.Error, status.Severity);
+    }
+
+    [Fact]
+    public async Task SuggestTrips_WhenCanceled_SaysSo()
+    {
+        StatusBarViewModel status = new(new ReswLocalizer());
+        using SortViewModel sut = CreateSut(
+            photoSource: new ThrowingPhotoSource(new OperationCanceledException()),
+            status: status);
+        sut.SourceFolder = SourceFolder;
+
+        await sut.SuggestTripsCommand.ExecuteAsync(parameter: null);
+
+        Assert.Equal(StatusSeverity.Warning, status.Severity);
+    }
+
+    [Fact]
+    public void ClearDateRange_RemovesBothBounds()
+    {
+        using SortViewModel sut = CreateSut();
+        sut.DateFrom = new DateTimeOffset(2026, 7, 12, 0, 0, 0, TimeSpan.Zero);
+        sut.DateTo = new DateTimeOffset(2026, 7, 21, 0, 0, 0, TimeSpan.Zero);
+
+        Assert.True(sut.HasDateRange);
+
+        sut.ClearDateRangeCommand.Execute(parameter: null);
+
+        Assert.Null(sut.DateFrom);
+        Assert.Null(sut.DateTo);
+        Assert.False(sut.HasDateRange);
+    }
+
     private SortMemoryRecord RememberedProposal(string imagePath)
     {
         FileInfo info = new(imagePath);

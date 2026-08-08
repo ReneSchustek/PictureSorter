@@ -1,4 +1,6 @@
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging.Abstractions;
+using PictureSorter.Core.Entities;
 using PictureSorter.Application.Sorting;
 using PictureSorter.Core.Enums;
 using PictureSorter.Core.Interfaces;
@@ -96,6 +98,39 @@ internal sealed class EmptyMetadataReader : IImageMetadataReader
 {
     public Task<PhotoMetadata?> ReadAsync(string filePath, CancellationToken cancellationToken) =>
         Task.FromResult<PhotoMetadata?>(null);
+}
+
+/// <summary>
+/// Scheitert beim Einlesen des Ordners. Für die Fehlerzweige der Urlaubssuche, die jede
+/// Datei anfasst und deshalb alles erlebt, was ein Ordner an Überraschungen bereithält.
+/// </summary>
+internal sealed class ThrowingPhotoSource(Exception failure) : IPhotoSource
+{
+    public Task<IReadOnlyList<Photo>> GetPhotosAsync(
+        string folderPath,
+        bool includeSubfolders,
+        int skip,
+        int? maxCount,
+        IProgress<PhotoScanProgress>? progress,
+        CancellationToken cancellationToken) => throw failure;
+
+    public async IAsyncEnumerable<ScannedPhoto> StreamPhotosAsync(
+        string folderPath,
+        bool includeSubfolders,
+        int skip,
+        int? maxCount,
+        IProgress<PhotoScanProgress>? progress,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        await Task.Yield();
+        throw failure;
+
+        // Unerreichbar, aber nötig: Ohne yield ist die Methode kein Iterator und der
+        // Fehler flöge bereits beim Erzeugen der Aufzählung statt beim Auslesen.
+#pragma warning disable CS0162 // Unerreichbarer Code entdeckt
+        yield break;
+#pragma warning restore CS0162
+    }
 }
 
 /// <summary>Baut die Wiederherstellung aus dem Gedächtnis für Ansichts-Tests.</summary>
