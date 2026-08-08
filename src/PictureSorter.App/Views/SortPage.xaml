@@ -62,15 +62,15 @@
             <InfoBar
                 x:Uid="SortPage_ResumeBar"
                 IsClosable="False"
-                IsOpen="{x:Bind ViewModel.HasResumableRun, Mode=OneWay}"
-                Message="{x:Bind ViewModel.ResumeSummary, Mode=OneWay}"
+                IsOpen="{x:Bind ViewModel.Resume.HasRun, Mode=OneWay}"
+                Message="{x:Bind ViewModel.Resume.Summary, Mode=OneWay}"
                 Severity="Informational"
                 Title="Letzte Analyse">
                 <InfoBar.ActionButton>
                     <Button
                         AutomationProperties.Name="Analyse fortsetzen oder Ergebnis zurückholen"
-                        Command="{x:Bind ViewModel.ResumeCommand}"
-                        Content="{x:Bind ViewModel.ResumeActionLabel, Mode=OneWay}"
+                        Command="{x:Bind ViewModel.Resume.ResumeCommand}"
+                        Content="{x:Bind ViewModel.Resume.ActionLabel, Mode=OneWay}"
                         Style="{ThemeResource AccentButtonStyle}" />
                 </InfoBar.ActionButton>
 
@@ -79,7 +79,7 @@
                 <Button
                     Margin="0,8,0,8"
                     x:Uid="SortPage_DiscardRunButton"
-                    Command="{x:Bind ViewModel.DiscardRunCommand}"
+                    Command="{x:Bind ViewModel.Resume.DiscardCommand}"
                     Content="Verwerfen" />
             </InfoBar>
 
@@ -594,7 +594,7 @@
                              Hier kommen sie zurück, ohne dass ein einziges Bild erneut
                              durch die KI läuft. -->
                         <HyperlinkButton
-                            Command="{x:Bind ViewModel.RecoverFromMemoryCommand}"
+                            Command="{x:Bind ViewModel.Resume.RecoverFromMemoryCommand}"
                             x:Uid="SortPage_RecoverButton"
                             Content="Vorschläge einer früheren Analyse zurückholen" />
                     </StackPanel>

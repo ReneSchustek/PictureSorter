@@ -73,7 +73,7 @@ internal sealed partial class SortPage : Page
 
         // Auch ein Analyselauf überlebt den Neustart: Was vor drei Tagen mitten in der
         // Nacht stehengeblieben ist, wird hier wieder angeboten.
-        ViewModel.RefreshResumeStateCommand.Execute(parameter: null);
+        ViewModel.Resume.RefreshCommand.Execute(parameter: null);
     }
 
     // Wechselt zwischen geführter und Standard-Ansicht und merkt sich die Wahl.

@@ -714,11 +714,11 @@ public sealed class SortViewModelFlowTests : IDisposable
         journal.Seed(PausedRun());
         using SortViewModel sut = CreateSut(journal: journal);
 
-        await sut.RefreshResumeStateCommand.ExecuteAsync(parameter: null);
+        await sut.Resume.RefreshCommand.ExecuteAsync(parameter: null);
 
-        Assert.True(sut.HasResumableRun);
-        Assert.Contains("3472", sut.ResumeSummary, StringComparison.Ordinal);
-        Assert.NotEmpty(sut.ResumeActionLabel);
+        Assert.True(sut.Resume.HasRun);
+        Assert.Contains("3472", sut.Resume.Summary, StringComparison.Ordinal);
+        Assert.NotEmpty(sut.Resume.ActionLabel);
     }
 
     [Fact]
@@ -726,10 +726,10 @@ public sealed class SortViewModelFlowTests : IDisposable
     {
         using SortViewModel sut = CreateSut();
 
-        await sut.RefreshResumeStateCommand.ExecuteAsync(parameter: null);
+        await sut.Resume.RefreshCommand.ExecuteAsync(parameter: null);
 
-        Assert.False(sut.HasResumableRun);
-        Assert.Empty(sut.ResumeSummary);
+        Assert.False(sut.Resume.HasRun);
+        Assert.Empty(sut.Resume.Summary);
     }
 
     [Fact]
@@ -743,9 +743,9 @@ public sealed class SortViewModelFlowTests : IDisposable
         // Die Gruppe ist angelernt und gespeichert — so wie sie es beim ursprünglichen
         // Lauf war. Ohne sie ließe sich nicht fortsetzen, das prüft der nächste Test.
         await PrepareLearnedCategoryAsync(sut);
-        await sut.RefreshResumeStateCommand.ExecuteAsync(parameter: null);
+        await sut.Resume.RefreshCommand.ExecuteAsync(parameter: null);
 
-        await sut.ResumeCommand.ExecuteAsync(parameter: null);
+        await sut.Resume.ResumeCommand.ExecuteAsync(parameter: null);
 
         // Die Angaben des Laufs gelten, nicht die der Oberfläche: Ein fortgesetzter Lauf
         // muss dieselbe Frage beantworten wie der unterbrochene.
@@ -766,9 +766,9 @@ public sealed class SortViewModelFlowTests : IDisposable
         FakeAnalysisJournal journal = new();
         journal.Seed(PausedRun() with { CategoryName = "Gibt es nicht mehr" });
         using SortViewModel sut = CreateSut(journal: journal);
-        await sut.RefreshResumeStateCommand.ExecuteAsync(parameter: null);
+        await sut.Resume.RefreshCommand.ExecuteAsync(parameter: null);
 
-        await sut.ResumeCommand.ExecuteAsync(parameter: null);
+        await sut.Resume.ResumeCommand.ExecuteAsync(parameter: null);
 
         Assert.Equal(SortState.Idle, sut.State);
         Assert.Empty(sut.Proposals.Items);
@@ -780,12 +780,12 @@ public sealed class SortViewModelFlowTests : IDisposable
         FakeAnalysisJournal journal = new();
         journal.Seed(PausedRun());
         using SortViewModel sut = CreateSut(journal: journal);
-        await sut.RefreshResumeStateCommand.ExecuteAsync(parameter: null);
+        await sut.Resume.RefreshCommand.ExecuteAsync(parameter: null);
 
-        await sut.DiscardRunCommand.ExecuteAsync(parameter: null);
+        await sut.Resume.DiscardCommand.ExecuteAsync(parameter: null);
 
         _ = Assert.Single(journal.Discarded);
-        Assert.False(sut.HasResumableRun);
+        Assert.False(sut.Resume.HasRun);
     }
 
     [Fact]
@@ -794,12 +794,12 @@ public sealed class SortViewModelFlowTests : IDisposable
         FakeAnalysisJournal journal = new();
         journal.Seed(PausedRun());
         using SortViewModel sut = CreateSut(journal: journal, confirms: false);
-        await sut.RefreshResumeStateCommand.ExecuteAsync(parameter: null);
+        await sut.Resume.RefreshCommand.ExecuteAsync(parameter: null);
 
-        await sut.DiscardRunCommand.ExecuteAsync(parameter: null);
+        await sut.Resume.DiscardCommand.ExecuteAsync(parameter: null);
 
         Assert.Empty(journal.Discarded);
-        Assert.True(sut.HasResumableRun);
+        Assert.True(sut.Resume.HasRun);
     }
 
     [Fact]
@@ -809,9 +809,9 @@ public sealed class SortViewModelFlowTests : IDisposable
         // die Sortierseite nicht mitreißen.
         using SortViewModel sut = CreateSut(journal: new BrokenAnalysisJournal());
 
-        await sut.RefreshResumeStateCommand.ExecuteAsync(parameter: null);
+        await sut.Resume.RefreshCommand.ExecuteAsync(parameter: null);
 
-        Assert.False(sut.HasResumableRun);
+        Assert.False(sut.Resume.HasRun);
     }
 
     [Fact]
@@ -835,7 +835,7 @@ public sealed class SortViewModelFlowTests : IDisposable
         sut.SourceFolder = SourceFolder;
         sut.CategoryName = "Familie";
 
-        await sut.RecoverFromMemoryCommand.ExecuteAsync(parameter: null);
+        await sut.Resume.RecoverFromMemoryCommand.ExecuteAsync(parameter: null);
 
         Assert.Equal(SortState.Idle, sut.State);
         Assert.Empty(sut.Proposals.Items);
@@ -856,7 +856,7 @@ public sealed class SortViewModelFlowTests : IDisposable
         sut.SourceFolder = _imageFolder;
         sut.CategoryName = "Familie";
 
-        await sut.RecoverFromMemoryCommand.ExecuteAsync(parameter: null);
+        await sut.Resume.RecoverFromMemoryCommand.ExecuteAsync(parameter: null);
 
         Assert.Equal(SortState.Preview, sut.State);
         _ = Assert.Single(sut.Proposals.Items);
