@@ -358,7 +358,9 @@ public sealed class AnalysisJournalTests
             await Task.Yield();
             throw failure;
 
-#pragma warning disable CS0162
+            // Unerreichbar, aber nötig: Ohne yield ist die Methode kein Iterator und der
+            // Fehler flöge bereits beim Erzeugen der Aufzählung statt beim Auslesen.
+#pragma warning disable CS0162 // Unerreichbarer Code entdeckt
             yield break;
 #pragma warning restore CS0162
         }
