@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentDialog
     x:Class="PictureSorter.App.Views.PhotoPreviewDialog"
     x:Uid="PhotoPreviewDialog_Close"
@@ -21,7 +21,7 @@
         <Border
             MinHeight="240"
             Background="{ThemeResource AppCardBackgroundBrush}"
-            CornerRadius="8">
+            CornerRadius="{StaticResource AppCardCornerRadius}">
             <Image
                 x:Name="PreviewImage"
                 MaxHeight="520"
