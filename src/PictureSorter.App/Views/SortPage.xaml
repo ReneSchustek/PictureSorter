@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="PictureSorter.App.Views.SortPage"
     x:Name="SortPageRoot"
@@ -357,7 +357,7 @@
                             Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
                             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                             BorderThickness="1"
-                            CornerRadius="6"
+                            CornerRadius="{StaticResource AppCardCornerRadius}"
                             DragOver="OnPositivesDragOver"
                             Drop="OnPositivesDrop">
                             <StackPanel Spacing="8">
@@ -442,7 +442,7 @@
                             Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
                             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                             BorderThickness="1"
-                            CornerRadius="6"
+                            CornerRadius="{StaticResource AppCardCornerRadius}"
                             DragOver="OnNegativesDragOver"
                             Drop="OnNegativesDrop">
                             <StackPanel Spacing="8">

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Application
     x:Class="PictureSorter.App.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -9,6 +9,10 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+                <!-- Erst die Bausteine ohne Farbe (Abstände, Radien, Schrift), dann die
+                     Farben. Die Reihenfolge sagt, was wovon abhängt: Nur Farben kippen
+                     zwischen hell und dunkel. -->
+                <ResourceDictionary Source="ms-appx:///Themes/Tokens.xaml" />
                 <ResourceDictionary Source="ms-appx:///Themes/AppColors.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <!-- Das Programmsymbol in der Titelleiste. WinUI gibt ihm 16 Punkte; in der
@@ -35,7 +39,7 @@
                 <Setter Property="Background" Value="{ThemeResource AppCardBackgroundBrush}" />
                 <Setter Property="BorderBrush" Value="{ThemeResource AppCardBorderBrush}" />
                 <Setter Property="BorderThickness" Value="1" />
-                <Setter Property="CornerRadius" Value="8" />
+                <Setter Property="CornerRadius" Value="{StaticResource AppCardCornerRadius}" />
                 <Setter Property="Padding" Value="20" />
             </Style>
 
@@ -43,7 +47,7 @@
                  Gibt jeder Seite in einem Blick zu erkennen, worum es geht. -->
             <Style x:Key="HeroBorderStyle" TargetType="Border">
                 <Setter Property="Background" Value="{ThemeResource AppHeroBrush}" />
-                <Setter Property="CornerRadius" Value="10" />
+                <Setter Property="CornerRadius" Value="{StaticResource AppCardCornerRadius}" />
                 <Setter Property="Padding" Value="20,16" />
             </Style>
             <Style x:Key="HeroTitleStyle" TargetType="TextBlock">
@@ -65,7 +69,7 @@
                 <Setter Property="Background" Value="{ThemeResource AppCardBackgroundBrush}" />
                 <Setter Property="BorderBrush" Value="{ThemeResource AppCardBorderBrush}" />
                 <Setter Property="BorderThickness" Value="1" />
-                <Setter Property="CornerRadius" Value="10" />
+                <Setter Property="CornerRadius" Value="{StaticResource AppCardCornerRadius}" />
                 <Setter Property="Padding" Value="20" />
                 <Setter Property="MinWidth" Value="240" />
                 <Setter Property="MinHeight" Value="130" />

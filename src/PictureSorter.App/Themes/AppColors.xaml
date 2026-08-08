@@ -3,84 +3,106 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!--
-        Farbpalette von PictureSorter. Akzent ist das Stahlblau des Logos
-        (#2E6DA4), abgestimmt mit der Marke „Ruhrcoder". Light und Dark teilen
-        denselben Akzent-Charakter; im Dunkelmodus ist das Blau etwas heller,
-        damit es auf dunklem Grund gut lesbar bleibt. Umgeschaltet wird über
-        RequestedTheme am Wurzelelement (siehe ThemeService).
+        Farben der Gestaltungslinie. Die Werte stammen aus der Marke und nicht aus
+        diesem Projekt — maßgeblich ist F:\Entwicklung\_ai\rules\global\design-system.md.
+
+        Beide Belegungen führen denselben Satz Schlüssel. Fehlt einer in einer
+        Belegung, bricht die Bindung genau dort — und das fällt erst beim Nutzer
+        auf, nicht beim Entwickeln. Ein Test hält das fest.
+
+        Die Primärfläche ist immer der Gegensatz zum Hintergrund: im Hellen dunkles
+        Petrol mit weißer Schrift, im Dunklen helles Stahlgrau mit dunkler Schrift.
+        Deshalb kippt der Text auf ihr mit — dafür gibt es eigene Schlüssel.
+        Umgeschaltet wird über RequestedTheme am Wurzelelement (siehe ThemeService).
     -->
     <ResourceDictionary.ThemeDictionaries>
 
         <!-- ───────────────────────── Hell ───────────────────────── -->
         <ResourceDictionary x:Key="Light">
-            <!-- Akzent (Buttons, Auswahl, Links) -->
-            <SolidColorBrush x:Key="AccentFillColorDefaultBrush" Color="#2E6DA4" />
-            <SolidColorBrush x:Key="AccentFillColorSecondaryBrush" Color="#3D83BB" />
-            <SolidColorBrush x:Key="AccentFillColorTertiaryBrush" Color="#1F5A8A" />
-            <SolidColorBrush x:Key="NavigationViewSelectionIndicatorForeground" Color="#2E6DA4" />
+            <!-- Akzent (Schaltflächen, Auswahl, Verweise) -->
+            <SolidColorBrush x:Key="AccentFillColorDefaultBrush" Color="#2F4858" />
+            <SolidColorBrush x:Key="AccentFillColorSecondaryBrush" Color="#3A5A6E" />
+            <SolidColorBrush x:Key="AccentFillColorTertiaryBrush" Color="#0D2B38" />
+            <SolidColorBrush x:Key="AccentFillColorDisabledBrush" Color="#A8B8C2" />
+            <SolidColorBrush x:Key="AppAccentSoftBrush" Color="#2D7FA8" />
+            <SolidColorBrush x:Key="NavigationViewSelectionIndicatorForeground" Color="#2F4858" />
+
+            <!-- Text auf der Primärfläche: im Hellen weiß auf dunklem Petrol. -->
+            <SolidColorBrush x:Key="TextOnAccentFillColorPrimaryBrush" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="TextOnAccentFillColorSecondaryBrush" Color="#DDE5E9" />
 
             <!-- Arbeitsfläche und Karten -->
-            <SolidColorBrush x:Key="AppBackgroundBrush" Color="#F3F4F6" />
+            <SolidColorBrush x:Key="AppBackgroundBrush" Color="#F5F5F5" />
             <SolidColorBrush x:Key="AppCardBackgroundBrush" Color="#FFFFFF" />
-            <SolidColorBrush x:Key="AppCardBorderBrush" Color="#E2E5EA" />
+            <SolidColorBrush x:Key="AppCardBorderBrush" Color="#DCDCDC" />
+            <SolidColorBrush x:Key="AppCardBorderHoverBrush" Color="#2F4858" />
+            <SolidColorBrush x:Key="AppSurfaceRaisedBrush" Color="#EBEBEB" />
 
-            <!-- Dunkle Navigationsleiste gegen die helle Arbeitsfläche. Die Werte
-                 gelten in beiden Designs, damit die Leiste ihren Charakter behält.
-                 Kontrast Text (#F2F5F8) auf Pane (#233240): 12,1:1 – über WCAG AA. -->
-            <SolidColorBrush x:Key="NavigationViewDefaultPaneBackground" Color="#233240" />
-            <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="#233240" />
-            <SolidColorBrush x:Key="NavigationViewItemForeground" Color="#F2F5F8" />
+            <!-- Text -->
+            <SolidColorBrush x:Key="AppTextPrimaryBrush" Color="#1A1A1A" />
+            <SolidColorBrush x:Key="AppTextMutedBrush" Color="#5A5A5A" />
+            <SolidColorBrush x:Key="AppDividerBrush" Color="#DCDCDC" />
+
+            <!-- Navigationsleiste: dunkel gegen die helle Arbeitsfläche. Die Werte
+                 gelten in beiden Belegungen ähnlich, damit die Leiste ihren
+                 Charakter behält. Kontrast Text (#F5F5F5) auf Fläche (#0D2B38):
+                 über 14:1 und damit weit über der Anforderung. -->
+            <SolidColorBrush x:Key="NavigationViewDefaultPaneBackground" Color="#0D2B38" />
+            <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="#0D2B38" />
+            <SolidColorBrush x:Key="NavigationViewItemForeground" Color="#F5F5F5" />
             <SolidColorBrush x:Key="NavigationViewItemForegroundPointerOver" Color="#FFFFFF" />
             <SolidColorBrush x:Key="NavigationViewItemForegroundSelected" Color="#FFFFFF" />
             <SolidColorBrush x:Key="NavigationViewItemForegroundSelectedPointerOver" Color="#FFFFFF" />
-            <SolidColorBrush x:Key="NavigationViewItemBackgroundPointerOver" Color="#31465A" />
-            <SolidColorBrush x:Key="NavigationViewItemBackgroundSelected" Color="#31465A" />
-            <SolidColorBrush x:Key="NavigationViewItemBackgroundSelectedPointerOver" Color="#3B556E" />
+            <SolidColorBrush x:Key="NavigationViewItemBackgroundPointerOver" Color="#2F4858" />
+            <SolidColorBrush x:Key="NavigationViewItemBackgroundSelected" Color="#2F4858" />
+            <SolidColorBrush x:Key="NavigationViewItemBackgroundSelectedPointerOver" Color="#3A5A6E" />
 
-            <!-- Sanfter Akzentverlauf für die Kopfbereiche (Hero). -->
-            <LinearGradientBrush x:Key="AppHeroBrush" StartPoint="0,0" EndPoint="1,1">
-                <GradientStop Offset="0" Color="#2E6DA4" />
-                <GradientStop Offset="1" Color="#1F5A8A" />
-            </LinearGradientBrush>
+            <!-- Kopfbereich: eine ruhige Fläche in der Primärfarbe. Der frühere
+                 Verlauf ist bewusst entfallen — die Linie kennt keine Effekte,
+                 die Tiefe vortäuschen. -->
+            <SolidColorBrush x:Key="AppHeroBrush" Color="#2F4858" />
             <SolidColorBrush x:Key="AppHeroForegroundBrush" Color="#FFFFFF" />
         </ResourceDictionary>
 
         <!-- ───────────────────────── Dunkel ───────────────────────── -->
         <ResourceDictionary x:Key="Dark">
-            <SolidColorBrush x:Key="AccentFillColorDefaultBrush" Color="#4A9CC5" />
-            <SolidColorBrush x:Key="AccentFillColorSecondaryBrush" Color="#5BB0D8" />
-            <SolidColorBrush x:Key="AccentFillColorTertiaryBrush" Color="#3D83BB" />
-            <SolidColorBrush x:Key="NavigationViewSelectionIndicatorForeground" Color="#4A9CC5" />
+            <SolidColorBrush x:Key="AccentFillColorDefaultBrush" Color="#C5D0D6" />
+            <SolidColorBrush x:Key="AccentFillColorSecondaryBrush" Color="#DDE5E9" />
+            <SolidColorBrush x:Key="AccentFillColorTertiaryBrush" Color="#94A3AB" />
+            <SolidColorBrush x:Key="AccentFillColorDisabledBrush" Color="#3A464F" />
+            <SolidColorBrush x:Key="AppAccentSoftBrush" Color="#DDE5E9" />
+            <SolidColorBrush x:Key="NavigationViewSelectionIndicatorForeground" Color="#C5D0D6" />
 
-            <!-- Dunkle Schrift auf der hellen Akzentfläche. Weiß auf #4A9CC5 ergibt nur
-                 3,06:1 und liegt damit unter dem geforderten Wert; die Fläche
-                 abzudunkeln nähme dem Dunkelmodus den Akzent. Dunkel auf hell dreht das
-                 Verhältnis um und kommt auf 6,0:1. -->
-            <SolidColorBrush x:Key="TextOnAccentFillColorPrimaryBrush" Color="#10161C" />
+            <!-- Im Dunklen ist die Primärfläche hell und trägt dunkle Schrift.
+                 Ein gemeinsamer „Invers"-Wert für beide Belegungen ergäbe hier
+                 Weiß auf Hellgrau — unlesbar. Kontrast #0F1923 auf #C5D0D6: 11,6:1. -->
+            <SolidColorBrush x:Key="TextOnAccentFillColorPrimaryBrush" Color="#0F1923" />
             <SolidColorBrush x:Key="TextOnAccentFillColorSecondaryBrush" Color="#2A343D" />
 
-            <SolidColorBrush x:Key="AppBackgroundBrush" Color="#1A1D21" />
-            <SolidColorBrush x:Key="AppCardBackgroundBrush" Color="#262A30" />
-            <SolidColorBrush x:Key="AppCardBorderBrush" Color="#363B43" />
+            <SolidColorBrush x:Key="AppBackgroundBrush" Color="#0F1923" />
+            <SolidColorBrush x:Key="AppCardBackgroundBrush" Color="#152030" />
+            <SolidColorBrush x:Key="AppCardBorderBrush" Color="#28323F" />
+            <SolidColorBrush x:Key="AppCardBorderHoverBrush" Color="#C5D0D6" />
+            <SolidColorBrush x:Key="AppSurfaceRaisedBrush" Color="#1A2535" />
 
-            <!-- Im Dunkelmodus setzt sich die Leiste durch eine noch dunklere,
-                 leicht blaustichige Fläche von der Arbeitsfläche ab.
-                 Kontrast Text (#E8EDF2) auf Pane (#151B22): 14,4:1. -->
-            <SolidColorBrush x:Key="NavigationViewDefaultPaneBackground" Color="#151B22" />
-            <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="#151B22" />
-            <SolidColorBrush x:Key="NavigationViewItemForeground" Color="#E8EDF2" />
+            <SolidColorBrush x:Key="AppTextPrimaryBrush" Color="#E4EDF2" />
+            <SolidColorBrush x:Key="AppTextMutedBrush" Color="#8AA3B0" />
+            <SolidColorBrush x:Key="AppDividerBrush" Color="#28323F" />
+
+            <!-- Die Leiste setzt sich hier durch eine noch dunklere Fläche ab.
+                 Kontrast Text (#E4EDF2) auf Fläche (#0A121A): über 15:1. -->
+            <SolidColorBrush x:Key="NavigationViewDefaultPaneBackground" Color="#0A121A" />
+            <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="#0A121A" />
+            <SolidColorBrush x:Key="NavigationViewItemForeground" Color="#E4EDF2" />
             <SolidColorBrush x:Key="NavigationViewItemForegroundPointerOver" Color="#FFFFFF" />
-            <SolidColorBrush x:Key="NavigationViewItemForegroundSelected" Color="#FFFFFF" />
-            <SolidColorBrush x:Key="NavigationViewItemForegroundSelectedPointerOver" Color="#FFFFFF" />
-            <SolidColorBrush x:Key="NavigationViewItemBackgroundPointerOver" Color="#26303B" />
-            <SolidColorBrush x:Key="NavigationViewItemBackgroundSelected" Color="#26303B" />
-            <SolidColorBrush x:Key="NavigationViewItemBackgroundSelectedPointerOver" Color="#31404F" />
+            <SolidColorBrush x:Key="NavigationViewItemForegroundSelected" Color="#0F1923" />
+            <SolidColorBrush x:Key="NavigationViewItemForegroundSelectedPointerOver" Color="#0F1923" />
+            <SolidColorBrush x:Key="NavigationViewItemBackgroundPointerOver" Color="#1A2535" />
+            <SolidColorBrush x:Key="NavigationViewItemBackgroundSelected" Color="#C5D0D6" />
+            <SolidColorBrush x:Key="NavigationViewItemBackgroundSelectedPointerOver" Color="#DDE5E9" />
 
-            <LinearGradientBrush x:Key="AppHeroBrush" StartPoint="0,0" EndPoint="1,1">
-                <GradientStop Offset="0" Color="#2A5F8F" />
-                <GradientStop Offset="1" Color="#1B3E5C" />
-            </LinearGradientBrush>
-            <SolidColorBrush x:Key="AppHeroForegroundBrush" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="AppHeroBrush" Color="#C5D0D6" />
+            <SolidColorBrush x:Key="AppHeroForegroundBrush" Color="#0F1923" />
         </ResourceDictionary>
 
     </ResourceDictionary.ThemeDictionaries>
