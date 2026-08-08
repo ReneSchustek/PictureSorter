@@ -15,7 +15,7 @@ namespace PictureSorter.Application.Tests.Sorting;
 /// Tests der Sortier-Orchestrierung: Embedding-Vorsortierung, Vision-Grenzfälle und
 /// das Zusammenspiel mit dem dauerhaften Sortier-Gedächtnis.
 /// </summary>
-public sealed class PhotoSortingServiceTests
+public sealed class PhotoAnalysisServiceTests
 {
     private const string SourceFolder = @"C:\fotos";
 
@@ -29,7 +29,7 @@ public sealed class PhotoSortingServiceTests
     public async Task CreateProposalsAsync_HighSimilarity_AssignsViaEmbedding()
     {
         FakeImageClassifier classifier = new(new VisionVerdict { Matches = false, Confidence = 0.0 });
-        PhotoSortingService service = CreateService(embedding: [1.0f, 0.0f, 0.0f], classifier: classifier);
+        PhotoAnalysisService service = CreateService(embedding: [1.0f, 0.0f, 0.0f], classifier: classifier);
 
         IReadOnlyList<SortProposal> proposals = await service.CreateProposalsAsync(
             SourceFolder, CreateCategory(), includeSubfolders: false, DateRange.Unbounded, progress: null, CancellationToken.None);
@@ -44,7 +44,7 @@ public sealed class PhotoSortingServiceTests
     public async Task CreateProposalsAsync_LowSimilarity_SkipsPhotoWithoutVision()
     {
         FakeImageClassifier classifier = new(new VisionVerdict { Matches = true, Confidence = 1.0 });
-        PhotoSortingService service = CreateService(embedding: [0.0f, 1.0f, 0.0f], classifier: classifier);
+        PhotoAnalysisService service = CreateService(embedding: [0.0f, 1.0f, 0.0f], classifier: classifier);
 
         IReadOnlyList<SortProposal> proposals = await service.CreateProposalsAsync(
             SourceFolder, CreateCategory(), includeSubfolders: false, DateRange.Unbounded, progress: null, CancellationToken.None);
@@ -57,7 +57,7 @@ public sealed class PhotoSortingServiceTests
     public async Task CreateProposalsAsync_BorderlineSimilarity_UsesVisionVerdict()
     {
         FakeImageClassifier classifier = new(new VisionVerdict { Matches = true, Confidence = 0.9 });
-        PhotoSortingService service = CreateService(embedding: [1.0f, 1.0f, 0.0f], classifier: classifier);
+        PhotoAnalysisService service = CreateService(embedding: [1.0f, 1.0f, 0.0f], classifier: classifier);
 
         IReadOnlyList<SortProposal> proposals = await service.CreateProposalsAsync(
             SourceFolder, CreateCategory(), includeSubfolders: false, DateRange.Unbounded, progress: null, CancellationToken.None);
@@ -71,7 +71,7 @@ public sealed class PhotoSortingServiceTests
     public async Task CreateProposalsAsync_WithoutPositiveExamples_ReturnsEmpty()
     {
         FakeImageClassifier classifier = new(new VisionVerdict { Matches = true, Confidence = 1.0 });
-        PhotoSortingService service = CreateService(embedding: [1.0f, 0.0f, 0.0f], classifier: classifier);
+        PhotoAnalysisService service = CreateService(embedding: [1.0f, 0.0f, 0.0f], classifier: classifier);
         Category emptyCategory = new("Familie", "ohne Beispiele", CategoryKind.Topic);
 
         IReadOnlyList<SortProposal> proposals = await service.CreateProposalsAsync(
@@ -89,7 +89,7 @@ public sealed class PhotoSortingServiceTests
             CancellationToken.None);
 
         CountingEmbeddingProvider provider = new([1.0f, 0.0f, 0.0f]);
-        PhotoSortingService service = CreateService(
+        PhotoAnalysisService service = CreateService(
             embedding: [1.0f, 0.0f, 0.0f],
             classifier: new FakeImageClassifier(new VisionVerdict { Matches = true, Confidence = 1.0 }),
             memory: memory,
@@ -110,7 +110,7 @@ public sealed class PhotoSortingServiceTests
         await memory.UpsertAsync(CreateMemory(SortMemoryStatus.Rejected), CancellationToken.None);
 
         FakeImageClassifier classifier = new(new VisionVerdict { Matches = true, Confidence = 1.0 });
-        PhotoSortingService service = CreateService(
+        PhotoAnalysisService service = CreateService(
             embedding: [1.0f, 1.0f, 0.0f],
             classifier: classifier,
             memory: memory);
@@ -126,7 +126,7 @@ public sealed class PhotoSortingServiceTests
     public async Task CreateProposalsAsync_WhenRejectedByAi_RemembersRejection()
     {
         FakeSortMemory memory = new();
-        PhotoSortingService service = CreateService(
+        PhotoAnalysisService service = CreateService(
             embedding: [0.0f, 1.0f, 0.0f],
             classifier: new FakeImageClassifier(new VisionVerdict { Matches = false, Confidence = 0.0 }),
             memory: memory);
@@ -142,7 +142,7 @@ public sealed class PhotoSortingServiceTests
     public async Task CreateProposalsAsync_WhenAiUnavailable_RemembersNothing()
     {
         FakeSortMemory memory = new();
-        PhotoSortingService service = CreateService(
+        PhotoAnalysisService service = CreateService(
             embedding: [1.0f, 0.0f, 0.0f],
             classifier: new FakeImageClassifier(new VisionVerdict { Matches = false, Confidence = 0.0 }),
             memory: memory,
@@ -155,236 +155,6 @@ public sealed class PhotoSortingServiceTests
         // Foto künftig fälschlich als „gehört nicht dazu".
         Assert.Empty(proposals);
         Assert.Empty(memory.Records);
-    }
-
-    [Fact]
-    public async Task ApplyProposalsAsync_AppliesEachProposal_ReturnsCount()
-    {
-        FakeFileOrganizer organizer = new();
-        PhotoSortingService service = CreateService(
-            embedding: [1.0f, 0.0f, 0.0f],
-            classifier: new FakeImageClassifier(new VisionVerdict { Matches = false, Confidence = 0.0 }),
-            organizer: organizer);
-
-        int applied = await service.ApplyProposalsAsync([CreateProposal()], FileOperationMode.Move, dryRun: true, CancellationToken.None);
-
-        Assert.Equal(1, applied);
-        _ = Assert.Single(organizer.Applied);
-        Assert.True(organizer.LastDryRun);
-    }
-
-    [Fact]
-    public async Task ApplyProposalsAsync_WithDryRun_DoesNotMarkAsSorted()
-    {
-        FakeSortMemory memory = new();
-        PhotoSortingService service = CreateService(
-            embedding: [1.0f, 0.0f, 0.0f],
-            classifier: new FakeImageClassifier(new VisionVerdict { Matches = false, Confidence = 0.0 }),
-            memory: memory);
-
-        _ = await service.ApplyProposalsAsync([CreateProposal()], FileOperationMode.Move, dryRun: true, CancellationToken.None);
-
-        // Im Probelauf wird nichts verschoben, also darf auch nichts als erledigt gelten.
-        Assert.Empty(memory.Records);
-    }
-
-    [Fact]
-    public async Task ApplyProposalsAsync_WhenApplied_MarksPhotoAsSorted()
-    {
-        FakeSortMemory memory = new();
-        PhotoSortingService service = CreateService(
-            embedding: [1.0f, 0.0f, 0.0f],
-            classifier: new FakeImageClassifier(new VisionVerdict { Matches = false, Confidence = 0.0 }),
-            memory: memory);
-
-        _ = await service.ApplyProposalsAsync([CreateProposal()], FileOperationMode.Move, dryRun: false, CancellationToken.None);
-
-        SortMemoryRecord remembered = Assert.Single(memory.Records);
-        Assert.Equal(SortMemoryStatus.Sorted, remembered.Status);
-    }
-
-    [Fact]
-    public async Task ApplyProposalsAsync_RecordsEveryMoveWithSourceAndTarget()
-    {
-        // Ohne dieses Protokoll wäre der Lauf nicht umkehrbar: Nach dem Verschieben
-        // ist nirgends mehr festgehalten, wo eine Datei vorher lag.
-        FakeSortJournal journal = new();
-        PhotoSortingService service = CreateService(
-            embedding: [1.0f, 0.0f, 0.0f],
-            classifier: new FakeImageClassifier(new VisionVerdict { Matches = false, Confidence = 0.0 }),
-            journal: journal);
-
-        _ = await service.ApplyProposalsAsync([CreateProposal()], FileOperationMode.Move, dryRun: false, CancellationToken.None);
-
-        SortRun run = Assert.Single(journal.Runs);
-        Assert.Equal(SourceFolder, run.SourceFolder);
-        Assert.Equal("Familie", run.CategoryName);
-
-        SortRunItem item = Assert.Single(run.Items);
-        Assert.Equal(@"C:\fotos\a.jpg", item.SourcePath);
-        Assert.Equal(Path.Combine(SourceFolder, "Familie", "a.jpg"), item.TargetPath);
-        Assert.NotEmpty(item.FileSignature);
-    }
-
-    [Fact]
-    public async Task ApplyProposalsAsync_RecordsTheOperationOfTheRun()
-    {
-        // Ohne die Betriebsart wüsste das Rückgängigmachen nicht, ob es die Datei
-        // zurückholen oder eine Kopie entfernen muss – und träfe im Zweifel die
-        // gefährliche Annahme.
-        FakeSortJournal journal = new();
-        PhotoSortingService service = CreateService(
-            embedding: [1.0f, 0.0f, 0.0f],
-            classifier: new FakeImageClassifier(new VisionVerdict { Matches = false, Confidence = 0.0 }),
-            journal: journal);
-
-        _ = await service.ApplyProposalsAsync([CreateProposal()], FileOperationMode.Copy, dryRun: false, CancellationToken.None);
-
-        Assert.Equal(FileOperationMode.Copy, Assert.Single(journal.Runs).Operation);
-    }
-
-    [Fact]
-    public async Task ApplyProposalsAsync_PassesTheOperationToTheOrganizer()
-    {
-        FakeFileOrganizer organizer = new();
-        PhotoSortingService service = CreateService(
-            embedding: [1.0f, 0.0f, 0.0f],
-            classifier: new FakeImageClassifier(new VisionVerdict { Matches = false, Confidence = 0.0 }),
-            organizer: organizer);
-
-        _ = await service.ApplyProposalsAsync([CreateProposal()], FileOperationMode.Copy, dryRun: false, CancellationToken.None);
-
-        Assert.Equal(FileOperationMode.Copy, organizer.LastOperation);
-    }
-
-    [Fact]
-    public async Task ApplyProposalsAsync_WithDryRun_RecordsNothing()
-    {
-        FakeSortJournal journal = new();
-        PhotoSortingService service = CreateService(
-            embedding: [1.0f, 0.0f, 0.0f],
-            classifier: new FakeImageClassifier(new VisionVerdict { Matches = false, Confidence = 0.0 }),
-            journal: journal);
-
-        _ = await service.ApplyProposalsAsync([CreateProposal()], FileOperationMode.Move, dryRun: true, CancellationToken.None);
-
-        // Im Probelauf bewegt sich nichts – es gäbe nichts zurückzunehmen.
-        Assert.Empty(journal.Runs);
-    }
-
-    [Fact]
-    public async Task ApplyProposalsAsync_WhenOneFileFails_RecordsOnlyTheMovedOnes()
-    {
-        // Eine Datei, die gar nicht verschoben wurde, darf nicht im Protokoll landen –
-        // ein Rückgängig würde sonst versuchen, sie von einem Ort zurückzuholen, an
-        // dem sie nie war.
-        FakeSortJournal journal = new();
-        PhotoSortingService service = CreateService(
-            embedding: [1.0f, 0.0f, 0.0f],
-            classifier: new FakeImageClassifier(new VisionVerdict { Matches = false, Confidence = 0.0 }),
-            organizer: new FailingFileOrganizer(failOn: "foto1.jpg"),
-            journal: journal);
-
-        _ = await service.ApplyProposalsAsync(
-            [CreateProposal("foto0.jpg"), CreateProposal("foto1.jpg"), CreateProposal("foto2.jpg")],
-            FileOperationMode.Move,
-            dryRun: false,
-            CancellationToken.None);
-
-        SortRun run = Assert.Single(journal.Runs);
-        Assert.Equal(2, run.Items.Count);
-        Assert.DoesNotContain(run.Items, item => item.SourcePath.EndsWith("foto1.jpg", StringComparison.Ordinal));
-    }
-
-    [Fact]
-    public async Task ApplyProposalsAsync_WhenOneFileFails_ContinuesWithTheRest()
-    {
-        FakeSortMemory memory = new();
-        FailingFileOrganizer organizer = new(failOn: "foto1.jpg");
-        PhotoSortingService service = CreateService(
-            embedding: [1.0f, 0.0f, 0.0f],
-            classifier: new FakeImageClassifier(new VisionVerdict { Matches = false, Confidence = 0.0 }),
-            organizer: organizer,
-            memory: memory);
-
-        SortProposal[] proposals =
-        [
-            CreateProposal("foto0.jpg"),
-            CreateProposal("foto1.jpg"),
-            CreateProposal("foto2.jpg"),
-        ];
-
-        int applied = await service.ApplyProposalsAsync(proposals, FileOperationMode.Move, dryRun: false, CancellationToken.None);
-
-        // Eine gesperrte Datei darf den Lauf nicht abbrechen: die übrigen werden
-        // verschoben, die fehlgeschlagene bleibt ungemerkt und kommt wieder.
-        Assert.Equal(2, applied);
-        Assert.Equal(2, memory.Records.Count);
-        Assert.DoesNotContain(memory.Records, record => record.PhotoPath.EndsWith("foto1.jpg", StringComparison.Ordinal));
-    }
-
-    [Fact]
-    public async Task ApplyProposalsAsync_WhenCancelledMidRun_RecordsWhatWasAlreadyMoved()
-    {
-        // Bricht die Nutzerin ab, sind die bis dahin verschobenen Fotos längst im
-        // Zielordner und im Gedächtnis als einsortiert vermerkt. Ohne Protokoll gäbe
-        // es für sie keinen Weg zurück – ausgerechnet nach einem Abbruch, wo sie ihn
-        // am ehesten sucht.
-        using CancellationTokenSource cancellation = new();
-        FakeSortJournal journal = new();
-        PhotoSortingService service = CreateService(
-            embedding: [1.0f, 0.0f, 0.0f],
-            classifier: new FakeImageClassifier(new VisionVerdict { Matches = false, Confidence = 0.0 }),
-            organizer: new CancellingFileOrganizer(cancellation, cancelAfter: 2),
-            journal: journal);
-
-        _ = await Assert.ThrowsAnyAsync<OperationCanceledException>(() => service.ApplyProposalsAsync(
-            [CreateProposal("foto0.jpg"), CreateProposal("foto1.jpg"), CreateProposal("foto2.jpg")],
-            FileOperationMode.Move,
-            dryRun: false,
-            cancellation.Token));
-
-        SortRun run = Assert.Single(journal.Runs);
-        Assert.Equal(2, run.Items.Count);
-        Assert.DoesNotContain(run.Items, item => item.SourcePath.EndsWith("foto2.jpg", StringComparison.Ordinal));
-    }
-
-    [Fact]
-    public async Task IgnoreProposalsAsync_MarksProposalsAsIgnored()
-    {
-        FakeSortMemory memory = new();
-        PhotoSortingService service = CreateService(
-            embedding: [1.0f, 0.0f, 0.0f],
-            classifier: new FakeImageClassifier(new VisionVerdict { Matches = false, Confidence = 0.0 }),
-            memory: memory);
-
-        await service.IgnoreProposalsAsync([CreateProposal()], CancellationToken.None);
-
-        SortMemoryRecord remembered = Assert.Single(memory.Records);
-        Assert.Equal(SortMemoryStatus.Ignored, remembered.Status);
-    }
-
-    [Fact]
-    public async Task ApplyProposalsAsync_WithMixedFoldersOrCategories_IsRejected()
-    {
-        // Der Lauf wird als ein Protokolleintrag festgehalten – mit einem Quellordner
-        // und einer Kategorie. Käme eine gemischte Liste durch, stünde im Protokoll die
-        // Angabe des ersten Vorschlags für alle, und das Zurücknehmen liefe ins Leere.
-        PhotoSortingService service = CreateService([1.0f, 0.0f, 0.0f], new FakeImageClassifier(new VisionVerdict { Matches = true, Confidence = 0.9 }));
-        SortProposal fromAnotherFolder = CreateProposal("b.jpg") with { SourceFolder = @"C:\andere" };
-        SortProposal anotherCategory = CreateProposal("c.jpg") with { CategoryName = "Urlaub" };
-
-        _ = await Assert.ThrowsAsync<InvalidOperationException>(() => service.ApplyProposalsAsync(
-            [CreateProposal(), fromAnotherFolder],
-            FileOperationMode.Move,
-            dryRun: false,
-            TestContext.Current.CancellationToken));
-
-        _ = await Assert.ThrowsAsync<InvalidOperationException>(() => service.ApplyProposalsAsync(
-            [CreateProposal(), anotherCategory],
-            FileOperationMode.Move,
-            dryRun: false,
-            TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -407,7 +177,7 @@ public sealed class PhotoSortingServiceTests
             Embedding = new ImageEmbedding([1.0f, 0.0f, 0.0f], "fake"),
         });
 
-        PhotoSortingService service = CreateService(
+        PhotoAnalysisService service = CreateService(
             [1.0f, 0.0f, 0.0f],
             new FakeImageClassifier(new VisionVerdict { Matches = true, Confidence = 0.9 }),
             photos: [captured]);
@@ -428,7 +198,7 @@ public sealed class PhotoSortingServiceTests
         // bekannter Bilder scheinbar stehen.
         FakeSortMemory memory = new();
         memory.Records.Add(CreateMemory(SortMemoryStatus.Sorted));
-        PhotoSortingService service = CreateService(
+        PhotoAnalysisService service = CreateService(
             [1.0f, 0.0f, 0.0f],
             new FakeImageClassifier(new VisionVerdict { Matches = true, Confidence = 0.9 }),
             memory: memory);
@@ -451,7 +221,7 @@ public sealed class PhotoSortingServiceTests
         // Bei einem großen Ordner ist das der längste Teil des Laufs – und er lief bis
         // hierher ohne jede Meldung ab. In der Oberfläche stand deshalb minutenlang nur
         // „es arbeitet", und der Zählstand erschien erst, als dieser Teil vorbei war.
-        PhotoSortingService service = CreateService(
+        PhotoAnalysisService service = CreateService(
             [1.0f, 0.0f, 0.0f],
             new FakeImageClassifier(new VisionVerdict { Matches = true, Confidence = 0.9 }));
 
@@ -484,7 +254,7 @@ public sealed class PhotoSortingServiceTests
             Foto("danach.jpg", new DateOnly(2026, 7, 27)),
         ];
         CountingEmbeddingProvider provider = new([1.0f, 0.0f, 0.0f]);
-        PhotoSortingService service = CreateService(
+        PhotoAnalysisService service = CreateService(
             [1.0f, 0.0f, 0.0f],
             new FakeImageClassifier(new VisionVerdict { Matches = true, Confidence = 0.9 }),
             embeddingProvider: provider,
@@ -514,7 +284,7 @@ public sealed class PhotoSortingServiceTests
             Foto("b.jpg", new DateOnly(2026, 7, 12)),
             Foto("c.jpg", new DateOnly(2026, 12, 31)),
         ];
-        PhotoSortingService service = CreateService(
+        PhotoAnalysisService service = CreateService(
             [1.0f, 0.0f, 0.0f],
             new FakeImageClassifier(new VisionVerdict { Matches = true, Confidence = 0.9 }),
             photos: photos);
@@ -541,7 +311,7 @@ public sealed class PhotoSortingServiceTests
             Foto("c.jpg", new DateOnly(2026, 12, 31)),
         ];
         CountingEmbeddingProvider provider = new([1.0f, 0.0f, 0.0f]);
-        PhotoSortingService service = CreateService(
+        PhotoAnalysisService service = CreateService(
             [1.0f, 0.0f, 0.0f],
             new FakeImageClassifier(new VisionVerdict { Matches = true, Confidence = 0.9 }),
             embeddingProvider: provider,
@@ -567,7 +337,7 @@ public sealed class PhotoSortingServiceTests
             Foto("januar.jpg", new DateOnly(2026, 1, 1)),
         ];
         CountingEmbeddingProvider provider = new([1.0f, 0.0f, 0.0f]);
-        PhotoSortingService service = CreateService(
+        PhotoAnalysisService service = CreateService(
             [1.0f, 0.0f, 0.0f],
             new FakeImageClassifier(new VisionVerdict { Matches = true, Confidence = 0.9 }),
             embeddingProvider: provider,
@@ -596,7 +366,7 @@ public sealed class PhotoSortingServiceTests
             new Photo { FullPath = @"C:\fotos\ohne.jpg", FileName = "ohne.jpg", CapturedAt = null },
         ];
         CountingEmbeddingProvider provider = new([1.0f, 0.0f, 0.0f]);
-        PhotoSortingService service = CreateService(
+        PhotoAnalysisService service = CreateService(
             [1.0f, 0.0f, 0.0f],
             new FakeImageClassifier(new VisionVerdict { Matches = true, Confidence = 0.9 }),
             embeddingProvider: provider,
@@ -630,7 +400,7 @@ public sealed class PhotoSortingServiceTests
             FileName = $"bild{index}.jpg",
         })];
         ConcurrencyTrackingEmbeddingProvider provider = new([1.0f, 0.0f, 0.0f]);
-        PhotoSortingService service = CreateService(
+        PhotoAnalysisService service = CreateService(
             [1.0f, 0.0f, 0.0f],
             new FakeImageClassifier(new VisionVerdict { Matches = true, Confidence = 0.9 }),
             embeddingProvider: provider,
@@ -664,7 +434,7 @@ public sealed class PhotoSortingServiceTests
             [1.0f, 0.0f, 0.0f],
             photo => TimeSpan.FromMilliseconds(60 - (int.Parse(photo.FileName[4..5], CultureInfo.InvariantCulture) * 10)));
 
-        PhotoSortingService service = CreateService(
+        PhotoAnalysisService service = CreateService(
             [1.0f, 0.0f, 0.0f],
             new FakeImageClassifier(new VisionVerdict { Matches = true, Confidence = 0.9 }),
             embeddingProvider: provider,
@@ -690,7 +460,7 @@ public sealed class PhotoSortingServiceTests
             FullPath = $@"C:\fotos\bild{index}.jpg",
             FileName = $"bild{index}.jpg",
         })];
-        PhotoSortingService service = CreateService(
+        PhotoAnalysisService service = CreateService(
             [1.0f, 0.0f, 0.0f],
             new FakeImageClassifier(new VisionVerdict { Matches = true, Confidence = 0.9 }),
             embeddingProvider: new ConcurrencyTrackingEmbeddingProvider([1.0f, 0.0f, 0.0f]),
@@ -718,7 +488,7 @@ public sealed class PhotoSortingServiceTests
         SlowStreamingPhotoSource source = new(photos);
         SnapshotEmbeddingProvider provider = new([1.0f, 0.0f, 0.0f], () => source.Yielded);
 
-        PhotoSortingService service = CreateService(
+        PhotoAnalysisService service = CreateService(
             [1.0f, 0.0f, 0.0f],
             new FakeImageClassifier(new VisionVerdict { Matches = true, Confidence = 0.9 }),
             embeddingProvider: provider,
@@ -747,7 +517,7 @@ public sealed class PhotoSortingServiceTests
             FullPath = $@"C:\fotos\bild{index}.jpg",
             FileName = $"bild{index}.jpg",
         })];
-        PhotoSortingService service = CreateService(
+        PhotoAnalysisService service = CreateService(
             [1.0f, 0.0f, 0.0f],
             new FakeImageClassifier(new VisionVerdict { Matches = true, Confidence = 0.9 }),
             photos: photos);
@@ -904,21 +674,6 @@ public sealed class PhotoSortingServiceTests
         }
     }
 
-    private static SortProposal CreateProposal() => CreateProposal(SamplePhoto.FileName);
-
-    private static SortProposal CreateProposal(string fileName) => new()
-    {
-        Photo = new Photo
-        {
-            FullPath = Path.Combine(SourceFolder, fileName),
-            FileName = fileName,
-        },
-        CategoryName = "Familie",
-        SourceFolder = SourceFolder,
-        TargetFolderPath = @"C:\fotos\Familie",
-        Confidence = 1.0,
-        Method = ClassificationMethod.Embedding,
-    };
 
     private static SortMemoryRecord CreateMemory(SortMemoryStatus status) => new()
     {
@@ -946,7 +701,7 @@ public sealed class PhotoSortingServiceTests
         });
 
         FakeImageClassifier classifier = new(new VisionVerdict { Matches = true, Confidence = 1.0 });
-        PhotoSortingService service = CreateService(embedding: [0.0f, 1.0f, 0.0f], classifier: classifier);
+        PhotoAnalysisService service = CreateService(embedding: [0.0f, 1.0f, 0.0f], classifier: classifier);
 
         IReadOnlyList<SortProposal> proposals = await service.CreateProposalsAsync(
             SourceFolder, category, includeSubfolders: false, DateRange.Unbounded, progress: null, CancellationToken.None);
@@ -969,7 +724,7 @@ public sealed class PhotoSortingServiceTests
         });
 
         FakeImageClassifier classifier = new(new VisionVerdict { Matches = false, Confidence = 0.0 });
-        PhotoSortingService service = CreateService(embedding: [1.0f, 0.0f, 0.0f], classifier: classifier);
+        PhotoAnalysisService service = CreateService(embedding: [1.0f, 0.0f, 0.0f], classifier: classifier);
 
         IReadOnlyList<SortProposal> proposals = await service.CreateProposalsAsync(
             SourceFolder, category, includeSubfolders: false, DateRange.Unbounded, progress: null, CancellationToken.None);
@@ -985,7 +740,7 @@ public sealed class PhotoSortingServiceTests
         // Urteil daraus wäre geraten. Vorher wurde trotzdem gerechnet, solange nur die
         // Vektorlänge zufällig übereinstimmte.
         FakeImageClassifier classifier = new(new VisionVerdict { Matches = true, Confidence = 1.0 });
-        PhotoSortingService service = CreateService(
+        PhotoAnalysisService service = CreateService(
             embedding: [1.0f, 0.0f, 0.0f],
             classifier: classifier,
             embeddingProvider: new FakeEmbeddingProvider(_ => [1.0f, 0.0f, 0.0f], model: "anderes-modell"));
@@ -1007,7 +762,7 @@ public sealed class PhotoSortingServiceTests
         // zurückgestellt ist, käme kein Foto je erneut zur Prüfung.
         FakeSortMemory memory = new();
         FakeImageClassifier classifier = new(new VisionVerdict { Matches = false, Confidence = 0.0 });
-        PhotoSortingService service = CreateService(
+        PhotoAnalysisService service = CreateService(
             embedding: [1.0f, 0.0f, 0.0f],
             classifier: classifier,
             memory: memory,
@@ -1027,7 +782,7 @@ public sealed class PhotoSortingServiceTests
         // Vektoren haben eine andere Länge. Auch das ist kein Urteil über das Bild.
         FakeSortMemory memory = new();
         FakeImageClassifier classifier = new(new VisionVerdict { Matches = false, Confidence = 0.0 });
-        PhotoSortingService service = CreateService(
+        PhotoAnalysisService service = CreateService(
             embedding: [1.0f, 0.0f],
             classifier: classifier,
             memory: memory,
@@ -1057,7 +812,7 @@ public sealed class PhotoSortingServiceTests
     // Ein Provider, der bei jedem Aufruf scheitert. Er ist der eigentliche Beweis dieses
     // Abschnitts: Wenn der Datums-Lauf durchläuft, wurde die KI kein einziges Mal
     // befragt — genau das ist der Sinn dieses Weges.
-    private static PhotoSortingService CreateDateOnlyService(
+    private static PhotoAnalysisService CreateDateOnlyService(
         IReadOnlyList<Photo> photos,
         FakeSortMemory? memory = null) =>
         CreateService(
@@ -1072,7 +827,7 @@ public sealed class PhotoSortingServiceTests
     [Fact]
     public async Task CreateDateProposalsAsync_PhotoInRange_IsProposedWithoutAnyAiCall()
     {
-        PhotoSortingService service = CreateDateOnlyService([Foto("urlaub.jpg", new DateOnly(2026, 7, 15))]);
+        PhotoAnalysisService service = CreateDateOnlyService([Foto("urlaub.jpg", new DateOnly(2026, 7, 15))]);
         DateRange range = new(new DateOnly(2026, 7, 12), new DateOnly(2026, 7, 21));
 
         IReadOnlyList<SortProposal> proposals = await service.CreateDateProposalsAsync(
@@ -1087,7 +842,7 @@ public sealed class PhotoSortingServiceTests
     [Fact]
     public async Task CreateDateProposalsAsync_PhotoOutsideRange_IsNotProposed()
     {
-        PhotoSortingService service = CreateDateOnlyService([Foto("davor.jpg", new DateOnly(2026, 7, 11))]);
+        PhotoAnalysisService service = CreateDateOnlyService([Foto("davor.jpg", new DateOnly(2026, 7, 11))]);
         DateRange range = new(new DateOnly(2026, 7, 12), new DateOnly(2026, 7, 21));
 
         IReadOnlyList<SortProposal> proposals = await service.CreateDateProposalsAsync(
@@ -1101,7 +856,7 @@ public sealed class PhotoSortingServiceTests
     {
         // Ohne Aufnahmedatum lässt sich das Foto dem Zeitraum nicht zuordnen. Es
         // stillschweigend mitzunehmen wäre die gefährlichere Richtung.
-        PhotoSortingService service = CreateDateOnlyService([SamplePhoto]);
+        PhotoAnalysisService service = CreateDateOnlyService([SamplePhoto]);
         DateRange range = new(new DateOnly(2026, 7, 12), new DateOnly(2026, 7, 21));
 
         IReadOnlyList<SortProposal> proposals = await service.CreateDateProposalsAsync(
@@ -1114,7 +869,7 @@ public sealed class PhotoSortingServiceTests
     public async Task CreateDateProposalsAsync_UnboundedRange_ProposesNothing()
     {
         // Ohne Grenze wäre jedes Foto des Ordners ein Vorschlag zum Verschieben.
-        PhotoSortingService service = CreateDateOnlyService([Foto("a.jpg", new DateOnly(2026, 7, 15))]);
+        PhotoAnalysisService service = CreateDateOnlyService([Foto("a.jpg", new DateOnly(2026, 7, 15))]);
 
         IReadOnlyList<SortProposal> proposals = await service.CreateDateProposalsAsync(
             SourceFolder, "Urlaub", includeSubfolders: false, DateRange.Unbounded, progress: null, CancellationToken.None);
@@ -1125,7 +880,7 @@ public sealed class PhotoSortingServiceTests
     [Fact]
     public async Task CreateDateProposalsAsync_ReversedRange_ProposesNothing()
     {
-        PhotoSortingService service = CreateDateOnlyService([Foto("a.jpg", new DateOnly(2026, 7, 15))]);
+        PhotoAnalysisService service = CreateDateOnlyService([Foto("a.jpg", new DateOnly(2026, 7, 15))]);
         DateRange reversed = new(new DateOnly(2026, 7, 21), new DateOnly(2026, 7, 12));
 
         IReadOnlyList<SortProposal> proposals = await service.CreateDateProposalsAsync(
@@ -1139,7 +894,7 @@ public sealed class PhotoSortingServiceTests
     {
         // Beide Enden gehören dazu: Sonst fielen ausgerechnet Anreise- und Abreisetag
         // heraus, die die Nutzerin gerade eingetippt hat.
-        PhotoSortingService service = CreateDateOnlyService(
+        PhotoAnalysisService service = CreateDateOnlyService(
             [Foto("erster.jpg", new DateOnly(2026, 7, 12)), Foto("letzter.jpg", new DateOnly(2026, 7, 21))]);
         DateRange range = new(new DateOnly(2026, 7, 12), new DateOnly(2026, 7, 21));
 
@@ -1149,13 +904,11 @@ public sealed class PhotoSortingServiceTests
         Assert.Equal(2, proposals.Count);
     }
 
-    private static PhotoSortingService CreateService(
+    private static PhotoAnalysisService CreateService(
         float[] embedding,
         FakeImageClassifier classifier,
-        IFileOrganizer? organizer = null,
         FakeSortMemory? memory = null,
         IEmbeddingProvider? embeddingProvider = null,
-        FakeSortJournal? journal = null,
         IReadOnlyList<Photo>? photos = null,
         IPhotoSource? source = null,
         FakeAnalysisJournal? analysisJournal = null)
@@ -1169,20 +922,14 @@ public sealed class PhotoSortingServiceTests
             clock,
             NullLogger<SortMemoryGateway>.Instance);
 
-        SortJournalGateway journalGateway = new(
-            journal ?? new FakeSortJournal(),
-            NullLogger<SortJournalGateway>.Instance);
-
-        return new PhotoSortingService(
+        return new PhotoAnalysisService(
             photoSource,
             embeddingProvider ?? new FakeEmbeddingProvider(_ => embedding),
             classifier,
-            organizer ?? new FakeFileOrganizer(),
             gateway,
-            journalGateway,
             analysisJournal ?? new FakeAnalysisJournal(),
             clock,
             options,
-            NullLogger<PhotoSortingService>.Instance);
+            NullLogger<PhotoAnalysisService>.Instance);
     }
 }

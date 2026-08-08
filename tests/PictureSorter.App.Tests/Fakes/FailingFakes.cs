@@ -42,7 +42,7 @@ internal sealed class FailingPhotoSource(Exception failure) : IPhotoSource
 }
 
 /// <summary>Scheitert beim Erstellen der Vorschläge oder beim Anwenden.</summary>
-internal sealed class FailingPhotoSorter(Exception failure, bool failOnApply = false) : IPhotoSorter
+internal sealed class FailingPhotoSorter(Exception failure, bool failOnApply = false) : ITestSorter
 {
     public Task<IReadOnlyList<SortProposal>> CreateDateProposalsAsync(
         string sourceFolder,
@@ -90,7 +90,7 @@ internal sealed class FailingPhotoSorter(Exception failure, bool failOnApply = f
 /// Liefert erst die Vorschläge und scheitert dann beim Anwenden — der Ablauf muss bis
 /// zur Vorschau kommen, damit der Fehlerzweig des Sortierens überhaupt erreichbar ist.
 /// </summary>
-internal sealed class FailingApplySorter(IReadOnlyList<SortProposal> proposals, Exception failure) : IPhotoSorter
+internal sealed class FailingApplySorter(IReadOnlyList<SortProposal> proposals, Exception failure) : ITestSorter
 {
     public Task<IReadOnlyList<SortProposal>> ResumeAsync(
         AnalysisRun run,

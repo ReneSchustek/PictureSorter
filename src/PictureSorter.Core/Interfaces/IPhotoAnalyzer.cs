@@ -5,10 +5,15 @@ using PictureSorter.Core.ValueObjects;
 namespace PictureSorter.Core.Interfaces;
 
 /// <summary>
-/// Orchestriert die Sortierung: kombiniert die Embedding-Vorsortierung mit der
-/// Vision-Prüfung für Grenzfälle und erzeugt überprüfbare Vorschläge.
+/// Erzeugt überprüfbare Sortiervorschläge: über das Motiv (Embedding-Vorsortierung mit
+/// Vision-Prüfung für Grenzfälle), allein über das Aufnahmedatum, oder indem ein
+/// protokollierter Lauf fortgesetzt wird.
+///
+/// Bewusst getrennt vom Anwenden: Das Erzeugen liest und fragt die Bilderkennung, das
+/// Anwenden fasst Dateien an und ist der einzige Teil der Anwendung, der etwas
+/// Unumkehrbares tut. Zwei Verantwortungen, zwei Verträge.
 /// </summary>
-public interface IPhotoSorter
+public interface IPhotoAnalyzer
 {
     /// <summary>
     /// Bewertet alle Fotos eines Ordners für eine Kategorie und erzeugt Vorschläge
@@ -101,33 +106,5 @@ public interface IPhotoSorter
         Category? category,
         IProgress<SortProgress>? progress,
         CancellationToken cancellationToken);
-
-    /// <summary>
-    /// Wendet eine Menge bestätigter Vorschläge an oder simuliert sie (Dry-Run).
-    /// </summary>
-    /// <param name="proposals">Die anzuwendenden Vorschläge.</param>
-    /// <param name="operation">
-    /// Ob die Dateien verschoben oder kopiert werden. Gilt für den ganzen Lauf und
-    /// wird mitprotokolliert, weil das Rückgängigmachen davon abhängt.
-    /// </param>
-    /// <param name="dryRun">
-    /// <see langword="true"/> für eine reine Simulation ohne Dateioperation.
-    /// </param>
-    /// <param name="cancellationToken">Token zum Abbrechen des Vorgangs.</param>
-    /// <returns>Anzahl der (tatsächlich oder simuliert) einsortierten Dateien.</returns>
-    Task<int> ApplyProposalsAsync(
-        IReadOnlyList<SortProposal> proposals,
-        FileOperationMode operation,
-        bool dryRun,
-        CancellationToken cancellationToken);
-
-    /// <summary>
-    /// Merkt vom Nutzer abgewählte Vorschläge dauerhaft als „nicht gewünscht",
-    /// sodass sie in einem späteren Lauf nicht erneut erscheinen.
-    /// </summary>
-    /// <param name="proposals">Die abgewählten Vorschläge.</param>
-    /// <param name="cancellationToken">Token zum Abbrechen des Vorgangs.</param>
-    Task IgnoreProposalsAsync(
-        IReadOnlyList<SortProposal> proposals,
-        CancellationToken cancellationToken);
 }
+

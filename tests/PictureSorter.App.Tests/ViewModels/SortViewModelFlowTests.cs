@@ -646,7 +646,7 @@ public sealed class SortViewModelFlowTests : IDisposable
     // ── Testhilfen ─────────────────────────────────────────────────────────────
 
     /// <summary>Blockiert die Analyse, bis der Abbruch angefordert wird.</summary>
-    private sealed class BlockingPhotoSorter : IPhotoSorter
+    private sealed class BlockingPhotoSorter : ITestSorter
     {
         public SemaphoreSlim Started { get; } = new(0);
 
@@ -1012,7 +1012,7 @@ public sealed class SortViewModelFlowTests : IDisposable
     }
 
     private static SortViewModel CreateSut(
-        IPhotoSorter? sorter = null,
+        ITestSorter? sorter = null,
         ISortUndoService? undo = null,
         IPhotoSource? photoSource = null,
         ICategoryTrainer? trainer = null,
@@ -1032,8 +1032,11 @@ public sealed class SortViewModelFlowTests : IDisposable
 
         ReswLocalizer localizer = new();
 
+        ITestSorter doppel = sorter ?? new FakePhotoSorter([]);
+
         return new SortViewModel(
-            sorter ?? new FakePhotoSorter([]),
+            doppel,
+            doppel,
             undo ?? new FakeSortUndoService(),
             journal ?? new FakeAnalysisJournal(),
             recovery ?? RecoveryFactory.Create(),

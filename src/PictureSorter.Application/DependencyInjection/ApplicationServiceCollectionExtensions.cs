@@ -27,7 +27,10 @@ public static class ApplicationServiceCollectionExtensions
         _ = services.AddTransient<SortMemoryRecovery>();
 
         // Transient, da die Dienste an den transienten KI-Providern hängen.
-        _ = services.AddTransient<IPhotoSorter, PhotoSortingService>();
+        // Zwei Verträge, zwei Dienste: Erzeugen liest und fragt die Bilderkennung,
+        // Anwenden bewegt Dateien. Wer nur Vorschläge braucht, bekommt den zweiten nicht.
+        _ = services.AddTransient<IPhotoAnalyzer, PhotoAnalysisService>();
+        _ = services.AddTransient<IProposalApplier, ProposalApplyService>();
         _ = services.AddTransient<ICategoryTrainer, CategoryLearningService>();
         _ = services.AddTransient<IDuplicateScanner, DuplicateScanService>();
         _ = services.AddTransient<ISortUndoService, SortUndoService>();
