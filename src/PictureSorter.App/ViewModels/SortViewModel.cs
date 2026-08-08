@@ -47,7 +47,6 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
 
     private Category? _category;
     private CancellationTokenSource? _cancellation;
-    private AnalysisRun? _resumableRun;
 
     /// <summary>Expliziter Ablaufzustand der Sortier-Ansicht.</summary>
     [ObservableProperty]
@@ -150,27 +149,6 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     public partial bool HasUndoableRun { get; set; }
 
     /// <summary>
-    /// Zusammenfassung des protokollierten Analyselaufs (leer, wenn keiner vorliegt).
-    /// </summary>
-    [ObservableProperty]
-    public partial string ResumeSummary { get; set; }
-
-    /// <summary>
-    /// Beschriftung des Knopfs: „Fortsetzen" bei einem stehengebliebenen Lauf,
-    /// „Ergebnis zurückholen" bei einem abgeschlossenen.
-    /// </summary>
-    [ObservableProperty]
-    public partial string ResumeActionLabel { get; set; }
-
-    /// <summary>
-    /// <see langword="true"/>, wenn ein protokollierter Analyselauf vorliegt.
-    /// </summary>
-    [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(ResumeCommand))]
-    [NotifyCanExecuteChangedFor(nameof(DiscardRunCommand))]
-    public partial bool HasResumableRun { get; set; }
-
-    /// <summary>
     /// Initialisiert das ViewModel.
     /// </summary>
     /// <param name="sorter">Der Sortierdienst.</param>
@@ -264,20 +242,34 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
             OnWizardStepEntered,
             localizer);
 
+        // Das Angebot kennt den Ablauf nur über diese Rückrufe (SRP), wie der Assistent.
+        Resume = new AnalysisResumeViewModel(
+            analysisJournal,
+            localizer,
+            logger,
+            () => IsInteractive,
+            RunResumeAsync,
+            RecoverFromMemoryGuardedAsync,
+            ConfirmDiscardAsync);
+
         State = SortState.Idle;
         SourceFolder = string.Empty;
         CategoryName = string.Empty;
         CategoryDescription = string.Empty;
         UndoSummary = string.Empty;
         TripHint = string.Empty;
-        ResumeSummary = string.Empty;
-        ResumeActionLabel = string.Empty;
     }
 
     /// <summary>
     /// Navigation und Darstellung des Schritt-für-Schritt-Assistenten.
     /// </summary>
     public SortWizardViewModel Wizard { get; }
+
+    /// <summary>
+    /// Das Angebot, einen protokollierten Analyselauf fortzusetzen, sein Ergebnis
+    /// zurückzuholen oder ihn zu verwerfen.
+    /// </summary>
+    public AnalysisResumeViewModel Resume { get; }
 
     /// <summary>
     /// Die geladenen Beispiel-Kandidaten zum Anlernen der Kategorie.
@@ -369,12 +361,6 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     public bool CanUndo => IsInteractive && HasUndoableRun;
 
     /// <summary>
-    /// Fortsetzen und Verwerfen sind möglich, wenn ein protokollierter Analyselauf
-    /// vorliegt und gerade nichts läuft.
-    /// </summary>
-    public bool CanResume => IsInteractive && HasResumableRun;
-
-    /// <summary>
     /// Eine Ordnerwahl ist möglich, solange kein Vorgang läuft.
     /// </summary>
     public bool CanBrowse => IsInteractive;
@@ -383,7 +369,6 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     {
         OnPropertyChanged(nameof(IsInteractive));
         OnPropertyChanged(nameof(CanUndo));
-        OnPropertyChanged(nameof(CanResume));
         OnPropertyChanged(nameof(CanRecoverFromMemory));
 
         // Der Anhalten-Knopf steht auf der Seite und nicht nur in der Statusleiste; ohne
@@ -394,9 +379,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         SuggestTripsCommand.NotifyCanExecuteChanged();
         SortByDateCommand.NotifyCanExecuteChanged();
         UndoCommand.NotifyCanExecuteChanged();
-        RecoverFromMemoryCommand.NotifyCanExecuteChanged();
-        ResumeCommand.NotifyCanExecuteChanged();
-        DiscardRunCommand.NotifyCanExecuteChanged();
+        Resume.NotifyStateChanged();
         Wizard.NotifyStateChanged();
         Proposals.NotifyStateChanged();
     }
@@ -410,8 +393,6 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     }
 
     partial void OnHasUndoableRunChanged(bool value) => OnPropertyChanged(nameof(CanUndo));
-
-    partial void OnHasResumableRunChanged(bool value) => OnPropertyChanged(nameof(CanResume));
 
     partial void OnSourceFolderChanged(string value)
     {
@@ -437,7 +418,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(CanRecoverFromMemory));
         SuggestTripsCommand.NotifyCanExecuteChanged();
         SortByDateCommand.NotifyCanExecuteChanged();
-        RecoverFromMemoryCommand.NotifyCanExecuteChanged();
+        Resume.NotifyStateChanged();
         Wizard.NotifyStateChanged();
     }
 
@@ -449,7 +430,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(CanSortByDate));
         OnPropertyChanged(nameof(CanRecoverFromMemory));
         SortByDateCommand.NotifyCanExecuteChanged();
-        RecoverFromMemoryCommand.NotifyCanExecuteChanged();
+        Resume.NotifyStateChanged();
         Wizard.NotifyStateChanged();
     }
 
@@ -955,52 +936,10 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         HasUndoableRun = true;
     }
 
-    /// <summary>
-    /// Sieht nach, ob ein protokollierter Analyselauf offen ist oder sich sein Ergebnis
-    /// zurückholen lässt, und beschriftet den Hinweis entsprechend.
-    ///
-    /// Das Protokoll ist dauerhaft: Auch ein Lauf, der vor drei Tagen mitten in der Nacht
-    /// stehengeblieben ist, wird nach dem nächsten Start der Anwendung wieder angeboten.
-    /// </summary>
-    [RelayCommand]
-    private async Task RefreshResumeStateAsync()
+    // Der Ablauf eines fortgesetzten Laufs. Das Angebot dazu — Erkennen, Beschriften,
+    // Verwerfen — liegt in AnalysisResumeViewModel und ruft hierher zurück.
+    private async Task RunResumeAsync(AnalysisRun run)
     {
-        AnalysisRun? run = await LoadLatestRunAsync().ConfigureAwait(true);
-        _resumableRun = run;
-
-        if (run is null)
-        {
-            HasResumableRun = false;
-            ResumeSummary = string.Empty;
-            ResumeActionLabel = string.Empty;
-            return;
-        }
-
-        // Zwei verschiedene Angebote aus derselben Quelle: Ein stehengebliebener Lauf wird
-        // fortgesetzt, ein abgeschlossener nur noch angezeigt. Die Beschriftung muss das
-        // sagen — „Fortsetzen" bei einem fertigen Lauf wäre eine Falschaussage.
-        bool resumable = run.IsResumable;
-        HasResumableRun = true;
-        ResumeActionLabel = _localizer.Get(resumable ? "Sort_ResumeAction" : "Sort_RestoreAction");
-        ResumeSummary = _localizer.Format(
-            resumable ? "Sort_ResumeSummary" : "Sort_RestoreSummary",
-            run.CategoryName,
-            run.DecidedPhotos,
-            run.TotalPhotos,
-            run.LastProgressAt.ToLocalTime().ToString("g", CultureInfo.CurrentCulture));
-    }
-
-    /// <summary>
-    /// Setzt den protokollierten Lauf fort beziehungsweise holt sein Ergebnis zurück.
-    /// </summary>
-    [RelayCommand(CanExecute = nameof(CanResume))]
-    private async Task ResumeAsync()
-    {
-        if (_resumableRun is not { } run)
-        {
-            return;
-        }
-
         using IDisposable? logScope = _logger.BeginScope("Fortsetzen {CorrelationId}", NewCorrelationId());
         State = SortState.Analyzing;
         _status.Begin(_localizer.Get("Sort_Resuming"), Cancel);
@@ -1008,19 +947,12 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         _analyzeThrottle.Reset();
         _cancellation = new CancellationTokenSource();
 
-        try
-        {
-            await RunGuardedAsync(
-                () => ResumeCoreAsync(run),
-                SortState.Idle,
-                "Sort_AnalyzePaused",
-                "Sort_AnalyzeFailed",
-                SortViewModelLog.AnalyzeFailed).ConfigureAwait(true);
-        }
-        finally
-        {
-            await RefreshResumeStateAsync().ConfigureAwait(true);
-        }
+        await RunGuardedAsync(
+            () => ResumeCoreAsync(run),
+            SortState.Idle,
+            "Sort_AnalyzePaused",
+            "Sort_AnalyzeFailed",
+            SortViewModelLog.AnalyzeFailed).ConfigureAwait(true);
     }
 
     private async Task ResumeCoreAsync(AnalysisRun run)
@@ -1078,8 +1010,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     /// Bei einem Ordner, dessen Bewertung Tage dauert, ist das der Unterschied zwischen
     /// „nichts verloren" und „alles noch einmal".
     /// </summary>
-    [RelayCommand(CanExecute = nameof(CanRecoverFromMemory))]
-    private async Task RecoverFromMemoryAsync()
+    private async Task RunRecoverFromMemoryAsync()
     {
         using IDisposable? logScope = _logger.BeginScope("Wiederherstellen {CorrelationId}", NewCorrelationId());
         State = SortState.Analyzing;
@@ -1126,66 +1057,27 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         && !string.IsNullOrWhiteSpace(SourceFolder)
         && !string.IsNullOrWhiteSpace(CategoryName);
 
-    /// <summary>
-    /// Verwirft den protokollierten Lauf, damit er nicht weiter angeboten wird.
-    /// </summary>
-    [RelayCommand(CanExecute = nameof(CanResume))]
-    private async Task DiscardRunAsync()
-    {
-        if (_resumableRun is not { } run)
-        {
-            return;
-        }
+    // Das Angebot kennt Ordner und Gruppenname nicht; es fragt hier nach, bevor es den
+    // Knopf freigibt.
+    private Task RecoverFromMemoryGuardedAsync() =>
+        CanRecoverFromMemory ? RunRecoverFromMemoryAsync() : Task.CompletedTask;
 
+    // Die Rückfrage vor dem Verwerfen: Sie braucht den Bestätigungsdienst und bleibt
+    // deshalb hier. Das Angebot fragt sie über einen Delegaten ab.
+    private async Task<bool> ConfirmDiscardAsync(AnalysisRun run)
+    {
         bool confirmed = await _confirmationService.ConfirmAsync(
             _localizer.Get("Sort_DiscardRunTitle"),
             _localizer.Format("Sort_DiscardRunMessage", run.CategoryName, run.DecidedPhotos),
             _localizer.Get("Sort_DiscardRunPrimary"),
             _localizer.Get("Common_Cancel")).ConfigureAwait(true);
-        if (!confirmed)
+
+        if (confirmed)
         {
-            return;
+            _status.Report(_localizer.Get("Sort_RunDiscarded"));
         }
 
-        await DiscardRunCoreAsync(run.Id).ConfigureAwait(true);
-        await RefreshResumeStateAsync().ConfigureAwait(true);
-        _status.Report(_localizer.Get("Sort_RunDiscarded"));
-    }
-
-    // Das Protokoll ist eine Zugabe, kein Kernbestandteil: Ist die Datenbank gesperrt oder
-    // beschädigt, wird eben kein Lauf angeboten. Ein Fehler beim Nachsehen darf nicht die
-    // ganze Sortierseite mitreißen — sie wird beim Anzeigen der Seite aufgerufen.
-    [SuppressMessage(
-        "Design",
-        "CA1031:Keine allgemeinen Ausnahmetypen abfangen",
-        Justification = "Das Nachsehen im Protokoll darf das Öffnen der Seite unter keinen Umständen scheitern lassen; der Fehler wird protokolliert.")]
-    private async Task<AnalysisRun?> LoadLatestRunAsync()
-    {
-        try
-        {
-            return await _analysisJournal.GetLatestAsync(CancellationToken.None).ConfigureAwait(true);
-        }
-        catch (Exception ex)
-        {
-            SortViewModelLog.AnalysisJournalUnreadable(_logger, ex);
-            return null;
-        }
-    }
-
-    [SuppressMessage(
-        "Design",
-        "CA1031:Keine allgemeinen Ausnahmetypen abfangen",
-        Justification = "Wie beim Lesen: Ein Fehler im Protokoll darf die Bedienung nicht abbrechen; er wird protokolliert und der Hinweis bleibt stehen.")]
-    private async Task DiscardRunCoreAsync(Guid runId)
-    {
-        try
-        {
-            await _analysisJournal.DiscardAsync(runId, CancellationToken.None).ConfigureAwait(true);
-        }
-        catch (Exception ex)
-        {
-            SortViewModelLog.AnalysisJournalUnreadable(_logger, ex);
-        }
+        return confirmed;
     }
 
     private async Task<Category?> FindCategoryAsync(string name)
