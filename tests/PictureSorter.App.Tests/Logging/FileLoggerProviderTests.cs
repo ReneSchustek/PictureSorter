@@ -143,8 +143,8 @@ public sealed class FileLoggerProviderTests : IDisposable
         logger.LogInformation("Erste Zeile.");
 
         string datei = Directory.GetFiles(_directory)[0];
-        string fuellung = new('x', 600 * 1024);
-        File.AppendAllText(datei, fuellung + Environment.NewLine + "Letzte Zeile." + Environment.NewLine);
+        string filler = new('x', 600 * 1024);
+        File.AppendAllText(datei, filler + Environment.NewLine + "Letzte Zeile." + Environment.NewLine);
 
         IReadOnlyList<string> zeilen = provider.ReadRecent(10);
 
