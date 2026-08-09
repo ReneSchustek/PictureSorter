@@ -88,6 +88,11 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
         State = DuplicateState.Idle;
         SourceFolder = string.Empty;
         IncludeSubfolders = true;
+
+        // Die Filterleiste steht von Anfang an da, nicht erst nach dem ersten Fund: Eine
+        // Leiste, die nachträglich erscheint, verschiebt alles darunter — und wer die
+        // Seite zum ersten Mal sieht, hält sie für nicht vorhanden.
+        BuildFilters();
     }
 
     /// <summary>

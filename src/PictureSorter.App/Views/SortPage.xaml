@@ -375,29 +375,23 @@
                                     SelectionMode="None">
                                     <GridView.ItemTemplate>
                                         <DataTemplate x:DataType="vm:ExampleCandidateViewModel">
-                                            <StackPanel
+                                            <controls:PhotoTile
                                                 Width="170"
-                                                Padding="6"
-                                                Spacing="4">
-                                                <Image
-                                                    Height="120"
-                                                    AutomationProperties.Name="{x:Bind FileName}"
-                                                    Source="{x:Bind FilePath, Converter={StaticResource ThumbnailConverter}}"
-                                                    Stretch="UniformToFill"
-                                                    ToolTipService.ToolTip="{x:Bind InfoTooltip}" />
-                                                <TextBlock
-                                                    MaxWidth="158"
-                                                    FontSize="12"
-                                                    Text="{x:Bind FileName}"
-                                                    TextTrimming="CharacterEllipsis" />
-                                                <Button
-                                                    x:Uid="SortPage_RemoveExampleButton"
-                                                    Padding="6,2"
-                                                    Command="{Binding ViewModel.PositiveExamples.RemoveCommand, ElementName=SortPageRoot}"
-                                                    CommandParameter="{x:Bind}"
-                                                    Content="Entfernen"
-                                                    FontSize="12" />
-                                            </StackPanel>
+                                                Margin="{StaticResource TileGap}"
+                                                FileName="{x:Bind FileName}"
+                                                Hint="{x:Bind InfoTooltip}"
+                                                ImagePath="{x:Bind FilePath}"
+                                                PreviewHeight="120">
+                                                <controls:PhotoTile.ActionContent>
+                                                    <Button
+                                                        x:Uid="SortPage_RemoveExampleButton"
+                                                        Padding="{StaticResource TileGap}"
+                                                        Command="{Binding ViewModel.PositiveExamples.RemoveCommand, ElementName=SortPageRoot}"
+                                                        CommandParameter="{x:Bind}"
+                                                        Content="Entfernen"
+                                                        FontSize="{StaticResource FontSizeCaption}" />
+                                                </controls:PhotoTile.ActionContent>
+                                            </controls:PhotoTile>
                                         </DataTemplate>
                                     </GridView.ItemTemplate>
                                 </GridView>
@@ -460,29 +454,23 @@
                                     SelectionMode="None">
                                     <GridView.ItemTemplate>
                                         <DataTemplate x:DataType="vm:ExampleCandidateViewModel">
-                                            <StackPanel
+                                            <controls:PhotoTile
                                                 Width="170"
-                                                Padding="6"
-                                                Spacing="4">
-                                                <Image
-                                                    Height="120"
-                                                    AutomationProperties.Name="{x:Bind FileName}"
-                                                    Source="{x:Bind FilePath, Converter={StaticResource ThumbnailConverter}}"
-                                                    Stretch="UniformToFill"
-                                                    ToolTipService.ToolTip="{x:Bind InfoTooltip}" />
-                                                <TextBlock
-                                                    MaxWidth="158"
-                                                    FontSize="12"
-                                                    Text="{x:Bind FileName}"
-                                                    TextTrimming="CharacterEllipsis" />
-                                                <Button
-                                                    x:Uid="SortPage_RemoveExampleButton"
-                                                    Padding="6,2"
-                                                    Command="{Binding ViewModel.NegativeExamples.RemoveCommand, ElementName=SortPageRoot}"
-                                                    CommandParameter="{x:Bind}"
-                                                    Content="Entfernen"
-                                                    FontSize="12" />
-                                            </StackPanel>
+                                                Margin="{StaticResource TileGap}"
+                                                FileName="{x:Bind FileName}"
+                                                Hint="{x:Bind InfoTooltip}"
+                                                ImagePath="{x:Bind FilePath}"
+                                                PreviewHeight="120">
+                                                <controls:PhotoTile.ActionContent>
+                                                    <Button
+                                                        x:Uid="SortPage_RemoveExampleButton"
+                                                        Padding="{StaticResource TileGap}"
+                                                        Command="{Binding ViewModel.NegativeExamples.RemoveCommand, ElementName=SortPageRoot}"
+                                                        CommandParameter="{x:Bind}"
+                                                        Content="Entfernen"
+                                                        FontSize="{StaticResource FontSizeCaption}" />
+                                                </controls:PhotoTile.ActionContent>
+                                            </controls:PhotoTile>
                                         </DataTemplate>
                                     </GridView.ItemTemplate>
                                 </GridView>

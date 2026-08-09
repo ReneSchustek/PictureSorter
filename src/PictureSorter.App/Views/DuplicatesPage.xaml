@@ -51,7 +51,7 @@
                     x:Uid="DuplicatesPage_FolderTextBox"
                     Header="Ordner"
                     PlaceholderText="z. B. C:\Fotos"
-                    Text="{x:Bind ViewModel.SourceFolder, Mode=TwoWay}" />
+                    Text="{x:Bind ViewModel.SourceFolder, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                 <Button
                     x:Uid="DuplicatesPage_BrowseButton"
                     Grid.Column="1"
@@ -113,7 +113,12 @@
             </ListView.ItemContainerStyle>
             <ListView.ItemTemplate>
                     <DataTemplate x:DataType="vm:DuplicateGroupViewModel">
-                        <StackPanel Margin="0,0,0,16" Spacing="8">
+                        <!-- Der Name der Fundgruppe gehört an den Rahmen: Ohne ihn liest
+                             die Sprachausgabe den Namen der Anzeige-Klasse vor. -->
+                        <StackPanel
+                            Margin="{StaticResource StackGapM}"
+                            AutomationProperties.Name="{x:Bind Header}"
+                            Spacing="{StaticResource SpacingS}">
                             <TextBlock
                                 FontWeight="SemiBold"
                                 Text="{x:Bind Header}" />
@@ -127,45 +132,36 @@
                                 </ItemsRepeater.Layout>
                                 <ItemsRepeater.ItemTemplate>
                                     <DataTemplate x:DataType="vm:DuplicatePhotoViewModel">
-                                        <StackPanel
+                                        <controls:PhotoTile
                                             Width="190"
-                                            Padding="6"
-                                            Spacing="4">
-                                            <Image
-                                                Height="140"
-                                                AutomationProperties.Name="{x:Bind FileName}"
-                                                Source="{x:Bind FilePath, Converter={StaticResource ThumbnailConverter}}"
-                                                Stretch="UniformToFill"
-                                                ToolTipService.ToolTip="{x:Bind InfoTooltip}" />
-                                            <TextBlock
-                                                MaxWidth="178"
-                                                FontSize="12"
-                                                Text="{x:Bind FileName}"
-                                                TextTrimming="CharacterEllipsis" />
-                                            <TextBlock
-                                                FontSize="12"
-                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                Text="{x:Bind SizeText}" />
-                                            <TextBlock
-                                                MaxWidth="178"
-                                                FontSize="12"
-                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                Text="{x:Bind MetadataText}"
-                                                TextTrimming="CharacterEllipsis" />
-                                            <CheckBox
-                                                x:Uid="DuplicatesPage_DeleteCheckBox"
-                                                Content="Löschen"
-                                                AutomationProperties.Name="{x:Bind DeletionLabel, Mode=OneWay}"
-                                                IsChecked="{x:Bind IsMarkedForDeletion, Mode=TwoWay}"
-                                                IsEnabled="{x:Bind CanToggleDeletion, Mode=OneWay}" />
-                                            <TextBlock
-                                                x:Uid="DuplicatesPage_LastCopyHint"
-                                                MaxWidth="178"
-                                                FontSize="12"
-                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                TextWrapping="Wrap"
-                                                Visibility="{x:Bind IsLastRemainingCopy, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
-                                        </StackPanel>
+                                            Margin="{StaticResource TileGap}"
+                                            Details="{x:Bind SizeText}"
+                                            FileName="{x:Bind FileName}"
+                                            Hint="{x:Bind InfoTooltip}"
+                                            ImagePath="{x:Bind FilePath}"
+                                            PreviewHeight="140">
+                                            <controls:PhotoTile.ActionContent>
+                                                <StackPanel Spacing="{StaticResource SpacingXs}">
+                                                    <TextBlock
+                                                        FontSize="{StaticResource FontSizeCaption}"
+                                                        Foreground="{ThemeResource AppTextMutedBrush}"
+                                                        Text="{x:Bind MetadataText}"
+                                                        TextTrimming="CharacterEllipsis" />
+                                                    <CheckBox
+                                                        x:Uid="DuplicatesPage_DeleteCheckBox"
+                                                        AutomationProperties.Name="{x:Bind DeletionLabel, Mode=OneWay}"
+                                                        Content="Löschen"
+                                                        IsChecked="{x:Bind IsMarkedForDeletion, Mode=TwoWay}"
+                                                        IsEnabled="{x:Bind CanToggleDeletion, Mode=OneWay}" />
+                                                    <TextBlock
+                                                        x:Uid="DuplicatesPage_LastCopyHint"
+                                                        FontSize="{StaticResource FontSizeCaption}"
+                                                        Foreground="{ThemeResource AppTextMutedBrush}"
+                                                        TextWrapping="Wrap"
+                                                        Visibility="{x:Bind IsLastRemainingCopy, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                                </StackPanel>
+                                            </controls:PhotoTile.ActionContent>
+                                        </controls:PhotoTile>
                                     </DataTemplate>
                                 </ItemsRepeater.ItemTemplate>
                             </ItemsRepeater>
