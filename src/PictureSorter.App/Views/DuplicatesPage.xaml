@@ -121,6 +121,7 @@
                             Spacing="{StaticResource SpacingS}">
                             <TextBlock
                                 FontWeight="SemiBold"
+                                Foreground="{ThemeResource AppTextPrimaryBrush}"
                                 Text="{x:Bind Header}" />
                             <ItemsRepeater ItemsSource="{x:Bind Photos}">
                                 <ItemsRepeater.Layout>

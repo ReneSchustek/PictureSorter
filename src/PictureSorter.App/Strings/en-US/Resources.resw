@@ -1207,4 +1207,19 @@
   <data name="Calendar_Canceled" xml:space="preserve">
     <value>Stopped.</value>
   </data>
+  <data name="CalendarPage_ProposalSearch.Placeholder" xml:space="preserve">
+    <value>File name or target folder</value>
+  </data>
+  <data name="CalendarPage_ProposalFilter.Label" xml:space="preserve">
+    <value>Filter proposals</value>
+  </data>
+  <data name="CalendarPage_ProposalNoMatch.Title" xml:space="preserve">
+    <value>Nothing found</value>
+  </data>
+  <data name="CalendarPage_ProposalNoMatch.Message" xml:space="preserve">
+    <value>No proposal matches this search. The others stay selected and will be filed.</value>
+  </data>
+  <data name="CalendarPage_ProposalNoMatch.ResetLabel" xml:space="preserve">
+    <value>Reset search</value>
+  </data>
 </root>
