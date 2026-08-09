@@ -64,6 +64,15 @@
                 <Setter Property="TextWrapping" Value="Wrap" />
             </Style>
 
+            <!-- Überschrift eines Abschnitts innerhalb einer Karte. Die leichte Sperrung
+                 kommt aus den Tokens: Sie unterscheidet die Überschrift vom Fließtext,
+                 ohne dafür eine weitere Schriftgröße einzuführen. -->
+            <Style x:Key="SectionHeadingStyle" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="{StaticResource FontSizeSubtitle}" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+                <Setter Property="CharacterSpacing" Value="{StaticResource SectionHeadingLetterSpacing}" />
+            </Style>
+
             <!-- Anklickbare Kachel des Dashboards. -->
             <Style x:Key="TileButtonStyle" TargetType="Button">
                 <Setter Property="Background" Value="{ThemeResource AppCardBackgroundBrush}" />

@@ -922,7 +922,10 @@ public sealed class PhotoAnalysisServiceTests
 
         SortProposal proposal = Assert.Single(proposals);
         Assert.Equal(Path.Combine(TargetRoot, expectedFolder), proposal.TargetFolderPath);
-        Assert.Equal(expectedFolder, proposal.CategoryName);
+
+        // Der Name des Laufs ist einer, obwohl viele Ordner entstehen: Er steht im
+        // Rückgängig-Protokoll und muss über den ganzen Lauf derselbe sein.
+        Assert.Equal("Nach Aufnahmedatum", proposal.CategoryName);
         Assert.Equal(ClassificationMethod.CaptureDate, proposal.Method);
     }
 
@@ -1000,6 +1003,25 @@ public sealed class PhotoAnalysisServiceTests
         // landet alles im Thread-Pool. Deshalb wird auf die Abschlussmeldung gewartet.
         await WaitForFinalProgressAsync(gemeldet).ConfigureAwait(true);
         Assert.Contains(gemeldet, p => p.IsFinal);
+    }
+
+    [Fact]
+    public async Task CreateCalendarProposalsAsync_AllProposalsShareOneRunName()
+    {
+        // Das Anwenden protokolliert den Lauf und besteht auf einem Namen. Trügen die
+        // Vorschläge die Namen ihrer Zielordner, bräche das Ablegen genau am Ende ab —
+        // nachdem die Dateien bereits verschoben sind.
+        PhotoAnalysisService service = CreateDateOnlyService(
+        [
+            Foto("a.jpg", new DateOnly(2021, 7, 1)),
+            Foto("b.jpg", new DateOnly(2023, 1, 1)),
+        ]);
+
+        IReadOnlyList<SortProposal> proposals = await service.CreateCalendarProposalsAsync(
+            SourceFolder, TargetRoot, CalendarGranularity.Month, includeSubfolders: false, progress: null, CancellationToken.None);
+
+        _ = Assert.Single(proposals.Select(p => p.CategoryName).Distinct());
+        _ = Assert.Single(proposals.Select(p => p.SourceFolder).Distinct());
     }
 
     private static async Task WaitForFinalProgressAsync(List<SortProgress> reported)

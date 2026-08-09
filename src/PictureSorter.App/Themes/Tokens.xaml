@@ -1,4 +1,4 @@
-<!--
+﻿<!--
     Bausteine der Gestaltungslinie, die nicht mit dem Erscheinungsbild wechseln:
     Abstände, Radien, Typografie, Kanten.
 
@@ -51,7 +51,7 @@
     <!-- Abschnittsüberschriften: klein, in Großbuchstaben, gesperrt und
          gedämpft. Das ist das auffälligste Merkmal der Linie — es ersetzt
          große Zwischenüberschriften. -->
-    <x:Double x:Key="SectionHeadingLetterSpacing">80</x:Double>
+    <x:Int32 x:Key="SectionHeadingLetterSpacing">80</x:Int32>
 
     <!-- Zeilenhöhe im Fließtext: das 1,65-fache der Grundgröße. -->
     <x:Double x:Key="BodyLineHeight">21</x:Double>

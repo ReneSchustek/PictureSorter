@@ -41,7 +41,7 @@
                                 x:Uid="CalendarPage_SourceBox"
                                 Header="Bilder aus"
                                 PlaceholderText="z. B. C:\Fotos"
-                                Text="{x:Bind ViewModel.SourceFolder, Mode=TwoWay}" />
+                                Text="{x:Bind ViewModel.SourceFolder, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                             <Button
                                 Grid.Column="1"
                                 x:Uid="CalendarPage_PickSource"
@@ -59,7 +59,7 @@
                                 x:Uid="CalendarPage_TargetBox"
                                 Header="Ordner anlegen unter"
                                 PlaceholderText="z. B. D:\Archiv"
-                                Text="{x:Bind ViewModel.TargetRoot, Mode=TwoWay}" />
+                                Text="{x:Bind ViewModel.TargetRoot, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                             <Button
                                 Grid.Column="1"
                                 x:Uid="CalendarPage_PickTarget"
@@ -101,10 +101,16 @@
                         </StackPanel>
 
                         <!-- Das Beispiel nimmt der Entscheidung das Raten ab. -->
-                        <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}">
-                            <Run x:Uid="CalendarPage_ExampleLabel" Text="Die Ordner heißen dann etwa:" />
-                            <Run FontWeight="SemiBold" Text="{x:Bind ViewModel.FolderExample, Mode=OneWay}" />
-                        </TextBlock>
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock
+                                x:Uid="CalendarPage_ExampleLabel"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Text="Die Ordner heißen dann etwa:" />
+                            <TextBlock
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                FontWeight="SemiBold"
+                                Text="{x:Bind ViewModel.FolderExample, Mode=OneWay}" />
+                        </StackPanel>
 
                         <CheckBox
                             x:Uid="CalendarPage_Copy"
