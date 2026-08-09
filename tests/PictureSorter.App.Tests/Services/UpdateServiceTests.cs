@@ -214,6 +214,97 @@ public sealed class UpdateServiceTests : IDisposable
         Assert.Null(service.Available);
     }
 
+    // ── Der ganze Weg: laden, prüfen, entpacken ───────────────────────────────
+
+    [Fact]
+    public async Task DownloadAndLaunchUpdaterAsync_WithoutAKnownUpdate_DoesNothing()
+    {
+        // Kein Beleg, kein Einspielen. Ohne vorher geprüfte Fassung darf die Kette
+        // nicht einmal anfangen zu laden.
+        (UpdateService service, _) = Setup(_ => Content("egal"));
+
+        bool started = await service.DownloadAndLaunchUpdaterAsync(
+            progress: null, TestContext.Current.CancellationToken);
+
+        Assert.False(started);
+    }
+
+    [Fact]
+    public async Task DownloadAndLaunchUpdaterAsync_WhenTheDownloadFails_LeavesNothingBehind()
+    {
+        string[] vorher = TempUpdateDirectories();
+        UpdateService service = await SetupCheckedAsync(_ => new HttpResponseMessage(HttpStatusCode.NotFound));
+
+        bool started = await service.DownloadAndLaunchUpdaterAsync(
+            progress: null, TestContext.Current.CancellationToken);
+
+        Assert.False(started);
+        // Der Arbeitsordner wird wieder abgeräumt: Ein liegengebliebenes halbes Paket
+        // von hundert Megabyte fällt niemandem auf und geht nie wieder weg.
+        Assert.Equal(vorher.Length, TempUpdateDirectories().Length);
+    }
+
+    [Fact]
+    public async Task DownloadAndLaunchUpdaterAsync_WithAWrongSignature_StopsBeforeUnpacking()
+    {
+        // Der Vertrauensanker. Ein Paket ohne gültige Unterschrift wird nicht einmal
+        // ausgepackt — wer den Release-Kanal übernimmt, kommt hier nicht vorbei.
+        string[] vorher = TempUpdateDirectories();
+        UpdateService service = await SetupCheckedAsync(request =>
+            request.RequestUri!.AbsolutePath.EndsWith(".sig", StringComparison.Ordinal)
+                ? Bytes(new byte[64])
+                : Bytes(ZipWithEntry("beliebig.txt")));
+
+        bool started = await service.DownloadAndLaunchUpdaterAsync(
+            progress: null, TestContext.Current.CancellationToken);
+
+        Assert.False(started);
+        Assert.Equal(vorher.Length, TempUpdateDirectories().Length);
+    }
+
+    [Fact]
+    public async Task DownloadAndLaunchUpdaterAsync_ReportsEveryStageItReaches()
+    {
+        // Der Balken darf nicht erst am Ende springen: Der Download umfasst rund
+        // hundert Megabyte, und ohne Meldung wirkt die Seite minutenlang tot.
+        List<UpdateStage> stufen = [];
+        UpdateService service = await SetupCheckedAsync(_ => new HttpResponseMessage(HttpStatusCode.NotFound));
+
+        _ = await service.DownloadAndLaunchUpdaterAsync(
+            new Progress<UpdateProgress>(fortschritt => stufen.Add(fortschritt.Stage)),
+            TestContext.Current.CancellationToken);
+
+        await WaitForAsync(() => stufen.Count > 0);
+        Assert.Contains(UpdateStage.Downloading, stufen);
+    }
+
+    // Progress<T> meldet über den Synchronisationskontext; im Test ohne einen solchen
+    // landet die Meldung im Thread-Pool und ist nicht sofort da.
+    private static async Task WaitForAsync(Func<bool> bedingung)
+    {
+        for (int versuch = 0; versuch < 100 && !bedingung(); versuch++)
+        {
+            await Task.Delay(10).ConfigureAwait(false);
+        }
+    }
+
+    private static HttpResponseMessage Bytes(byte[] daten) =>
+        new(HttpStatusCode.OK) { Content = new ByteArrayContent(daten) };
+
+    // Ein winziges, gültiges ZIP mit einem einzigen Eintrag.
+    private static byte[] ZipWithEntry(string name)
+    {
+        using MemoryStream speicher = new();
+        using (System.IO.Compression.ZipArchive archiv = new(speicher, System.IO.Compression.ZipArchiveMode.Create, leaveOpen: true))
+        {
+            System.IO.Compression.ZipArchiveEntry eintrag = archiv.CreateEntry(name);
+            using Stream strom = eintrag.Open();
+            strom.WriteByte(42);
+        }
+
+        return speicher.ToArray();
+    }
+
     private static string[] TempUpdateDirectories() =>
         Directory.GetDirectories(Path.GetTempPath(), "PictureSorter-Update-*");
 
@@ -230,6 +321,18 @@ public sealed class UpdateServiceTests : IDisposable
             Path.GetDirectoryName(_target)!,
             NullLogger<UpdateService>.Instance);
         return (service, client);
+    }
+
+    // Wie oben, aber mit vorangegangener Prüfung: Ohne sie kennt der Dienst keine
+    // Fassung und bricht sofort ab — ein Test, der danach nur „false" erwartet, misst
+    // dann gar nichts.
+    private async Task<UpdateService> SetupCheckedAsync(
+        Func<HttpRequestMessage, HttpResponseMessage> responder)
+    {
+        (UpdateService service, _) = SetupWithUpdate(responder);
+        _ = await service.CheckAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
+        Assert.NotNull(service.Available);
+        return service;
     }
 
     private (UpdateService Service, HttpClient Client) Setup(Func<HttpRequestMessage, HttpResponseMessage> responder)

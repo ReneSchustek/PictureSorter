@@ -21,9 +21,12 @@
           <!-- Zusätzlich ausgenommen: Code, der ohne laufende Oberfläche bzw. ohne
                fremden Prozess nicht ausführbar ist (WinUI-Konverter, Fensterkontext,
                Ordnerauswahl, Dialoge, Design-Umschaltung, Navigationsleiste,
-               Ollama-Einrichtung). Ihn mitzuzählen sagt nichts über die Testtiefe –
-               er wird in der laufenden Anwendung geprüft, nicht im Testhost. -->
-          <ExcludeByFile>**/*ServiceCollectionExtensions.cs,**/Migrations/*.cs,**/*.g.cs,**/Converters/*.cs,**/Services/ThemeService.cs,**/Services/NavigationService.cs,**/Services/WindowContext.cs,**/Services/WindowsFolderPicker.cs,**/Services/ContentDialogConfirmationService.cs,**/Services/OllamaSetupService.cs,**/Services/ResourceLocalizer.cs</ExcludeByFile>
+               Ollama-Einrichtung, Aufrufe der Windows-Shell). Ihn mitzuzählen sagt
+               nichts über die Testtiefe – er wird in der laufenden Anwendung geprüft,
+               nicht im Testhost. Gemeinsames Merkmal: Diese Klassen treffen keine
+               Entscheidung, sie reichen einen Aufruf weiter. Alles, was entschieden
+               wird, steht anderswo und ist geprüft. -->
+          <ExcludeByFile>**/*ServiceCollectionExtensions.cs,**/Migrations/*.cs,**/*.g.cs,**/Converters/*.cs,**/Services/ThemeService.cs,**/Services/NavigationService.cs,**/Services/WindowContext.cs,**/Services/WindowsFolderPicker.cs,**/Services/ContentDialogConfirmationService.cs,**/Services/OllamaSetupService.cs,**/Services/ResourceLocalizer.cs,**/Services/ShellLauncher.cs,**/Services/ShellIconRefresher.cs</ExcludeByFile>
           <SingleHit>false</SingleHit>
           <UseSourceLink>true</UseSourceLink>
         </Configuration>

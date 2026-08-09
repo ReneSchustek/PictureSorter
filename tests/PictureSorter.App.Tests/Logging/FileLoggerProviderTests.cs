@@ -130,6 +130,70 @@ public sealed class FileLoggerProviderTests : IDisposable
         Assert.True(File.Exists(expected), $"Erwartet wurde {expected}.");
     }
 
+    // ── Die Grenzen: große Dateien, alte Dateien ──────────────────────────────
+
+    [Fact]
+    public void ReadRecent_FromAVeryLargeFile_DropsTheLineItStartedInTheMiddleOf()
+    {
+        // Ab einer halben Million Zeichen liest der Dienst nur noch das Ende der Datei.
+        // Er setzt dabei mitten in einer Zeile auf - dieses Bruchstück darf nicht als
+        // Protokollzeile durchgehen.
+        using FileLoggerProvider provider = new(_directory, TestClock.Fixed);
+        ILogger logger = provider.CreateLogger("Test");
+        logger.LogInformation("Erste Zeile.");
+
+        string datei = Directory.GetFiles(_directory)[0];
+        string fuellung = new('x', 600 * 1024);
+        File.AppendAllText(datei, fuellung + Environment.NewLine + "Letzte Zeile." + Environment.NewLine);
+
+        IReadOnlyList<string> zeilen = provider.ReadRecent(10);
+
+        Assert.NotEmpty(zeilen);
+        Assert.Equal("Letzte Zeile.", zeilen[^1]);
+        Assert.DoesNotContain(zeilen, zeile => zeile.Contains("Erste Zeile.", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Log_WhenTodaysFileGrewTooLarge_StartsANewOneAndKeepsTheOld()
+    {
+        // Hundert Megabyte werden nicht wirklich geschrieben - die Datei bekommt die
+        // Länge zugewiesen und belegt dank Sparse-Dateien kaum Platz.
+        using FileLoggerProvider provider = new(_directory, TestClock.Fixed);
+        ILogger logger = provider.CreateLogger("Test");
+        logger.LogInformation("Alt.");
+
+        string datei = Directory.GetFiles(_directory)[0];
+        using (FileStream strom = new(datei, FileMode.Open, FileAccess.Write))
+        {
+            strom.SetLength(101L * 1024 * 1024);
+        }
+
+        logger.LogInformation("Neu.");
+
+        Assert.True(File.Exists(datei + ".1"));
+        string inhalt = File.ReadAllText(datei);
+        Assert.Contains("Neu.", inhalt, StringComparison.Ordinal);
+        Assert.DoesNotContain("Alt.", inhalt, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Startup_WithALockedOldFile_LeavesItAndCarriesOn()
+    {
+        // Eine Altdatei, die ein anderes Programm offen hält, darf den Start nicht
+        // verhindern - protokolliert wird trotzdem.
+        _ = Directory.CreateDirectory(_directory);
+        string alt = Path.Combine(_directory, "picturesorter-2020-01-02.log");
+        File.WriteAllText(alt, "uralt");
+        File.SetLastWriteTime(alt, DateTime.Now.AddDays(-90));
+
+        using FileStream sperre = new(alt, FileMode.Open, FileAccess.Read, FileShare.None);
+        using FileLoggerProvider provider = new(_directory, TestClock.Fixed, retentionDays: 30);
+        provider.CreateLogger("Test").LogInformation("Heute.");
+
+        Assert.True(File.Exists(alt));
+        Assert.NotEmpty(provider.ReadRecent(10));
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(_directory))

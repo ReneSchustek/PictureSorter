@@ -129,6 +129,47 @@ public sealed class ProposalListViewModelTests
         Assert.True(sut.Filters[0].IsSelected);
     }
 
+    [Fact]
+    public void Counts_TellStockAndVisibleApart()
+    {
+        // Der Unterschied ist der Kern dieser Liste: Ein Filter ändert, was man sieht,
+        // nicht was sortiert wird.
+        ProposalListViewModel liste = CreateSut();
+        liste.Replace([Proposal("a.jpg"), Proposal("b.jpg")]);
+
+        liste.Search("a.jpg");
+
+        Assert.Equal(2, liste.Count);
+        Assert.Equal(1, liste.VisibleCount);
+        Assert.True(liste.CanToggleAll);
+    }
+
+    [Fact]
+    public void Remove_TakesAProposalOutOfStockAndView()
+    {
+        // Wurde das Bild aus der Detailansicht heraus umbenannt, zeigt der Vorschlag
+        // auf einen Pfad, den es nicht mehr gibt.
+        ProposalListViewModel liste = CreateSut();
+        liste.Replace([Proposal("a.jpg"), Proposal("b.jpg")]);
+
+        liste.Remove(liste.Items[0]);
+
+        Assert.Equal(1, liste.Count);
+        Assert.Equal(1, liste.VisibleCount);
+    }
+
+    [Fact]
+    public void Filter_ByRejected_ShowsWhatWasUnchecked()
+    {
+        ProposalListViewModel liste = CreateSut();
+        liste.Replace([Proposal("a.jpg"), Proposal("b.jpg")]);
+        liste.Items[0].IsSelected = false;
+
+        liste.Filter("rejected");
+
+        Assert.Equal("a.jpg", Assert.Single(liste.Items).FileName);
+    }
+
     private static ProposalListViewModel CreateSut() =>
         new(new ReswLocalizer(), () => true, () => { });
 
