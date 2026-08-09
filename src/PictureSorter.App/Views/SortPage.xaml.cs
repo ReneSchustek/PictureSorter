@@ -8,6 +8,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using PictureSorter.App.Services;
+using PictureSorter.App.Controls;
 using PictureSorter.App.ViewModels;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
@@ -62,6 +63,20 @@ internal sealed partial class SortPage : Page
         ViewModel.Wizard.IsGuided = _themeService.IsGuidedView;
         ViewModeCombo.SelectedIndex = _themeService.IsGuidedView ? 0 : 1;
         _initializing = false;
+    }
+
+    // Die Suche über der Vorschau blendet nur aus; ausgeblendete Vorschläge bleiben
+    // ausgewählt und werden mit sortiert. Alles andere wäre ein stiller Datenverlust.
+    private void OnProposalSearchChanged(object? sender, SearchTextEventArgs e) =>
+        ViewModel.Proposals.Search(e.Text);
+
+    private void OnProposalFilterChanged(object? sender, FilterChoiceEventArgs e) =>
+        ViewModel.Proposals.Filter(e.Key);
+
+    private void OnProposalSearchReset(object? sender, EventArgs e)
+    {
+        ProposalSearch.Text = string.Empty;
+        ViewModel.Proposals.Search(string.Empty);
     }
 
     // Prüft beim Anzeigen der Seite die Verfügbarkeit der KI-Modelle und ob noch ein

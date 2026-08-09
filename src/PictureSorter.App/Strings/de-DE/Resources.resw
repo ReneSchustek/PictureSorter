@@ -1033,4 +1033,34 @@
   <data name="MemoryPage_NoMatchState.ResetLabel" xml:space="preserve">
     <value>Suche zurücksetzen</value>
   </data>
+  <data name="Sort_SelectionSummaryFiltered" xml:space="preserve">
+    <value>{0} von {1} ausgewählt · {2} angezeigt</value>
+  </data>
+  <data name="Sort_FilterAll" xml:space="preserve">
+    <value>Alle</value>
+  </data>
+  <data name="Sort_FilterSelected" xml:space="preserve">
+    <value>Ausgewählte</value>
+  </data>
+  <data name="Sort_FilterRejected" xml:space="preserve">
+    <value>Abgewählte</value>
+  </data>
+  <data name="SortPage_ProposalSearch.Placeholder" xml:space="preserve">
+    <value>Dateiname oder Zielordner</value>
+  </data>
+  <data name="SortPage_ProposalFilter.Label" xml:space="preserve">
+    <value>Vorschläge filtern</value>
+  </data>
+  <data name="SortPage_ProposalNoMatch.Title" xml:space="preserve">
+    <value>Nichts gefunden</value>
+  </data>
+  <data name="SortPage_ProposalNoMatch.Message" xml:space="preserve">
+    <value>Zu dieser Suche gibt es keinen Vorschlag. Die übrigen bleiben ausgewählt und werden mit sortiert.</value>
+  </data>
+  <data name="SortPage_ProposalNoMatch.ResetLabel" xml:space="preserve">
+    <value>Suche zurücksetzen</value>
+  </data>
+  <data name="SortPage_PauseButtonBottom.Content" xml:space="preserve">
+    <value>Analyse anhalten</value>
+  </data>
 </root>

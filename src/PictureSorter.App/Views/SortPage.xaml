@@ -4,6 +4,7 @@
     x:Name="SortPageRoot"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:PictureSorter.App.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:PictureSorter.App.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -581,7 +582,8 @@
                             <Button
                                 Command="{x:Bind ViewModel.CancelCommand}"
                                 x:Uid="SortPage_PauseButton"
-                                Content="Analyse anhalten" />
+                                Content="Analyse anhalten"
+                                Visibility="{x:Bind ViewModel.Wizard.ShowStandardActions, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                             <TextBlock
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 x:Uid="SortPage_PauseHint"
@@ -649,6 +651,39 @@
                             Content="Fotos kopieren statt verschieben (Originale bleiben liegen)"
                             IsChecked="{x:Bind ViewModel.CopyInsteadOfMove, Mode=TwoWay}"
                             Visibility="{x:Bind ViewModel.Wizard.ShowStandardActions, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+                        <!-- Suche und Filter über der Vorschau. Bei einem Ordner mit
+                             tausenden Fotos ist eine Liste ohne sie nicht durchzusehen —
+                             und genau dort entsteht sie. -->
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <controls:SearchBox
+                                x:Name="ProposalSearch"
+                                Width="260"
+                                x:Uid="SortPage_ProposalSearch"
+                                Placeholder="Dateiname oder Zielordner"
+                                SearchChanged="OnProposalSearchChanged" />
+                            <controls:FilterChips
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                x:Uid="SortPage_ProposalFilter"
+                                Label="Vorschläge filtern"
+                                Options="{x:Bind ViewModel.Proposals.Filters}"
+                                SelectionChanged="OnProposalFilterChanged" />
+                        </Grid>
+
+                        <!-- „Nichts gefunden" ist eine andere Lage als „nichts da": Der
+                             Bestand ist vorhanden, nur die Suche trifft ihn nicht. -->
+                        <controls:EmptyState
+                            x:Uid="SortPage_ProposalNoMatch"
+                            Message="Zu dieser Suche gibt es keinen Vorschlag. Die übrigen bleiben ausgewählt und werden mit sortiert."
+                            ResetLabel="Suche zurücksetzen"
+                            ResetRequested="OnProposalSearchReset"
+                            Title="Nichts gefunden"
+                            Visibility="{x:Bind ViewModel.Proposals.ShowsNoMatch, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
 
                         <ListView
                             x:Uid="SortPage_ProposalList"
@@ -739,6 +774,18 @@
                 Command="{x:Bind ViewModel.Wizard.GoBackCommand}"
                 x:Uid="SortPage_BackButton"
                 Content="◀ Zurück" />
+
+            <!-- Während eines Laufs steht das Anhalten hier unten, neben dem
+                 Aktionsknopf: Dort sucht man es, wenn ein Lauf über Stunden geht. In der
+                 Karte allein wäre es nur zu finden, wer weit genug scrollt. -->
+            <Button
+                Grid.Column="1"
+                HorizontalAlignment="Right"
+                Command="{x:Bind ViewModel.CancelCommand}"
+                x:Uid="SortPage_PauseButtonBottom"
+                Content="Analyse anhalten"
+                Visibility="{x:Bind ViewModel.CanCancel, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+
             <Button
                 Grid.Column="2"
                 MinWidth="140"
