@@ -6,6 +6,38 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
+## [1.9.0] - 2026-08-09
+
+### Hinzugefügt
+
+- **Nach Datum ablegen:** Eine eigene Seite legt Bilder nach ihrem Aufnahmedatum in
+  Ordner — wahlweise nach Jahr (`2021`), Monat (`2021-07`) oder Tag (`2021-07-15`). Der
+  Ort, unter dem die Ordner entstehen, ist frei wählbar; verschieben oder kopieren bleibt
+  zur Wahl. Bilder ohne Aufnahmedatum bleiben liegen — geraten wird nicht.
+- **Bearbeiten aus der Detailansicht:** Ein Klick auf ein Bild zeigt seine Angaben, wohin
+  es einsortiert wurde und wer seine Doppelgänger sind. Von dort lässt es sich umbenennen,
+  verschieben, im Explorer zeigen und in den Papierkorb legen. Jede Aktion endet in einem
+  Satz, der sagt, was zu tun ist, wenn sie nicht ging.
+- **Suche und Filter auf jeder Listen-Seite:** Vorschläge, Gedächtnis, Duplikate und die
+  neue Ablage führen dieselbe Anordnung — Suche links, Filter rechts, ein Leerzustand mit
+  Weg zurück.
+- **Kaffee spendieren** in den Einstellungen, freiwillig und ohne Wiederkehr.
+
+### Geändert
+
+- Bildkacheln sehen überall gleich aus und tragen die Vorschau; fehlt sie, tritt das
+  Kürzel des Dateinamens an ihre Stelle statt einer leeren Fläche.
+- Das Zeichen der Marke steckt jetzt in allen Größen — auch im Startbild.
+
+### Behoben
+
+- Ein Stil mit falsch typisiertem Wert ließ Seiten weiß bleiben, ohne Meldung.
+- Die Filterleiste der Duplikate erschien erst nach dem ersten Fund; der Ordner wurde
+  erst beim Verlassen des Feldes übernommen.
+- Eine Fundgruppe meldete der Sprachausgabe den Namen ihrer Anzeige-Klasse.
+- Fünf Stellen im Bestand, an denen ein Umlaut oder ein ß umschrieben war.
+
+
 ## [1.8.0] - 2026-08-09
 
 ### Hinzugefügt
