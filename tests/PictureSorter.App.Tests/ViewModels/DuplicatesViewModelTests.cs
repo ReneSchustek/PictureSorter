@@ -101,6 +101,93 @@ public sealed class DuplicatesViewModelTests
         Assert.True(viewModel.CanCancel);
     }
 
+    [Fact]
+    public async Task Search_HidesGroupsWithoutMatchButKeepsThemInStock()
+    {
+        using DuplicatesViewModel viewModel = CreateViewModel([ThreePhotoGroup(), SimilarGroup()], new FakeFileDeleter());
+        viewModel.SourceFolder = @"C:\fotos";
+        await viewModel.ScanCommand.ExecuteAsync(parameter: null);
+
+        viewModel.SearchText = "winter";
+
+        _ = Assert.Single(viewModel.Groups);
+        Assert.True(viewModel.IsFiltered);
+
+        viewModel.SearchText = string.Empty;
+
+        Assert.Equal(2, viewModel.Groups.Count);
+    }
+
+    [Fact]
+    public async Task Filter_ShowsOnlyTheChosenKind()
+    {
+        using DuplicatesViewModel viewModel = CreateViewModel([ThreePhotoGroup(), SimilarGroup()], new FakeFileDeleter());
+        viewModel.SourceFolder = @"C:\fotos";
+        await viewModel.ScanCommand.ExecuteAsync(parameter: null);
+
+        viewModel.Filter("similar");
+
+        Assert.Equal(DuplicateKind.Similar, Assert.Single(viewModel.Groups).Kind);
+
+        viewModel.Filter("exact");
+
+        Assert.Equal(DuplicateKind.Exact, Assert.Single(viewModel.Groups).Kind);
+
+        viewModel.Filter("all");
+
+        Assert.Equal(2, viewModel.Groups.Count);
+    }
+
+    [Fact]
+    public async Task Search_WithoutAnyMatch_AnnouncesTheEmptyResult()
+    {
+        using DuplicatesViewModel viewModel = CreateViewModel([ThreePhotoGroup()], new FakeFileDeleter());
+        viewModel.SourceFolder = @"C:\fotos";
+        await viewModel.ScanCommand.ExecuteAsync(parameter: null);
+
+        viewModel.SearchText = "gibt-es-nicht";
+
+        Assert.Empty(viewModel.Groups);
+        Assert.True(viewModel.ShowsNoMatch);
+    }
+
+    [Fact]
+    public async Task MarkedCount_CountsOnlyWhatIsVisible()
+    {
+        using DuplicatesViewModel viewModel = CreateViewModel([ThreePhotoGroup(), SimilarGroup()], new FakeFileDeleter());
+        viewModel.SourceFolder = @"C:\fotos";
+        await viewModel.ScanCommand.ExecuteAsync(parameter: null);
+
+        // Gelöscht wird nur, was man sieht — der Zählstand muss dem folgen, sonst
+        // verschwinden ausgeblendete Bilder ungefragt im Papierkorb.
+        viewModel.Filter("exact");
+
+        Assert.Equal(2, viewModel.MarkedCount);
+    }
+
+    [Fact]
+    public async Task NewScan_ResetsSearchAndFilter()
+    {
+        using DuplicatesViewModel viewModel = CreateViewModel([ThreePhotoGroup(), SimilarGroup()], new FakeFileDeleter());
+        viewModel.SourceFolder = @"C:\fotos";
+        await viewModel.ScanCommand.ExecuteAsync(parameter: null);
+        viewModel.Filter("exact");
+        viewModel.SearchText = "winter";
+
+        await viewModel.ScanCommand.ExecuteAsync(parameter: null);
+
+        Assert.Equal(string.Empty, viewModel.SearchText);
+        Assert.Equal(2, viewModel.Groups.Count);
+        Assert.False(viewModel.IsFiltered);
+    }
+
+    private static DuplicateGroup SimilarGroup() => new(
+        DuplicateKind.Similar,
+        [
+            Photo(@"C:\fotos\winter1.jpg"),
+            Photo(@"C:\fotos\winter2.jpg"),
+        ]);
+
     private static DuplicateGroup ThreePhotoGroup() => new(
         DuplicateKind.Exact,
         [
