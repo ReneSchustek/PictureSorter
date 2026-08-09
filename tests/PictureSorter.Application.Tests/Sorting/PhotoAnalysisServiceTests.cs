@@ -904,6 +904,114 @@ public sealed class PhotoAnalysisServiceTests
         Assert.Equal(2, proposals.Count);
     }
 
+
+    // ── Ablegen nach Aufnahmedatum in Kalender-Ordner ──────────────────────────
+
+    [Theory]
+    [InlineData(CalendarGranularity.Year, "2021")]
+    [InlineData(CalendarGranularity.Month, "2021-07")]
+    [InlineData(CalendarGranularity.Day, "2021-07-15")]
+    public async Task CreateCalendarProposalsAsync_NamesTheFolderAfterTheChosenStep(
+        CalendarGranularity granularity,
+        string expectedFolder)
+    {
+        PhotoAnalysisService service = CreateDateOnlyService([Foto("sommer.jpg", new DateOnly(2021, 7, 15))]);
+
+        IReadOnlyList<SortProposal> proposals = await service.CreateCalendarProposalsAsync(
+            SourceFolder, TargetRoot, granularity, includeSubfolders: false, progress: null, CancellationToken.None);
+
+        SortProposal proposal = Assert.Single(proposals);
+        Assert.Equal(Path.Combine(TargetRoot, expectedFolder), proposal.TargetFolderPath);
+        Assert.Equal(expectedFolder, proposal.CategoryName);
+        Assert.Equal(ClassificationMethod.CaptureDate, proposal.Method);
+    }
+
+    [Fact]
+    public async Task CreateCalendarProposalsAsync_PhotoWithoutCaptureDate_StaysWhereItIs()
+    {
+        // Geraten wird nicht: Ein Bild ohne Aufnahmedatum bekommt weder einen Ordner
+        // aus der Änderungszeit noch einen Sammelordner, den niemand bestellt hat.
+        Photo ohneDatum = new()
+        {
+            FullPath = Path.Combine(SourceFolder, "gescannt.jpg"),
+            FileName = "gescannt.jpg",
+        };
+        PhotoAnalysisService service = CreateDateOnlyService([ohneDatum, Foto("sommer.jpg", new DateOnly(2021, 7, 15))]);
+
+        IReadOnlyList<SortProposal> proposals = await service.CreateCalendarProposalsAsync(
+            SourceFolder, TargetRoot, CalendarGranularity.Year, includeSubfolders: false, progress: null, CancellationToken.None);
+
+        SortProposal proposal = Assert.Single(proposals);
+        Assert.Equal("sommer.jpg", proposal.Photo.FileName);
+    }
+
+    [Fact]
+    public async Task CreateCalendarProposalsAsync_PhotoAlreadyInItsFolder_IsNotProposedAgain()
+    {
+        // Der zweite Lauf über denselben Ordner: Was schon am richtigen Platz liegt,
+        // gehört nicht noch einmal in die Vorschau.
+        Photo bereitsAbgelegt = new()
+        {
+            FullPath = Path.Combine(SourceFolder, "2021", "sommer.jpg"),
+            FileName = "sommer.jpg",
+            CapturedAt = new DateTimeOffset(new DateTime(2021, 7, 15, 12, 0, 0), TimeSpan.Zero),
+        };
+        PhotoAnalysisService service = CreateDateOnlyService([bereitsAbgelegt]);
+
+        IReadOnlyList<SortProposal> proposals = await service.CreateCalendarProposalsAsync(
+            SourceFolder, SourceFolder, CalendarGranularity.Year, includeSubfolders: true, progress: null, CancellationToken.None);
+
+        Assert.Empty(proposals);
+    }
+
+    [Fact]
+    public async Task CreateCalendarProposalsAsync_GroupsPhotosOfTheSameMonthIntoOneFolder()
+    {
+        PhotoAnalysisService service = CreateDateOnlyService(
+        [
+            Foto("a.jpg", new DateOnly(2021, 7, 1)),
+            Foto("b.jpg", new DateOnly(2021, 7, 31)),
+            Foto("c.jpg", new DateOnly(2021, 8, 1)),
+        ]);
+
+        IReadOnlyList<SortProposal> proposals = await service.CreateCalendarProposalsAsync(
+            SourceFolder, TargetRoot, CalendarGranularity.Month, includeSubfolders: false, progress: null, CancellationToken.None);
+
+        Assert.Equal(3, proposals.Count);
+        Assert.Equal(2, proposals.Count(p => p.TargetFolderPath.EndsWith("2021-07", StringComparison.Ordinal)));
+        _ = Assert.Single(proposals, p => p.TargetFolderPath.EndsWith("2021-08", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task CreateCalendarProposalsAsync_ReportsProgressAndEndsWithAFinalMessage()
+    {
+        PhotoAnalysisService service = CreateDateOnlyService(
+        [
+            Foto("a.jpg", new DateOnly(2021, 7, 1)),
+            Foto("b.jpg", new DateOnly(2021, 8, 1)),
+        ]);
+        List<SortProgress> gemeldet = [];
+
+        _ = await service.CreateCalendarProposalsAsync(
+            SourceFolder, TargetRoot, CalendarGranularity.Year, includeSubfolders: false,
+            new Progress<SortProgress>(gemeldet.Add), CancellationToken.None);
+
+        // Progress<T> meldet über den Synchronisationskontext; im Test ohne einen solchen
+        // landet alles im Thread-Pool. Deshalb wird auf die Abschlussmeldung gewartet.
+        await WaitForFinalProgressAsync(gemeldet).ConfigureAwait(true);
+        Assert.Contains(gemeldet, p => p.IsFinal);
+    }
+
+    private static async Task WaitForFinalProgressAsync(List<SortProgress> reported)
+    {
+        for (int versuch = 0; versuch < 100 && !reported.Any(p => p.IsFinal); versuch++)
+        {
+            await Task.Delay(10).ConfigureAwait(false);
+        }
+    }
+
+    private const string TargetRoot = @"D:rchiv";
+
     private static PhotoAnalysisService CreateService(
         float[] embedding,
         FakeImageClassifier classifier,

@@ -16,6 +16,9 @@ internal enum AppSection
     /// <summary>Die Duplikat-Suche.</summary>
     Duplicates,
 
+    /// <summary>Die Ablage nach Aufnahmedatum.</summary>
+    Calendar,
+
     /// <summary>Die Gedächtnis-Verwaltung.</summary>
     Memory,
 

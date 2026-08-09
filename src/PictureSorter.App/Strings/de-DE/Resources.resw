@@ -1093,4 +1093,118 @@
   <data name="Duplicates_FilterSimilar" xml:space="preserve">
     <value>Ähnliche</value>
   </data>
+  <data name="MainWindow_CalendarNavItem.Content" xml:space="preserve">
+    <value>Nach Datum ablegen</value>
+  </data>
+  <data name="CalendarPage_Header.Title" xml:space="preserve">
+    <value>Nach Datum ablegen</value>
+  </data>
+  <data name="CalendarPage_Header.Subtitle" xml:space="preserve">
+    <value>Legt Bilder nach ihrem Aufnahmedatum in Ordner. Bilder ohne Datum bleiben liegen.</value>
+  </data>
+  <data name="CalendarPage_FolderHeading.Text" xml:space="preserve">
+    <value>Ordner</value>
+  </data>
+  <data name="CalendarPage_SourceBox.Header" xml:space="preserve">
+    <value>Bilder aus</value>
+  </data>
+  <data name="CalendarPage_SourceBox.PlaceholderText" xml:space="preserve">
+    <value>z. B. C:\Fotos</value>
+  </data>
+  <data name="CalendarPage_PickSource.Content" xml:space="preserve">
+    <value>Durchsuchen</value>
+  </data>
+  <data name="CalendarPage_TargetBox.Header" xml:space="preserve">
+    <value>Ordner anlegen unter</value>
+  </data>
+  <data name="CalendarPage_TargetBox.PlaceholderText" xml:space="preserve">
+    <value>z. B. D:\Archiv</value>
+  </data>
+  <data name="CalendarPage_PickTarget.Content" xml:space="preserve">
+    <value>Durchsuchen</value>
+  </data>
+  <data name="CalendarPage_Subfolders.Content" xml:space="preserve">
+    <value>Unterordner einbeziehen</value>
+  </data>
+  <data name="CalendarPage_StepHeading.Text" xml:space="preserve">
+    <value>Wie fein unterteilen?</value>
+  </data>
+  <data name="CalendarPage_StepYear.Content" xml:space="preserve">
+    <value>Nach Jahr</value>
+  </data>
+  <data name="CalendarPage_StepMonth.Content" xml:space="preserve">
+    <value>Nach Monat</value>
+  </data>
+  <data name="CalendarPage_StepDay.Content" xml:space="preserve">
+    <value>Nach Tag</value>
+  </data>
+  <data name="CalendarPage_ExampleLabel.Text" xml:space="preserve">
+    <value>Die Ordner heißen dann etwa:</value>
+  </data>
+  <data name="CalendarPage_Copy.Content" xml:space="preserve">
+    <value>Kopieren statt verschieben</value>
+  </data>
+  <data name="CalendarPage_Analyze.Content" xml:space="preserve">
+    <value>Vorschau erstellen</value>
+  </data>
+  <data name="CalendarPage_PreviewHeading.Text" xml:space="preserve">
+    <value>Vorschau</value>
+  </data>
+  <data name="CalendarPage_ProposalList.AutomationProperties.Name" xml:space="preserve">
+    <value>Vorschläge</value>
+  </data>
+  <data name="CalendarPage_ProposalSelectCheck.AutomationProperties.Name" xml:space="preserve">
+    <value>Dieses Bild ablegen</value>
+  </data>
+  <data name="CalendarPage_Apply.Content" xml:space="preserve">
+    <value>Bilder ablegen</value>
+  </data>
+  <data name="Calendar_Scanning" xml:space="preserve">
+    <value>Bilder werden gelesen …</value>
+  </data>
+  <data name="Calendar_ScanProgress" xml:space="preserve">
+    <value>{0} von {1} Bildern gelesen</value>
+  </data>
+  <data name="Calendar_ScanFailed" xml:space="preserve">
+    <value>Die Vorschau konnte nicht erstellt werden: {0}</value>
+  </data>
+  <data name="Calendar_ProposalsReady" xml:space="preserve">
+    <value>{0} Bilder lassen sich ablegen.</value>
+  </data>
+  <data name="Calendar_NothingToDo" xml:space="preserve">
+    <value>Kein Bild zum Ablegen gefunden. Entweder liegt schon alles am richtigen Platz, oder die Bilder tragen kein Aufnahmedatum.</value>
+  </data>
+  <data name="Calendar_ConfirmTitle" xml:space="preserve">
+    <value>Bilder ablegen?</value>
+  </data>
+  <data name="Calendar_ConfirmMove" xml:space="preserve">
+    <value>{0} Bilder werden nach {1} verschoben.</value>
+  </data>
+  <data name="Calendar_ConfirmCopy" xml:space="preserve">
+    <value>{0} Bilder werden nach {1} kopiert.</value>
+  </data>
+  <data name="Calendar_ConfirmAccept" xml:space="preserve">
+    <value>Ablegen</value>
+  </data>
+  <data name="Calendar_ConfirmReject" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="Calendar_Applying" xml:space="preserve">
+    <value>Bilder werden abgelegt …</value>
+  </data>
+  <data name="Calendar_ApplyCanceled" xml:space="preserve">
+    <value>Es wurde nichts abgelegt.</value>
+  </data>
+  <data name="Calendar_ApplyFailed" xml:space="preserve">
+    <value>Die Bilder konnten nicht abgelegt werden: {0}</value>
+  </data>
+  <data name="Calendar_FilesSorted" xml:space="preserve">
+    <value>{0} Bilder abgelegt.</value>
+  </data>
+  <data name="Calendar_Canceling" xml:space="preserve">
+    <value>Wird beendet …</value>
+  </data>
+  <data name="Calendar_Canceled" xml:space="preserve">
+    <value>Abgebrochen.</value>
+  </data>
 </root>

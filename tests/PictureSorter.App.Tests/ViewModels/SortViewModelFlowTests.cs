@@ -663,6 +663,19 @@ public sealed class SortViewModelFlowTests : IDisposable
             return [];
         }
 
+        public async Task<IReadOnlyList<SortProposal>> CreateCalendarProposalsAsync(
+            string sourceFolder,
+            string targetRoot,
+            CalendarGranularity granularity,
+            bool includeSubfolders,
+            IProgress<SortProgress>? progress,
+            CancellationToken cancellationToken)
+        {
+            _ = Started.Release();
+            await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
+            return [];
+        }
+
         public async Task<IReadOnlyList<SortProposal>> CreateDateProposalsAsync(
             string sourceFolder,
             string targetFolderName,

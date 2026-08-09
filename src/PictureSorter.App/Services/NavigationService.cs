@@ -17,6 +17,7 @@ internal sealed class NavigationService : INavigationService
         (AppSection.Dashboard, "dashboard", typeof(DashboardPage)),
         (AppSection.Sort, "sort", typeof(SortPage)),
         (AppSection.Duplicates, "duplicates", typeof(DuplicatesPage)),
+        (AppSection.Calendar, "calendar", typeof(CalendarSortPage)),
         (AppSection.Memory, "memory", typeof(MemoryPage)),
         (AppSection.Settings, "about", typeof(AboutPage)),
     ];

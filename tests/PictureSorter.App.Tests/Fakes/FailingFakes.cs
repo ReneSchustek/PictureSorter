@@ -44,6 +44,17 @@ internal sealed class FailingPhotoSource(Exception failure) : IPhotoSource
 /// <summary>Scheitert beim Erstellen der Vorschläge oder beim Anwenden.</summary>
 internal sealed class FailingPhotoSorter(Exception failure, bool failOnApply = false) : ITestSorter
 {
+    public Task<IReadOnlyList<SortProposal>> CreateCalendarProposalsAsync(
+        string sourceFolder,
+        string targetRoot,
+        CalendarGranularity granularity,
+        bool includeSubfolders,
+        IProgress<SortProgress>? progress,
+        CancellationToken cancellationToken) =>
+        failOnApply
+            ? Task.FromResult<IReadOnlyList<SortProposal>>([])
+            : Task.FromException<IReadOnlyList<SortProposal>>(failure);
+
     public Task<IReadOnlyList<SortProposal>> CreateDateProposalsAsync(
         string sourceFolder,
         string targetFolderName,
@@ -95,6 +106,15 @@ internal sealed class FailingApplySorter(IReadOnlyList<SortProposal> proposals, 
     public Task<IReadOnlyList<SortProposal>> ResumeAsync(
         AnalysisRun run,
         Category? category,
+        IProgress<SortProgress>? progress,
+        CancellationToken cancellationToken) =>
+        Task.FromResult(proposals);
+
+    public Task<IReadOnlyList<SortProposal>> CreateCalendarProposalsAsync(
+        string sourceFolder,
+        string targetRoot,
+        CalendarGranularity granularity,
+        bool includeSubfolders,
         IProgress<SortProgress>? progress,
         CancellationToken cancellationToken) =>
         Task.FromResult(proposals);
