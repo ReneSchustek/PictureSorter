@@ -98,3 +98,8 @@ $RECYCLE.BIN/
 
 # Rider
 .idea/
+
+# Arbeitsstand eines Werkzeugs, das den Projektbaum zusammenfasst. Enthält
+# Dateinamen und Textproben aus dem ganzen Repository und gehört damit weder
+# in die Verfolgung noch in eine Auslieferung.
+.localpilot/
