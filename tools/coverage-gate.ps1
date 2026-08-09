@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Wertet die Coverage-Berichte aller Testprojekte aus und bricht ab, wenn die
     Zeilenabdeckung unter den Schwellwert fällt.
@@ -105,7 +105,7 @@ foreach ($name in ($perAssembly.Keys | Sort-Object)) {
 
 Write-Output ''
 Write-Output ("Gesamt: {0} % ({1}/{2} Zeilen), gefordert: {3} %" -f $coverage, $covered, $total, $MinimumLineCoverage)
-Write-Output "Nicht enthalten: Views, WinUI-Konverter und oberflächengebundene Dienste - sie laufen ohne XAML-Host nicht und werden in der Anwendung selbst geprüft."
+Write-Output "Nicht enthalten: Views, gemeinsame Steuerelemente, WinUI-Konverter und oberflächengebundene Dienste - sie laufen ohne XAML-Host nicht und werden in der Anwendung selbst geprüft."
 
 if ($coverage -lt $MinimumLineCoverage) {
     Write-Output ''
