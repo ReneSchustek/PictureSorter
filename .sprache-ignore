@@ -1,65 +1,16 @@
 ﻿# Wörter, die der Sprachprüfer zu Unrecht als Ersatzschreibung meldet.
 #
-# Er sucht nach vier Buchstabenfolgen, die als Ersatz für Umlaute und ß dienen. Die
-# stehen aber auch in ganz richtig geschriebenen deutschen Wörtern — nach jedem kurzen
-# Vokal, in „dauerhaft", in „neue" — und in englischen Bezeichnern, die bleiben sollen.
+# Seit dem 09.08.2026 fragt der Prüfer die Rechtschreibprüfung von Windows, statt
+# jedes Wort mit „ue" oder „ss" zu melden. Damit fällt der Grund für die meisten
+# Einträge weg: „Gedächtnis", „abgeschlossen", „Quellordner" und die übrigen fünfzig
+# erkennt das Wörterbuch von selbst. Sie standen hier, weil der Prüfer sie nicht
+# unterscheiden konnte — nicht, weil an ihnen etwas besonders wäre.
 #
-# Ein Wort gehört nur hierher, wenn es mit Umlaut oder ß geschrieben falsch wirkt.
-# Im Zweifel einmal mit Umlaut hinschreiben und ansehen.
+# Hierher gehört nur noch, was das Wörterbuch falsch beurteilt: Fachwörter,
+# Eigennamen und englische Bezeichner, die zufällig aussehen wie ein deutsches Wort
+# mit Umlaut.
 
-# --- Deutsch: „ss" nach kurzem Vokal, völlig regulär -------------------------
-abgeschlossen
-abgeschlossene
-abgeschlossenen
-abgeschlossener
-Abschluss
-Abschlussmeldung
-aussah
-aussehen
-Datumssuche
-Einzelergebnis
-Einzelergebnisse
-Ereignis
-Ereignisses
-Fassung
-Paketfassung
-Programmfassung
-erschlossen
-Gedächtnis
-Gedächtnisses
-Guss
-Kompromiss
-offenlässt
-Schluss
-Textquelle
-Textschlüssel
-Urlaubssuche
-verlässlich
-verlässliche
-wusste
-wussten
-zurücklassen
-
-# --- Deutsch: die Folge steht mitten im Wort, nicht als Ersatz ---------------
-Dauerhaft
-Dauerhaftes
-neue
-neuen
-neuer
-neues
-Quellgenerierte
-Quellordner
-sequenziell
-Urlaubsstrand
-Zeitquelle
-
-# --- Englisch: Bezeichner, die englisch bleiben ------------------------------
-Classification
-Classifier
-Classify
+# --- Englische Bezeichner, die als deutsches Wort durchgehen ------------------
+# „Guessing" ist englisch und bleibt es. Mit Umlaut wird daraus „Güssing" — eine
+# Stadt im Burgenland, die das Wörterbuch kennt und die hier niemand meint.
 Guessing
-Assistenten
-Quellordners
-Abbruchquelle
-graue
-graues

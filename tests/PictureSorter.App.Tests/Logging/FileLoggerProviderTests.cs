@@ -46,7 +46,7 @@ public sealed class FileLoggerProviderTests : IDisposable
             logger.LogInformation("Datei verschoben.");
         }
 
-        logger.LogInformation("Ausserhalb.");
+        logger.LogInformation("Außerhalb.");
 
         IReadOnlyList<string> lines = provider.ReadRecent(10);
         Assert.Contains("Sortieren abc123", lines[0], StringComparison.Ordinal);

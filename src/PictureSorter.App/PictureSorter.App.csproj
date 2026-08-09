@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
@@ -148,7 +148,7 @@
     <PublishTrimmed>false</PublishTrimmed>
   </PropertyGroup>
 
-  <!-- Verteidigung in der Tiefe: Build schlaegt fehl, wenn das eingebettete
+  <!-- Verteidigung in der Tiefe: Build schlägt fehl, wenn das eingebettete
        Splash-Logo fehlt (splashscreen.md). -->
   <Target Name="ValidateSplashLogoEmbeddedResource" BeforeTargets="BeforeBuild">
     <Error
@@ -162,7 +162,7 @@
        Fenster mit einer XamlParseException ab. Der Build bleibt dabei grün und die
        Tests auch, weil beide die Datei aus dem bin-Ordner sehen; auffallen kann es
        einzig beim Start der ausgelieferten Fassung. -->
-  <Target Name="ProjektPriMitVeroeffentlichen" AfterTargets="ComputeResolvedFilesToPublishList">
+  <Target Name="PublishProjectPri" AfterTargets="ComputeResolvedFilesToPublishList">
     <ItemGroup>
       <ResolvedFileToPublish
         Include="$(ProjectPriFullPath)"
