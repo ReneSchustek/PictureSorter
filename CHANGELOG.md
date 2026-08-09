@@ -6,7 +6,32 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
-## [1.7.0] - 2026-08-08
+## [1.8.0] - 2026-08-09
+
+### Hinzugefügt
+
+- **Suche im Gedächtnis.** Ein Feld über der Liste durchsucht Dateiname, Ordner und
+  Gruppe zugleich — wer etwas sucht, weiß meist nur eines davon. Es filtert beim Tippen.
+- **Der Leerzustand sagt jetzt, was los ist.** „Hier ist noch nichts" und „deine Suche
+  trifft nichts" sind zwei verschiedene Lagen: Die eine heißt, dass man etwas tun muss,
+  die andere, dass der Suchtext daneben liegt. Im zweiten Fall gibt es einen Knopf, der
+  die Suche zurücksetzt.
+
+### Geändert
+
+- **Das Programm trägt jetzt die Farben der Werkstatt** statt eines eigenen Blaus: im
+  Hellen dunkles Petrol, im Dunklen ein helles Stahlgrau. Damit ist auf einen Blick zu
+  sehen, dass es aus derselben Werkstatt stammt wie die übrigen Programme. Der Verlauf im
+  Kopfbereich ist entfallen — ruhige Flächen statt Effekte.
+- Abstände, Ecken und Schriftgrößen kommen aus einem gemeinsamen Satz Bausteine. Das
+  fällt einzeln kaum auf und macht im Ganzen den Unterschied zwischen „gewachsen" und
+  „aus einem Guss".
+- Der Kopf jeder Listenseite hat dieselbe Anordnung: Titel, eine Zeile die sagt was man
+  hier tut, darunter Suche und Filter.
+
+### Behoben
+
+- Die Paketfassung war bei der vorigen Auslieferung erneut nicht mitgezogen worden.
 
 ### Hinzugefügt
 
