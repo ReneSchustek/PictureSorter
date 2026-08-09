@@ -262,6 +262,77 @@ public sealed class UpdateInstallerTests : IDisposable
         return path;
     }
 
+    // ── Der Vermerk, der die Kette zusammenhält ────────────────────────────────
+
+    [Fact]
+    public void Extract_KeepsFoldersFromThePackage()
+    {
+        string package = Path.Combine(_root, "mitordner.zip");
+        using (FileStream datei = File.Create(package))
+        using (ZipArchive archiv = new(datei, ZipArchiveMode.Create))
+        {
+            _ = archiv.CreateEntry("Assets/");
+            ZipArchiveEntry eintrag = archiv.CreateEntry("Assets/bild.png");
+            using Stream strom = eintrag.Open();
+            strom.WriteByte(7);
+        }
+
+        string ziel = Path.Combine(_root, "ziel");
+        UpdateInstaller.Extract(package, ziel);
+
+        Assert.True(File.Exists(Path.Combine(ziel, "Assets", "bild.png")));
+    }
+
+    [Fact]
+    public void TakeOutcome_WithoutANote_ReturnsNothing()
+    {
+        Assert.Null(UpdateInstaller.TakeOutcome(_root));
+    }
+
+    [Fact]
+    public void TakeOutcome_ReadsTheNoteOnceAndThenForgetsIt()
+    {
+        // Der Vermerk ist eine einmalige Rückmeldung: Beim zweiten Start darf die
+        // Meldung über eine längst erledigte Aktualisierung nicht wieder erscheinen.
+        UpdateInstaller.WriteOutcome(_root, new UpdateInstaller.ApplyResult(Success: true, FailedFile: null, Reason: null));
+
+        UpdateInstaller.ApplyResult? erster = UpdateInstaller.TakeOutcome(_root);
+        UpdateInstaller.ApplyResult? zweiter = UpdateInstaller.TakeOutcome(_root);
+
+        Assert.NotNull(erster);
+        Assert.Null(zweiter);
+    }
+
+    [Fact]
+    public void TakeOutcome_WithABrokenNote_ReturnsNothingInsteadOfThrowing()
+    {
+        // Ein halb geschriebener Vermerk (Stromausfall mitten im Update) darf den Start
+        // nicht verhindern.
+        File.WriteAllText(Path.Combine(_root, "update-outcome.json"), "{kaputt");
+
+        Assert.Null(UpdateInstaller.TakeOutcome(_root));
+    }
+
+    [Fact]
+    public void RemovePendingNote_WithoutANote_IsNoError()
+    {
+        UpdateInstaller.RemovePendingNote(_root);
+
+        Assert.False(File.Exists(Path.Combine(_root, "update-pending.json")));
+    }
+
+    [Fact]
+    public void CanWriteTo_ForAFolderThatDoesNotExist_IsFalse()
+    {
+        Assert.False(UpdateInstaller.CanWriteTo(Path.Combine(_root, "gibtesnicht")));
+    }
+
+    [Fact]
+    public void CanWriteTo_ForItsOwnTestFolder_IsTrue()
+    {
+        Assert.True(UpdateInstaller.CanWriteTo(_root));
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(_root))

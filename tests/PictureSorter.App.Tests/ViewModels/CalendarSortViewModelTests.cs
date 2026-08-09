@@ -62,6 +62,39 @@ public sealed class CalendarSortViewModelTests
         Assert.Equal(CalendarGranularity.Month, viewModel.Granularity);
     }
 
+    [Theory]
+    [InlineData("month")]
+    [InlineData("day")]
+    public void PickingAnyOption_SwitchesTheOthersOff(string wahl)
+    {
+        using CalendarSortViewModel viewModel = CreateViewModel([]);
+        viewModel.Granularity = CalendarGranularity.Year;
+
+        if (wahl == "month")
+        {
+            viewModel.IsMonth = true;
+            Assert.Equal(CalendarGranularity.Month, viewModel.Granularity);
+        }
+        else
+        {
+            viewModel.IsDay = true;
+            Assert.Equal(CalendarGranularity.Day, viewModel.Granularity);
+        }
+
+        Assert.False(viewModel.IsYear);
+    }
+
+    [Fact]
+    public void UncheckingTheDayOption_ChangesNothing()
+    {
+        using CalendarSortViewModel viewModel = CreateViewModel([]);
+        viewModel.IsDay = true;
+
+        viewModel.IsDay = false;
+
+        Assert.Equal(CalendarGranularity.Day, viewModel.Granularity);
+    }
+
     [Fact]
     public void CanAnalyze_RequiresBothFolders()
     {
