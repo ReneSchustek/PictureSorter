@@ -367,6 +367,101 @@ public sealed class PhotoAnalysisService : IPhotoAnalyzer
         return RunDateAnalysisAsync(run, resume: false, progress, cancellationToken);
     }
 
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<SortProposal>> CreateCalendarProposalsAsync(
+        string sourceFolder,
+        string targetRoot,
+        CalendarGranularity granularity,
+        bool includeSubfolders,
+        IProgress<SortProgress>? progress,
+        CancellationToken cancellationToken)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(sourceFolder);
+        ArgumentException.ThrowIfNullOrWhiteSpace(targetRoot);
+
+        IProgress<PhotoScanProgress>? gathering =
+            progress is null ? null : new GatheringProgress(progress);
+
+        List<SortProposal> proposals = [];
+        int processed = 0;
+        int withoutDate = 0;
+        int alreadyInPlace = 0;
+        int total = 0;
+
+        await foreach (ScannedPhoto scanned in _photoSource
+            .StreamPhotosAsync(sourceFolder, includeSubfolders, skip: 0, maxCount: null, gathering, cancellationToken)
+            .ConfigureAwait(false))
+        {
+            Photo photo = scanned.Photo;
+            processed++;
+            total = scanned.Total;
+
+            if (photo.CapturedAt is not { } captured)
+            {
+                // Kein Datum, kein Vorschlag. Das Datum aus dem Dateinamen oder der
+                // Änderungszeit zu erraten wäre eine Vermutung — und die würde hier
+                // Dateien verschieben.
+                withoutDate++;
+            }
+            else
+            {
+                string targetFolder = TargetFolderNaming.BuildCalendarFolder(targetRoot, captured, granularity);
+
+                // Beim zweiten Lauf über denselben Ordner liegt schon vieles am rechten
+                // Platz. Ohne diese Prüfung stünde jedes davon erneut in der Vorschau und
+                // würde auf sich selbst verschoben.
+                if (IsSameFolder(Path.GetDirectoryName(photo.FullPath), targetFolder))
+                {
+                    alreadyInPlace++;
+                }
+                else
+                {
+                    proposals.Add(new SortProposal
+                    {
+                        Photo = photo,
+                        CategoryName = Path.GetFileName(targetFolder),
+                        SourceFolder = sourceFolder,
+                        TargetFolderPath = targetFolder,
+                        Confidence = 1.0,
+                        Method = ClassificationMethod.CaptureDate,
+                    });
+                }
+            }
+
+            progress?.Report(new SortProgress(processed, scanned.Total, ScanPhase.Analyzing));
+        }
+
+        progress?.Report(new SortProgress(processed, total, ScanPhase.Analyzing, IsFinal: true));
+
+        SortingLog.CalendarProposalsCreated(_logger, proposals.Count, granularity);
+        if (withoutDate > 0)
+        {
+            SortingLog.PhotosWithoutCaptureDate(_logger, withoutDate);
+        }
+
+        if (alreadyInPlace > 0)
+        {
+            SortingLog.PhotosAlreadyInPlace(_logger, alreadyInPlace);
+        }
+
+        return proposals;
+    }
+
+    // Zwei Pfade auf denselben Ordner. Ohne Vergleich der Vollform hielte
+    // „C:\Fotos\2021" und „C:\Fotos\.\2021" für verschiedene Orte.
+    private static bool IsSameFolder(string? left, string right)
+    {
+        if (string.IsNullOrEmpty(left))
+        {
+            return false;
+        }
+
+        return string.Equals(
+            Path.TrimEndingDirectorySeparator(Path.GetFullPath(left)),
+            Path.TrimEndingDirectorySeparator(Path.GetFullPath(right)),
+            StringComparison.OrdinalIgnoreCase);
+    }
+
     private async Task<IReadOnlyList<SortProposal>> RunDateAnalysisAsync(
         AnalysisRun run,
         bool resume,
@@ -662,5 +757,14 @@ internal static partial class SortingLog
 
     [LoggerMessage(EventId = 3011, Level = LogLevel.Information, Message = "{Count} Fotos lagen außerhalb des gewählten Zeitraums und wurden nicht bewertet.")]
     public static partial void PhotosOutsideDateRange(ILogger logger, int count);
+
+    [LoggerMessage(EventId = 3016, Level = LogLevel.Information, Message = "{Count} Fotos für die Ablage nach Aufnahmedatum vorgeschlagen (Stufe {Granularity}).")]
+    public static partial void CalendarProposalsCreated(ILogger logger, int count, CalendarGranularity granularity);
+
+    [LoggerMessage(EventId = 3017, Level = LogLevel.Information, Message = "{Count} Fotos tragen kein Aufnahmedatum und bleiben liegen.")]
+    public static partial void PhotosWithoutCaptureDate(ILogger logger, int count);
+
+    [LoggerMessage(EventId = 3018, Level = LogLevel.Information, Message = "{Count} Fotos liegen bereits im richtigen Ordner.")]
+    public static partial void PhotosAlreadyInPlace(ILogger logger, int count);
 
 }

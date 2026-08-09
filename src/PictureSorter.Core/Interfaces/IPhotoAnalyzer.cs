@@ -81,6 +81,39 @@ public interface IPhotoAnalyzer
         CancellationToken cancellationToken);
 
     /// <summary>
+    /// Erzeugt Vorschläge, die jedes Foto nach seinem Aufnahmedatum einem Kalender-Ordner
+    /// zuordnen — <c>2021</c>, <c>2021-07</c> oder <c>2021-07-15</c>.
+    ///
+    /// Anders als beim Sortieren nach Zeitraum gibt es hier keinen einzelnen Zielordner,
+    /// sondern so viele, wie der Bestand Jahre, Monate oder Tage umfasst. Gelesen werden
+    /// nur die Metadaten; die Bilderkennung wird nicht befragt.
+    /// </summary>
+    /// <param name="sourceFolder">Absoluter Pfad des Quellordners.</param>
+    /// <param name="targetRoot">
+    /// Der Ort, unter dem die Kalender-Ordner entstehen. Er darf außerhalb des
+    /// Quellordners liegen.
+    /// </param>
+    /// <param name="granularity">Wie fein unterteilt wird.</param>
+    /// <param name="includeSubfolders">
+    /// <see langword="true"/>, um Unterordner einzubeziehen.
+    /// </param>
+    /// <param name="progress">
+    /// Optionaler Empfänger des Fortschritts (verarbeitete/gesamte Fotos).
+    /// </param>
+    /// <param name="cancellationToken">Token zum Abbrechen des Vorgangs.</param>
+    /// <returns>
+    /// Die Vorschläge für alle Fotos mit nachweisbarem Aufnahmedatum. Fotos ohne Datum
+    /// bleiben liegen — geraten wird nicht.
+    /// </returns>
+    Task<IReadOnlyList<SortProposal>> CreateCalendarProposalsAsync(
+        string sourceFolder,
+        string targetRoot,
+        CalendarGranularity granularity,
+        bool includeSubfolders,
+        IProgress<SortProgress>? progress,
+        CancellationToken cancellationToken);
+
+    /// <summary>
     /// Setzt einen protokollierten Lauf fort oder holt sein Ergebnis zurück.
     ///
     /// Für beides gibt es nur diesen einen Weg, weil es derselbe Vorgang ist: Was im

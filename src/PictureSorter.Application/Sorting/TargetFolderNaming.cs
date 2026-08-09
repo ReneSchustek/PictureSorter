@@ -68,6 +68,38 @@ public static class TargetFolderNaming
         return Path.Combine(sourceFolder, folderName);
     }
 
+    /// <summary>
+    /// Setzt den Ordnernamen für die Ablage nach Aufnahmedatum zusammen.
+    /// </summary>
+    /// <param name="targetRoot">Der Ort, unter dem die Ordner entstehen.</param>
+    /// <param name="captured">Das Aufnahmedatum.</param>
+    /// <param name="granularity">Wie fein unterteilt wird.</param>
+    /// <returns>Der vollständige Pfad des Zielordners.</returns>
+    /// <remarks>
+    /// Der Name trägt immer den vollen Zeitpunkt bis zur gewählten Stufe („2021-07", nicht
+    /// „07" unterhalb von „2021"). Flach statt verschachtelt: Wer die Stufe wechselt,
+    /// bekommt eine zweite Reihe Ordner nebeneinander statt einen halb gefüllten Baum, und
+    /// jeder Ordnername ist für sich sprechend — auch wenn er später allein umzieht.
+    ///
+    /// Die feste Kultur ist Absicht: Ein Ordner soll „2021-07" heißen, gleich in welchem
+    /// Land der Rechner steht. Sonst hieße derselbe Monat je nach Einstellung anders, und
+    /// zwei Läufe legten zwei Ordner für denselben Zeitraum an.
+    /// </remarks>
+    public static string BuildCalendarFolder(
+        string targetRoot,
+        DateTimeOffset captured,
+        CalendarGranularity granularity)
+    {
+        string folderName = granularity switch
+        {
+            CalendarGranularity.Month => captured.ToString("yyyy-MM", CultureInfo.InvariantCulture),
+            CalendarGranularity.Day => captured.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            _ => captured.ToString("yyyy", CultureInfo.InvariantCulture),
+        };
+
+        return Path.Combine(targetRoot, folderName);
+    }
+
     // Namen, die Windows für Geräte reserviert. Ein Ordner dieses Namens lässt sich
     // nicht anlegen – unabhängig von der Endung und ohne Rücksicht auf Groß- und
     // Kleinschreibung. Ohne Prüfung scheiterte eine Kategorie „Nul" mit einer

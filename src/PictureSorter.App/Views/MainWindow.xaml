@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <Window
     x:Class="PictureSorter.App.Views.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -83,6 +83,11 @@
                 <NavigationViewItem x:Uid="MainWindow_DuplicatesNavItem" Content="Duplikate" Tag="duplicates">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE8C8;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem x:Uid="MainWindow_CalendarNavItem" Content="Nach Datum ablegen" Tag="calendar">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE787;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
                 <NavigationViewItem x:Uid="MainWindow_MemoryNavItem" Content="Gedächtnis" Tag="memory">
