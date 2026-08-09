@@ -1,43 +1,182 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <ContentDialog
     x:Class="PictureSorter.App.Views.PhotoPreviewDialog"
     x:Uid="PhotoPreviewDialog_Close"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:PictureSorter.App.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     CloseButtonText="Schließen"
     DefaultButton="Close"
     mc:Ignorable="d">
 
-    <!-- Großansicht eines Fotos: das Bild in voller Auflösung plus alle bekannten
-         Bildinformationen. Über die Esc-Taste bzw. „Schließen" wieder zu verlassen. -->
-    <Grid MaxWidth="900" RowSpacing="12">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
+    <!-- Die Detailansicht eines Bildes: das Bild groß, daneben alles, was über es
+         bekannt ist, wohin es gehört und wer seine Doppelgänger sind. Darunter die
+         drei Dinge, die man von hier aus mit ihm tun kann.
 
-        <Border
-            MinHeight="240"
-            Background="{ThemeResource AppCardBackgroundBrush}"
-            CornerRadius="{StaticResource AppCardCornerRadius}">
-            <Image
-                x:Name="PreviewImage"
-                MaxHeight="520"
-                AutomationProperties.Name="Vergrößerte Ansicht des Fotos"
-                Stretch="Uniform" />
-        </Border>
+         Umbenennen, Verschieben und Löschen stehen hier, weil hier der Kontext steht:
+         Wer das Bild groß vor sich sieht und merkt, dass es „IMG_2043" heißt, will es
+         jetzt umbenennen und nicht erst den Explorer suchen. -->
+    <ScrollViewer MaxHeight="620">
+        <Grid MaxWidth="940" ColumnSpacing="{StaticResource SpacingM}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="320" />
+            </Grid.ColumnDefinitions>
 
-        <ScrollViewer
-            Grid.Row="1"
-            MaxHeight="160"
-            VerticalScrollBarVisibility="Auto">
-            <TextBlock
-                x:Name="InfoText"
-                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                IsTextSelectionEnabled="True"
-                TextWrapping="Wrap" />
-        </ScrollViewer>
-    </Grid>
+            <Border
+                MinHeight="240"
+                VerticalAlignment="Top"
+                Background="{ThemeResource AppCardBackgroundBrush}"
+                CornerRadius="{StaticResource AppCardCornerRadius}">
+                <Image
+                    x:Name="PreviewImage"
+                    MaxHeight="520"
+                    AutomationProperties.Name="Vergrößerte Ansicht des Fotos"
+                    Stretch="Uniform" />
+            </Border>
+
+            <StackPanel Grid.Column="1" Spacing="{StaticResource SpacingM}">
+
+                <StackPanel Spacing="{StaticResource SpacingS}">
+                    <TextBlock
+                        x:Uid="PhotoDetail_FactsHeading"
+                        Style="{StaticResource SectionHeadingStyle}"
+                        Text="Angaben" />
+                    <controls:InfoField
+                        x:Uid="PhotoDetail_FolderField"
+                        Label="Ordner"
+                        Text="{x:Bind ViewModel.FolderPath, Mode=OneWay}" />
+                    <controls:InfoField
+                        x:Uid="PhotoDetail_SizeField"
+                        Label="Größe"
+                        Text="{x:Bind ViewModel.SizeText}" />
+                    <controls:InfoField
+                        x:Uid="PhotoDetail_DimensionsField"
+                        Label="Auflösung"
+                        Text="{x:Bind ViewModel.DimensionsText}" />
+                    <controls:InfoField
+                        x:Uid="PhotoDetail_CapturedField"
+                        Label="Aufgenommen"
+                        Text="{x:Bind ViewModel.CapturedText}" />
+                </StackPanel>
+
+                <!-- Wohin dieses Bild einsortiert wurde. Steht nur da, wenn es dazu
+                     wirklich eine Entscheidung gibt. -->
+                <StackPanel
+                    Spacing="{StaticResource SpacingS}"
+                    Visibility="{x:Bind ViewModel.HasTarget, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <TextBlock
+                        x:Uid="PhotoDetail_TargetHeading"
+                        Style="{StaticResource SectionHeadingStyle}"
+                        Text="Einsortiert nach" />
+                    <TextBlock
+                        Foreground="{ThemeResource AppTextPrimaryBrush}"
+                        Text="{x:Bind ViewModel.TargetFolder, Mode=OneWay}"
+                        TextWrapping="Wrap" />
+                </StackPanel>
+
+                <StackPanel
+                    Spacing="{StaticResource SpacingS}"
+                    Visibility="{x:Bind ViewModel.HasDuplicates, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <TextBlock
+                        x:Uid="PhotoDetail_DuplicatesHeading"
+                        Style="{StaticResource SectionHeadingStyle}"
+                        Text="Doppelgänger" />
+                    <ItemsControl ItemsSource="{x:Bind ViewModel.Duplicates}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="x:String">
+                                <TextBlock
+                                    Foreground="{ThemeResource AppTextMutedBrush}"
+                                    Text="{x:Bind}"
+                                    TextTrimming="CharacterEllipsis"
+                                    ToolTipService.ToolTip="{x:Bind}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <StackPanel Spacing="{StaticResource SpacingS}">
+                    <TextBlock
+                        x:Uid="PhotoDetail_ActionsHeading"
+                        Style="{StaticResource SectionHeadingStyle}"
+                        Text="Bearbeiten" />
+
+                    <TextBox
+                        x:Uid="PhotoDetail_NameBox"
+                        Header="Name"
+                        IsEnabled="{x:Bind ViewModel.IsUsable, Mode=OneWay}"
+                        Text="{x:Bind ViewModel.NewName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <Grid ColumnSpacing="{StaticResource SpacingS}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Button
+                            x:Uid="PhotoDetail_RenameButton"
+                            HorizontalAlignment="Stretch"
+                            Command="{x:Bind ViewModel.RenameCommand}"
+                            Content="Umbenennen" />
+                        <Button
+                            x:Uid="PhotoDetail_MoveButton"
+                            Grid.Column="1"
+                            HorizontalAlignment="Stretch"
+                            Command="{x:Bind ViewModel.MoveCommand}"
+                            Content="Verschieben" />
+                    </Grid>
+
+                    <Grid ColumnSpacing="{StaticResource SpacingS}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Button
+                            x:Uid="PhotoDetail_FolderButton"
+                            HorizontalAlignment="Stretch"
+                            Command="{x:Bind ViewModel.OpenFolderCommand}"
+                            Content="Im Explorer zeigen" />
+                        <Button
+                            x:Uid="PhotoDetail_DeleteButton"
+                            Grid.Column="1"
+                            HorizontalAlignment="Stretch"
+                            Command="{x:Bind ViewModel.AskDeleteCommand}"
+                            Content="In den Papierkorb" />
+                    </Grid>
+
+                    <!-- Die Rückfrage steht in dieser Ansicht, nicht in einem eigenen
+                         Dialog: Die Detailansicht ist selbst einer, und WinUI lässt immer
+                         nur einen zu. Der Versuch endete nicht in einer Meldung, sondern
+                         im Abbruch des Programms. -->
+                    <Grid
+                        ColumnSpacing="{StaticResource SpacingS}"
+                        Visibility="{x:Bind ViewModel.IsAsking, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Button
+                            x:Uid="PhotoDetail_ConfirmDeleteButton"
+                            HorizontalAlignment="Stretch"
+                            Command="{x:Bind ViewModel.DeleteCommand}"
+                            Content="Ja, in den Papierkorb"
+                            Style="{StaticResource AccentButtonStyle}" />
+                        <Button
+                            x:Uid="PhotoDetail_CancelDeleteButton"
+                            Grid.Column="1"
+                            HorizontalAlignment="Stretch"
+                            Command="{x:Bind ViewModel.CancelDeleteCommand}"
+                            Content="Behalten" />
+                    </Grid>
+                </StackPanel>
+
+                <InfoBar
+                    IsClosable="False"
+                    IsOpen="{x:Bind ViewModel.HasStatus, Mode=OneWay}"
+                    Message="{x:Bind ViewModel.Status, Mode=OneWay}"
+                    Severity="{x:Bind ViewModel.Severity, Mode=OneWay, Converter={StaticResource StatusSeverityConverter}}" />
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
 </ContentDialog>

@@ -64,6 +64,7 @@ public static class InfrastructureServiceCollectionExtensions
 
         // Zustandslose Dateisystem-Infrastruktur: Singleton.
         _ = services.AddSingleton<IFileDeleter, RecycleBinFileDeleter>();
+        _ = services.AddSingleton<IPhotoFileEditor, PhotoFileEditor>();
         _ = services.AddSingleton<IPhotoSource, FileSystemPhotoSource>();
         _ = services.AddSingleton<IFileOrganizer, FileOrganizer>();
         _ = services.AddSingleton<IClock, SystemClock>();

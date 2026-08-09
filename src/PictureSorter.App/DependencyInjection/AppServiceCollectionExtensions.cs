@@ -76,6 +76,7 @@ internal static class AppServiceCollectionExtensions
         _ = services.AddTransient<DashboardViewModel>();
         _ = services.AddTransient<SortViewModel>();
         _ = services.AddTransient<DuplicatesViewModel>();
+        _ = services.AddSingleton<IShellLauncher, ShellLauncher>();
         _ = services.AddTransient<CalendarSortViewModel>();
         _ = services.AddTransient<MemoryViewModel>();
         _ = services.AddTransient<ModelHintViewModel>();

@@ -181,6 +181,47 @@ public sealed class DuplicatesViewModelTests
         Assert.False(viewModel.IsFiltered);
     }
 
+    [Fact]
+    public async Task SiblingsOf_NamesTheOtherPicturesOfTheSameGroup()
+    {
+        using DuplicatesViewModel viewModel = CreateViewModel([ThreePhotoGroup()], new FakeFileDeleter());
+        viewModel.SourceFolder = @"C:otos";
+        await viewModel.ScanCommand.ExecuteAsync(parameter: null);
+
+        IReadOnlyList<string> geschwister = viewModel.SiblingsOf(viewModel.Groups[0].Photos[0]);
+
+        Assert.Equal(2, geschwister.Count);
+        Assert.DoesNotContain(viewModel.Groups[0].Photos[0].FilePath, geschwister);
+    }
+
+    [Fact]
+    public async Task Forget_TakesAPictureOutOfItsGroup()
+    {
+        // Nach einem Umbenennen aus der Detailansicht heraus gilt der Fund für dieses
+        // Bild nicht mehr — es stehen zu lassen hieße, einen Pfad anzuzeigen, den es
+        // nicht mehr gibt.
+        using DuplicatesViewModel viewModel = CreateViewModel([ThreePhotoGroup()], new FakeFileDeleter());
+        viewModel.SourceFolder = @"C:otos";
+        await viewModel.ScanCommand.ExecuteAsync(parameter: null);
+
+        viewModel.Forget(viewModel.Groups[0].Photos[0]);
+
+        Assert.Equal(2, viewModel.Groups[0].Photos.Count);
+    }
+
+    [Fact]
+    public async Task Forget_WhenTheGroupFallsBelowTwo_ItDisappears()
+    {
+        using DuplicatesViewModel viewModel = CreateViewModel([ThreePhotoGroup()], new FakeFileDeleter());
+        viewModel.SourceFolder = @"C:otos";
+        await viewModel.ScanCommand.ExecuteAsync(parameter: null);
+
+        viewModel.Forget(viewModel.Groups[0].Photos[0]);
+        viewModel.Forget(viewModel.Groups[0].Photos[0]);
+
+        Assert.Empty(viewModel.Groups);
+    }
+
     private static DuplicateGroup SimilarGroup() => new(
         DuplicateKind.Similar,
         [

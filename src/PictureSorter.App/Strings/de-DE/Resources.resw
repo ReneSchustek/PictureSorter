@@ -1222,4 +1222,94 @@
   <data name="CalendarPage_ProposalNoMatch.ResetLabel" xml:space="preserve">
     <value>Suche zurücksetzen</value>
   </data>
+  <data name="PhotoDetail_FactsHeading.Text" xml:space="preserve">
+    <value>Angaben</value>
+  </data>
+  <data name="PhotoDetail_FolderField.Label" xml:space="preserve">
+    <value>Ordner</value>
+  </data>
+  <data name="PhotoDetail_SizeField.Label" xml:space="preserve">
+    <value>Größe</value>
+  </data>
+  <data name="PhotoDetail_DimensionsField.Label" xml:space="preserve">
+    <value>Auflösung</value>
+  </data>
+  <data name="PhotoDetail_CapturedField.Label" xml:space="preserve">
+    <value>Aufgenommen</value>
+  </data>
+  <data name="PhotoDetail_TargetHeading.Text" xml:space="preserve">
+    <value>Einsortiert nach</value>
+  </data>
+  <data name="PhotoDetail_DuplicatesHeading.Text" xml:space="preserve">
+    <value>Doppelgänger</value>
+  </data>
+  <data name="PhotoDetail_ActionsHeading.Text" xml:space="preserve">
+    <value>Bearbeiten</value>
+  </data>
+  <data name="PhotoDetail_NameBox.Header" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="PhotoDetail_RenameButton.Content" xml:space="preserve">
+    <value>Umbenennen</value>
+  </data>
+  <data name="PhotoDetail_MoveButton.Content" xml:space="preserve">
+    <value>Verschieben</value>
+  </data>
+  <data name="PhotoDetail_FolderButton.Content" xml:space="preserve">
+    <value>Im Explorer zeigen</value>
+  </data>
+  <data name="PhotoDetail_DeleteButton.Content" xml:space="preserve">
+    <value>In den Papierkorb</value>
+  </data>
+  <data name="PhotoDetail_Renamed" xml:space="preserve">
+    <value>Heißt jetzt „{0}“.</value>
+  </data>
+  <data name="PhotoDetail_Moved" xml:space="preserve">
+    <value>Liegt jetzt in {0}.</value>
+  </data>
+  <data name="PhotoDetail_Deleted" xml:space="preserve">
+    <value>„{0}“ liegt im Papierkorb und lässt sich von dort zurückholen.</value>
+  </data>
+  <data name="PhotoDetail_DeleteTitle" xml:space="preserve">
+    <value>In den Papierkorb legen?</value>
+  </data>
+  <data name="PhotoDetail_DeleteQuestion" xml:space="preserve">
+    <value>„{0}“ wandert in den Papierkorb. Von dort lässt es sich zurückholen, solange der Papierkorb nicht geleert wird.</value>
+  </data>
+  <data name="PhotoDetail_DeleteAccept" xml:space="preserve">
+    <value>In den Papierkorb</value>
+  </data>
+  <data name="PhotoDetail_DeleteReject" xml:space="preserve">
+    <value>Behalten</value>
+  </data>
+  <data name="PhotoDetail_DeleteFailed" xml:space="preserve">
+    <value>Das Bild ließ sich nicht in den Papierkorb legen: {0}</value>
+  </data>
+  <data name="PhotoDetail_NameTaken" xml:space="preserve">
+    <value>Unter diesem Namen liegt dort schon ein Bild. Wähle einen anderen.</value>
+  </data>
+  <data name="PhotoDetail_NameInvalid" xml:space="preserve">
+    <value>Dieser Name geht nicht. Er darf nicht leer sein und keine Zeichen wie \ / : * ? &lt; &gt; | enthalten.</value>
+  </data>
+  <data name="PhotoDetail_Locked" xml:space="preserve">
+    <value>Das Bild ist gerade von einem anderen Programm geöffnet. Schließe es und versuche es noch einmal.</value>
+  </data>
+  <data name="PhotoDetail_NotAllowed" xml:space="preserve">
+    <value>Für diesen Ordner fehlt die Berechtigung.</value>
+  </data>
+  <data name="PhotoDetail_GoneAlready" xml:space="preserve">
+    <value>Das Bild ist nicht mehr da - vielleicht wurde es zwischenzeitlich verschoben.</value>
+  </data>
+  <data name="PhotoDetail_Failed" xml:space="preserve">
+    <value>Das hat nicht geklappt.</value>
+  </data>
+  <data name="PhotoDetail_FolderFailed" xml:space="preserve">
+    <value>Der Explorer ließ sich nicht öffnen.</value>
+  </data>
+  <data name="PhotoDetail_ConfirmDeleteButton.Content" xml:space="preserve">
+    <value>Ja, in den Papierkorb</value>
+  </data>
+  <data name="PhotoDetail_CancelDeleteButton.Content" xml:space="preserve">
+    <value>Behalten</value>
+  </data>
 </root>

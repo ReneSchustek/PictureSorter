@@ -1,0 +1,657 @@
+## WORKSPACE EXECUTIVE SUMMARY (YAML)
+# Generated: 2026-08-09T15:04:43.0658572+02:00
+# Root: F:\Entwicklung\dotnet\PictureSorter
+Architecture:
+  Type: Backend (C#/.NET)
+  Scale: 323 relevant source files
+  Components: 0
+  Controllers: 0
+  Models: 1
+  Services: 14
+---
+- File: src\PictureSorter.App\PictureSorter.App.csproj
+  Preview: "<Project Sdk='Microsoft.NET.Sdk'>  <PropertyGroup>   <OutputType>WinExe</OutputType>   <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework> ..."
+- File: src\PictureSorter.Application\PictureSorter.Application.csproj
+  Preview: "<Project Sdk='Microsoft.NET.Sdk'>  <PropertyGroup>   <!-- Reine Orchestrierungsschicht ohne Windows-/WinRT-Abhängigkeit; daher das     plattformneutra..."
+- File: src\PictureSorter.Core\PictureSorter.Core.csproj
+  Preview: "<Project Sdk='Microsoft.NET.Sdk'>  <PropertyGroup>   <TargetFramework>net10.0</TargetFramework>   <ImplicitUsings>enable</ImplicitUsings>   <Nullable>..."
+- File: src\PictureSorter.Data\PictureSorter.Data.csproj
+  Preview: "<Project Sdk='Microsoft.NET.Sdk'>  <PropertyGroup>   <!-- Reine Datenbank-Schicht (EF Core + SQLite). Plattformneutral – kein WinRT. -->   <TargetFram..."
+- File: src\PictureSorter.Imaging\PictureSorter.Imaging.csproj
+  Preview: "<Project Sdk='Microsoft.NET.Sdk'>  <PropertyGroup>   <!-- Windows-SDK-Ziel für die eingebaute Windows-Bild-API     (Windows.Graphics.Imaging): EXIF-Me..."
+- File: src\PictureSorter.Infrastructure\PictureSorter.Infrastructure.csproj
+  Preview: "<Project Sdk='Microsoft.NET.Sdk'>  <PropertyGroup>   <!-- Windows-SDK-Ziel wegen Windows.Storage (Löschen in den Papierkorb).     Enthält Dateisystem-..."
+- File: src\PictureSorter.Ollama\PictureSorter.Ollama.csproj
+  Preview: "<Project Sdk='Microsoft.NET.Sdk'>  <PropertyGroup>   <!-- Reine HTTP-Anbindung an Ollama (kein WinRT) – daher plattformneutrales net10.0. -->   <Targe..."
+- File: tests\PictureSorter.App.Tests\PictureSorter.App.Tests.csproj
+  Preview: "<Project Sdk='Microsoft.NET.Sdk'>  <PropertyGroup>   <!-- Muss dem Windows-SDK-Ziel von PictureSorter.App entsprechen. -->   <TargetFramework>net10.0-..."
+- File: tests\PictureSorter.Application.Tests\PictureSorter.Application.Tests.csproj
+  Preview: "<Project Sdk='Microsoft.NET.Sdk'>  <PropertyGroup>   <!-- Folgt dem plattformneutralen TFM der Application-Schicht. -->   <TargetFramework>net10.0</Ta..."
+- File: tests\PictureSorter.Core.Tests\PictureSorter.Core.Tests.csproj
+  Preview: "<Project Sdk='Microsoft.NET.Sdk'>  <PropertyGroup>   <!-- Core ist plattformneutral; die Tests sind es ebenfalls. -->   <TargetFramework>net10.0</Targ..."
+- File: tests\PictureSorter.Data.Tests\PictureSorter.Data.Tests.csproj
+  Preview: "<Project Sdk='Microsoft.NET.Sdk'>  <PropertyGroup>   <!-- Data ist plattformneutral; die Tests laufen gegen eine echte SQLite-Datei. -->   <TargetFram..."
+- File: tests\PictureSorter.Imaging.Tests\PictureSorter.Imaging.Tests.csproj
+  Preview: "<Project Sdk='Microsoft.NET.Sdk'>  <PropertyGroup>   <!-- Folgt dem Windows-SDK-Ziel der Imaging-Schicht: BitmapDecoder und     StorageFile sind Windo..."
+- File: tests\PictureSorter.Infrastructure.Tests\PictureSorter.Infrastructure.Tests.csproj
+  Preview: "<Project Sdk='Microsoft.NET.Sdk'>  <PropertyGroup>   <!-- Folgt dem Windows-SDK-Ziel der Infrastructure-Schicht. -->   <TargetFramework>net10.0-window..."
+- File: tests\PictureSorter.Integration.Tests\PictureSorter.Integration.Tests.csproj
+  Preview: "<Project Sdk='Microsoft.NET.Sdk'>  <PropertyGroup>   <!-- Spannt mehrere Schichten zusammen (Application + Infrastructure + Data) und     folgt daher ..."
+- File: tests\PictureSorter.Ollama.Tests\PictureSorter.Ollama.Tests.csproj
+  Preview: "<Project Sdk='Microsoft.NET.Sdk'>  <PropertyGroup>   <!-- Ollama ist eine reine HTTP-Schicht und plattformneutral; die Tests ebenso. -->   <TargetFram..."
+- File: BETRIEB.md
+  Preview: "# Betriebshandbuch Was im Betrieb zu tun ist, wenn etwas schiefgeht: wo die Daten liegen, wie man sie sichert, wie man einen fehlgeschlagenen Sortierl..."
+- File: CHANGELOG.md
+  Preview: "# Changelog Alle nennenswerten Änderungen an diesem Projekt werden hier dokumentiert. Das Format orientiert sich an [Keep a Changelog](https://keepach..."
+- File: PictureSorter.slnx
+  Preview: "<Solution>  <Folder Name='/src/'>   <Project Path='src/PictureSorter.App/PictureSorter.App.csproj'>    <Platform Project='x64' />   </Project>   <Proj..."
+- File: README.md
+  Preview: "# PictureSorter PictureSorter ist eine Windows-Desktop-Anwendung (WinUI 3), die Fotos aus einem ausgewählten Ordner mithilfe einer lokal laufenden KI ..."
+- File: .claude\settings.local.json
+  Preview: "{  'permissions': {   'allow': [    'Read(//f/Entwicklung/**)',    'Read(//c/Users/renes/**)',    'Read(//tmp/**)',    'Bash(cd:*)',    'Bash(ls:*)', ..."
+- File: tools\coverage-gate.ps1
+  Preview: "<# .SYNOPSIS   Wertet die Coverage-Berichte aller Testprojekte aus und bricht ab, wenn die   Zeilenabdeckung unter den Schwellwert fällt. .DESCRIPTION..."
+- File: tools\new-signing-key.ps1
+  Preview: "<# .SYNOPSIS   Erzeugt das ECDSA-P-256-Schlüsselpaar, mit dem die Release-Pakete signiert werden. .DESCRIPTION   PictureSorter prüft die Echtheit eine..."
+- File: tools\publish.ps1
+  Preview: "<# .SYNOPSIS   Baut die auslieferbare Fassung: den direkt startbaren Programmordner UND die   Setup.exe zur Weitergabe. .DESCRIPTION   Ergebnis unter ..."
+- File: tools\sign-release.ps1
+  Preview: "<# .SYNOPSIS   Signiert ein Release-Paket und schreibt die losgelöste Signatur als <Paket>.sig daneben. .DESCRIPTION   Die Anwendung lädt zu jedem Upd..."
+- File: .github\workflows\ci.yml
+  Preview: "name: CI # Build-, Style-, Test- und Sicherheits-Gate. Läuft bei jedem Push auf main und # bei jedem Pull Request. Spiegelt das lokale Qualitäts-Gate ..."
+- File: .github\workflows\release.yml
+  Preview: "name: Release # Baut beim Push eines Versions-Tags (z. B. v1.3.0) je Architektur die portable, # self-contained Variante, signiert sie und hängt sie a..."
+- File: .github\workflows\security.yml
+  Preview: "name: Security on:  push:   branches: [main]  pull_request:   branches: [main]  schedule:   # Wöchentlicher Security-Scan, damit neue CVEs in unveränd..."
+- File: src\PictureSorter.App\App.xaml.cs
+  Preview: "using System; using System.Diagnostics; using System.Diagnostics.CodeAnalysis; using System.IO; using System.Threading; using System.Threading.Tasks; ..."
+- File: src\PictureSorter.App\appsettings.json
+  Preview: "{  'Ollama': {   'BaseUrl': 'http://127.0.0.1:11434',   'EmbeddingModel': 'nomic-embed-text',   'VisionModel': 'llava',   'RequestTimeoutSeconds': 120..."
+- File: src\PictureSorter.App\GlobalSuppressions.cs
+  Preview: "using System.Diagnostics.CodeAnalysis; // Der Auto-Initialisierer des Windows App SDK (UndockedRegFreeWinRT-AutoInitializer.cs) // wird vom NuGet-Pake..."
+- File: src\PictureSorter.Imaging\WindowsImageMetadataReader.cs
+  Preview: "using Microsoft.Extensions.Logging; using PictureSorter.Core.Interfaces; using PictureSorter.Core.ValueObjects; using Windows.Graphics.Imaging; using ..."
+- File: src\PictureSorter.Imaging\WindowsPerceptualHasher.cs
+  Preview: "using System.Security.Cryptography; using Microsoft.Extensions.Logging; using PictureSorter.Core.Interfaces; using PictureSorter.Core.ValueObjects; us..."
+- File: src\PictureSorter.Imaging\WindowsVisionImageEncoder.cs
+  Preview: "using Microsoft.Extensions.Logging; using PictureSorter.Core.Exceptions; using PictureSorter.Core.Interfaces; using Windows.Graphics.Imaging; using Wi..."
+- File: src\PictureSorter.Ollama\CachingEmbeddingProvider.cs
+  Preview: "using System.Security.Cryptography; using System.Text; using Microsoft.Extensions.Logging; using Microsoft.Extensions.Options; using PictureSorter.Cor..."
+- File: src\PictureSorter.Ollama\IOllamaClient.cs
+  Preview: "namespace PictureSorter.Ollama; /// <summary> /// Schmale Abstraktion über die HTTP-API von Ollama. Kapselt die konkreten /// Endpunkte, damit die Pro..."
+- File: src\PictureSorter.Ollama\OllamaClient.cs
+  Preview: "using System.Net; using System.Net.Http.Json; using System.Text.Json; using System.Text.Json.Serialization; using Microsoft.Extensions.Logging; using ..."
+- File: src\PictureSorter.Ollama\OllamaEmbeddingProvider.cs
+  Preview: "using Microsoft.Extensions.Logging; using Microsoft.Extensions.Options; using PictureSorter.Core.Entities; using PictureSorter.Core.Interfaces; using ..."
+- File: src\PictureSorter.Ollama\OllamaImageClassifier.cs
+  Preview: "using System.Globalization; using System.Text.Json; using Microsoft.Extensions.Logging; using Microsoft.Extensions.Options; using PictureSorter.Core.E..."
+- File: src\PictureSorter.Ollama\OllamaModelAvailabilityChecker.cs
+  Preview: "using Microsoft.Extensions.Logging; using Microsoft.Extensions.Options; using PictureSorter.Core.Exceptions; using PictureSorter.Core.Interfaces; usin..."
+- File: src\PictureSorter.Ollama\OllamaOptions.cs
+  Preview: "using System.ComponentModel.DataAnnotations; namespace PictureSorter.Ollama; /// <summary> /// Konfiguration der lokalen Ollama-Anbindung. Wird aus de..."
+- File: src\PictureSorter.App\Controls\EmptyState.xaml.cs
+  Preview: "using Microsoft.UI.Xaml; using Microsoft.UI.Xaml.Controls; namespace PictureSorter.App.Controls; /// <summary> /// Leerzustand: erklärt, was los ist, ..."
+- File: src\PictureSorter.App\Controls\FilterChips.xaml.cs
+  Preview: "using System.Collections.ObjectModel; using Microsoft.UI.Xaml; using Microsoft.UI.Xaml.Controls; using Microsoft.UI.Xaml.Controls.Primitives; namespac..."
+- File: src\PictureSorter.App\Controls\FilterChoice.cs
+  Preview: "using CommunityToolkit.Mvvm.ComponentModel; using Microsoft.UI.Xaml; namespace PictureSorter.App.Controls; /// <summary> /// Eine Wahlmöglichkeit in e..."
+- File: src\PictureSorter.App\Controls\InfoField.xaml.cs
+  Preview: "using Microsoft.UI.Xaml; using Microsoft.UI.Xaml.Controls; namespace PictureSorter.App.Controls; /// <summary> /// Eine beschriftete Angabe: kleine, g..."
+- File: src\PictureSorter.App\Controls\ListPageHeader.xaml.cs
+  Preview: "using Microsoft.UI.Xaml; using Microsoft.UI.Xaml.Controls; namespace PictureSorter.App.Controls; /// <summary> /// Der Kopf einer Listen-Seite: Titel,..."
+- File: src\PictureSorter.App\Controls\PhotoTile.xaml.cs
+  Preview: "using Microsoft.UI.Xaml; using Microsoft.UI.Xaml.Controls; using Microsoft.UI.Xaml.Input; using Microsoft.UI.Xaml.Media; using Microsoft.UI.Xaml.Media..."
+- File: src\PictureSorter.App\Controls\SearchBox.xaml.cs
+  Preview: "using Microsoft.UI.Dispatching; using Microsoft.UI.Xaml; using Microsoft.UI.Xaml.Controls; namespace PictureSorter.App.Controls; /// <summary> /// Suc..."
+- File: src\PictureSorter.App\Controls\SearchTextEventArgs.cs
+  Preview: "namespace PictureSorter.App.Controls; /// <summary> /// Der Suchtext, den ein Suchfeld meldet. /// /// Eigener Typ statt einer nackten Zeichenkette: E..."
+- File: src\PictureSorter.App\Converters\BoolToFontWeightConverter.cs
+  Preview: "using System; using Microsoft.UI.Text; using Microsoft.UI.Xaml.Data; namespace PictureSorter.App.Converters; /// <summary> /// Wandelt einen <see cref..."
+- File: src\PictureSorter.App\Converters\BoolToInfoBarSeverityConverter.cs
+  Preview: "using System; using Microsoft.UI.Xaml.Controls; using Microsoft.UI.Xaml.Data; namespace PictureSorter.App.Converters; /// <summary> /// Bildet „bereit..."
+- File: src\PictureSorter.App\Converters\BoolToVisibilityConverter.cs
+  Preview: "using System; using Microsoft.UI.Xaml; using Microsoft.UI.Xaml.Data; namespace PictureSorter.App.Converters; /// <summary> /// Wandelt einen <see cref..."
+- File: src\PictureSorter.App\Converters\PathToThumbnailConverter.cs
+  Preview: "using System; using Microsoft.UI.Xaml.Data; using Microsoft.UI.Xaml.Media.Imaging; namespace PictureSorter.App.Converters; /// <summary> /// Wandelt e..."
+- File: src\PictureSorter.App\Converters\StatusSeverityToInfoBarSeverityConverter.cs
+  Preview: "using System; using Microsoft.UI.Xaml.Controls; using Microsoft.UI.Xaml.Data; using PictureSorter.App.ViewModels; namespace PictureSorter.App.Converte..."
+- File: src\PictureSorter.App\Converters\StepReachedConverter.cs
+  Preview: "using System; using System.Globalization; using Microsoft.UI.Xaml.Data; namespace PictureSorter.App.Converters; /// <summary> /// Liefert <see langwor..."
+- File: src\PictureSorter.App\Converters\StringToVisibilityConverter.cs
+  Preview: "using System; using Microsoft.UI.Xaml; using Microsoft.UI.Xaml.Data; namespace PictureSorter.App.Converters; /// <summary> /// Blendet ein Element ein..."
+- File: src\PictureSorter.App\DependencyInjection\AppServiceCollectionExtensions.cs
+  Preview: "using System.Net.Http; using Microsoft.Extensions.DependencyInjection; using Microsoft.Extensions.Logging; using PictureSorter.App.Services; using Pic..."
+- File: src\PictureSorter.App\Logging\FileLogger.cs
+  Preview: "using System; using System.Globalization; using System.Text; using Microsoft.Extensions.Logging; namespace PictureSorter.App.Logging; /// <summary> //..."
+- File: src\PictureSorter.App\Logging\FileLoggerProvider.cs
+  Preview: "using System; using System.Collections.Concurrent; using System.Collections.Generic; using System.Globalization; using System.IO; using System.Linq; u..."
+- File: src\PictureSorter.App\Properties\launchSettings.json
+  Preview: "{  'profiles': {   'PictureSorter.App (Unpackaged)': {    'commandName': 'Project'   },   'PictureSorter.App (Package)': {    'commandName': 'MsixPack..."
+- File: src\PictureSorter.App\Services\AppSection.cs
+  Preview: "namespace PictureSorter.App.Services; /// <summary> /// Die Bereiche der Anwendung. Bewusst ein Aufzählungstyp statt der bisherigen /// Zeichenketten-..."
+- File: src\PictureSorter.App\Services\ContentDialogConfirmationService.cs
+  Preview: "using Microsoft.UI.Xaml; using Microsoft.UI.Xaml.Controls; using PictureSorter.Application.Services; namespace PictureSorter.App.Services; /// <summar..."
+- File: src\PictureSorter.App\Services\IApplicationShutdown.cs
+  Preview: "namespace PictureSorter.App.Services; /// <summary> /// Beendet die Anwendung. Nötig, weil das Einspielen eines Updates die laufende /// Anwendung sch..."
+- File: src\PictureSorter.App\Services\ILocalizer.cs
+  Preview: "namespace PictureSorter.App.Services; /// <summary> /// Liefert die übersetzten Texte, die im Code entstehen (Statusmeldungen, Dialoge, /// zusammenge..."
+- File: src\PictureSorter.App\Services\INavigationService.cs
+  Preview: "namespace PictureSorter.App.Services; /// <summary> /// Wechselt zwischen den Bereichen der Anwendung. /// /// Bewusst frei von WinUI-Typen (kein <c>F..."
+- File: src\PictureSorter.App\Services\IUpdateCoordinator.cs
+  Preview: "using System; using PictureSorter.Core.ValueObjects; namespace PictureSorter.App.Services; /// <summary> /// Abschnitt, in dem sich das Einspielen ein..."
+- File: src\PictureSorter.App\Services\NavigationService.cs
+  Preview: "using Microsoft.UI.Xaml.Controls; using PictureSorter.App.Views; namespace PictureSorter.App.Services; /// <summary> /// Führt die Navigation auf der ..."
+- File: src\PictureSorter.App\Services\OllamaSetupService.cs
+  Preview: "using System; using System.Diagnostics; using System.IO; using Microsoft.Extensions.Logging; namespace PictureSorter.App.Services; /// <summary> /// S..."
+- File: src\PictureSorter.App\Services\PhotoTextFormatter.cs
+  Preview: "using System.Globalization; using System.Text; using PictureSorter.Core.Entities; namespace PictureSorter.App.Services; /// <summary> /// Setzt die An..."
+- File: src\PictureSorter.App\Services\ReleaseSignatureVerifier.cs
+  Preview: "using System; using System.IO; using System.Security.Cryptography; namespace PictureSorter.App.Services; /// <summary> /// Prüft die Echtheit eines Up..."
+- File: src\PictureSorter.App\Services\ResourceLocalizer.cs
+  Preview: "using System.Globalization; using Microsoft.Windows.ApplicationModel.Resources; namespace PictureSorter.App.Services; /// <summary> /// Löst Ressource..."
+- File: src\PictureSorter.App\Services\ShellIconRefresher.cs
+  Preview: "using System; using System.Runtime.InteropServices; namespace PictureSorter.App.Services; /// <summary> /// Meldet der Windows-Shell, dass sich Progra..."
+- File: src\PictureSorter.App\Services\SupportDonation.cs
+  Preview: "using System; namespace PictureSorter.App.Services; /// <summary> /// Fest verdrahtetes Spendenziel für den freiwilligen „Kaffee spendieren'-Eintrag /..."
+- File: src\PictureSorter.App\Services\ThemeService.cs
+  Preview: "using System; using System.IO; using System.Text.Json; using Microsoft.UI.Xaml; namespace PictureSorter.App.Services; /// <summary> /// Das wählbare F..."
+- File: src\PictureSorter.App\Services\UpdateApplyArgs.cs
+  Preview: "using System; using System.Globalization; namespace PictureSorter.App.Services; /// <summary> /// Die Aufrufparameter des Helfer-Modus. Nach einem gep..."
+- File: src\PictureSorter.App\Services\UpdateInstaller.cs
+  Preview: "using System; using System.Collections.Generic; using System.Diagnostics; using System.IO; using System.IO.Compression; using System.Security.Cryptogr..."
+- File: src\PictureSorter.App\Services\UpdateService.cs
+  Preview: "using System; using System.Diagnostics; using System.IO; using System.Net.Http; using System.Reflection; using System.Threading; using System.Threadin..."
+- File: src\PictureSorter.App\Services\WindowContext.cs
+  Preview: "using Microsoft.UI.Xaml; namespace PictureSorter.App.Services; /// <summary> /// Hält eine Referenz auf das Hauptfenster, damit UI-Dienste (Ordnerausw..."
+- File: src\PictureSorter.App\Services\WindowsFolderPicker.cs
+  Preview: "using PictureSorter.Application.Services; using Windows.Storage; using Windows.Storage.Pickers; namespace PictureSorter.App.Services; /// <summary> //..."
+- File: src\PictureSorter.App\Services\WindowShutdown.cs
+  Preview: "namespace PictureSorter.App.Services; /// <summary> /// Beendet die Anwendung, indem das Hauptfenster geschlossen wird. /// </summary> internal sealed..."
+- File: src\PictureSorter.App\Tools\install-ollama.ps1
+  Preview: "<#   PictureSorter – Einrichtung der lokalen KI (Ollama)   Dieses Skript installiert Ollama und lädt die beiden benötigten KI-Modelle   herunter. Alle..."
+- File: src\PictureSorter.App\ViewModels\AnalysisResumeViewModel.cs
+  Preview: "using System.Diagnostics.CodeAnalysis; using System.Globalization; using CommunityToolkit.Mvvm.ComponentModel; using CommunityToolkit.Mvvm.Input; usin..."
+- File: src\PictureSorter.App\ViewModels\CalendarSortViewModel.cs
+  Preview: "using System.Diagnostics.CodeAnalysis; using CommunityToolkit.Mvvm.ComponentModel; using CommunityToolkit.Mvvm.Input; using Microsoft.Extensions.Loggi..."
+- File: src\PictureSorter.App\ViewModels\DashboardViewModel.cs
+  Preview: "using CommunityToolkit.Mvvm.ComponentModel; using CommunityToolkit.Mvvm.Input; using PictureSorter.App.Services; using PictureSorter.Core.Interfaces; ..."
+- File: src\PictureSorter.App\ViewModels\DuplicateGroupViewModel.cs
+  Preview: "using System.Collections.ObjectModel; using System.Collections.Specialized; using System.ComponentModel; using PictureSorter.App.Services; using Pictu..."
+- File: src\PictureSorter.App\ViewModels\DuplicatePhotoViewModel.cs
+  Preview: "using CommunityToolkit.Mvvm.ComponentModel; using PictureSorter.App.Services; using PictureSorter.Core.Entities; namespace PictureSorter.App.ViewModel..."
+- File: src\PictureSorter.App\ViewModels\DuplicateState.cs
+  Preview: "namespace PictureSorter.App.ViewModels; /// <summary> /// Expliziter Zustand der Duplikate-Ansicht. Single Source of Truth für das /// Verhalten der O..."
+- File: src\PictureSorter.App\ViewModels\DuplicatesViewModel.cs
+  Preview: "using System.Collections.ObjectModel; using System.ComponentModel; using CommunityToolkit.Mvvm.ComponentModel; using CommunityToolkit.Mvvm.Input; usin..."
+- File: src\PictureSorter.App\ViewModels\ExampleCandidateViewModel.cs
+  Preview: "using PictureSorter.App.Services; using PictureSorter.Core.Entities; namespace PictureSorter.App.ViewModels; /// <summary> /// Ein Beispielfoto zum An..."
+- File: src\PictureSorter.App\ViewModels\ExampleGatheringViewModel.cs
+  Preview: "using Microsoft.Extensions.Logging; using PictureSorter.App.Services; using PictureSorter.Application.Services; using PictureSorter.Core.Entities; usi..."
+- File: src\PictureSorter.App\ViewModels\ExampleSetViewModel.cs
+  Preview: "using System; using System.Collections.Generic; using System.Collections.ObjectModel; using System.Diagnostics.CodeAnalysis; using System.IO; using Sy..."
+- File: src\PictureSorter.App\ViewModels\LogEntryFilter.cs
+  Preview: "using System; using System.Collections.Generic; using System.Linq; namespace PictureSorter.App.ViewModels; /// <summary> /// Wählt aus den Protokollze..."
+- File: src\PictureSorter.App\ViewModels\LogFilter.cs
+  Preview: "namespace PictureSorter.App.ViewModels; /// <summary> /// Auswahl, welche Protokolleinträge die Einstellungsseite zeigt. /// </summary> internal enum ..."
+- File: src\PictureSorter.App\ViewModels\MemoryState.cs
+  Preview: "namespace PictureSorter.App.ViewModels; /// <summary> /// Expliziter Zustand der Gedächtnis-Verwaltung. Single Source of Truth für das /// Verhalten d..."
+- File: src\PictureSorter.App\ViewModels\MemoryViewModel.cs
+  Preview: "using System.Collections.ObjectModel; using CommunityToolkit.Mvvm.ComponentModel; using CommunityToolkit.Mvvm.Input; using Microsoft.Extensions.Loggin..."
+- File: src\PictureSorter.App\ViewModels\ModelHintViewModel.cs
+  Preview: "using CommunityToolkit.Mvvm.ComponentModel; using CommunityToolkit.Mvvm.Input; using PictureSorter.App.Services; using PictureSorter.Core.Interfaces; ..."
+- File: src\PictureSorter.App\ViewModels\ProgressThrottle.cs
+  Preview: "namespace PictureSorter.App.ViewModels; /// <summary> /// Begrenzt, wie oft die Statusleiste neu gezeichnet wird. /// /// Die Dienste melden jedes ein..."
+- File: src\PictureSorter.App\ViewModels\ProposalListViewModel.cs
+  Preview: "using System.Collections.ObjectModel; using System.ComponentModel; using CommunityToolkit.Mvvm.ComponentModel; using CommunityToolkit.Mvvm.Input; usin..."
+- File: src\PictureSorter.App\ViewModels\ProposalViewModel.cs
+  Preview: "using System.Globalization; using CommunityToolkit.Mvvm.ComponentModel; using PictureSorter.App.Services; using PictureSorter.Core.Entities; using Pic..."
+- File: src\PictureSorter.App\ViewModels\ScanProgressPair.cs
+  Preview: "using PictureSorter.Core.Enums; namespace PictureSorter.App.ViewModels; /// <summary> /// Hält den Stand beider Abschnitte eines Laufs: wie viele Bild..."
+- File: src\PictureSorter.App\ViewModels\SettingsViewModel.cs
+  Preview: "using System; using System.Collections.Generic; using System.Threading; using System.Threading.Tasks; using CommunityToolkit.Mvvm.ComponentModel; usin..."
+- File: src\PictureSorter.App\ViewModels\SortMemoryItemViewModel.cs
+  Preview: "using System.Globalization; using PictureSorter.App.Services; using PictureSorter.Core.Enums; using PictureSorter.Core.ValueObjects; namespace Picture..."
+- File: src\PictureSorter.App\ViewModels\SortState.cs
+  Preview: "namespace PictureSorter.App.ViewModels; /// <summary> /// Expliziter Zustand der Sortier-Ansicht. Single Source of Truth für das /// Verhalten der Obe..."
+- File: src\PictureSorter.App\ViewModels\SortViewModel.cs
+  Preview: "using System.Collections.ObjectModel; using System.ComponentModel; using System.Diagnostics.CodeAnalysis; using System.Globalization; using CommunityT..."
+- File: src\PictureSorter.App\ViewModels\SortWizardViewModel.cs
+  Preview: "using System; using System.Threading.Tasks; using CommunityToolkit.Mvvm.ComponentModel; using CommunityToolkit.Mvvm.Input; using PictureSorter.App.Ser..."
+- File: src\PictureSorter.App\ViewModels\StatusBarViewModel.cs
+  Preview: "using System; using CommunityToolkit.Mvvm.ComponentModel; using CommunityToolkit.Mvvm.Input; using PictureSorter.App.Services; namespace PictureSorter..."
+- File: src\PictureSorter.App\ViewModels\TripSuggestionViewModel.cs
+  Preview: "using System; using System.Globalization; using PictureSorter.App.Services; using PictureSorter.Core.ValueObjects; namespace PictureSorter.App.ViewMod..."
+- File: src\PictureSorter.App\ViewModels\UpdateViewModel.cs
+  Preview: "using CommunityToolkit.Mvvm.ComponentModel; using PictureSorter.App.Services; namespace PictureSorter.App.ViewModels; /// <summary> /// Zustand des Up..."
+- File: src\PictureSorter.App\Views\AboutPage.xaml.cs
+  Preview: "using System; using System.Diagnostics; using System.Diagnostics.CodeAnalysis; using System.Reflection; using Microsoft.Extensions.DependencyInjection..."
+- File: src\PictureSorter.App\Views\CalendarSortPage.xaml.cs
+  Preview: "using Microsoft.Extensions.DependencyInjection; using Microsoft.UI.Xaml.Controls; using Microsoft.UI.Xaml.Navigation; using PictureSorter.App.Controls..."
+- File: src\PictureSorter.App\Views\DashboardPage.xaml.cs
+  Preview: "using Microsoft.Extensions.DependencyInjection; using Microsoft.UI.Xaml; using Microsoft.UI.Xaml.Controls; using Microsoft.UI.Xaml.Navigation; using P..."
+- File: src\PictureSorter.App\Views\DuplicatesPage.xaml.cs
+  Preview: "using Microsoft.Extensions.DependencyInjection; using Microsoft.UI.Xaml.Controls; using Microsoft.UI.Xaml.Navigation; using PictureSorter.App.Controls..."
+- File: src\PictureSorter.App\Views\MainWindow.xaml.cs
+  Preview: "using System; using System.Diagnostics.CodeAnalysis; using System.Threading; using Microsoft.Extensions.DependencyInjection; using Microsoft.Extension..."
+- File: src\PictureSorter.App\Views\MemoryPage.xaml.cs
+  Preview: "using Microsoft.Extensions.DependencyInjection; using Microsoft.UI.Xaml; using Microsoft.UI.Xaml.Controls; using Microsoft.UI.Xaml.Navigation; using P..."
+- File: src\PictureSorter.App\Views\PhotoPreviewDialog.xaml.cs
+  Preview: "using System; using System.Threading.Tasks; using Microsoft.Extensions.DependencyInjection; using Microsoft.UI.Xaml; using Microsoft.UI.Xaml.Controls;..."
+- File: src\PictureSorter.App\Views\SortPage.xaml.cs
+  Preview: "using System; using System.Collections.Generic; using System.Diagnostics.CodeAnalysis; using System.Linq; using Microsoft.Extensions.DependencyInjecti..."
+- File: src\PictureSorter.App\Views\SplashWindow.xaml.cs
+  Preview: "using System; using System.IO; using System.Reflection; using System.Threading.Tasks; using Microsoft.Extensions.DependencyInjection; using Microsoft...."
+- File: src\PictureSorter.Application\DependencyInjection\ApplicationServiceCollectionExtensions.cs
+  Preview: "using Microsoft.Extensions.DependencyInjection; using PictureSorter.Application.Duplicates; using PictureSorter.Application.Learning; using PictureSor..."
+- File: src\PictureSorter.Application\Duplicates\DuplicateScanOptions.cs
+  Preview: "using System.ComponentModel.DataAnnotations; namespace PictureSorter.Application.Duplicates; /// <summary> /// Einstellungen der Duplikat-Suche. Wird ..."
+- File: src\PictureSorter.Application\Duplicates\DuplicateScanService.cs
+  Preview: "using System.Collections.Concurrent; using Microsoft.Extensions.Logging; using Microsoft.Extensions.Options; using PictureSorter.Core.Diagnostics; usi..."
+- File: src\PictureSorter.Application\Learning\CategoryLearningService.cs
+  Preview: "using Microsoft.Extensions.Logging; using PictureSorter.Core.Entities; using PictureSorter.Core.Enums; using PictureSorter.Core.Interfaces; using Pict..."
+- File: src\PictureSorter.Application\Services\IConfirmationService.cs
+  Preview: "namespace PictureSorter.Application.Services; /// <summary> /// Holt vor sicherheitskritischen Aktionen (z. B. dem Löschen vieler Dateien) /// eine au..."
+- File: src\PictureSorter.Application\Services\IFolderPicker.cs
+  Preview: "namespace PictureSorter.Application.Services; /// <summary> /// Lässt den Nutzer einen Ordner auswählen. Die konkrete Dialog-Umsetzung liegt /// in de..."
+- File: src\PictureSorter.Application\Sorting\AnalysisRunRecorder.cs
+  Preview: "using System.Data.Common; using Microsoft.Extensions.Logging; using PictureSorter.Core.Enums; using PictureSorter.Core.Interfaces; using PictureSorter..."
+- File: src\PictureSorter.Application\Sorting\AnalysisTally.cs
+  Preview: "using System.Collections.Concurrent; using PictureSorter.Core.Enums; using PictureSorter.Core.ValueObjects; namespace PictureSorter.Application.Sortin..."
+- File: src\PictureSorter.Application\Sorting\PhotoAnalysisService.cs
+  Preview: "using System.Collections.Concurrent; using System.Globalization; using Microsoft.Extensions.Logging; using Microsoft.Extensions.Options; using Picture..."
+- File: src\PictureSorter.Application\Sorting\PhotoEvaluator.cs
+  Preview: "using Microsoft.Extensions.Logging; using Microsoft.Extensions.Options; using PictureSorter.Core.Entities; using PictureSorter.Core.Enums; using Pictu..."
+- File: src\PictureSorter.Application\Sorting\ProposalApplyService.cs
+  Preview: "using Microsoft.Extensions.Logging; using PictureSorter.Core.Enums; using PictureSorter.Core.Interfaces; using PictureSorter.Core.ValueObjects; namesp..."
+- File: src\PictureSorter.Application\Sorting\SortingOptions.cs
+  Preview: "using System.ComponentModel.DataAnnotations; namespace PictureSorter.Application.Sorting; /// <summary> /// Schwellwerte und Grenzen der Sortierlogik...."
+- File: src\PictureSorter.Application\Sorting\SortJournalGateway.cs
+  Preview: "using System.Data.Common; using Microsoft.Extensions.Logging; using PictureSorter.Core.Interfaces; using PictureSorter.Core.ValueObjects; namespace Pi..."
+- File: src\PictureSorter.Application\Sorting\SortMemoryGateway.cs
+  Preview: "using System.Data.Common; using Microsoft.Extensions.Logging; using PictureSorter.Core.Entities; using PictureSorter.Core.Enums; using PictureSorter.C..."
+- File: src\PictureSorter.Application\Sorting\SortMemoryRecovery.cs
+  Preview: "using Microsoft.Extensions.Logging; using PictureSorter.Core.Entities; using PictureSorter.Core.Enums; using PictureSorter.Core.Interfaces; using Pict..."
+- File: src\PictureSorter.Application\Sorting\SortUndoService.cs
+  Preview: "using Microsoft.Extensions.Logging; using PictureSorter.Core.Enums; using PictureSorter.Core.Interfaces; using PictureSorter.Core.ValueObjects; namesp..."
+- File: src\PictureSorter.Application\Sorting\TargetFolderNaming.cs
+  Preview: "using System.Globalization; using PictureSorter.Core.Entities; using PictureSorter.Core.Enums; using PictureSorter.Core.ValueObjects; namespace Pictur..."
+- File: src\PictureSorter.Application\Sorting\TripDetectionOptions.cs
+  Preview: "using System.ComponentModel.DataAnnotations; namespace PictureSorter.Application.Sorting; /// <summary> /// Schwellwerte der Urlaubs-Erkennung. Wird a..."
+- File: src\PictureSorter.Application\Sorting\TripDetectionService.cs
+  Preview: "using Microsoft.Extensions.Options; using PictureSorter.Core.Entities; using PictureSorter.Core.Interfaces; using PictureSorter.Core.ValueObjects; nam..."
+- File: src\PictureSorter.Application\Sorting\VectorMath.cs
+  Preview: "namespace PictureSorter.Application.Sorting; /// <summary> /// Vektor-Hilfsfunktionen für den Ähnlichkeitsvergleich von Embeddings. /// </summary> int..."
+- File: src\PictureSorter.Core\Diagnostics\LogPaths.cs
+  Preview: "namespace PictureSorter.Core.Diagnostics; /// <summary> /// Hilfsfunktionen, um Pfade vor der Protokollierung von personenbeziehbaren /// Bestandteile..."
+- File: src\PictureSorter.Core\Entities\Category.cs
+  Preview: "using PictureSorter.Core.Enums; using PictureSorter.Core.ValueObjects; namespace PictureSorter.Core.Entities; /// <summary> /// Eine vom Nutzer defini..."
+- File: src\PictureSorter.Core\Entities\Photo.cs
+  Preview: "using System.Globalization; using System.Security.Cryptography; using System.Text; namespace PictureSorter.Core.Entities; /// <summary> /// Ein Foto i..."
+- File: src\PictureSorter.Core\Enums\AnalysisOutcome.cs
+  Preview: "namespace PictureSorter.Core.Enums; /// <summary> /// Was bei der Bewertung eines einzelnen Fotos herauskam. /// /// Die Unterscheidung ist keine Buch..."
+- File: src\PictureSorter.Core\Enums\AnalysisRunState.cs
+  Preview: "namespace PictureSorter.Core.Enums; /// <summary> /// Zustand eines protokollierten Analyselaufs. /// /// Der Zustand ist die Grundlage des Fortsetzen..."
+- File: src\PictureSorter.Core\Enums\CalendarGranularity.cs
+  Preview: "namespace PictureSorter.Core.Enums; /// <summary> /// Wie fein die Ablage nach Aufnahmedatum unterteilt wird. /// </summary> /// <remarks> /// Die Wer..."
+- File: src\PictureSorter.Core\Enums\CategoryKind.cs
+  Preview: "namespace PictureSorter.Core.Enums; /// <summary> /// Art einer Kategorie. Bestimmt, wie der Zielordnername gebildet wird. /// </summary> public enum ..."
+- File: src\PictureSorter.Core\Enums\ClassificationMethod.cs
+  Preview: "namespace PictureSorter.Core.Enums; /// <summary> /// Gibt an, auf welchem Weg eine Zuordnung zustande kam. Wichtig für /// Nachvollziehbarkeit und di..."
+- File: src\PictureSorter.Core\Enums\DuplicateKind.cs
+  Preview: "namespace PictureSorter.Core.Enums; /// <summary> /// Art einer erkannten Duplikat-Gruppe. /// </summary> public enum DuplicateKind {   /// <summary> ..."
+- File: src\PictureSorter.Core\Enums\FileOperationMode.cs
+  Preview: "namespace PictureSorter.Core.Enums; /// <summary> /// Auf welchem Weg ein Foto in seinen Zielordner gelangt. Die Wahl gilt für einen /// ganzen Sortie..."
+- File: src\PictureSorter.Core\Enums\ScanPhase.cs
+  Preview: "namespace PictureSorter.Core.Enums; /// <summary> /// Abschnitt eines Laufs über alle Bilder eines Ordners. Beide Abschnitte dauern bei /// einem groß..."
+- File: src\PictureSorter.Core\Enums\SortDecision.cs
+  Preview: "namespace PictureSorter.Core.Enums; /// <summary> /// Ergebnis der Bewertung eines Bildes für eine Kategorie. /// </summary> public enum SortDecision ..."
+- File: src\PictureSorter.Core\Enums\SortMemoryStatus.cs
+  Preview: "namespace PictureSorter.Core.Enums; /// <summary> /// Status eines gemerkten Sortier-Eintrags im dauerhaften Gedächtnis. Der Status /// entscheidet, o..."
+- File: src\PictureSorter.Core\Exceptions\AiUnavailableException.cs
+  Preview: "namespace PictureSorter.Core.Exceptions; /// <summary> /// Wird ausgelöst, wenn die lokale KI (Ollama) nicht erreichbar ist. Die /// Anwendung überspr..."
+- File: src\PictureSorter.Core\Exceptions\ImageUnreadableException.cs
+  Preview: "namespace PictureSorter.Core.Exceptions; /// <summary> /// Ein Bild ließ sich nicht dekodieren. Häufigster Grund unter Windows: Für das Format /// feh..."
+- File: src\PictureSorter.Core\Interfaces\IAnalysisJournal.cs
+  Preview: "using PictureSorter.Core.Enums; using PictureSorter.Core.ValueObjects; namespace PictureSorter.Core.Interfaces; /// <summary> /// Dauerhaftes Protokol..."
+- File: src\PictureSorter.Core\Interfaces\ICategoryRepository.cs
+  Preview: "using PictureSorter.Core.Entities; namespace PictureSorter.Core.Interfaces; /// <summary> /// Lädt und speichert die definierten Kategorien samt ihrer..."
+- File: src\PictureSorter.Core\Interfaces\ICategoryTrainer.cs
+  Preview: "using PictureSorter.Core.Entities; using PictureSorter.Core.Enums; using PictureSorter.Core.ValueObjects; namespace PictureSorter.Core.Interfaces; ///..."
+- File: src\PictureSorter.Core\Interfaces\IClock.cs
+  Preview: "namespace PictureSorter.Core.Interfaces; /// <summary> /// Testbare Zeitquelle. Produktionscode bezieht die aktuelle Zeit ausschließlich /// hierüber,..."
+- File: src\PictureSorter.Core\Interfaces\IDuplicateScanner.cs
+  Preview: "using PictureSorter.Core.Enums; using PictureSorter.Core.ValueObjects; namespace PictureSorter.Core.Interfaces; /// <summary> /// Durchsucht einen Ord..."
+- File: src\PictureSorter.Core\Interfaces\IEmbeddingCache.cs
+  Preview: "using PictureSorter.Core.ValueObjects; namespace PictureSorter.Core.Interfaces; /// <summary> /// Persistenter Zwischenspeicher für berechnete Bild-Em..."
+- File: src\PictureSorter.Core\Interfaces\IEmbeddingProvider.cs
+  Preview: "using PictureSorter.Core.Entities; using PictureSorter.Core.ValueObjects; namespace PictureSorter.Core.Interfaces; /// <summary> /// Erzeugt Embedding..."
+- File: src\PictureSorter.Core\Interfaces\IFileDeleter.cs
+  Preview: "namespace PictureSorter.Core.Interfaces; /// <summary> /// Entfernt Dateien sicher in den Papierkorb, sodass sie wiederherstellbar /// bleiben (Safe-W..."
+- File: src\PictureSorter.Core\Interfaces\IFileOrganizer.cs
+  Preview: "using PictureSorter.Core.Enums; using PictureSorter.Core.ValueObjects; namespace PictureSorter.Core.Interfaces; /// <summary> /// Bringt Dateien siche..."
+- File: src\PictureSorter.Core\Interfaces\IImageClassifier.cs
+  Preview: "using PictureSorter.Core.Entities; using PictureSorter.Core.ValueObjects; namespace PictureSorter.Core.Interfaces; /// <summary> /// Prüft per Vision-..."
+- File: src\PictureSorter.Core\Interfaces\IImageMetadataReader.cs
+  Preview: "using PictureSorter.Core.ValueObjects; namespace PictureSorter.Core.Interfaces; /// <summary> /// Liest die EXIF-Metadaten einer Bilddatei (Aufnahmeda..."
+- File: src\PictureSorter.Core\Interfaces\IModelAvailabilityChecker.cs
+  Preview: "using PictureSorter.Core.ValueObjects; namespace PictureSorter.Core.Interfaces; /// <summary> /// Prüft beim Start, ob die lokale KI (Ollama) erreichb..."
+- File: src\PictureSorter.Core\Interfaces\IPerceptualHasher.cs
+  Preview: "using PictureSorter.Core.ValueObjects; namespace PictureSorter.Core.Interfaces; /// <summary> /// Berechnet die Erkennungsmerkmale einer Bilddatei (In..."
+- File: src\PictureSorter.Core\Interfaces\IPhotoAnalyzer.cs
+  Preview: "using PictureSorter.Core.Entities; using PictureSorter.Core.Enums; using PictureSorter.Core.ValueObjects; namespace PictureSorter.Core.Interfaces; ///..."
+- File: src\PictureSorter.Core\Interfaces\IPhotoSource.cs
+  Preview: "using PictureSorter.Core.Entities; namespace PictureSorter.Core.Interfaces; /// <summary> /// Liefert die Fotos eines Ordners samt Metadaten. Kapselt ..."
+- File: src\PictureSorter.Core\Interfaces\IProposalApplier.cs
+  Preview: "using PictureSorter.Core.Enums; using PictureSorter.Core.ValueObjects; namespace PictureSorter.Core.Interfaces; /// <summary> /// Wendet bestätigte So..."
+- File: src\PictureSorter.Core\Interfaces\ISortJournal.cs
+  Preview: "using PictureSorter.Core.ValueObjects; namespace PictureSorter.Core.Interfaces; /// <summary> /// Dauerhaftes Protokoll der Sortierläufe. Es hält fest..."
+- File: src\PictureSorter.Core\Interfaces\ISortMemory.cs
+  Preview: "using PictureSorter.Core.ValueObjects; namespace PictureSorter.Core.Interfaces; /// <summary> /// Dauerhaftes Sortier-Gedächtnis. Merkt sich je Ordner..."
+- File: src\PictureSorter.Core\Interfaces\ISortUndoService.cs
+  Preview: "using PictureSorter.Core.ValueObjects; namespace PictureSorter.Core.Interfaces; /// <summary> /// Nimmt den letzten Sortierlauf zurück: holt die versc..."
+- File: src\PictureSorter.Core\Interfaces\ITripDetector.cs
+  Preview: "using PictureSorter.Core.Entities; using PictureSorter.Core.ValueObjects; namespace PictureSorter.Core.Interfaces; /// <summary> /// Findet zusammenhä..."
+- File: src\PictureSorter.Core\Interfaces\IUpdateChecker.cs
+  Preview: "using PictureSorter.Core.ValueObjects; namespace PictureSorter.Core.Interfaces; /// <summary> /// Prüft, ob eine neuere Programmversion veröffentlicht..."
+- File: src\PictureSorter.Core\Interfaces\IVisionImageEncoder.cs
+  Preview: "namespace PictureSorter.Core.Interfaces; /// <summary> /// Bereitet ein Foto für das Bild-Modell auf: dekodiert es, verkleinert es auf eine /// für di..."
+- File: src\PictureSorter.Core\ValueObjects\AnalysisRun.cs
+  Preview: "using PictureSorter.Core.Enums; namespace PictureSorter.Core.ValueObjects; /// <summary> /// Der Kopf eines protokollierten Analyselaufs: was gesucht ..."
+- File: src\PictureSorter.Core\ValueObjects\AnalysisRunItem.cs
+  Preview: "using PictureSorter.Core.Enums; namespace PictureSorter.Core.ValueObjects; /// <summary> /// Das protokollierte Ergebnis zu einem einzelnen Foto. /// ..."
+- File: src\PictureSorter.Core\ValueObjects\CategoryExample.cs
+  Preview: "namespace PictureSorter.Core.ValueObjects; /// <summary> /// Ein vom Nutzer bestätigtes Beispiel für eine Kategorie. Aus positiven und /// negativen B..."
+- File: src\PictureSorter.Core\ValueObjects\DateRange.cs
+  Preview: "namespace PictureSorter.Core.ValueObjects; /// <summary> /// Ein Zeitraum in ganzen Tagen, beide Enden eingeschlossen. Ein offenes Ende bedeutet /// „..."
+- File: src\PictureSorter.Core\ValueObjects\DuplicateGroup.cs
+  Preview: "using PictureSorter.Core.Entities; using PictureSorter.Core.Enums; namespace PictureSorter.Core.ValueObjects; /// <summary> /// Eine Gruppe von Fotos,..."
+- File: src\PictureSorter.Core\ValueObjects\ImageEmbedding.cs
+  Preview: "namespace PictureSorter.Core.ValueObjects; /// <summary> /// Numerische Repräsentation eines Bildes (bzw. seiner Beschreibung) als Vektor. /// Dient d..."
+- File: src\PictureSorter.Core\ValueObjects\ImageFingerprint.cs
+  Preview: "namespace PictureSorter.Core.ValueObjects; /// <summary> /// Erkennungsmerkmale einer Bilddatei für die Duplikat-Suche: ein /// kryptografischer Inhal..."
+- File: src\PictureSorter.Core\ValueObjects\ModelAvailability.cs
+  Preview: "namespace PictureSorter.Core.ValueObjects; /// <summary> /// Ergebnis der Prüfung, ob die lokale KI (Ollama) erreichbar ist und die /// benötigten Mod..."
+- File: src\PictureSorter.Core\ValueObjects\PerceptualHash.cs
+  Preview: "using System.Numerics; namespace PictureSorter.Core.ValueObjects; /// <summary> /// Ein 64-Bit-Wahrnehmungs-Hash (Difference-Hash) eines Bildes. Ander..."
+- File: src\PictureSorter.Core\ValueObjects\PhotoMetadata.cs
+  Preview: "namespace PictureSorter.Core.ValueObjects; /// <summary> /// Aus einer Bilddatei ausgelesene Metadaten (EXIF). Alle Felder sind optional, /// da nicht..."
+- File: src\PictureSorter.Core\ValueObjects\SortMemoryRecord.cs
+  Preview: "using PictureSorter.Core.Enums; namespace PictureSorter.Core.ValueObjects; /// <summary> /// Ein Eintrag des dauerhaften Sortier-Gedächtnisses: Was wu..."
+- File: src\PictureSorter.Core\ValueObjects\SortProgress.cs
+  Preview: "using PictureSorter.Core.Enums; namespace PictureSorter.Core.ValueObjects; /// <summary> /// Fortschritt der Foto-Analyse: wie viele Fotos von insgesa..."
+- File: src\PictureSorter.Core\ValueObjects\SortProposal.cs
+  Preview: "using PictureSorter.Core.Entities; using PictureSorter.Core.Enums; namespace PictureSorter.Core.ValueObjects; /// <summary> /// Vorschlag, ein bestimm..."
+- File: src\PictureSorter.Core\ValueObjects\SortRun.cs
+  Preview: "using PictureSorter.Core.Enums; namespace PictureSorter.Core.ValueObjects; /// <summary> /// Ein abgeschlossener Sortierlauf: welche Dateien wann von ..."
+- File: src\PictureSorter.Core\ValueObjects\SortRunItem.cs
+  Preview: "namespace PictureSorter.Core.ValueObjects; /// <summary> /// Eine einzelne verschobene Datei eines Sortierlaufs. Sie hält beide Pfade fest: /// wo das..."
+- File: src\PictureSorter.Core\ValueObjects\TrainingExample.cs
+  Preview: "using PictureSorter.Core.Entities; namespace PictureSorter.Core.ValueObjects; /// <summary> /// Ein vom Nutzer bewertetes Beispielfoto zum Anlernen ei..."
+- File: src\PictureSorter.Core\ValueObjects\TrainingProgress.cs
+  Preview: "namespace PictureSorter.Core.ValueObjects; /// <summary> /// Fortschritt beim Anlernen einer Kategorie: wie viele Beispiele von insgesamt wie /// viel..."
+- File: src\PictureSorter.Core\ValueObjects\TripSuggestion.cs
+  Preview: "namespace PictureSorter.Core.ValueObjects; /// <summary> /// Ein vorgeschlagener Zeitraum, in dem sich Aufnahmen ballen — also vermutlich ein /// Urla..."
+- File: src\PictureSorter.Core\ValueObjects\UndoResult.cs
+  Preview: "namespace PictureSorter.Core.ValueObjects; /// <summary> /// Ergebnis eines Rückgängig-Vorgangs. Übersprungene Dateien werden ausgewiesen /// statt ve..."
+- File: src\PictureSorter.Core\ValueObjects\UpdateInfo.cs
+  Preview: "namespace PictureSorter.Core.ValueObjects; /// <summary> /// Ergebnis der Update-Prüfung gegen die Veröffentlichungen (Releases) auf GitHub. /// Vergl..."
+- File: src\PictureSorter.Core\ValueObjects\VisionVerdict.cs
+  Preview: "namespace PictureSorter.Core.ValueObjects; /// <summary> /// Antwort des Vision-Modells auf die Frage, ob ein Bild zu einer Kategorie passt. /// </sum..."
+- File: src\PictureSorter.Data\Configurations\AnalysisRunEntityConfiguration.cs
+  Preview: "using Microsoft.EntityFrameworkCore; using Microsoft.EntityFrameworkCore.Metadata.Builders; using PictureSorter.Data.Entities; namespace PictureSorter..."
+- File: src\PictureSorter.Data\Configurations\AnalysisRunItemEntityConfiguration.cs
+  Preview: "using Microsoft.EntityFrameworkCore; using Microsoft.EntityFrameworkCore.Metadata.Builders; using PictureSorter.Data.Entities; namespace PictureSorter..."
+- File: src\PictureSorter.Data\Configurations\SortMemoryEntityConfiguration.cs
+  Preview: "using Microsoft.EntityFrameworkCore; using Microsoft.EntityFrameworkCore.Metadata.Builders; using PictureSorter.Data.Entities; namespace PictureSorter..."
+- File: src\PictureSorter.Data\Configurations\SortRunEntityConfiguration.cs
+  Preview: "using Microsoft.EntityFrameworkCore; using Microsoft.EntityFrameworkCore.Metadata.Builders; using PictureSorter.Data.Entities; namespace PictureSorter..."
+- File: src\PictureSorter.Data\Configurations\SortRunItemEntityConfiguration.cs
+  Preview: "using Microsoft.EntityFrameworkCore; using Microsoft.EntityFrameworkCore.Metadata.Builders; using PictureSorter.Data.Entities; namespace PictureSorter..."
+- File: src\PictureSorter.Data\Context\DatabaseBackup.cs
+  Preview: "using Microsoft.Data.Sqlite; using Microsoft.Extensions.Logging; namespace PictureSorter.Data.Context; /// <summary> /// Sichert die Datenbank, bevor ..."
+- File: src\PictureSorter.Data\Context\DatabaseInitializer.cs
+  Preview: "using System.Data.Common; using Microsoft.EntityFrameworkCore; using Microsoft.Extensions.Logging; namespace PictureSorter.Data.Context; /// <summary>..."
+- File: src\PictureSorter.Data\Context\DatabasePathProvider.cs
+  Preview: "namespace PictureSorter.Data.Context; /// <summary> /// Ermittelt den Ablageort der Datenbank. Die Datei liegt im Benutzerprofil und /// nicht im Prog..."
+- File: src\PictureSorter.Data\Context\PictureSorterDbContext.cs
+  Preview: "using System.Reflection; using Microsoft.EntityFrameworkCore; using PictureSorter.Data.Entities; namespace PictureSorter.Data.Context; /// <summary> /..."
+- File: src\PictureSorter.Data\Context\PictureSorterDbContextFactory.cs
+  Preview: "using Microsoft.EntityFrameworkCore; using Microsoft.EntityFrameworkCore.Design; namespace PictureSorter.Data.Context; /// <summary> /// Designzeit-Fa..."
+- File: src\PictureSorter.Data\Context\SqlitePragmaInterceptor.cs
+  Preview: "using System.Data.Common; using System.Diagnostics.CodeAnalysis; using Microsoft.EntityFrameworkCore.Diagnostics; namespace PictureSorter.Data.Context..."
+- File: src\PictureSorter.Data\DependencyInjection\DataServiceCollectionExtensions.cs
+  Preview: "using Microsoft.EntityFrameworkCore; using Microsoft.Extensions.DependencyInjection; using PictureSorter.Core.Interfaces; using PictureSorter.Data.Con..."
+- File: src\PictureSorter.Data\Entities\AnalysisRunEntity.cs
+  Preview: "namespace PictureSorter.Data.Entities; /// <summary> /// Datenbank-Abbild eines Analyselaufs. /// </summary> internal sealed class AnalysisRunEntity {..."
+- File: src\PictureSorter.Data\Entities\AnalysisRunItemEntity.cs
+  Preview: "namespace PictureSorter.Data.Entities; /// <summary> /// Datenbank-Abbild des Ergebnisses zu einem einzelnen Foto. /// </summary> internal sealed clas..."
+- File: src\PictureSorter.Data\Entities\SortMemoryEntity.cs
+  Preview: "namespace PictureSorter.Data.Entities; /// <summary> /// Datenbank-Abbild eines Gedächtnis-Eintrags. Bewusst getrennt vom Core-Record /// <see cref='C..."
+- File: src\PictureSorter.Data\Entities\SortRunEntity.cs
+  Preview: "namespace PictureSorter.Data.Entities; /// <summary> /// Datenbank-Abbild eines Sortierlaufs. Der Lauf bleibt auch nach dem /// Rückgängigmachen stehe..."
+- File: src\PictureSorter.Data\Entities\SortRunItemEntity.cs
+  Preview: "namespace PictureSorter.Data.Entities; /// <summary> /// Datenbank-Abbild einer einzelnen Verschiebung innerhalb eines Sortierlaufs. /// </summary> in..."
+- File: src\PictureSorter.Data\Migrations\20260711154905_InitialCreate.cs
+  Preview: "using System; using Microsoft.EntityFrameworkCore.Migrations; #nullable disable namespace PictureSorter.Data.Migrations {   /// <inheritdoc />   publi..."
+- File: src\PictureSorter.Data\Migrations\20260711154905_InitialCreate.Designer.cs
+  Preview: "// <auto-generated /> using System; using Microsoft.EntityFrameworkCore; using Microsoft.EntityFrameworkCore.Infrastructure; using Microsoft.EntityFra..."
+- File: src\PictureSorter.Data\Migrations\20260713092205_AddSortRunJournal.cs
+  Preview: "using System; using Microsoft.EntityFrameworkCore.Migrations; #nullable disable namespace PictureSorter.Data.Migrations {   /// <inheritdoc />   publi..."
+- File: src\PictureSorter.Data\Migrations\20260713092205_AddSortRunJournal.Designer.cs
+  Preview: "// <auto-generated /> using System; using Microsoft.EntityFrameworkCore; using Microsoft.EntityFrameworkCore.Infrastructure; using Microsoft.EntityFra..."
+- File: src\PictureSorter.Data\Migrations\20260731080646_AddSortRunOperationAndTargetStamp.cs
+  Preview: "using System; using Microsoft.EntityFrameworkCore.Migrations; #nullable disable namespace PictureSorter.Data.Migrations {   /// <inheritdoc />   publi..."
+- File: src\PictureSorter.Data\Migrations\20260731080646_AddSortRunOperationAndTargetStamp.Designer.cs
+  Preview: "// <auto-generated /> using System; using Microsoft.EntityFrameworkCore; using Microsoft.EntityFrameworkCore.Infrastructure; using Microsoft.EntityFra..."
+- File: src\PictureSorter.Data\Migrations\20260808062214_AddAnalysisJournal.cs
+  Preview: "using System; using Microsoft.EntityFrameworkCore.Migrations; #nullable disable namespace PictureSorter.Data.Migrations {   /// <inheritdoc />   publi..."
+- File: src\PictureSorter.Data\Migrations\20260808062214_AddAnalysisJournal.Designer.cs
+  Preview: "// <auto-generated /> using System; using Microsoft.EntityFrameworkCore; using Microsoft.EntityFrameworkCore.Infrastructure; using Microsoft.EntityFra..."
+- File: src\PictureSorter.Data\Migrations\PictureSorterDbContextModelSnapshot.cs
+  Preview: "// <auto-generated /> using System; using Microsoft.EntityFrameworkCore; using Microsoft.EntityFrameworkCore.Infrastructure; using Microsoft.EntityFra..."
+- File: src\PictureSorter.Data\Repositories\AnalysisJournalRepository.cs
+  Preview: "using Microsoft.EntityFrameworkCore; using PictureSorter.Core.Enums; using PictureSorter.Core.Interfaces; using PictureSorter.Core.ValueObjects; using..."
+- File: src\PictureSorter.Data\Repositories\SortJournalRepository.cs
+  Preview: "using Microsoft.EntityFrameworkCore; using PictureSorter.Core.Enums; using PictureSorter.Core.Interfaces; using PictureSorter.Core.ValueObjects; using..."
+- File: src\PictureSorter.Data\Repositories\SortMemoryRepository.cs
+  Preview: "using Microsoft.EntityFrameworkCore; using Microsoft.Extensions.Logging; using PictureSorter.Core.Enums; using PictureSorter.Core.Interfaces; using Pi..."
+- File: src\PictureSorter.Imaging\DependencyInjection\ImagingServiceCollectionExtensions.cs
+  Preview: "using Microsoft.Extensions.DependencyInjection; using PictureSorter.Core.Interfaces; namespace PictureSorter.Imaging.DependencyInjection; /// <summary..."
+- File: src\PictureSorter.Infrastructure\Caching\JsonlEmbeddingCache.cs
+  Preview: "using System.Text; using System.Text.Json; using Microsoft.Extensions.Logging; using PictureSorter.Core.Interfaces; using PictureSorter.Core.ValueObje..."
+- File: src\PictureSorter.Infrastructure\DependencyInjection\InfrastructureServiceCollectionExtensions.cs
+  Preview: "using Microsoft.Extensions.Configuration; using Microsoft.Extensions.DependencyInjection; using Microsoft.Extensions.Logging; using PictureSorter.Core..."
+- File: src\PictureSorter.Infrastructure\FileSystem\FileOrganizer.cs
+  Preview: "using System.Globalization; using Microsoft.Extensions.Logging; using PictureSorter.Core.Diagnostics; using PictureSorter.Core.Enums; using PictureSor..."
+- File: src\PictureSorter.Infrastructure\FileSystem\FileSystemPhotoSource.cs
+  Preview: "using System.Diagnostics.CodeAnalysis; using System.Runtime.CompilerServices; using System.Threading.Channels; using Microsoft.Extensions.Logging; usi..."
+- File: src\PictureSorter.Infrastructure\FileSystem\PhotoSourceOptions.cs
+  Preview: "using System.ComponentModel.DataAnnotations; namespace PictureSorter.Infrastructure.FileSystem; /// <summary> /// Einstellungen des Einlesens der Bild..."
+- File: src\PictureSorter.Infrastructure\FileSystem\RecycleBinFileDeleter.cs
+  Preview: "using Microsoft.Extensions.Logging; using PictureSorter.Core.Interfaces; using Windows.Storage; namespace PictureSorter.Infrastructure.FileSystem; ///..."
+- File: src\PictureSorter.Infrastructure\Repositories\JsonCategoryRepository.cs
+  Preview: "using System.Text.Json; using System.Text.Json.Serialization; using Microsoft.Extensions.Logging; using PictureSorter.Core.Entities; using PictureSort..."
+- File: src\PictureSorter.Infrastructure\Time\SystemClock.cs
+  Preview: "using PictureSorter.Core.Interfaces; namespace PictureSorter.Infrastructure.Time; /// <summary> /// Zeitquelle auf Basis der Systemuhr. In Tests durch..."
+- File: src\PictureSorter.Infrastructure\Update\GitHubUpdateChecker.cs
+  Preview: "using System.Diagnostics.CodeAnalysis; using System.Globalization; using System.Net.Http.Json; using System.Text.Json; using System.Text.Json.Serializ..."
+- File: src\PictureSorter.Infrastructure\Update\UpdateOptions.cs
+  Preview: "using System.Runtime.InteropServices; namespace PictureSorter.Infrastructure.Update; /// <summary> /// Konfiguration der Update-Prüfung (Abschnitt <c>..."
+- File: src\PictureSorter.Ollama\DependencyInjection\OllamaServiceCollectionExtensions.cs
+  Preview: "using Microsoft.Extensions.Configuration; using Microsoft.Extensions.DependencyInjection; using Microsoft.Extensions.Logging; using Microsoft.Extensio..."
+- File: tests\PictureSorter.App.Tests\DependencyInjection\ContainerRegistrationTests.cs
+  Preview: "using System.Reflection; using Microsoft.Extensions.Configuration; using Microsoft.Extensions.DependencyInjection; using PictureSorter.App.DependencyI..."
+- File: tests\PictureSorter.App.Tests\Design\GestaltungslinieGuardTests.cs
+  Preview: "using System.Text.RegularExpressions; using System.Xml.Linq; namespace PictureSorter.App.Tests.Design; /// <summary> /// Hält die Gestaltungslinie (<c..."
+- File: tests\PictureSorter.App.Tests\Fakes\AnalysisFakes.cs
+  Preview: "using System.Runtime.CompilerServices; using Microsoft.Extensions.Logging.Abstractions; using PictureSorter.Core.Entities; using PictureSorter.Applica..."
+- File: tests\PictureSorter.App.Tests\Fakes\FailingFakes.cs
+  Preview: "using System.Runtime.CompilerServices; using PictureSorter.Application.Services; using PictureSorter.Core.Entities; using PictureSorter.Core.Enums; us..."
+- File: tests\PictureSorter.App.Tests\Fakes\ReswLocalizer.cs
+  Preview: "using System.Globalization; using PictureSorter.App.Services; using PictureSorter.App.Tests.Resources; namespace PictureSorter.App.Tests.Fakes; /// <s..."
+- File: tests\PictureSorter.App.Tests\Fakes\TestClock.cs
+  Preview: "using PictureSorter.Core.Interfaces; namespace PictureSorter.App.Tests.Fakes; /// <summary> /// Feste Zeitquelle für Tests. Ohne sie hinge der Name de..."
+- File: tests\PictureSorter.App.Tests\Fakes\UpdateFakes.cs
+  Preview: "using PictureSorter.App.Services; using PictureSorter.Core.ValueObjects; namespace PictureSorter.App.Tests.Fakes; /// <summary> /// Ersetzt die echte ..."
+- File: tests\PictureSorter.App.Tests\Fakes\ViewModelFakes.cs
+  Preview: "using System.Runtime.CompilerServices; using PictureSorter.App.Services; using PictureSorter.Application.Services; using PictureSorter.Core.Entities; ..."
+- File: tests\PictureSorter.App.Tests\Logging\FileLoggerFormatTests.cs
+  Preview: "using System.Globalization; using Microsoft.Extensions.Logging; using PictureSorter.App.Logging; using PictureSorter.App.Tests.Fakes; namespace Pictur..."
+- File: tests\PictureSorter.App.Tests\Logging\FileLoggerProviderTests.cs
+  Preview: "using Microsoft.Extensions.Logging; using PictureSorter.App.Logging; using PictureSorter.App.Tests.Fakes; namespace PictureSorter.App.Tests.Logging; /..."
+- File: tests\PictureSorter.App.Tests\Logging\LogEventIdTests.cs
+  Preview: "using System.Reflection; using Microsoft.Extensions.Logging; using PictureSorter.App.Services; using PictureSorter.Core.Entities; using PictureSorter...."
+- File: tests\PictureSorter.App.Tests\Resources\CodeStringKeyTests.cs
+  Preview: "using System.Text.RegularExpressions; namespace PictureSorter.App.Tests.Resources; /// <summary> /// Prüft die Code-Strings gegen die Ressourcen: Jede..."
+- File: tests\PictureSorter.App.Tests\Resources\ResourceCompletenessTests.cs
+  Preview: "namespace PictureSorter.App.Tests.Resources; /// <summary> /// Stellt sicher, dass die Sprachressourcen vollständig und deckungsgleich sind: /// Jeder..."
+- File: tests\PictureSorter.App.Tests\Resources\TestResources.cs
+  Preview: "using System.Xml.Linq; namespace PictureSorter.App.Tests.Resources; /// <summary> /// Zugriff auf die echten Sprachressourcen des App-Projekts. Die Te..."
+- File: tests\PictureSorter.App.Tests\Resources\XamlUidTests.cs
+  Preview: "using System.Text.RegularExpressions; namespace PictureSorter.App.Tests.Resources; /// <summary> /// Prüft die Oberflächen-Texte gegen die Ressourcen:..."
+- File: tests\PictureSorter.App.Tests\Services\PhotoTextFormatterTests.cs
+  Preview: "using System.Globalization; using PictureSorter.App.Services; using PictureSorter.App.Tests.Fakes; using PictureSorter.Core.Entities; namespace Pictur..."
+- File: tests\PictureSorter.App.Tests\Services\ReleaseSignatureVerifierTests.cs
+  Preview: "using System.Security.Cryptography; using PictureSorter.App.Services; namespace PictureSorter.App.Tests.Services; /// <summary> /// Tests des Vertraue..."
+- File: tests\PictureSorter.App.Tests\Services\SupportDonationTests.cs
+  Preview: "using PictureSorter.App.Services; namespace PictureSorter.App.Tests.Services; /// <summary> /// Hält das Spendenziel fest. /// </summary> /// <remarks..."
+- File: tests\PictureSorter.App.Tests\Services\UpdateApplyArgsTests.cs
+  Preview: "using PictureSorter.App.Services; namespace PictureSorter.App.Tests.Services; /// <summary> /// Tests der Helfer-Aufrufparameter. Sie entscheiden, wel..."
+- File: tests\PictureSorter.App.Tests\Services\UpdateInstallerOutcomeTests.cs
+  Preview: "using System.IO.MemoryMappedFiles; using PictureSorter.App.Services; namespace PictureSorter.App.Tests.Services; /// <summary> /// Tests der Vermerke ..."
+- File: tests\PictureSorter.App.Tests\Services\UpdateInstallerTests.cs
+  Preview: "using System.IO.Compression; using PictureSorter.App.Services; namespace PictureSorter.App.Tests.Services; /// <summary> /// Tests des Einspielens. Hi..."
+- File: tests\PictureSorter.App.Tests\Services\UpdateServiceTests.cs
+  Preview: "using System.Net; using Microsoft.Extensions.Logging.Abstractions; using PictureSorter.App.Services; using PictureSorter.Core.Interfaces; using Pictur..."
+- File: tests\PictureSorter.App.Tests\ViewModels\CalendarSortViewModelTests.cs
+  Preview: "using Microsoft.Extensions.Logging.Abstractions; using PictureSorter.App.Tests.Fakes; using PictureSorter.App.ViewModels; using PictureSorter.Core.Ent..."
+- File: tests\PictureSorter.App.Tests\ViewModels\DashboardViewModelTests.cs
+  Preview: "using PictureSorter.App.Services; using PictureSorter.App.Tests.Fakes; using PictureSorter.App.ViewModels; namespace PictureSorter.App.Tests.ViewModel..."
+- File: tests\PictureSorter.App.Tests\ViewModels\DuplicateGroupViewModelTests.cs
+  Preview: "using PictureSorter.App.Tests.Fakes; using PictureSorter.App.ViewModels; using PictureSorter.Core.Entities; using PictureSorter.Core.Enums; using Pict..."
+- File: tests\PictureSorter.App.Tests\ViewModels\DuplicatesViewModelFailureTests.cs
+  Preview: "using Microsoft.Extensions.Logging.Abstractions; using PictureSorter.App.Services; using PictureSorter.App.Tests.Fakes; using PictureSorter.App.ViewMo..."
+- File: tests\PictureSorter.App.Tests\ViewModels\DuplicatesViewModelTests.cs
+  Preview: "using Microsoft.Extensions.Logging.Abstractions; using PictureSorter.App.ViewModels; using PictureSorter.Core.Entities; using PictureSorter.Core.Enums..."
+- File: tests\PictureSorter.App.Tests\ViewModels\ExampleSetViewModelTests.cs
+  Preview: "using PictureSorter.App.Tests.Fakes; using PictureSorter.App.ViewModels; using PictureSorter.Core.Entities; namespace PictureSorter.App.Tests.ViewMode..."
+- File: tests\PictureSorter.App.Tests\ViewModels\LogEntryFilterTests.cs
+  Preview: "using PictureSorter.App.ViewModels; namespace PictureSorter.App.Tests.ViewModels; /// <summary> /// Tests der Protokoll-Auswahl. Ein Eintrag kann mehr..."
+- File: tests\PictureSorter.App.Tests\ViewModels\MemoryViewModelFailureTests.cs
+  Preview: "using Microsoft.Extensions.Logging.Abstractions; using PictureSorter.App.Tests.Fakes; using PictureSorter.App.ViewModels; using PictureSorter.Core.Enu..."
+- File: tests\PictureSorter.App.Tests\ViewModels\MemoryViewModelTests.cs
+  Preview: "using Microsoft.Extensions.Logging.Abstractions; using PictureSorter.App.Tests.Fakes; using PictureSorter.App.ViewModels; using PictureSorter.Core.Enu..."
+- File: tests\PictureSorter.App.Tests\ViewModels\ModelHintViewModelTests.cs
+  Preview: "using PictureSorter.App.Tests.Fakes; using PictureSorter.App.ViewModels; namespace PictureSorter.App.Tests.ViewModels; /// <summary> /// Tests des KI-..."
+- File: tests\PictureSorter.App.Tests\ViewModels\ProgressThrottleTests.cs
+  Preview: "using PictureSorter.App.ViewModels; namespace PictureSorter.App.Tests.ViewModels; /// <summary> /// Tests der Zeichenbremse für die Statusleiste. Sie ..."
+- File: tests\PictureSorter.App.Tests\ViewModels\ProposalListViewModelTests.cs
+  Preview: "using PictureSorter.App.Tests.Fakes; using PictureSorter.App.ViewModels; using PictureSorter.Core.Entities; using PictureSorter.Core.Enums; using Pict..."
+- File: tests\PictureSorter.App.Tests\ViewModels\ProposalViewModelTests.cs
+  Preview: "using System.Globalization; using PictureSorter.App.Tests.Fakes; using PictureSorter.App.ViewModels; using PictureSorter.Core.Entities; using PictureS..."
+- File: tests\PictureSorter.App.Tests\ViewModels\SettingsViewModelTests.cs
+  Preview: "using Microsoft.Extensions.Logging; using PictureSorter.App.Logging; using PictureSorter.App.Tests.Fakes; using PictureSorter.App.ViewModels; using Pi..."
+- File: tests\PictureSorter.App.Tests\ViewModels\SortViewModelFlowTests.cs
+  Preview: "using Microsoft.Extensions.Logging.Abstractions; using Microsoft.Extensions.Options; using PictureSorter.App.Services; using PictureSorter.App.Tests.F..."
+- File: tests\PictureSorter.App.Tests\ViewModels\SortViewModelTests.cs
+  Preview: "using Microsoft.Extensions.Logging.Abstractions; using Microsoft.Extensions.Options; using PictureSorter.App.Tests.Fakes; using PictureSorter.App.View..."
+- File: tests\PictureSorter.App.Tests\ViewModels\SortWizardViewModelTests.cs
+  Preview: "using PictureSorter.App.Tests.Fakes; using PictureSorter.App.ViewModels; namespace PictureSorter.App.Tests.ViewModels; /// <summary> /// Tests der Sch..."
+- File: tests\PictureSorter.App.Tests\ViewModels\StatusBarViewModelTests.cs
+  Preview: "using PictureSorter.App.Tests.Fakes; using PictureSorter.App.ViewModels; namespace PictureSorter.App.Tests.ViewModels; /// <summary> /// Tests der gem..."
+- File: tests\PictureSorter.App.Tests\ViewModels\UpdateViewModelTests.cs
+  Preview: "using PictureSorter.App.Tests.Fakes; using PictureSorter.App.ViewModels; namespace PictureSorter.App.Tests.ViewModels; /// <summary> /// Tests des Upd..."
+- File: tests\PictureSorter.Application.Tests\Duplicates\DuplicateScanServiceTests.cs
+  Preview: "using Microsoft.Extensions.Logging.Abstractions; using Microsoft.Extensions.Options; using PictureSorter.Application.Duplicates; using PictureSorter.C..."
+- File: tests\PictureSorter.Application.Tests\Fakes\DatabaseFailureFakes.cs
+  Preview: "using System.Data.Common; using PictureSorter.Core.Interfaces; using PictureSorter.Core.ValueObjects; namespace PictureSorter.Application.Tests.Fakes;..."
+- File: tests\PictureSorter.Application.Tests\Fakes\DuplicateFakes.cs
+  Preview: "using PictureSorter.Core.Interfaces; using PictureSorter.Core.ValueObjects; namespace PictureSorter.Application.Tests.Fakes; /// <summary>Liefert Fing..."
+- File: tests\PictureSorter.Application.Tests\Fakes\SortingFakes.cs
+  Preview: "using System.Runtime.CompilerServices; using PictureSorter.Core.Entities; using PictureSorter.Core.Enums; using PictureSorter.Core.Exceptions; using P..."
+- File: tests\PictureSorter.Application.Tests\Learning\CategoryLearningServiceTests.cs
+  Preview: "using Microsoft.Extensions.Logging.Abstractions; using PictureSorter.Application.Learning; using PictureSorter.Core.Entities; using PictureSorter.Core..."
+- File: tests\PictureSorter.Application.Tests\Sorting\AnalysisJournalTests.cs
+  Preview: "using System.Runtime.CompilerServices; using Microsoft.Extensions.Logging.Abstractions; using Microsoft.Extensions.Options; using PictureSorter.Applic..."
+- File: tests\PictureSorter.Application.Tests\Sorting\AnalysisRunRecorderTests.cs
+  Preview: "using Microsoft.Extensions.Logging.Abstractions; using PictureSorter.Application.Sorting; using PictureSorter.Application.Tests.Fakes; using PictureSo..."
+- File: tests\PictureSorter.Application.Tests\Sorting\FolderNameSanitizationTests.cs
+  Preview: "using PictureSorter.Application.Sorting; namespace PictureSorter.Application.Tests.Sorting; /// <summary> /// Prüft die Bereinigung der Zielordnername..."
+- File: tests\PictureSorter.Application.Tests\Sorting\GatewayResilienceTests.cs
+  Preview: "using Microsoft.Extensions.Logging.Abstractions; using PictureSorter.Application.Sorting; using PictureSorter.Application.Tests.Fakes; using PictureSo..."
+- File: tests\PictureSorter.Application.Tests\Sorting\PhotoAnalysisServiceTests.cs
+  Preview: "using System.Globalization; using System.Runtime.CompilerServices; using Microsoft.Extensions.Logging.Abstractions; using Microsoft.Extensions.Options..."
+- File: tests\PictureSorter.Application.Tests\Sorting\ProposalApplyServiceTests.cs
+  Preview: "using Microsoft.Extensions.Logging.Abstractions; using PictureSorter.Application.Sorting; using PictureSorter.Application.Tests.Fakes; using PictureSo..."
+- File: tests\PictureSorter.Application.Tests\Sorting\SortUndoServiceTests.cs
+  Preview: "using Microsoft.Extensions.Logging.Abstractions; using PictureSorter.Application.Sorting; using PictureSorter.Application.Tests.Fakes; using PictureSo..."
+- File: tests\PictureSorter.Application.Tests\Sorting\TripDetectionServiceTests.cs
+  Preview: "using Microsoft.Extensions.Options; using PictureSorter.Application.Sorting; using PictureSorter.Core.Entities; using PictureSorter.Core.ValueObjects;..."
+- File: tests\PictureSorter.Application.Tests\Sorting\VectorMathTests.cs
+  Preview: "using PictureSorter.Application.Sorting; namespace PictureSorter.Application.Tests.Sorting; /// <summary> /// Tests der Kosinus-Ähnlichkeit. /// </sum..."
+- File: tests\PictureSorter.Core.Tests\Diagnostics\LogPathsTests.cs
+  Preview: "using PictureSorter.Core.Diagnostics; namespace PictureSorter.Core.Tests.Diagnostics; /// <summary> /// Prüft, dass die Pfad-Redaktion den Benutzernam..."
+- File: tests\PictureSorter.Core.Tests\Entities\PhotoMetadataTests.cs
+  Preview: "using PictureSorter.Core.Entities; namespace PictureSorter.Core.Tests.Entities; /// <summary> /// Tests der Metadaten-Beschreibung eines Fotos, die in..."
+- File: tests\PictureSorter.Core.Tests\ValueObjects\DateRangeTests.cs
+  Preview: "using PictureSorter.Core.ValueObjects; namespace PictureSorter.Core.Tests.ValueObjects; /// <summary> /// Tests des Zeitraums. Die Tücken liegen an de..."
+- File: tests\PictureSorter.Core.Tests\ValueObjects\PerceptualHashTests.cs
+  Preview: "using PictureSorter.Core.ValueObjects; namespace PictureSorter.Core.Tests.ValueObjects; /// <summary> /// Tests des Wahrnehmungs-Hash (Difference-Hash..."
+- File: tests\PictureSorter.Data.Tests\Context\DatabaseBackupTests.cs
+  Preview: "using Microsoft.Data.Sqlite; using Microsoft.EntityFrameworkCore; using Microsoft.EntityFrameworkCore.Infrastructure; using Microsoft.EntityFrameworkC..."
+- File: tests\PictureSorter.Data.Tests\Repositories\AnalysisJournalRepositoryTests.cs
+  Preview: "using Microsoft.Data.Sqlite; using Microsoft.Extensions.DependencyInjection; using PictureSorter.Core.Enums; using PictureSorter.Core.Interfaces; usin..."
+- File: tests\PictureSorter.Data.Tests\Repositories\SortJournalRepositoryTests.cs
+  Preview: "using Microsoft.Data.Sqlite; using Microsoft.Extensions.DependencyInjection; using PictureSorter.Core.Interfaces; using PictureSorter.Core.ValueObject..."
+- File: tests\PictureSorter.Data.Tests\Repositories\SortMemoryRepositoryTests.cs
+  Preview: "using Microsoft.Data.Sqlite; using Microsoft.EntityFrameworkCore; using Microsoft.Extensions.DependencyInjection; using PictureSorter.Core.Enums; usin..."
+- File: tests\PictureSorter.Imaging.Tests\Fixtures\TestImage.cs
+  Preview: "using Windows.Foundation; using Windows.Graphics.Imaging; using Windows.Storage; using Windows.Storage.Streams; namespace PictureSorter.Imaging.Tests...."
+- File: tests\PictureSorter.Imaging.Tests\Hashing\WindowsPerceptualHasherTests.cs
+  Preview: "using System.Security.Cryptography; using Microsoft.Extensions.Logging.Abstractions; using PictureSorter.Core.ValueObjects; using PictureSorter.Imagin..."
+- File: tests\PictureSorter.Imaging.Tests\Metadata\WindowsImageMetadataReaderTests.cs
+  Preview: "using Microsoft.Extensions.Logging.Abstractions; using PictureSorter.Core.ValueObjects; using PictureSorter.Imaging.Tests.Fixtures; namespace PictureS..."
+- File: tests\PictureSorter.Imaging.Tests\Vision\WindowsVisionImageEncoderTests.cs
+  Preview: "using Microsoft.Extensions.Logging.Abstractions; using PictureSorter.Core.Exceptions; using PictureSorter.Imaging; using PictureSorter.Imaging.Tests.F..."
+- File: tests\PictureSorter.Infrastructure.Tests\Caching\JsonlEmbeddingCacheTests.cs
+  Preview: "using Microsoft.Extensions.Logging.Abstractions; using PictureSorter.Core.ValueObjects; using PictureSorter.Infrastructure.Caching; namespace PictureS..."
+- File: tests\PictureSorter.Infrastructure.Tests\Fakes\StubHttpMessageHandler.cs
+  Preview: "using System.Net; using System.Net.Http.Headers; using System.Text; namespace PictureSorter.Infrastructure.Tests.Fakes; /// <summary> /// Beantwortet ..."
+- File: tests\PictureSorter.Infrastructure.Tests\FileSystem\FileOrganizerTests.cs
+  Preview: "using Microsoft.Extensions.Logging.Abstractions; using PictureSorter.Core.Entities; using PictureSorter.Core.Enums; using PictureSorter.Core.ValueObje..."
+- File: tests\PictureSorter.Infrastructure.Tests\FileSystem\FileSystemPhotoSourceTests.cs
+  Preview: "using System.Globalization; using Microsoft.Extensions.Logging.Abstractions; using Microsoft.Extensions.Options; using PictureSorter.Core.Entities; us..."
+- File: tests\PictureSorter.Infrastructure.Tests\FileSystem\RecycleBinFileDeleterTests.cs
+  Preview: "using Microsoft.Extensions.Logging.Abstractions; using PictureSorter.Infrastructure.FileSystem; namespace PictureSorter.Infrastructure.Tests.FileSyste..."
+- File: tests\PictureSorter.Infrastructure.Tests\Repositories\JsonCategoryRepositoryTests.cs
+  Preview: "using Microsoft.Extensions.Logging.Abstractions; using PictureSorter.Core.Entities; using PictureSorter.Core.Enums; using PictureSorter.Core.ValueObje..."
+- File: tests\PictureSorter.Infrastructure.Tests\Time\SystemClockTests.cs
+  Preview: "using PictureSorter.Infrastructure.Time; namespace PictureSorter.Infrastructure.Tests.Time; /// <summary> /// Test der Systemuhr. Sie liefert den Zeit..."
+- File: tests\PictureSorter.Infrastructure.Tests\Update\GitHubUpdateCheckerTests.cs
+  Preview: "using Microsoft.Extensions.Logging.Abstractions; using Microsoft.Extensions.Options; using PictureSorter.Core.ValueObjects; using PictureSorter.Infras..."
+- File: tests\PictureSorter.Integration.Tests\Sorting\AnalysisRecoveryIntegrationTests.cs
+  Preview: "using Microsoft.Data.Sqlite; using Microsoft.Extensions.DependencyInjection; using Microsoft.Extensions.Logging.Abstractions; using PictureSorter.Appl..."
+- File: tests\PictureSorter.Integration.Tests\Sorting\SortUndoIntegrationTests.cs
+  Preview: "using Microsoft.Data.Sqlite; using Microsoft.Extensions.DependencyInjection; using Microsoft.Extensions.Logging; using Microsoft.Extensions.Logging.Ab..."
+- File: tests\PictureSorter.Ollama.Tests\Caching\CachingEmbeddingProviderTests.cs
+  Preview: "using Microsoft.Extensions.Logging.Abstractions; using Microsoft.Extensions.Options; using PictureSorter.Core.Entities; using PictureSorter.Core.Inter..."
+- File: tests\PictureSorter.Ollama.Tests\Client\OllamaClientTests.cs
+  Preview: "using System.Globalization; using System.Net; using Microsoft.Extensions.Logging.Abstractions; using Microsoft.Extensions.Options; using PictureSorter..."
+- File: tests\PictureSorter.Ollama.Tests\Embedding\OllamaEmbeddingProviderTests.cs
+  Preview: "using Microsoft.Extensions.Logging.Abstractions; using Microsoft.Extensions.Options; using PictureSorter.Core.Entities; using PictureSorter.Core.Excep..."
+- File: tests\PictureSorter.Ollama.Tests\Fakes\OllamaFakes.cs
+  Preview: "using PictureSorter.Core.Entities; using PictureSorter.Core.Interfaces; using PictureSorter.Core.ValueObjects; namespace PictureSorter.Ollama.Tests.Fa..."
+- File: tests\PictureSorter.Ollama.Tests\Fakes\StubHttpMessageHandler.cs
+  Preview: "using System.Net; using System.Net.Http.Headers; using System.Text; namespace PictureSorter.Ollama.Tests.Fakes; /// <summary> /// Beantwortet jede HTT..."
+- File: tests\PictureSorter.Ollama.Tests\Models\OllamaModelAvailabilityCheckerTests.cs
+  Preview: "using Microsoft.Extensions.Logging.Abstractions; using Microsoft.Extensions.Options; using PictureSorter.Core.Exceptions; using PictureSorter.Core.Val..."
+- File: tests\PictureSorter.Ollama.Tests\Vision\OllamaImageClassifierTests.cs
+  Preview: "using Microsoft.Extensions.Logging.Abstractions; using Microsoft.Extensions.Options; using PictureSorter.Core.Entities; using PictureSorter.Core.Enums..."
+- File: src\PictureSorter.App\AppPackages\PictureSorter.App_1.0.0.0_x64_Test\Add-AppDevPackage.ps1
+  Preview: "# # Add-AppxDevPackage.ps1 is a PowerShell script designed to install app # packages created by Visual Studio for developers. To run this script from ..."
+- File: src\PictureSorter.App\AppPackages\PictureSorter.App_1.0.0.0_x64_Test\Install.ps1
+  Preview: "# # This script just calls the Add-AppDevPackage.ps1 script that lives next to it. # param(   [switch]$Force = $false,   [switch]$SkipLoggingTelemetry..."
+- File: src\PictureSorter.App\AppPackages\PictureSorter.App_1.1.0.0_x64_Test\Add-AppDevPackage.ps1
+  Preview: "# # Add-AppxDevPackage.ps1 is a PowerShell script designed to install app # packages created by Visual Studio for developers. To run this script from ..."
+- File: src\PictureSorter.App\AppPackages\PictureSorter.App_1.1.0.0_x64_Test\Install.ps1
+  Preview: "# # This script just calls the Add-AppDevPackage.ps1 script that lives next to it. # param(   [switch]$Force = $false,   [switch]$SkipLoggingTelemetry..."
