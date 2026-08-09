@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -1008,5 +1008,29 @@
   </data>
   <data name="SortPage_NegativeExampleList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Gegenbeispiele</value>
+  </data>
+  <data name="MemoryPage_Header.Title" xml:space="preserve">
+    <value>Gedächtnis</value>
+  </data>
+  <data name="MemoryPage_Header.Subtitle" xml:space="preserve">
+    <value>Was sich PictureSorter gemerkt hat. Gemerkte Fotos werden beim nächsten Sortieren übersprungen – vergisst du einen Eintrag, wird das Foto wieder neu bewertet.</value>
+  </data>
+  <data name="MemoryPage_Header.SearchPlaceholder" xml:space="preserve">
+    <value>Dateiname, Ordner oder Gruppe</value>
+  </data>
+  <data name="MemoryPage_EmptyState.Title" xml:space="preserve">
+    <value>Noch nichts gemerkt</value>
+  </data>
+  <data name="MemoryPage_EmptyState.Message" xml:space="preserve">
+    <value>Sobald du zum ersten Mal sortierst, erscheinen hier die Entscheidungen.</value>
+  </data>
+  <data name="MemoryPage_NoMatchState.Title" xml:space="preserve">
+    <value>Nichts gefunden</value>
+  </data>
+  <data name="MemoryPage_NoMatchState.Message" xml:space="preserve">
+    <value>Zu dieser Suche gibt es keinen Eintrag. Vielleicht ist der Ordner-Filter zu eng gesetzt.</value>
+  </data>
+  <data name="MemoryPage_NoMatchState.ResetLabel" xml:space="preserve">
+    <value>Suche zurücksetzen</value>
   </data>
 </root>

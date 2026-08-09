@@ -47,6 +47,13 @@ internal sealed partial class MemoryViewModel : ObservableObject
     public partial string SelectedCategory { get; set; }
 
     /// <summary>
+    /// Der Suchtext. Er greift über Dateiname, Ordner und Gruppe zugleich — wer sucht,
+    /// weiß meist nur eines davon.
+    /// </summary>
+    [ObservableProperty]
+    public partial string SearchText { get; set; }
+
+    /// <summary>
     /// Initialisiert das ViewModel.
     /// </summary>
     /// <param name="memory">Das dauerhafte Sortier-Gedächtnis.</param>
@@ -80,6 +87,7 @@ internal sealed partial class MemoryViewModel : ObservableObject
         State = MemoryState.Idle;
         SelectedFolder = _allFilter;
         SelectedCategory = _allFilter;
+        SearchText = string.Empty;
     }
 
     /// <summary>Die angezeigten (gefilterten) Einträge.</summary>
@@ -99,6 +107,18 @@ internal sealed partial class MemoryViewModel : ObservableObject
 
     /// <summary><see langword="true"/>, wenn nichts gemerkt ist (Leerzustand anzeigen).</summary>
     public bool IsEmpty => State is MemoryState.Empty;
+
+    /// <summary>
+    /// <see langword="true"/>, wenn überhaupt noch nichts gemerkt wurde. Das ist die
+    /// Lage „hier ist noch nichts" — sie sagt der Nutzerin, dass sie etwas tun muss.
+    /// </summary>
+    public bool ShowsNothingYet => IsEmpty && !IsSearching;
+
+    /// <summary>
+    /// <see langword="true"/>, wenn es Einträge gibt, die Suche aber keinen trifft. Das
+    /// ist die andere Lage — sie sagt, dass der Suchtext daneben liegt, nicht die Daten.
+    /// </summary>
+    public bool ShowsNoMatch => !IsEmpty && Items.Count == 0;
 
     /// <summary>Ein konkreter Ordner ist gewählt und kann geleert werden.</summary>
     public bool CanClearFolder =>
@@ -228,12 +248,28 @@ internal sealed partial class MemoryViewModel : ObservableObject
     {
         OnPropertyChanged(nameof(IsInteractive));
         OnPropertyChanged(nameof(IsEmpty));
+        OnPropertyChanged(nameof(ShowsNothingYet));
+        OnPropertyChanged(nameof(ShowsNoMatch));
         OnPropertyChanged(nameof(CanClearFolder));
     }
 
     partial void OnSelectedFolderChanged(string value) => ApplyFilter();
 
     partial void OnSelectedCategoryChanged(string value) => ApplyFilter();
+
+    partial void OnSearchTextChanged(string value)
+    {
+        OnPropertyChanged(nameof(IsSearching));
+        ApplyFilter();
+    }
+
+    // Die beiden Leerzustände hängen am Inhalt der Liste, nicht nur am Zustand: Erst
+    // nach dem Filtern steht fest, ob die Suche etwas getroffen hat.
+    private void NotifyEmptyStates()
+    {
+        OnPropertyChanged(nameof(ShowsNothingYet));
+        OnPropertyChanged(nameof(ShowsNoMatch));
+    }
 
     // Baut die angezeigte Liste aus dem Gesamtbestand und den gewählten Filtern neu auf.
     private void ApplyFilter()
@@ -243,6 +279,8 @@ internal sealed partial class MemoryViewModel : ObservableObject
         {
             Items.Add(new SortMemoryItemViewModel(record, _localizer));
         }
+
+        NotifyEmptyStates();
     }
 
     private bool Matches(SortMemoryRecord record)
@@ -252,8 +290,31 @@ internal sealed partial class MemoryViewModel : ObservableObject
         bool categoryMatches = string.Equals(SelectedCategory, _allFilter, StringComparison.Ordinal)
             || string.Equals(record.CategoryName, SelectedCategory, StringComparison.Ordinal);
 
-        return folderMatches && categoryMatches;
+        return folderMatches && categoryMatches && MatchesSearch(record);
     }
+
+    // Die Suche greift über Dateiname, Ordner und Gruppe zugleich. Ohne Beachtung der
+    // Groß- und Kleinschreibung: Wer sucht, tippt klein.
+    private bool MatchesSearch(SortMemoryRecord record)
+    {
+        if (string.IsNullOrWhiteSpace(SearchText))
+        {
+            return true;
+        }
+
+        string suche = SearchText.Trim();
+
+        return record.PhotoPath.Contains(suche, StringComparison.OrdinalIgnoreCase)
+            || record.FolderPath.Contains(suche, StringComparison.OrdinalIgnoreCase)
+            || record.CategoryName.Contains(suche, StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// <see langword="true"/>, wenn gerade eine Suche wirkt. Der Leerzustand
+    /// unterscheidet daran „nichts vorhanden" von „nichts gefunden" — zwei Lagen, die
+    /// zwei verschiedene Sätze brauchen.
+    /// </summary>
+    public bool IsSearching => !string.IsNullOrWhiteSpace(SearchText);
 
     // Hält die Filterlisten am Bestand ausgerichtet. Eine Auswahl, die durch das
     // Löschen ungültig geworden ist, fällt auf „Alle" zurück.

@@ -1,0 +1,29 @@
+﻿<!--
+    Beschriftete Angabe: kleine, gedämpfte Beschriftung über dem Wert.
+
+    Ein Steuerelement statt zweier TextBlöcke in jeder Ansicht — und damit auch die
+    Gewähr, dass beide einen Style tragen. Ein Bedienelement ohne Style erbt nicht die
+    Textfarbe der Anwendung, sondern Schwarz; im hellen Erscheinungsbild fällt das nie
+    auf, im dunklen ist die Stelle weg.
+-->
+<UserControl
+    x:Class="PictureSorter.App.Controls.InfoField"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <StackPanel Spacing="2">
+        <TextBlock
+            CharacterSpacing="{StaticResource SectionHeadingLetterSpacing}"
+            FontSize="{StaticResource FontSizeCaption}"
+            Foreground="{ThemeResource AppTextMutedBrush}"
+            Text="{x:Bind Label, Mode=OneWay}" />
+        <TextBlock
+            FontSize="{StaticResource FontSizeBody}"
+            Foreground="{ThemeResource AppTextPrimaryBrush}"
+            Text="{x:Bind Text, Mode=OneWay}"
+            TextWrapping="Wrap" />
+    </StackPanel>
+</UserControl>

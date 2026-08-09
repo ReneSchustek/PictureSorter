@@ -1,0 +1,45 @@
+<!--
+    Leerzustand der Gestaltungslinie.
+
+    Er unterscheidet „nichts vorhanden" von „nichts gefunden" — das sind zwei
+    verschiedene Lagen und brauchen zwei verschiedene Sätze. Im zweiten Fall gehört ein
+    Weg zurück dazu, sonst steht die Nutzerin vor einer leeren Fläche und sucht den
+    Fehler in ihren Daten statt in ihrem Suchtext.
+-->
+<UserControl
+    x:Class="PictureSorter.App.Controls.EmptyState"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:PictureSorter.App.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <converters:StringToVisibilityConverter x:Key="StringToVisibility" />
+    </UserControl.Resources>
+
+    <StackPanel
+        Padding="{StaticResource PagePadding}"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+        Spacing="{StaticResource SpacingS}">
+
+        <TextBlock
+            HorizontalAlignment="Center"
+            Style="{StaticResource EmptyStateTitleStyle}"
+            Text="{x:Bind Title, Mode=OneWay}" />
+
+        <TextBlock
+            Style="{StaticResource EmptyStateTextStyle}"
+            Text="{x:Bind Message, Mode=OneWay}" />
+
+        <!-- Nur wenn eine Suche im Spiel ist: der Weg zurück zum vollen Bestand. -->
+        <Button
+            HorizontalAlignment="Center"
+            Margin="0,8,0,0"
+            Click="OnResetClick"
+            Content="{x:Bind ResetLabel, Mode=OneWay}"
+            Visibility="{x:Bind ResetLabel, Mode=OneWay, Converter={StaticResource StringToVisibility}}" />
+    </StackPanel>
+</UserControl>
