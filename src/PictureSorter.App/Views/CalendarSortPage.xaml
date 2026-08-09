@@ -23,7 +23,13 @@
             Title="Nach Datum ablegen" />
 
         <ScrollViewer Grid.Row="1" Margin="0,16,0,0">
-            <StackPanel Spacing="16">
+            <!-- Die Breite ist begrenzt wie auf den übrigen Seiten: Ein Eingabefeld für
+                 einen Ordnerpfad über die volle Breite eines großen Bildschirms liest
+                 sich schlecht und sieht aus, als sei die Seite zerlaufen. -->
+            <StackPanel
+                MaxWidth="980"
+                HorizontalAlignment="Left"
+                Spacing="16">
 
                 <Border Style="{StaticResource CardBorderStyle}">
                     <StackPanel Spacing="12">
