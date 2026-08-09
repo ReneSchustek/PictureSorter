@@ -130,7 +130,17 @@ internal sealed partial class SortPage : Page
         _previewOpen = true;
         try
         {
-            await PhotoPreviewDialog.ShowAsync(this, proposal.Photo).ConfigureAwait(true);
+            PhotoEditOutcome ergebnis = await PhotoPreviewDialog
+                .ShowAsync(this, proposal.Photo)
+                .ConfigureAwait(true);
+
+            // Wurde das Bild aus der Detailansicht heraus umbenannt, verschoben oder
+            // gelöscht, gilt der Vorschlag dazu nicht mehr — er zeigte auf einen Pfad,
+            // den es nicht mehr gibt.
+            if (ergebnis.NeedsRefresh)
+            {
+                ViewModel.Proposals.Remove(proposal);
+            }
         }
         catch (InvalidOperationException)
         {

@@ -35,25 +35,37 @@
         <StackPanel>
             <!-- Der Kopf trägt die Vorschau. Die feste Höhe hält die Kacheln auf einer
                  Linie, gleich wie hoch oder breit das Bild ist. -->
-            <Grid
+            <!-- Der Bildbereich ist ein Knopf, kein bloßes Bild: So bekommt er Fokus,
+                 Tastaturbedienung und eine Ansage für die Sprachausgabe geschenkt. -->
+            <Button
                 x:Name="Head"
+                Padding="0"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Stretch"
+                VerticalContentAlignment="Stretch"
+                AutomationProperties.Name="{x:Bind OpenLabel, Mode=OneWay}"
                 Background="{ThemeResource AppAccentSoftBrush}"
+                BorderThickness="0"
+                Click="OnHeadClick"
+                CornerRadius="0"
                 ToolTipService.ToolTip="{x:Bind Hint, Mode=OneWay}">
-                <TextBlock
-                    x:Name="InitialsText"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    FontSize="{StaticResource FontSizeHeader}"
-                    FontWeight="SemiBold"
-                    Foreground="{ThemeResource AppTextPrimaryBrush}"
-                    Text="{x:Bind Initials, Mode=OneWay}" />
-                <Image
-                    x:Name="Preview"
-                    AutomationProperties.Name="{x:Bind FileName, Mode=OneWay}"
-                    ImageFailed="OnImageFailed"
-                    ImageOpened="OnImageOpened"
-                    Stretch="UniformToFill" />
-            </Grid>
+                <Grid>
+                    <TextBlock
+                        x:Name="InitialsText"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        FontSize="{StaticResource FontSizeHeader}"
+                        FontWeight="SemiBold"
+                        Foreground="{ThemeResource AppTextPrimaryBrush}"
+                        Text="{x:Bind Initials, Mode=OneWay}" />
+                    <Image
+                        x:Name="Preview"
+                        AutomationProperties.Name="{x:Bind FileName, Mode=OneWay}"
+                        ImageFailed="OnImageFailed"
+                        ImageOpened="OnImageOpened"
+                        Stretch="UniformToFill" />
+                </Grid>
+            </Button>
 
             <StackPanel Padding="{StaticResource TilePadding}" Spacing="{StaticResource SpacingXs}">
                 <TextBlock

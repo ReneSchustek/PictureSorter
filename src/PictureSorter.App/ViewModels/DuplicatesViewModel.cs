@@ -180,6 +180,46 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
         OnPropertyChanged(nameof(ShowsNoMatch));
     }
 
+    /// <summary>
+    /// Die übrigen Bilder der Fundgruppe, in der dieses Bild steckt.
+    /// </summary>
+    /// <param name="photo">Das Bild.</param>
+    /// <returns>Die Pfade der Doppelgänger ohne das Bild selbst; leer, wenn keine da sind.</returns>
+    public IReadOnlyList<string> SiblingsOf(DuplicatePhotoViewModel photo)
+    {
+        ArgumentNullException.ThrowIfNull(photo);
+
+        DuplicateGroupViewModel? group = _allGroups.FirstOrDefault(kandidat => kandidat.Photos.Contains(photo));
+        if (group is null)
+        {
+            return [];
+        }
+
+        return [.. group.Photos.Where(anderes => !ReferenceEquals(anderes, photo)).Select(anderes => anderes.FilePath)];
+    }
+
+    /// <summary>
+    /// Nimmt ein Bild aus seiner Fundgruppe — weil es umbenannt, verschoben oder
+    /// gelöscht wurde und der Fund für es nicht mehr gilt.
+    /// </summary>
+    /// <param name="photo">Das Bild.</param>
+    public void Forget(DuplicatePhotoViewModel photo)
+    {
+        ArgumentNullException.ThrowIfNull(photo);
+
+        DuplicateGroupViewModel? group = _allGroups.FirstOrDefault(kandidat => kandidat.Photos.Contains(photo));
+        if (group is null)
+        {
+            return;
+        }
+
+        photo.PropertyChanged -= OnPhotoPropertyChanged;
+        _ = group.Photos.Remove(photo);
+
+        PruneEmptyGroups();
+        ApplyFilter();
+    }
+
     private bool MatchesFilter(DuplicateGroupViewModel group)
     {
         bool passesKind = _filter switch

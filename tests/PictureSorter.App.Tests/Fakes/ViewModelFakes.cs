@@ -40,9 +40,18 @@ internal sealed class FakeFileDeleter : IFileDeleter
     /// </summary>
     public Action<int>? AfterDelete { get; set; }
 
+    /// <summary>Wird geworfen statt zu löschen — für den Weg, auf dem es misslingt.</summary>
+    public Exception? Failure { get; set; }
+
     public Task DeleteAsync(string filePath, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+
+        if (Failure is not null)
+        {
+            return Task.FromException(Failure);
+        }
+
         Deleted.Add(filePath);
         AfterDelete?.Invoke(Deleted.Count);
         return Task.CompletedTask;

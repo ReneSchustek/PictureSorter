@@ -39,6 +39,10 @@ internal sealed partial class PhotoTile : UserControl
     public static readonly DependencyProperty InitialsProperty = DependencyProperty.Register(
         nameof(Initials), typeof(string), typeof(PhotoTile), new PropertyMetadata(string.Empty));
 
+    /// <summary>Beschriftung des Bildbereichs für die Sprachausgabe.</summary>
+    public static readonly DependencyProperty OpenLabelProperty = DependencyProperty.Register(
+        nameof(OpenLabel), typeof(string), typeof(PhotoTile), new PropertyMetadata("Bild groß ansehen"));
+
     /// <summary>
     /// Initialisiert die Bildkachel.
     /// </summary>
@@ -46,6 +50,16 @@ internal sealed partial class PhotoTile : UserControl
     {
         InitializeComponent();
         Head.Height = PreviewHeight;
+    }
+
+    /// <summary>Meldet den Klick auf das Bild — der Weg in die Detailansicht.</summary>
+    public event EventHandler? Opened;
+
+    /// <summary>Beschriftung des Bildbereichs für die Sprachausgabe.</summary>
+    public string OpenLabel
+    {
+        get => (string)GetValue(OpenLabelProperty);
+        set => SetValue(OpenLabelProperty, value);
     }
 
     /// <summary>Pfad der Bilddatei.</summary>
@@ -193,6 +207,8 @@ internal sealed partial class PhotoTile : UserControl
         Preview.Visibility = Visibility.Collapsed;
         InitialsText.Visibility = Visibility.Visible;
     }
+
+    private void OnHeadClick(object sender, RoutedEventArgs e) => Opened?.Invoke(this, EventArgs.Empty);
 
     private void OnPointerEntered(object sender, PointerRoutedEventArgs e) =>
         Frame.BorderBrush = (Brush)Microsoft.UI.Xaml.Application.Current.Resources["AppCardBorderHoverBrush"];

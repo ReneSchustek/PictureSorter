@@ -140,7 +140,9 @@
                                             FileName="{x:Bind FileName}"
                                             Hint="{x:Bind InfoTooltip}"
                                             ImagePath="{x:Bind FilePath}"
-                                            PreviewHeight="140">
+                                            Opened="OnPhotoOpened"
+                                            PreviewHeight="140"
+                                            Tag="{x:Bind}">
                                             <controls:PhotoTile.ActionContent>
                                                 <StackPanel Spacing="{StaticResource SpacingXs}">
                                                     <TextBlock

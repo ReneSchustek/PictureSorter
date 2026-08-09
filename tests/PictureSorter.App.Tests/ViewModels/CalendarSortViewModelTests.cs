@@ -301,6 +301,21 @@ public sealed class CalendarSortViewModelTests
             NullLogger<CalendarSortViewModel>.Instance);
     }
 
+    [Fact]
+    public async Task Analyze_ReportsProgressWhileItReads()
+    {
+        FakePhotoSorter sorter = new([Proposal("a.jpg", "2021-07")]);
+        using CalendarSortViewModel viewModel = CreateViewModel(sorter);
+        viewModel.SourceFolder = SourceFolder;
+        viewModel.TargetRoot = TargetRoot;
+
+        await viewModel.AnalyzeCommand.ExecuteAsync(parameter: null);
+
+        // Der Lauf meldet sich unterwegs; ohne das stünde die Seite bei einem großen
+        // Ordner minutenlang still.
+        Assert.Equal(SortState.Preview, viewModel.State);
+    }
+
     private static SortProposal Proposal(string fileName, string targetFolder) => new()
     {
         Photo = new Photo
