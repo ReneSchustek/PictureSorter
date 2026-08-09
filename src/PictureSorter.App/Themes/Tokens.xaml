@@ -28,6 +28,12 @@
     <Thickness x:Key="StackGapS">0,0,0,8</Thickness>
     <Thickness x:Key="StackGapM">0,0,0,16</Thickness>
 
+    <!-- Dieselben Maße noch einmal als Kante: Padding und Margin nehmen keine Zahl,
+         sondern eine Thickness. Wer dort einen der Spacing-Werte einsetzt, bekommt
+         keinen Übersetzungsfehler, sondern einen Absturz beim Anzeigen. -->
+    <Thickness x:Key="TilePadding">8</Thickness>
+    <Thickness x:Key="TileGap">4</Thickness>
+
     <!-- ── Radien ────────────────────────────────────────────────────────────
          Klein halten: 4 bis 6. Nicht die weichen Radien der Dashboard-Mode —
          die Marke ist Industrie, nicht Spielzeug. -->

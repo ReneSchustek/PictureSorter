@@ -1,0 +1,76 @@
+﻿<!--
+    Die Kachel eines Bildes: Vorschau oben, darunter ein heller Körper mit Dateiname,
+    einer Zeile Beiwerk und Platz für eine Aktion.
+
+    Der eine Punkt, an dem die Linie dieser Werkstatt nachgibt: Anderswo trägt der
+    Kachelkopf ein Kürzel auf der Primärfläche — hier ein Bild, denn genau darum geht es
+    in dieser Anwendung. Form und Verhalten bleiben: kleine Radien, kein Schlagschatten,
+    beim Überfahren wechselt der Rand die Farbe statt sich anzuheben.
+
+    Fehlt die Vorschau, tritt das Kürzel an ihre Stelle. Eine leere graue Fläche wäre das
+    Schlechteste von beidem: Sie sieht aus wie ein Fehler und sagt nichts.
+-->
+<UserControl
+    x:Class="PictureSorter.App.Controls.PhotoTile"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:PictureSorter.App.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <converters:StringToVisibilityConverter x:Key="StringToVisibility" />
+    </UserControl.Resources>
+
+    <Border
+        x:Name="Frame"
+        Background="{ThemeResource AppCardBackgroundBrush}"
+        BorderBrush="{ThemeResource AppCardBorderBrush}"
+        BorderThickness="1"
+        CornerRadius="{StaticResource AppCardCornerRadius}"
+        PointerEntered="OnPointerEntered"
+        PointerExited="OnPointerExited">
+
+        <StackPanel>
+            <!-- Der Kopf trägt die Vorschau. Die feste Höhe hält die Kacheln auf einer
+                 Linie, gleich wie hoch oder breit das Bild ist. -->
+            <Grid
+                x:Name="Head"
+                Background="{ThemeResource AppAccentSoftBrush}"
+                ToolTipService.ToolTip="{x:Bind Hint, Mode=OneWay}">
+                <TextBlock
+                    x:Name="InitialsText"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    FontSize="{StaticResource FontSizeHeader}"
+                    FontWeight="SemiBold"
+                    Foreground="{ThemeResource AppTextPrimaryBrush}"
+                    Text="{x:Bind Initials, Mode=OneWay}" />
+                <Image
+                    x:Name="Preview"
+                    AutomationProperties.Name="{x:Bind FileName, Mode=OneWay}"
+                    ImageFailed="OnImageFailed"
+                    ImageOpened="OnImageOpened"
+                    Stretch="UniformToFill" />
+            </Grid>
+
+            <StackPanel Padding="{StaticResource TilePadding}" Spacing="{StaticResource SpacingXs}">
+                <TextBlock
+                    FontWeight="SemiBold"
+                    Foreground="{ThemeResource AppTextPrimaryBrush}"
+                    Text="{x:Bind FileName, Mode=OneWay}"
+                    TextTrimming="CharacterEllipsis"
+                    ToolTipService.ToolTip="{x:Bind FileName, Mode=OneWay}" />
+                <TextBlock
+                    FontSize="{StaticResource FontSizeCaption}"
+                    Foreground="{ThemeResource AppTextMutedBrush}"
+                    Text="{x:Bind Details, Mode=OneWay}"
+                    TextTrimming="CharacterEllipsis"
+                    ToolTipService.ToolTip="{x:Bind Details, Mode=OneWay}"
+                    Visibility="{x:Bind Details, Mode=OneWay, Converter={StaticResource StringToVisibility}}" />
+                <ContentPresenter Content="{x:Bind ActionContent, Mode=OneWay}" />
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</UserControl>

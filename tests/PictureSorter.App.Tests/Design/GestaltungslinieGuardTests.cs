@@ -128,6 +128,92 @@ public sealed class GestaltungslinieGuardTests
         Assert.NotEmpty(ViewFiles());
     }
 
+    [Fact]
+    public void EveryTokenIsUsedInAPropertyOfItsOwnType()
+    {
+        // Zwei Abstürze an einem Tag hatten dieselbe Ursache: ein Token vom falschen Typ.
+        // „CharacterSpacing" nahm einen x:Double statt einer Ganzzahl, „Padding" einen
+        // x:Double statt einer Kante. Beides übersetzt sauber durch, beides lässt die
+        // Seite zur Laufzeit weiß bleiben oder mit einer XamlParseException abbrechen —
+        // und kein Test mit Fakes kann das sehen, weil keiner einen XAML-Host hat.
+        Dictionary<string, string> tokenTypes = TokenTypes();
+        List<string> findings = [];
+
+        foreach (string file in DesignFiles())
+        {
+            string[] lines = File.ReadAllLines(file);
+            for (int index = 0; index < lines.Length; index++)
+            {
+                foreach (Match match in TokenUsage.Matches(lines[index]))
+                {
+                    string property = match.Groups[1].Value;
+                    string token = match.Groups[2].Value;
+
+                    if (!tokenTypes.TryGetValue(token, out string? actual)
+                        || !ExpectedTokenTypes.TryGetValue(property, out string? expected)
+                        || string.Equals(actual, expected, StringComparison.Ordinal))
+                    {
+                        continue;
+                    }
+
+                    findings.Add(
+                        $"{Path.GetFileName(file)}:{index + 1}  {property} bekommt {token} ({actual}), "
+                        + $"gebraucht wird {expected}");
+                }
+            }
+        }
+
+        Assert.True(
+            findings.Count == 0,
+            "Token vom falschen Typ - das bricht erst zur Laufzeit:" + Environment.NewLine
+            + string.Join(Environment.NewLine, findings));
+    }
+
+    // Welchen Typ eine Eigenschaft verlangt. Nur die, bei denen ein falscher Typ nicht
+    // beim Übersetzen auffällt.
+    private static readonly Dictionary<string, string> ExpectedTokenTypes = new(StringComparer.Ordinal)
+    {
+        ["Padding"] = "Thickness",
+        ["Margin"] = "Thickness",
+        ["BorderThickness"] = "Thickness",
+        ["CornerRadius"] = "CornerRadius",
+        ["CharacterSpacing"] = "Int32",
+        ["Spacing"] = "Double",
+        ["FontSize"] = "Double",
+        ["FontFamily"] = "FontFamily",
+    };
+
+    private static readonly Regex TokenUsage = new(
+        @"([A-Za-z]+)\s*=\s*""\{StaticResource ([A-Za-z0-9]+)\}""",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
+    // Der Typ jedes Tokens, so wie er in der Datei steht: <x:Double>, <Thickness>, …
+    private static Dictionary<string, string> TokenTypes()
+    {
+        XNamespace x = "http://schemas.microsoft.com/winfx/2006/xaml";
+        Dictionary<string, string> types = new(StringComparer.Ordinal);
+
+        foreach (XElement element in XDocument.Load(Path.Combine(ThemesDirectory(), "Tokens.xaml")).Descendants())
+        {
+            string? key = element.Attribute(x + "Key")?.Value;
+            if (key is not null)
+            {
+                types[key] = element.Name.LocalName;
+            }
+        }
+
+        return types;
+    }
+
+    // Ansichten, gemeinsame Styles und die Bausteine. Die Bausteine gehören dazu: Der
+    // erste Fehler dieser Art steckte in einem von ihnen.
+    private static IReadOnlyList<string> DesignFiles() =>
+        [
+            .. ViewFiles(),
+            .. Directory.EnumerateFiles(
+                Path.Combine(AppProjectDirectory(), "Controls"), "*.xaml", SearchOption.AllDirectories),
+        ];
+
     // Die Ansichten und die gemeinsamen Styles. App.xaml gehört ausdrücklich dazu: Dort
     // standen drei Radien, die eine Prüfung allein über den Ordner „Views" nicht gesehen
     // hätte — und gerade die gemeinsamen Styles wirken auf jede Seite.
