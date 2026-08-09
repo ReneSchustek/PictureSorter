@@ -103,7 +103,7 @@ public sealed class FileLoggerFormatTests : IDisposable
 
             // Ein zweites Dispose darf den äußeren Vorgang nicht mitschließen.
             inner?.Dispose();
-            logger.Log(LogLevel.Information, new EventId(0), "aussen", exception: null, (state, _) => state);
+            logger.Log(LogLevel.Information, new EventId(0), "außen", exception: null, (state, _) => state);
         }
 
         logger.Log(LogLevel.Information, new EventId(0), "danach", exception: null, (state, _) => state);

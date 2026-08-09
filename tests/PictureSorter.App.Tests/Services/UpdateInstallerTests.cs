@@ -37,7 +37,7 @@ public sealed class UpdateInstallerTests : IDisposable
         // „Zip-Slip": Ein Eintrag mit ../ im Namen würde außerhalb des Zielordners
         // landen – im Extremfall direkt im Autostart. Ein Paket darf nicht bestimmen,
         // wohin es schreibt.
-        string package = Path.Combine(_root, "boese.zip");
+        string package = Path.Combine(_root, "tampered.zip");
         using (FileStream file = File.Create(package))
         using (ZipArchive archive = new(file, ZipArchiveMode.Create))
         {

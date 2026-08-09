@@ -3,46 +3,53 @@ using PictureSorter.App.Services;
 namespace PictureSorter.App.Tests.Services;
 
 /// <summary>
-/// Sichert die Manipulationssicherheit des Spendenziels ab: die Ziel-URL ist eine
-/// Compile-Zeit-Konstante auf der offiziellen PayPal-Domain, per HTTPS, ohne
-/// Laufzeit-Parameter. Es gibt keinen Settings-/DB-/Netz-Pfad, der sie verändern könnte.
+/// Hält das Spendenziel fest.
 /// </summary>
+/// <remarks>
+/// Ein Spenden-Einstieg ist die eine Stelle, an der ein Programm den Nutzer zu einer
+/// Zahlung führt. Wandert die Adresse — durch einen Tippfehler, eine unbedachte Änderung
+/// oder einen fremden Beitrag —, merkt es niemand: Der Knopf sieht genauso aus, und das
+/// Geld geht woanders hin. Diese Prüfungen machen daraus einen roten Build.
+/// </remarks>
 public sealed class SupportDonationTests
 {
     [Fact]
-    public void PayPalUrl_IsAbsoluteHttpsUri()
+    public void TheAddressUsesHttps()
     {
-        bool parsed = Uri.TryCreate(SupportDonation.PayPalUrl, UriKind.Absolute, out Uri? uri);
-
-        Assert.True(parsed);
-        Assert.Equal(Uri.UriSchemeHttps, uri!.Scheme);
+        // Über http ließe sich die Weiterleitung unterwegs umbiegen.
+        Assert.StartsWith("https://", SupportDonation.PayPalUrl, StringComparison.Ordinal);
     }
 
     [Fact]
-    public void PayPalUrl_TargetsOfficialPayPalDomain()
+    public void TheAddressPointsToTheOfficialDomain()
     {
-        Uri uri = new(SupportDonation.PayPalUrl);
+        Uri address = new(SupportDonation.PayPalUrl);
 
-        bool isOfficial = uri.Host.Equals("paypal.me", StringComparison.OrdinalIgnoreCase)
-            || uri.Host.Equals("paypal.com", StringComparison.OrdinalIgnoreCase)
-            || uri.Host.Equals("www.paypal.com", StringComparison.OrdinalIgnoreCase);
-
-        Assert.True(isOfficial, $"Unerwartete Host-Domain: {uri.Host}");
+        Assert.Equal("paypal.me", address.Host);
     }
 
     [Fact]
-    public void PayPalUrl_CarriesNoRuntimeQueryParameters()
+    public void TheAddressCarriesNoQueryOrCredentials()
     {
-        Uri uri = new(SupportDonation.PayPalUrl);
+        // Ein Parameter am Ende wäre der bequemste Weg, den Empfänger zu tauschen, ohne
+        // dass die Adresse auf den ersten Blick anders aussieht.
+        Uri address = new(SupportDonation.PayPalUrl);
 
-        Assert.True(string.IsNullOrEmpty(uri.Query));
+        Assert.Equal(string.Empty, address.Query);
+        Assert.Equal(string.Empty, address.UserInfo);
     }
 
     [Fact]
-    public void IsConfigured_IsTrue_WhenRealHandleIsSet()
+    public void TheAddressNamesTheDeveloper()
     {
-        // Ein echter Handle ist hinterlegt (kein Platzhalter mehr) — der Spenden-Eintrag
-        // wird dadurch auf der Über-Seite sichtbar geschaltet.
+        Uri address = new(SupportDonation.PayPalUrl);
+
+        Assert.Equal("/rschustek", address.AbsolutePath);
+    }
+
+    [Fact]
+    public void WithARealTargetTheEntryIsShown()
+    {
         Assert.True(SupportDonation.IsConfigured);
     }
 }
