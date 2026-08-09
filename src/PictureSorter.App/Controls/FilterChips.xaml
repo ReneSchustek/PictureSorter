@@ -1,0 +1,44 @@
+<!--
+    Filter als Chips zum Umschalten, nicht als Aufklappliste: Was gewählt ist, sieht man,
+    ohne zu klicken. Ein Filter, der wirkt, aber nicht zu sehen ist, erzeugt den Eindruck
+    fehlender Daten — und dann sucht man den Fehler in den Daten statt im Filter.
+
+    Der aktive Zustand ist nie allein über Farbe erkennbar: Der gewählte Chip trägt
+    zusätzlich ein Häkchen. Wer Farben schlecht unterscheidet, sieht trotzdem, was gilt.
+-->
+<UserControl
+    x:Class="PictureSorter.App.Controls.FilterChips"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <ItemsControl AutomationProperties.Name="{x:Bind Label, Mode=OneWay}" ItemsSource="{x:Bind Options, Mode=OneWay}">
+        <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+                <StackPanel Orientation="Horizontal" Spacing="{StaticResource SpacingS}" />
+            </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+            <DataTemplate>
+                <ToggleButton
+                    MinWidth="0"
+                    Padding="{StaticResource ControlPadding}"
+                    Checked="OnChipChecked"
+                    CornerRadius="{StaticResource AppBadgeCornerRadius}"
+                    IsChecked="{Binding IsSelected, Mode=OneWay}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <!-- Das Häkchen trägt die Aussage mit, damit sie nicht allein an
+                             der Farbe hängt. -->
+                        <FontIcon
+                            FontSize="{StaticResource IconSizeS}"
+                            Glyph="&#xE73E;"
+                            Visibility="{Binding CheckVisibility, Mode=OneWay}" />
+                        <TextBlock Text="{Binding Label}" />
+                    </StackPanel>
+                </ToggleButton>
+            </DataTemplate>
+        </ItemsControl.ItemTemplate>
+    </ItemsControl>
+</UserControl>

@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using PictureSorter.App.Controls;
 using PictureSorter.App.Services;
 using PictureSorter.Core.ValueObjects;
 
@@ -18,9 +19,17 @@ namespace PictureSorter.App.ViewModels;
 /// </summary>
 internal sealed partial class ProposalListViewModel : ObservableObject
 {
+    // Die Schlüssel der Filter — unabhängig von der Sprache, in der ihre Chips stehen.
+    private const string AllFilter = "all";
+    private const string SelectedFilter = "selected";
+    private const string RejectedFilter = "rejected";
+
     private readonly ILocalizer _localizer;
     private readonly Func<bool> _isInteractive;
     private readonly Action _onSelectionChanged;
+
+    private string _search = string.Empty;
+    private string _filter = AllFilter;
 
     /// <summary>
     /// Initialisiert die Vorschlagsliste.
@@ -37,38 +46,69 @@ internal sealed partial class ProposalListViewModel : ObservableObject
         _localizer = localizer;
         _isInteractive = isInteractive;
         _onSelectionChanged = onSelectionChanged;
+
+        BuildFilters();
     }
 
-    /// <summary>Die angezeigten Vorschläge. Jeder trägt seine eigene Auswahl.</summary>
-    public ObservableCollection<ProposalViewModel> Items { get; } = [];
-
-    /// <summary>Anzahl aller Vorschläge.</summary>
-    public int Count => Items.Count;
-
-    /// <summary>Anzahl der zum Sortieren ausgewählten Vorschläge.</summary>
-    public int SelectedCount => Items.Count(proposal => proposal.IsSelected);
-
-    /// <summary>Zusammenfassung der Vorschau, z. B. „12 von 20 ausgewählt".</summary>
-    public string SelectionSummary => Items.Count == 0
-        ? string.Empty
-        : _localizer.Format("Sort_SelectionSummary", SelectedCount, Items.Count);
+    // Der ganze Bestand. Getrennt von der Anzeige, weil ein Filter nur bestimmt, was man
+    // sieht — nicht, was sortiert wird. Ohne diese Trennung verschwänden ausgeblendete
+    // Vorschläge beim Sortieren, und schlimmer: Sie gälten als abgewählt und würden
+    // dauerhaft als „nicht gewünscht" gemerkt.
+    private readonly List<ProposalViewModel> _all = [];
 
     /// <summary>
-    /// <see langword="true"/>, wenn mindestens ein Vorschlag abgewählt ist (steuert
-    /// die Beschriftung des Umschaltknopfs).
+    /// Die angezeigten Vorschläge — der Bestand, so weit Suche und Filter ihn durchlassen.
     /// </summary>
-    public bool CanSelectAll => Items.Count > 0 && SelectedCount < Items.Count;
+    public ObservableCollection<ProposalViewModel> Items { get; } = [];
 
-    /// <summary>Das Umschalten der Auswahl ist möglich, solange Vorschläge vorliegen.</summary>
+    /// <summary>Die Filter der Vorschau: alle, nur ausgewählte, nur abgewählte.</summary>
+    public ObservableCollection<FilterChoice> Filters { get; } = [];
+
+    /// <summary>Anzahl aller Vorschläge — nicht nur der angezeigten.</summary>
+    public int Count => _all.Count;
+
+    /// <summary>Anzahl der angezeigten Vorschläge.</summary>
+    public int VisibleCount => Items.Count;
+
+    /// <summary>Anzahl der zum Sortieren ausgewählten Vorschläge im ganzen Bestand.</summary>
+    public int SelectedCount => _all.Count(proposal => proposal.IsSelected);
+
+    /// <summary>
+    /// Zusammenfassung der Vorschau. Wird gerade gefiltert, steht die Zahl der
+    /// Angezeigten dabei — sonst entstünde der Eindruck, es seien Vorschläge
+    /// verlorengegangen.
+    /// </summary>
+    public string SelectionSummary => _all.Count == 0
+        ? string.Empty
+        : IsFiltered
+            ? _localizer.Format("Sort_SelectionSummaryFiltered", SelectedCount, _all.Count, Items.Count)
+            : _localizer.Format("Sort_SelectionSummary", SelectedCount, _all.Count);
+
+    /// <summary><see langword="true"/>, wenn Suche oder Filter gerade etwas ausblenden.</summary>
+    public bool IsFiltered => Items.Count != _all.Count;
+
+    /// <summary>
+    /// <see langword="true"/>, wenn unter den angezeigten Vorschlägen mindestens einer
+    /// abgewählt ist (steuert die Beschriftung des Umschaltknopfs).
+    /// </summary>
+    public bool CanSelectAll => Items.Count > 0 && Items.Any(proposal => !proposal.IsSelected);
+
+    /// <summary>Das Umschalten der Auswahl ist möglich, solange Vorschläge angezeigt werden.</summary>
     public bool CanToggleAll => _isInteractive() && Items.Count > 0;
 
-    /// <summary>Die ausgewählten Vorschläge in fachlicher Form.</summary>
-    public IReadOnlyList<SortProposal> Selected =>
-        [.. Items.Where(proposal => proposal.IsSelected).Select(proposal => proposal.Proposal)];
+    /// <summary>
+    /// <see langword="true"/>, wenn der Bestand nicht leer ist, Suche oder Filter aber
+    /// nichts durchlassen. Zwei Lagen, zwei Sätze.
+    /// </summary>
+    public bool ShowsNoMatch => _all.Count > 0 && Items.Count == 0;
 
-    /// <summary>Die abgewählten Vorschläge in fachlicher Form.</summary>
+    /// <summary>Die ausgewählten Vorschläge in fachlicher Form — aus dem ganzen Bestand.</summary>
+    public IReadOnlyList<SortProposal> Selected =>
+        [.. _all.Where(proposal => proposal.IsSelected).Select(proposal => proposal.Proposal)];
+
+    /// <summary>Die abgewählten Vorschläge in fachlicher Form — aus dem ganzen Bestand.</summary>
     public IReadOnlyList<SortProposal> Rejected =>
-        [.. Items.Where(proposal => !proposal.IsSelected).Select(proposal => proposal.Proposal)];
+        [.. _all.Where(proposal => !proposal.IsSelected).Select(proposal => proposal.Proposal)];
 
     /// <summary>
     /// Ersetzt die Vorschau durch einen neuen Satz Vorschläge.
@@ -83,10 +123,10 @@ internal sealed partial class ProposalListViewModel : ObservableObject
         {
             ProposalViewModel viewModel = new(proposal, _localizer);
             viewModel.PropertyChanged += OnProposalChanged;
-            Items.Add(viewModel);
+            _all.Add(viewModel);
         }
 
-        NotifyChanged();
+        ApplyFilter();
     }
 
     /// <summary>
@@ -95,16 +135,92 @@ internal sealed partial class ProposalListViewModel : ObservableObject
     /// </summary>
     public void Clear()
     {
-        foreach (ProposalViewModel proposal in Items)
+        foreach (ProposalViewModel proposal in _all)
         {
             proposal.PropertyChanged -= OnProposalChanged;
         }
 
+        _all.Clear();
         Items.Clear();
+        _search = string.Empty;
+        _filter = AllFilter;
+        BuildFilters();
         NotifyChanged();
     }
 
+    /// <summary>
+    /// Beschränkt die Anzeige auf Vorschläge, deren Dateiname oder Zielordner den Text
+    /// enthält. Bei tausenden Vorschlägen ist das der Unterschied zwischen Durchsehen und
+    /// Durchscrollen.
+    /// </summary>
+    /// <param name="text">Der Suchtext.</param>
+    public void Search(string text)
+    {
+        _search = text ?? string.Empty;
+        ApplyFilter();
+    }
+
+    /// <summary>
+    /// Wählt den Filter der Vorschau.
+    /// </summary>
+    /// <param name="key">Der Schlüssel des Filters.</param>
+    public void Filter(string key)
+    {
+        _filter = key;
+        ApplyFilter();
+    }
+
+    // Baut die Anzeige aus dem Bestand neu auf. Die Auswahl der Einträge bleibt dabei
+    // unberührt — sie hängt am Vorschlag, nicht an seiner Sichtbarkeit.
+    private void ApplyFilter()
+    {
+        Items.Clear();
+        foreach (ProposalViewModel proposal in _all.Where(Matches))
+        {
+            Items.Add(proposal);
+        }
+
+        NotifyChanged();
+    }
+
+    private bool Matches(ProposalViewModel proposal)
+    {
+        bool passesFilter = _filter switch
+        {
+            SelectedFilter => proposal.IsSelected,
+            RejectedFilter => !proposal.IsSelected,
+            _ => true,
+        };
+
+        if (!passesFilter)
+        {
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(_search))
+        {
+            return true;
+        }
+
+        string gesucht = _search.Trim();
+
+        return proposal.FileName.Contains(gesucht, StringComparison.OrdinalIgnoreCase)
+            || proposal.TargetFolderName.Contains(gesucht, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private void BuildFilters()
+    {
+        Filters.Clear();
+        Filters.Add(new FilterChoice(AllFilter, _localizer.Get("Sort_FilterAll")) { IsSelected = true });
+        Filters.Add(new FilterChoice(SelectedFilter, _localizer.Get("Sort_FilterSelected")));
+        Filters.Add(new FilterChoice(RejectedFilter, _localizer.Get("Sort_FilterRejected")));
+    }
+
     /// <summary>Wählt alle Vorschläge aus bzw. hebt die Auswahl für alle auf.</summary>
+    /// <remarks>
+    /// Gilt für die angezeigten Vorschläge, nicht für den ganzen Bestand: Wer filtert und
+    /// dann „alle abwählen" drückt, meint das, was er vor sich sieht.
+    /// </remarks>
     [RelayCommand(CanExecute = nameof(CanToggleAll))]
     private void ToggleAll()
     {
@@ -136,6 +252,9 @@ internal sealed partial class ProposalListViewModel : ObservableObject
     private void NotifyChanged()
     {
         OnPropertyChanged(nameof(Count));
+        OnPropertyChanged(nameof(VisibleCount));
+        OnPropertyChanged(nameof(IsFiltered));
+        OnPropertyChanged(nameof(ShowsNoMatch));
         OnPropertyChanged(nameof(SelectedCount));
         OnPropertyChanged(nameof(SelectionSummary));
         OnPropertyChanged(nameof(CanSelectAll));
