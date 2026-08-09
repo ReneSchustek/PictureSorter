@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+using PictureSorter.App.Controls;
 using PictureSorter.App.ViewModels;
 
 namespace PictureSorter.App.Views;
@@ -27,5 +28,17 @@ internal sealed partial class CalendarSortPage : Page
         // Seite (samt ViewModel) zwischenspeichern, damit ein laufender Vorgang beim
         // Wechsel ins Menü weiterläuft und die Vorschau beim Zurückkehren noch steht.
         NavigationCacheMode = NavigationCacheMode.Required;
+    }
+
+    private void OnProposalSearchChanged(object? sender, SearchTextEventArgs e) =>
+        ViewModel.Proposals.Search(e.Text);
+
+    private void OnProposalFilterChanged(object? sender, FilterChoiceEventArgs e) =>
+        ViewModel.Proposals.Filter(e.Key);
+
+    private void OnProposalSearchReset(object? sender, EventArgs e)
+    {
+        ProposalSearch.Text = string.Empty;
+        ViewModel.Proposals.Search(string.Empty);
     }
 }

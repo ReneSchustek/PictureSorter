@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="PictureSorter.App.Views.CalendarSortPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -135,8 +135,39 @@
                             Text="Vorschau" />
 
                         <TextBlock
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Foreground="{ThemeResource AppTextMutedBrush}"
                             Text="{x:Bind ViewModel.Proposals.SelectionSummary, Mode=OneWay}" />
+
+                        <!-- Dieselbe Anordnung wie in jeder anderen Vorschau: Suche links,
+                             Filter rechts. -->
+                        <Grid ColumnSpacing="{StaticResource SpacingM}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <controls:SearchBox
+                                x:Name="ProposalSearch"
+                                x:Uid="CalendarPage_ProposalSearch"
+                                Width="300"
+                                VerticalAlignment="Center"
+                                Placeholder="Dateiname oder Zielordner"
+                                SearchChanged="OnProposalSearchChanged" />
+                            <controls:FilterChips
+                                x:Uid="CalendarPage_ProposalFilter"
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                Label="Vorschläge filtern"
+                                Options="{x:Bind ViewModel.Proposals.Filters}"
+                                SelectionChanged="OnProposalFilterChanged" />
+                        </Grid>
+
+                        <controls:EmptyState
+                            x:Uid="CalendarPage_ProposalNoMatch"
+                            Message="Zu dieser Suche gibt es keinen Vorschlag. Die übrigen bleiben ausgewählt und werden mit abgelegt."
+                            ResetLabel="Suche zurücksetzen"
+                            ResetRequested="OnProposalSearchReset"
+                            Title="Nichts gefunden"
+                            Visibility="{x:Bind ViewModel.Proposals.ShowsNoMatch, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
 
                         <ListView
                             x:Uid="CalendarPage_ProposalList"
@@ -171,9 +202,12 @@
                                             Grid.Column="2"
                                             VerticalAlignment="Center"
                                             Spacing="2">
-                                            <TextBlock FontWeight="SemiBold" Text="{x:Bind FileName}" />
                                             <TextBlock
-                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                FontWeight="SemiBold"
+                                                Foreground="{ThemeResource AppTextPrimaryBrush}"
+                                                Text="{x:Bind FileName}" />
+                                            <TextBlock
+                                                Foreground="{ThemeResource AppTextMutedBrush}"
                                                 Text="{x:Bind TargetFolderName}" />
                                         </StackPanel>
                                     </Grid>
