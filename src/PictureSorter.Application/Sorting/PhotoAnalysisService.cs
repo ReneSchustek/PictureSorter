@@ -367,6 +367,10 @@ public sealed class PhotoAnalysisService : IPhotoAnalyzer
         return RunDateAnalysisAsync(run, resume: false, progress, cancellationToken);
     }
 
+    // Der Name, unter dem ein Lauf der Kalender-Ablage im Protokoll und im Gedächtnis
+    // steht.
+    private const string CalendarRunName = "Nach Aufnahmedatum";
+
     /// <inheritdoc />
     public async Task<IReadOnlyList<SortProposal>> CreateCalendarProposalsAsync(
         string sourceFolder,
@@ -419,7 +423,13 @@ public sealed class PhotoAnalysisService : IPhotoAnalyzer
                     proposals.Add(new SortProposal
                     {
                         Photo = photo,
-                        CategoryName = Path.GetFileName(targetFolder),
+
+                        // Ein Lauf, ein Name — obwohl viele Zielordner entstehen. Der Name
+                        // steht im Rückgängig-Protokoll und im Gedächtnis, und beides
+                        // gehört zum Lauf, nicht zum einzelnen Ordner. Welcher Ordner
+                        // gemeint ist, steht ohnehin im Zielpfad; die Vorschau liest ihn
+                        // von dort.
+                        CategoryName = CalendarRunName,
                         SourceFolder = sourceFolder,
                         TargetFolderPath = targetFolder,
                         Confidence = 1.0,
