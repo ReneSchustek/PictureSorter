@@ -3,6 +3,7 @@ using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using PictureSorter.App.Controls;
 using PictureSorter.App.Services;
 using PictureSorter.Application.Services;
 using PictureSorter.Core.Enums;
@@ -92,7 +93,38 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
     /// <summary>
     /// Die gefundenen Duplikat-Gruppen.
     /// </summary>
+    // Der ganze Fund. Getrennt von der Anzeige, damit ein Filter nur bestimmt, was man
+    // sieht — und nicht klammheimlich den Bestand verkleinert.
+    private readonly List<DuplicateGroupViewModel> _allGroups = [];
+
     public ObservableCollection<DuplicateGroupViewModel> Groups { get; } = [];
+
+    /// <summary>Die Filter: alle Gruppen, nur gleiche, nur ähnliche.</summary>
+    public ObservableCollection<FilterChoice> Filters { get; } = [];
+
+    /// <summary>
+    /// Der Suchtext. Er greift über Dateiname und Ordner — wer ein bestimmtes Bild sucht,
+    /// weiß meist das eine oder das andere.
+    /// </summary>
+    public string SearchText
+    {
+        get;
+        set
+        {
+            field = value ?? string.Empty;
+            OnPropertyChanged();
+            ApplyFilter();
+        }
+    } = string.Empty;
+
+    /// <summary><see langword="true"/>, wenn Suche oder Filter gerade etwas ausblenden.</summary>
+    public bool IsFiltered => Groups.Count != _allGroups.Count;
+
+    /// <summary>
+    /// <see langword="true"/>, wenn Gruppen gefunden wurden, Suche oder Filter aber
+    /// nichts durchlassen.
+    /// </summary>
+    public bool ShowsNoMatch => _allGroups.Count > 0 && Groups.Count == 0;
 
     /// <summary>
     /// Eine Suche ist möglich, wenn kein Vorgang läuft und ein Ordner gewählt ist.
@@ -105,6 +137,77 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
     /// Löschen ist möglich, wenn Duplikate vorliegen und mindestens eines vorgemerkt ist.
     /// </summary>
     public bool CanDelete => State is DuplicateState.Review && MarkedCount > 0;
+
+    // Die Schlüssel der Filter — unabhängig von der Sprache ihrer Chips.
+    private const string AllFilter = "all";
+    private const string ExactFilter = "exact";
+    private const string SimilarFilter = "similar";
+
+    private string _filter = AllFilter;
+
+    /// <summary>
+    /// Wählt den Filter der Fundliste.
+    /// </summary>
+    /// <param name="key">Der Schlüssel des Filters.</param>
+    public void Filter(string key)
+    {
+        _filter = key;
+        ApplyFilter();
+    }
+
+    // Baut die Anzeige aus dem Fund neu auf.
+    //
+    // Der Zählstand der Vormerkungen richtet sich danach — und das ist Absicht: Gelöscht
+    // wird nur, was man sieht. Bei einer Aktion, die Dateien in den Papierkorb legt, wäre
+    // alles andere eine böse Überraschung. (In der Sortier-Vorschau ist es umgekehrt: Dort
+    // würde ein Ausblenden dazu führen, dass Vorschläge als abgewählt gelten und dauerhaft
+    // verschwinden — dort zählt deshalb der ganze Bestand.)
+    private void ApplyFilter()
+    {
+        Groups.Clear();
+        foreach (DuplicateGroupViewModel group in _allGroups.Where(MatchesFilter))
+        {
+            Groups.Add(group);
+        }
+
+        UpdateMarkedCount();
+        OnPropertyChanged(nameof(IsFiltered));
+        OnPropertyChanged(nameof(ShowsNoMatch));
+    }
+
+    private bool MatchesFilter(DuplicateGroupViewModel group)
+    {
+        bool passesKind = _filter switch
+        {
+            ExactFilter => group.Kind == DuplicateKind.Exact,
+            SimilarFilter => group.Kind == DuplicateKind.Similar,
+            _ => true,
+        };
+
+        if (!passesKind)
+        {
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(SearchText))
+        {
+            return true;
+        }
+
+        string gesucht = SearchText.Trim();
+
+        return group.Photos.Any(photo =>
+            photo.FileName.Contains(gesucht, StringComparison.OrdinalIgnoreCase)
+            || photo.FilePath.Contains(gesucht, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private void BuildFilters()
+    {
+        Filters.Clear();
+        Filters.Add(new FilterChoice(AllFilter, _localizer.Get("Duplicates_FilterAll")) { IsSelected = true });
+        Filters.Add(new FilterChoice(ExactFilter, _localizer.Get("Duplicates_FilterExact")));
+        Filters.Add(new FilterChoice(SimilarFilter, _localizer.Get("Duplicates_FilterSimilar")));
+    }
 
     /// <summary>
     /// Abbrechen ist möglich, solange eine Suche oder ein Löschlauf läuft. Beim
@@ -293,10 +396,10 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
                 photo.PropertyChanged += OnPhotoPropertyChanged;
             }
 
-            Groups.Add(groupViewModel);
+            _allGroups.Add(groupViewModel);
         }
 
-        UpdateMarkedCount();
+        ApplyFilter();
     }
 
     private IReadOnlyList<DuplicatePhotoViewModel> CollectMarked() =>
@@ -317,14 +420,18 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
     private void PruneEmptyGroups()
     {
         // Eine Gruppe ist nur sinnvoll, solange sie mindestens zwei Bilder enthält.
-        for (int index = Groups.Count - 1; index >= 0; index--)
+        // Aufgeräumt wird im Bestand, nicht in der Anzeige: Sonst käme eine geleerte
+        // Gruppe beim Zurücksetzen des Filters wieder zum Vorschein.
+        for (int index = _allGroups.Count - 1; index >= 0; index--)
         {
-            if (Groups[index].Photos.Count < 2)
+            if (_allGroups[index].Photos.Count < 2)
             {
-                UnsubscribeGroup(Groups[index]);
-                Groups.RemoveAt(index);
+                UnsubscribeGroup(_allGroups[index]);
+                _allGroups.RemoveAt(index);
             }
         }
+
+        ApplyFilter();
     }
 
     private void OnPhotoPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -340,12 +447,16 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
 
     private void ClearGroups()
     {
-        foreach (DuplicateGroupViewModel group in Groups)
+        foreach (DuplicateGroupViewModel group in _allGroups)
         {
             UnsubscribeGroup(group);
         }
 
+        _allGroups.Clear();
         Groups.Clear();
+        SearchText = string.Empty;
+        _filter = AllFilter;
+        BuildFilters();
         UpdateMarkedCount();
     }
 

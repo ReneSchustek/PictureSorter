@@ -1,9 +1,10 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="PictureSorter.App.Views.DuplicatesPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:controls="using:PictureSorter.App.Controls"
     xmlns:local="using:PictureSorter.App.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="using:PictureSorter.App.ViewModels"
@@ -19,18 +20,27 @@
         </Grid.RowDefinitions>
 
         <StackPanel Spacing="16">
-            <Border Style="{StaticResource HeroBorderStyle}">
-                <StackPanel Spacing="4">
-                    <TextBlock
-                        x:Uid="DuplicatesPage_HeroTitle"
-                        Style="{StaticResource HeroTitleStyle}"
-                        Text="Duplikate finden" />
-                    <TextBlock
-                        x:Uid="DuplicatesPage_HeroSubtitle"
-                        Style="{StaticResource HeroSubtitleStyle}"
-                        Text="Findet gleiche und sehr ähnliche Bilder. Gelöschte Dateien landen im Papierkorb und bleiben wiederherstellbar." />
-                </StackPanel>
-            </Border>
+            <!-- Der Kopf der Linie: Titel, was man hier tut, dann Suche und Filter.
+                 Dieselbe Anordnung wie auf jeder anderen Listen-Seite.
+
+                 Der Name heißt PageHeader, nicht Header: Weiter unten trägt ein Eingabefeld
+                 die Eigenschaft Header. Beides zugleich lässt den XAML-Übersetzer abstürzen,
+                 und zwar ohne verwertbare Meldung. -->
+            <controls:ListPageHeader
+                x:Name="PageHeader"
+                x:Uid="DuplicatesPage_Header"
+                SearchChanged="OnSearchChanged"
+                SearchPlaceholder="Dateiname oder Ordner"
+                Subtitle="Findet gleiche und sehr ähnliche Bilder. Gelöschte Dateien landen im Papierkorb und bleiben wiederherstellbar."
+                Title="Duplikate finden">
+                <controls:ListPageHeader.FilterContent>
+                    <controls:FilterChips
+                        x:Uid="DuplicatesPage_Filter"
+                        Label="Fundgruppen filtern"
+                        Options="{x:Bind ViewModel.Filters}"
+                        SelectionChanged="OnFilterChanged" />
+                </controls:ListPageHeader.FilterContent>
+            </controls:ListPageHeader>
 
             <Grid ColumnSpacing="8">
                 <Grid.ColumnDefinitions>
@@ -80,6 +90,15 @@
              eigenen ScrollViewer mit. In der unbegrenzten Höhe des äußeren ScrollViewers
              konnte ihre Messung nicht zur Ruhe kommen – genau das war der Layout-Zyklus.
              Der ItemsRepeater legt die Kacheln ohne eigenen Scroller aus. -->
+        <controls:EmptyState
+            x:Uid="DuplicatesPage_NoMatch"
+            Grid.Row="1"
+            Message="Zu dieser Suche gibt es keine Fundgruppe. Vielleicht ist der Filter zu eng gesetzt."
+            ResetLabel="Suche zurücksetzen"
+            ResetRequested="OnResetSearch"
+            Title="Nichts gefunden"
+            Visibility="{x:Bind ViewModel.ShowsNoMatch, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+
         <ListView
             Grid.Row="1"
             IsItemClickEnabled="False"

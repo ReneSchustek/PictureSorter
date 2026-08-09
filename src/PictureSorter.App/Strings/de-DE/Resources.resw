@@ -1063,4 +1063,34 @@
   <data name="SortPage_PauseButtonBottom.Content" xml:space="preserve">
     <value>Analyse anhalten</value>
   </data>
+  <data name="DuplicatesPage_Header.Title" xml:space="preserve">
+    <value>Duplikate finden</value>
+  </data>
+  <data name="DuplicatesPage_Header.Subtitle" xml:space="preserve">
+    <value>Findet gleiche und sehr ähnliche Bilder. Gelöschte Dateien landen im Papierkorb und bleiben wiederherstellbar.</value>
+  </data>
+  <data name="DuplicatesPage_Header.SearchPlaceholder" xml:space="preserve">
+    <value>Dateiname oder Ordner</value>
+  </data>
+  <data name="DuplicatesPage_Filter.Label" xml:space="preserve">
+    <value>Fundgruppen filtern</value>
+  </data>
+  <data name="DuplicatesPage_NoMatch.Title" xml:space="preserve">
+    <value>Nichts gefunden</value>
+  </data>
+  <data name="DuplicatesPage_NoMatch.Message" xml:space="preserve">
+    <value>Zu dieser Suche gibt es keine Fundgruppe. Vielleicht ist der Filter zu eng gesetzt.</value>
+  </data>
+  <data name="DuplicatesPage_NoMatch.ResetLabel" xml:space="preserve">
+    <value>Suche zurücksetzen</value>
+  </data>
+  <data name="Duplicates_FilterAll" xml:space="preserve">
+    <value>Alle</value>
+  </data>
+  <data name="Duplicates_FilterExact" xml:space="preserve">
+    <value>Gleiche</value>
+  </data>
+  <data name="Duplicates_FilterSimilar" xml:space="preserve">
+    <value>Ähnliche</value>
+  </data>
 </root>
