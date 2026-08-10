@@ -6,6 +6,8 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
+## [1.10.1] - 2026-08-10
+
 ### Geändert
 
 - **Das Zurückholen früherer Urteile meldet sich jetzt von selbst.** Statt eines Verweises,
