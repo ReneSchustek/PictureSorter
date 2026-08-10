@@ -893,7 +893,13 @@
     <value>Die Analyse wurde verworfen.</value>
   </data>
   <data name="SortPage_RecoverButton.Content" xml:space="preserve">
-    <value>Vorschläge einer früheren Analyse zurückholen</value>
+    <value>Zurückholen</value>
+  </data>
+  <data name="SortPage_RecoverBar.Title" xml:space="preserve">
+    <value>Frühere Analyse</value>
+  </data>
+  <data name="Sort_RecoverOfferSummary" xml:space="preserve">
+    <value>Zu „{0}“ liegen {1} Urteile einer früheren Analyse im Gedächtnis. Sie lassen sich zurückholen, ohne ein einziges Bild erneut zu bewerten — auch aus einem Lauf, der abgebrochen ist.</value>
   </data>
   <data name="PhotoTile_ZoomButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Bild vergrößern</value>

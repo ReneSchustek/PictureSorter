@@ -893,7 +893,13 @@
     <value>The analysis was discarded.</value>
   </data>
   <data name="SortPage_RecoverButton.Content" xml:space="preserve">
-    <value>Bring back suggestions from an earlier analysis</value>
+    <value>Bring back</value>
+  </data>
+  <data name="SortPage_RecoverBar.Title" xml:space="preserve">
+    <value>Earlier analysis</value>
+  </data>
+  <data name="Sort_RecoverOfferSummary" xml:space="preserve">
+    <value>There are {1} decisions from an earlier analysis of “{0}” in memory. They can be brought back without re-evaluating a single picture — even from a run that was interrupted.</value>
   </data>
   <data name="PhotoTile_ZoomButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Enlarge picture</value>

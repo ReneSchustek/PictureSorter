@@ -46,6 +46,33 @@ public sealed class SortMemoryRecovery
     }
 
     /// <summary>
+    /// Zählt, wie viele Urteile einer früheren Analyse für diesen Ordner und diese
+    /// Kategorie bereitliegen.
+    ///
+    /// Die Oberfläche fragt danach, um das Angebot zum Zurückholen überhaupt anzuzeigen.
+    /// Sie zählt bewusst hier und nicht selbst: Was zurückkommt, entscheidet
+    /// <see cref="RecoverAsync"/> — beide müssen dieselbe Auswahl treffen, sonst nennt das
+    /// Angebot eine Zahl, die der Klick nicht einlöst.
+    /// </summary>
+    /// <param name="sourceFolder">Der durchsuchte Ordner.</param>
+    /// <param name="categoryName">Die Kategorie beziehungsweise der Zielordnername.</param>
+    /// <param name="cancellationToken">Token zum Abbrechen des Vorgangs.</param>
+    /// <returns>
+    /// Die Anzahl der gemerkten Vorschläge. Sie ist eine Obergrenze: Fotos, die inzwischen
+    /// verschoben oder verändert wurden, fallen beim Zurückholen heraus.
+    /// </returns>
+    public Task<int> CountRecoverableAsync(
+        string sourceFolder,
+        string categoryName,
+        CancellationToken cancellationToken)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(sourceFolder);
+        ArgumentException.ThrowIfNullOrWhiteSpace(categoryName);
+
+        return _memory.CountProposalsAsync(sourceFolder, categoryName, cancellationToken);
+    }
+
+    /// <summary>
     /// Baut aus den gemerkten Urteilen die Vorschläge einer früheren Analyse neu auf.
     /// </summary>
     /// <param name="sourceFolder">Der durchsuchte Ordner.</param>

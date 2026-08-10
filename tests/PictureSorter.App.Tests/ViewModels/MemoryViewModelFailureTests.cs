@@ -153,6 +153,11 @@ public sealed class MemoryViewModelFailureTests
                 ? Task.FromException<IReadOnlyList<SortMemoryRecord>>(failure)
                 : Task.FromResult(records);
 
+        public Task<int> CountProposalsAsync(
+            string folderPath,
+            string categoryName,
+            CancellationToken cancellationToken) => Task.FromException<int>(failure);
+
         public Task<IReadOnlyList<SortMemoryRecord>> GetForFolderAsync(
             string folderPath,
             CancellationToken cancellationToken) =>
