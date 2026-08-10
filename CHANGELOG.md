@@ -6,6 +6,8 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
+## [1.10.0] - 2026-08-10
+
 ### Hinzugefügt
 
 - **Eine Lupe an jedem Bild.** In der Kachel erscheint sie beim Überfahren oben rechts, in
@@ -25,6 +27,8 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
   wollte, musste erst Beispiele wählen und lernen lassen, was dafür überflüssig ist und
   obendrein die vorhandene Gruppe überschrieben hätte. Der Weg ist damit in beiden
   Ansichten und ab dem Gruppennamen erreichbar.
+- Die Seite „Nach Datum ablegen" zog ihre Eingabefelder über die volle Breite eines
+  großen Bildschirms. Sie ist jetzt begrenzt wie die übrigen Seiten.
 
 ## [1.9.0] - 2026-08-09
 
