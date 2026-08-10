@@ -105,6 +105,23 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
+
+                <!-- Eine frühere Analyse desselben Ordners hat ihre Urteile im Gedächtnis
+                     hinterlassen — auch dann, wenn sie abgestürzt ist. Hier kommen sie
+                     zurück, ohne dass ein einziges Bild erneut durch die KI läuft.
+
+                     Bewusst hier und nicht in der Analyse-Karte: Im geführten Modus liegt
+                     die hinter dem Anlernen, und wer nur nachschlagen will, müsste erst
+                     Beispiele wählen und lernen lassen — beides ist dafür überflüssig und
+                     überschriebe obendrein die vorhandene Gruppe. -->
+                <HyperlinkButton
+                    VerticalAlignment="Center"
+                    Command="{x:Bind ViewModel.Resume.RecoverFromMemoryCommand}"
+                    x:Uid="SortPage_RecoverButton"
+                    Content="Vorschläge einer früheren Analyse zurückholen"
+                    IsEnabled="{x:Bind ViewModel.CanRecoverFromMemory, Mode=OneWay}"
+                    Visibility="{x:Bind ViewModel.ShowsRecoverOffer, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+
                 <StackPanel
                     Grid.Column="1"
                     VerticalAlignment="Center"
@@ -381,7 +398,9 @@
                                                 FileName="{x:Bind FileName}"
                                                 Hint="{x:Bind InfoTooltip}"
                                                 ImagePath="{x:Bind FilePath}"
-                                                PreviewHeight="120">
+                                                Opened="OnExampleOpened"
+                                                PreviewHeight="120"
+                                                Tag="{x:Bind}">
                                                 <controls:PhotoTile.ActionContent>
                                                     <Button
                                                         x:Uid="SortPage_RemoveExampleButton"
@@ -460,7 +479,9 @@
                                                 FileName="{x:Bind FileName}"
                                                 Hint="{x:Bind InfoTooltip}"
                                                 ImagePath="{x:Bind FilePath}"
-                                                PreviewHeight="120">
+                                                Opened="OnExampleOpened"
+                                                PreviewHeight="120"
+                                                Tag="{x:Bind}">
                                                 <controls:PhotoTile.ActionContent>
                                                     <Button
                                                         x:Uid="SortPage_RemoveExampleButton"
@@ -578,15 +599,6 @@
                                 Text="Der Stand bleibt erhalten. Du kannst später genau hier weitermachen – auch nach einem Neustart des Rechners."
                                 TextWrapping="Wrap" />
                         </StackPanel>
-
-                        <!-- Eine frühere Analyse desselben Ordners hat ihre Urteile im
-                             Gedächtnis hinterlassen — auch dann, wenn sie abgestürzt ist.
-                             Hier kommen sie zurück, ohne dass ein einziges Bild erneut
-                             durch die KI läuft. -->
-                        <HyperlinkButton
-                            Command="{x:Bind ViewModel.Resume.RecoverFromMemoryCommand}"
-                            x:Uid="SortPage_RecoverButton"
-                            Content="Vorschläge einer früheren Analyse zurückholen" />
                     </StackPanel>
                 </Border>
 
@@ -688,6 +700,7 @@
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto" />
                                             <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
@@ -714,8 +727,24 @@
                                                 Stretch="UniformToFill"
                                                 ToolTipService.ToolTip="{x:Bind InfoTooltip}" />
                                         </Button>
-                                        <StackPanel
+
+                                        <!-- Die Lupe neben dem Bildchen: In 56 Bildpunkten
+                                             erkennt man, was darauf ist, aber nicht, ob es
+                                             etwas taugt. Sie zeigt es in einem eigenen,
+                                             frei skalierbaren Fenster — der Klick auf das
+                                             Bild führt weiterhin zu seinen Angaben. -->
+                                        <Button
                                             Grid.Column="2"
+                                            Padding="{StaticResource TileGap}"
+                                            VerticalAlignment="Center"
+                                            x:Uid="SortPage_ProposalZoomButton"
+                                            Click="OnProposalZoomClick"
+                                            Tag="{x:Bind}">
+                                            <FontIcon FontSize="{StaticResource FontSizeCaption}" Glyph="&#xE71E;" />
+                                        </Button>
+
+                                        <StackPanel
+                                            Grid.Column="3"
                                             VerticalAlignment="Center"
                                             Spacing="2">
                                             <TextBlock FontWeight="SemiBold" Text="{x:Bind FileName}" />
@@ -724,7 +753,7 @@
                                                 Text="{x:Bind TargetFolderName}" />
                                         </StackPanel>
                                         <StackPanel
-                                            Grid.Column="3"
+                                            Grid.Column="4"
                                             VerticalAlignment="Center"
                                             HorizontalAlignment="Right">
                                             <TextBlock

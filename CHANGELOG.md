@@ -6,6 +6,26 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
+### Hinzugefügt
+
+- **Eine Lupe an jedem Bild.** In der Kachel erscheint sie beim Überfahren oben rechts, in
+  der Vorschlagsliste steht sie neben dem Bildchen — für die Frage „taugt das als
+  Beispiel?" reicht eine Kachel nicht. Sie öffnet ein eigenes Fenster, dessen Startgröße
+  dem Seitenverhältnis des Bildes folgt: Ein Hochformat bekommt ein hohes Fenster, kein
+  breites mit zwei Dritteln leerer Fläche. Das Fenster lässt sich frei ziehen, das Bild
+  geht mit, und Escape schließt es. Wer sich durch eine Liste klickt, bekommt das nächste
+  Bild im selben Fenster statt eines zweiten.
+- **Klick auf ein Beispielbild öffnet seine Angaben.** In der Bilderauswahl führte der
+  Klick bisher nirgendwohin; jetzt kommt dieselbe Detailansicht wie überall sonst.
+
+### Geändert
+
+- **„Vorschläge einer früheren Analyse zurückholen" steht jetzt über den Karten** statt in
+  der Analyse-Karte. Im geführten Modus lag die hinter dem Anlernen — wer nur nachschlagen
+  wollte, musste erst Beispiele wählen und lernen lassen, was dafür überflüssig ist und
+  obendrein die vorhandene Gruppe überschrieben hätte. Der Weg ist damit in beiden
+  Ansichten und ab dem Gruppennamen erreichbar.
+
 ## [1.9.0] - 2026-08-09
 
 ### Hinzugefügt

@@ -842,6 +842,25 @@ public sealed class SortViewModelFlowTests : IDisposable
     }
 
     [Fact]
+    public void ShowsRecoverOffer_NeedsNeitherExamplesNorTheAnalysisStep()
+    {
+        // Das Angebot steht über den Karten, nicht in der Analyse-Karte: Im geführten
+        // Modus liegt die hinter dem Anlernen, und wer nur nachschlagen will, müsste erst
+        // Beispiele wählen und lernen lassen — beides trägt zum Nachschlagen nichts bei
+        // und überschriebe obendrein die vorhandene Gruppe.
+        using SortViewModel sut = CreateSut();
+
+        Assert.False(sut.ShowsRecoverOffer);
+
+        sut.SourceFolder = SourceFolder;
+        sut.CategoryName = "Familie";
+
+        Assert.True(sut.ShowsRecoverOffer);
+        Assert.True(sut.Wizard.IsStep1);
+        Assert.Empty(sut.PositiveExamples.Items);
+    }
+
+    [Fact]
     public async Task RecoverFromMemory_WithNothingRemembered_ReturnsToTheIdleState()
     {
         using SortViewModel sut = CreateSut();
