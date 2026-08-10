@@ -348,6 +348,11 @@ internal sealed class FakeSortMemoryStore : ISortMemory
 
     public Task<IReadOnlyList<SortMemoryRecord>> GetAllAsync(CancellationToken cancellationToken) =>
         Task.FromResult<IReadOnlyList<SortMemoryRecord>>([]);
+
+    public Task<int> CountProposalsAsync(
+        string folderPath,
+        string categoryName,
+        CancellationToken cancellationToken) => Task.FromResult(0);
 }
 
 /// <summary>Merkt sich, was gezeigt werden sollte, ohne ein Fenster zu öffnen.</summary>

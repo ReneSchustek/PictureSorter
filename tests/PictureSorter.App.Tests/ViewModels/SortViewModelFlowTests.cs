@@ -842,22 +842,78 @@ public sealed class SortViewModelFlowTests : IDisposable
     }
 
     [Fact]
-    public void ShowsRecoverOffer_NeedsNeitherExamplesNorTheAnalysisStep()
+    public async Task ShowsRecoverOffer_NeedsNeitherExamplesNorTheAnalysisStep()
     {
         // Das Angebot steht über den Karten, nicht in der Analyse-Karte: Im geführten
         // Modus liegt die hinter dem Anlernen, und wer nur nachschlagen will, müsste erst
         // Beispiele wählen und lernen lassen — beides trägt zum Nachschlagen nichts bei
         // und überschriebe obendrein die vorhandene Gruppe.
-        using SortViewModel sut = CreateSut();
+        FakeSortMemory memory = new();
+        memory.Records.Add(RememberedProposal(CreateImage("gerettet.jpg")));
 
+        using SortViewModel sut = CreateSut(recovery: RecoveryFactory.Create(memory));
         Assert.False(sut.ShowsRecoverOffer);
 
-        sut.SourceFolder = SourceFolder;
+        sut.SourceFolder = _imageFolder;
         sut.CategoryName = "Familie";
+        await sut.RefreshRecoverOfferAsync();
 
+        // Sichtbar im ersten Schritt, ohne ein einziges Beispiel und ohne gelerntes Profil.
         Assert.True(sut.ShowsRecoverOffer);
         Assert.True(sut.Wizard.IsStep1);
         Assert.Empty(sut.PositiveExamples.Items);
+    }
+
+    [Fact]
+    public async Task RecoverOffer_StaysAwayWhenNothingIsRemembered()
+    {
+        // Ein Angebot, das bei jedem Lauf erschiene und dann „nichts gemerkt" meldet, wäre
+        // keine Hilfe, sondern eine Sackgasse mit Beschriftung.
+        using SortViewModel sut = CreateSut();
+        sut.SourceFolder = SourceFolder;
+        sut.CategoryName = "Familie";
+
+        await sut.RefreshRecoverOfferAsync();
+
+        Assert.Equal(0, sut.RecoverableCount);
+        Assert.False(sut.ShowsRecoverOffer);
+        Assert.Empty(sut.RecoverOfferSummary);
+    }
+
+    [Fact]
+    public async Task RecoverOffer_NamesTheGroupAndTheNumberOfDecisions()
+    {
+        // Vor dem Klick soll dastehen, worum es geht — sonst muss die Nutzerin ihn drücken,
+        // um zu erfahren, ob sich das Drücken lohnt.
+        FakeSortMemory memory = new();
+        memory.Records.Add(RememberedProposal(CreateImage("eins.jpg")));
+        memory.Records.Add(RememberedProposal(CreateImage("zwei.jpg")));
+
+        using SortViewModel sut = CreateSut(recovery: RecoveryFactory.Create(memory));
+        sut.SourceFolder = _imageFolder;
+        sut.CategoryName = "Familie";
+
+        await sut.RefreshRecoverOfferAsync();
+
+        Assert.Equal(2, sut.RecoverableCount);
+        Assert.Contains("Familie", sut.RecoverOfferSummary, StringComparison.Ordinal);
+        Assert.Contains("2", sut.RecoverOfferSummary, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task RecoverOffer_SurvivesAnUnreadableMemory()
+    {
+        // Das Nachsehen ist eine Zugabe: Eine gesperrte Datenbank darf die Sortierseite
+        // nicht mitreißen, sie soll nur nichts anbieten.
+        using SortViewModel sut = CreateSut(
+            recovery: RecoveryFactory.Create(new ThrowingSortMemory()));
+        sut.SourceFolder = SourceFolder;
+        sut.CategoryName = "Familie";
+
+        await sut.RefreshRecoverOfferAsync();
+
+        Assert.Equal(0, sut.RecoverableCount);
+        Assert.False(sut.ShowsRecoverOffer);
     }
 
     [Fact]

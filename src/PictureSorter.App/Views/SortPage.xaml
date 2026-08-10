@@ -84,6 +84,34 @@
                     Content="Verwerfen" />
             </InfoBar>
 
+            <!--
+                Frühere Urteile aus dem Sortier-Gedächtnis. Sie erreichen den Weg über das
+                Protokoll nicht, weil es zu Läufen aus älteren Fassungen keines gibt — und
+                weil ein abgestürzter Lauf trotzdem jedes gefällte Urteil hinterlassen hat.
+
+                Die Leiste erscheint nur, wenn wirklich etwas bereitliegt, und nennt die
+                Anzahl. Ein Knopf, der bei den meisten Läufen „nichts gemerkt" meldet, wäre
+                keine Hilfe, sondern eine Sackgasse mit Beschriftung. Sie steht hier oben
+                und nicht in einer Schritt-Karte: Zum Nachschlagen braucht es weder
+                Beispiele noch ein gelerntes Profil, nur Ordner und Gruppenname.
+            -->
+            <InfoBar
+                x:Uid="SortPage_RecoverBar"
+                IsClosable="False"
+                IsOpen="{x:Bind ViewModel.ShowsRecoverOffer, Mode=OneWay}"
+                Message="{x:Bind ViewModel.RecoverOfferSummary, Mode=OneWay}"
+                Severity="Informational"
+                Title="Frühere Analyse">
+                <InfoBar.ActionButton>
+                    <Button
+                        x:Uid="SortPage_RecoverButton"
+                        Command="{x:Bind ViewModel.Resume.RecoverFromMemoryCommand}"
+                        Content="Zurückholen"
+                        IsEnabled="{x:Bind ViewModel.CanRecoverFromMemory, Mode=OneWay}"
+                        Style="{ThemeResource AccentButtonStyle}" />
+                </InfoBar.ActionButton>
+            </InfoBar>
+
             <Border Style="{StaticResource HeroBorderStyle}">
                 <Grid ColumnSpacing="12">
                     <Grid.ColumnDefinitions>
@@ -105,22 +133,6 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-
-                <!-- Eine frühere Analyse desselben Ordners hat ihre Urteile im Gedächtnis
-                     hinterlassen — auch dann, wenn sie abgestürzt ist. Hier kommen sie
-                     zurück, ohne dass ein einziges Bild erneut durch die KI läuft.
-
-                     Bewusst hier und nicht in der Analyse-Karte: Im geführten Modus liegt
-                     die hinter dem Anlernen, und wer nur nachschlagen will, müsste erst
-                     Beispiele wählen und lernen lassen — beides ist dafür überflüssig und
-                     überschriebe obendrein die vorhandene Gruppe. -->
-                <HyperlinkButton
-                    VerticalAlignment="Center"
-                    Command="{x:Bind ViewModel.Resume.RecoverFromMemoryCommand}"
-                    x:Uid="SortPage_RecoverButton"
-                    Content="Vorschläge einer früheren Analyse zurückholen"
-                    IsEnabled="{x:Bind ViewModel.CanRecoverFromMemory, Mode=OneWay}"
-                    Visibility="{x:Bind ViewModel.ShowsRecoverOffer, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
 
                 <StackPanel
                     Grid.Column="1"
@@ -319,11 +331,16 @@
                             Text="Was sollen wir heraussuchen? Gib der Gruppe einen Namen und beschreibe in eigenen Worten, was darauf zu sehen ist."
                             TextWrapping="Wrap"
                             Visibility="{x:Bind ViewModel.Wizard.ShowExampleSteps, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                        <!-- UpdateSourceTrigger: Ohne die Angabe schreibt WinUI den Text
+                             erst beim Verlassen des Feldes ins Anzeige-Modell. Das Angebot,
+                             frühere Urteile zurückzuholen, hängt am Gruppennamen — es
+                             erschiene sonst erst, wenn die Nutzerin woanders hinklickt,
+                             und bis dahin sieht sie es nicht. -->
                         <TextBox
                             x:Uid="SortPage_CategoryNameBox"
                             Header="Name der Gruppe"
                             PlaceholderText="z. B. Familie"
-                            Text="{x:Bind ViewModel.CategoryName, Mode=TwoWay}" />
+                            Text="{x:Bind ViewModel.CategoryName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
                         <!-- Beschreibung und Ereignis-Kennzeichen wirken ausschließlich auf
                              die KI-Bewertung; beim Sortieren nach Datum wären sie zwei

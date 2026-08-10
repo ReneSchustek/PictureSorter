@@ -541,6 +541,20 @@ internal class FakeSortMemory : ISortMemory
             return Task.FromResult<IReadOnlyList<SortMemoryRecord>>([.. _records]);
         }
     }
+
+    public Task<int> CountProposalsAsync(
+        string folderPath,
+        string categoryName,
+        CancellationToken cancellationToken)
+    {
+        lock (_gate)
+        {
+            return Task.FromResult(_records.Count(record =>
+                record.FolderPath == folderPath
+                && string.Equals(record.CategoryName, categoryName, StringComparison.OrdinalIgnoreCase)
+                && record.Status == SortMemoryStatus.Proposed));
+        }
+    }
 }
 
 /// <summary>Liefert eine feste Zeit, damit Zeitstempel im Test deterministisch sind.</summary>

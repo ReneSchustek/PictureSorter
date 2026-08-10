@@ -46,8 +46,20 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
 
     private readonly ExampleGatheringViewModel _gathering;
 
+    // Wartezeit, bevor beim Tippen im Gedächtnis nachgesehen wird. Kurz genug, dass das
+    // Angebot noch während des Tippens erscheint, lang genug, dass nicht jedes Zeichen
+    // eine Abfrage auslöst.
+    private static readonly TimeSpan OfferProbeDelay = TimeSpan.FromMilliseconds(400);
+
     private Category? _category;
     private CancellationTokenSource? _cancellation;
+    private CancellationTokenSource? _offerProbe;
+
+    /// <summary>
+    /// Anzahl der Urteile einer früheren Analyse, die zu Ordner und Gruppe bereitliegen.
+    /// </summary>
+    [ObservableProperty]
+    public partial int RecoverableCount { get; set; }
 
     /// <summary>Expliziter Ablaufzustand der Sortier-Ansicht.</summary>
     [ObservableProperty]
@@ -421,11 +433,11 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(CanSuggestTrips));
         OnPropertyChanged(nameof(CanSortByDate));
         OnPropertyChanged(nameof(CanRecoverFromMemory));
-        OnPropertyChanged(nameof(ShowsRecoverOffer));
         SuggestTripsCommand.NotifyCanExecuteChanged();
         SortByDateCommand.NotifyCanExecuteChanged();
         Resume.NotifyStateChanged();
         Wizard.NotifyStateChanged();
+        ScheduleRecoverOfferRefresh();
     }
 
     partial void OnCategoryNameChanged(string value)
@@ -435,10 +447,17 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         // nach früheren Vorschlägen gesucht wird.
         OnPropertyChanged(nameof(CanSortByDate));
         OnPropertyChanged(nameof(CanRecoverFromMemory));
-        OnPropertyChanged(nameof(ShowsRecoverOffer));
+        OnPropertyChanged(nameof(RecoverOfferSummary));
         SortByDateCommand.NotifyCanExecuteChanged();
         Resume.NotifyStateChanged();
         Wizard.NotifyStateChanged();
+        ScheduleRecoverOfferRefresh();
+    }
+
+    partial void OnRecoverableCountChanged(int value)
+    {
+        OnPropertyChanged(nameof(ShowsRecoverOffer));
+        OnPropertyChanged(nameof(RecoverOfferSummary));
     }
 
     // ── Anbindung des Assistenten (Delegaten) ──────────────────────────────────
@@ -869,6 +888,11 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
             // Erst jetzt steht der Lauf im Protokoll – der Hinweis „rückgängig machen"
             // erscheint unmittelbar nach dem Sortieren.
             await RefreshUndoStateAsync().ConfigureAwait(true);
+
+            // Was einsortiert wurde, ist im Gedächtnis kein offener Vorschlag mehr. Ohne
+            // diese Auffrischung böte die Seite weiter an, etwas zurückzuholen, das
+            // gerade in seinem Zielordner gelandet ist.
+            await RefreshRecoverOfferAsync().ConfigureAwait(true);
         }
     }
 
@@ -1065,21 +1089,99 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         && !string.IsNullOrWhiteSpace(CategoryName);
 
     /// <summary>
-    /// <see langword="true"/>, sobald Ordner und Gruppenname feststehen — unabhängig
-    /// davon, ob gerade etwas läuft.
+    /// <see langword="true"/>, wenn zu Ordner und Gruppe tatsächlich Urteile bereitliegen.
     ///
-    /// Steuert allein die Sichtbarkeit des Angebots. Hinge sie an
-    /// <see cref="CanRecoverFromMemory"/>, verschwände das Angebot während jedes Laufs
-    /// und der Rest der Seite spränge; grau werden reicht.
+    /// Das Angebot erscheint nur dann — ein Knopf, der bei den meisten Läufen „nichts
+    /// gemerkt" meldet, ist kein Angebot, sondern eine Sackgasse mit Beschriftung.
     /// </summary>
-    public bool ShowsRecoverOffer =>
-        !string.IsNullOrWhiteSpace(SourceFolder)
-        && !string.IsNullOrWhiteSpace(CategoryName);
+    public bool ShowsRecoverOffer => RecoverableCount > 0;
+
+    /// <summary>
+    /// Der Satz über dem Knopf: nennt Gruppe und Anzahl, damit die Nutzerin vor dem Klick
+    /// weiß, worum es geht.
+    /// </summary>
+    public string RecoverOfferSummary => RecoverableCount > 0
+        ? _localizer.Format("Sort_RecoverOfferSummary", CategoryName.Trim(), RecoverableCount)
+        : string.Empty;
 
     // Das Angebot kennt Ordner und Gruppenname nicht; es fragt hier nach, bevor es den
     // Knopf freigibt.
     private Task RecoverFromMemoryGuardedAsync() =>
         CanRecoverFromMemory ? RunRecoverFromMemoryAsync() : Task.CompletedTask;
+
+    /// <summary>
+    /// Sieht nach, wie viele Urteile einer früheren Analyse bereitliegen, und stellt das
+    /// Angebot entsprechend ein.
+    /// </summary>
+    /// <returns>Die Aufgabe des Nachsehens.</returns>
+    /// <remarks>
+    /// Öffentlich, damit die Prüfung ohne Wartezeit auslösbar ist; die Oberfläche ruft
+    /// stattdessen die entprellte Fassung.
+    /// </remarks>
+    [SuppressMessage(
+        "Design",
+        "CA1031:Keine allgemeinen Ausnahmetypen abfangen",
+        Justification = "Das Nachsehen ist eine Zugabe; eine gesperrte oder beschädigte Datenbank darf die Sortierseite nicht mitreißen. Der Fehler wird protokolliert, das Angebot bleibt aus.")]
+    public async Task RefreshRecoverOfferAsync()
+    {
+        string folder = SourceFolder;
+        string category = CategoryName.Trim();
+
+        if (string.IsNullOrWhiteSpace(folder) || string.IsNullOrWhiteSpace(category))
+        {
+            RecoverableCount = 0;
+            return;
+        }
+
+        try
+        {
+            RecoverableCount = await _recovery
+                .CountRecoverableAsync(folder, category, CancellationToken.None)
+                .ConfigureAwait(true);
+        }
+        catch (Exception ex)
+        {
+            SortViewModelLog.RecoverOfferUnavailable(_logger, ex);
+            RecoverableCount = 0;
+        }
+    }
+
+    // Entprellt: Der Gruppenname entsteht Zeichen für Zeichen, und jedes Zeichen ändert
+    // die Frage an die Datenbank. Ohne Wartezeit liefe bei „Urlaub Kreta" zwölfmal eine
+    // Abfrage, von der nur die letzte zählt.
+    private void ScheduleRecoverOfferRefresh()
+    {
+        _offerProbe?.Cancel();
+        _offerProbe?.Dispose();
+
+        CancellationTokenSource probe = new();
+        _offerProbe = probe;
+        _ = DelayedRefreshAsync(probe.Token);
+    }
+
+    [SuppressMessage(
+        "Design",
+        "CA1031:Keine allgemeinen Ausnahmetypen abfangen",
+        Justification = "Läuft ohne Aufrufer im Hintergrund; eine entweichende Ausnahme beendete den Prozess. Sie wird protokolliert.")]
+    private async Task DelayedRefreshAsync(CancellationToken token)
+    {
+        try
+        {
+            await Task.Delay(OfferProbeDelay, token).ConfigureAwait(true);
+            if (!token.IsCancellationRequested)
+            {
+                await RefreshRecoverOfferAsync().ConfigureAwait(true);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Ein neueres Zeichen hat diese Abfrage überholt.
+        }
+        catch (Exception ex)
+        {
+            SortViewModelLog.RecoverOfferUnavailable(_logger, ex);
+        }
+    }
 
     // Die Rückfrage vor dem Verwerfen: Sie braucht den Bestätigungsdienst und bleibt
     // deshalb hier. Das Angebot fragt sie über einen Delegaten ab.
@@ -1340,6 +1442,13 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         _gathering.ResetOffsets();
         Proposals.Clear();
         DisposeCancellation();
+
+        // Die entprellte Abfrage läuft ohne Aufrufer weiter; ohne Abbruch griffe sie nach
+        // dem Schließen der Seite noch auf die Datenbank zu.
+        _offerProbe?.Cancel();
+        _offerProbe?.Dispose();
+        _offerProbe = null;
+
         GC.SuppressFinalize(this);
     }
 }
@@ -1366,6 +1475,9 @@ internal static partial class SortViewModelLog
 
     [LoggerMessage(EventId = 3105, Level = LogLevel.Error, Message = "Die Suche nach Urlaubs-Zeiträumen ist fehlgeschlagen.")]
     public static partial void TripSearchFailed(ILogger logger, Exception exception);
+
+    [LoggerMessage(EventId = 5250, Level = LogLevel.Warning, Message = "Im Sortier-Gedächtnis konnte nicht nachgesehen werden; es wird kein Zurückholen angeboten.")]
+    public static partial void RecoverOfferUnavailable(ILogger logger, Exception exception);
 
     [LoggerMessage(EventId = 3106, Level = LogLevel.Warning, Message = "Auf das Protokoll der Analyseläufe konnte nicht zugegriffen werden; es wird kein Lauf zum Fortsetzen angeboten.")]
     public static partial void AnalysisJournalUnreadable(ILogger logger, Exception exception);

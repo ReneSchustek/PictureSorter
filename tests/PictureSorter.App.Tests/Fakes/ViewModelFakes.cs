@@ -394,4 +394,50 @@ internal sealed class FakeSortMemory : ISortMemory
 
     public Task<IReadOnlyList<SortMemoryRecord>> GetAllAsync(CancellationToken cancellationToken) =>
         Task.FromResult<IReadOnlyList<SortMemoryRecord>>([.. Records]);
+
+    public Task<int> CountProposalsAsync(
+        string folderPath,
+        string categoryName,
+        CancellationToken cancellationToken) =>
+        Task.FromResult(Records.Count(record =>
+            record.FolderPath == folderPath
+            && string.Equals(record.CategoryName, categoryName, StringComparison.OrdinalIgnoreCase)
+            && record.Status == SortMemoryStatus.Proposed));
+}
+
+/// <summary>
+/// Ein Gedächtnis, das bei jedem Zugriff scheitert — für die Zusage, dass eine gesperrte
+/// oder beschädigte Datenbank die Sortierseite nicht mitreißt.
+/// </summary>
+internal sealed class ThrowingSortMemory : ISortMemory
+{
+    public Task<IReadOnlyList<SortMemoryRecord>> GetForFolderAsync(
+        string folderPath,
+        CancellationToken cancellationToken) => throw new IOException("Gedächtnis gesperrt");
+
+    public Task<SortMemoryRecord?> GetAsync(
+        string folderPath,
+        string fileSignature,
+        string categoryName,
+        CancellationToken cancellationToken) => throw new IOException("Gedächtnis gesperrt");
+
+    public Task UpsertAsync(SortMemoryRecord record, CancellationToken cancellationToken) =>
+        throw new IOException("Gedächtnis gesperrt");
+
+    public Task RemoveAsync(
+        string folderPath,
+        string fileSignature,
+        string categoryName,
+        CancellationToken cancellationToken) => throw new IOException("Gedächtnis gesperrt");
+
+    public Task ClearFolderAsync(string folderPath, CancellationToken cancellationToken) =>
+        throw new IOException("Gedächtnis gesperrt");
+
+    public Task<IReadOnlyList<SortMemoryRecord>> GetAllAsync(CancellationToken cancellationToken) =>
+        throw new IOException("Gedächtnis gesperrt");
+
+    public Task<int> CountProposalsAsync(
+        string folderPath,
+        string categoryName,
+        CancellationToken cancellationToken) => throw new IOException("Gedächtnis gesperrt");
 }

@@ -68,4 +68,19 @@ public interface ISortMemory
     /// <param name="cancellationToken">Token zum Abbrechen des Vorgangs.</param>
     /// <returns>Alle gemerkten Einträge.</returns>
     Task<IReadOnlyList<SortMemoryRecord>> GetAllAsync(CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Zählt die offenen Vorschläge eines Ordners für eine Kategorie — also das, was sich
+    /// aus dem Gedächtnis zurückholen ließe.
+    /// </summary>
+    /// <param name="folderPath">Der Quellordner.</param>
+    /// <param name="categoryName">Die Kategorie.</param>
+    /// <param name="cancellationToken">Token zum Abbrechen des Vorgangs.</param>
+    /// <returns>Die Anzahl der Einträge mit dem Status „vorgeschlagen"; 0, wenn keine vorliegen.</returns>
+    /// <remarks>
+    /// Eigene Zählung statt „alles laden und filtern": Die Oberfläche fragt danach, während
+    /// die Nutzerin den Gruppennamen tippt. Bei einem Ordner mit tausenden Urteilen wäre das
+    /// bei jedem Zeichen ein voller Ladevorgang.
+    /// </remarks>
+    Task<int> CountProposalsAsync(string folderPath, string categoryName, CancellationToken cancellationToken);
 }

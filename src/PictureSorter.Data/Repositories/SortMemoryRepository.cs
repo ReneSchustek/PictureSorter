@@ -176,6 +176,37 @@ internal sealed class SortMemoryRepository : ISortMemory
         }
     }
 
+    /// <inheritdoc />
+    public async Task<int> CountProposalsAsync(
+        string folderPath,
+        string categoryName,
+        CancellationToken cancellationToken)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(folderPath);
+        ArgumentException.ThrowIfNullOrWhiteSpace(categoryName);
+
+        PictureSorterDbContext context = await CreateContextAsync(cancellationToken).ConfigureAwait(false);
+        await using (context.ConfigureAwait(false))
+        {
+            // Nur „vorgeschlagen": Einsortiertes liegt längst im Zielordner, Abgelehntes und
+            // Abgewähltes sind Entscheidungen, die zu achten sind. Dieselbe Auswahl trifft
+            // die Wiederherstellung — sonst verspräche die Zahl mehr, als zurückkommt.
+            //
+            // Der Gruppenname wird ohne Rücksicht auf Groß- und Kleinschreibung verglichen,
+            // ebenfalls wie dort. Ein exakter Vergleich meldete „nichts da", sobald die
+            // Nutzerin den Namen anders schreibt als beim ersten Lauf — und das Angebot
+            // erschiene nie, obwohl die Urteile bereitliegen.
+            return await context.SortMemory
+                .AsNoTracking()
+                .CountAsync(
+                    entity => entity.FolderPath == folderPath
+                        && EF.Functions.Collate(entity.CategoryName, "NOCASE") == categoryName
+                        && entity.Status == (int)SortMemoryStatus.Proposed,
+                    cancellationToken)
+                .ConfigureAwait(false);
+        }
+    }
+
     private Task<PictureSorterDbContext> CreateContextAsync(CancellationToken cancellationToken)
         => _contextFactory.CreateDbContextAsync(cancellationToken);
 

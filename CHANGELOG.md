@@ -6,6 +6,19 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
+### Geändert
+
+- **Das Zurückholen früherer Urteile meldet sich jetzt von selbst.** Statt eines Verweises,
+  den man suchen musste, erscheint oben eine Hinweisleiste — aber nur, wenn zu Ordner und
+  Gruppe wirklich etwas im Gedächtnis liegt, und sie nennt gleich die Anzahl. Sie steht ab
+  dem zweiten Schritt bereit: Zum Nachschlagen braucht es weder Beispiele noch ein
+  gelerntes Profil.
+
+### Behoben
+
+- Der Gruppenname wurde erst übernommen, wenn man das Eingabefeld verließ. Wer ihn tippte
+  und hinsah, bekam das Angebot zum Zurückholen deshalb gar nicht zu sehen.
+
 ## [1.10.0] - 2026-08-10
 
 ### Hinzugefügt

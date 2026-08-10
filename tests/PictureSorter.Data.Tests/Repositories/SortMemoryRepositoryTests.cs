@@ -182,6 +182,44 @@ public sealed class SortMemoryRepositoryTests : IAsyncLifetime
         }
     }
 
+    [Fact]
+    public async Task CountProposals_CountsOnlyWhatComesBack()
+    {
+        // Gezählt wird, was die Wiederherstellung auch zurückholt: allein die offenen
+        // Vorschläge. Einsortiertes liegt längst im Zielordner, Abgelehntes ist eine
+        // Entscheidung — beides erneut anzubieten wäre das Gegenteil eines Gedächtnisses.
+        await _sut.UpsertAsync(CreateRecord("sig-1", SortMemoryStatus.Proposed), CancellationToken.None);
+        await _sut.UpsertAsync(CreateRecord("sig-2", SortMemoryStatus.Proposed), CancellationToken.None);
+        await _sut.UpsertAsync(CreateRecord("sig-3", SortMemoryStatus.Sorted), CancellationToken.None);
+        await _sut.UpsertAsync(CreateRecord("sig-4", SortMemoryStatus.Rejected), CancellationToken.None);
+        await _sut.UpsertAsync(CreateRecord("sig-5", SortMemoryStatus.Ignored), CancellationToken.None);
+
+        int count = await _sut.CountProposalsAsync(Folder, "Urlaub", CancellationToken.None);
+
+        Assert.Equal(2, count);
+    }
+
+    [Fact]
+    public async Task CountProposals_IgnoresTheCaseOfTheGroupName()
+    {
+        // Wer die Gruppe beim zweiten Mal klein schreibt, soll sein Ergebnis trotzdem
+        // wiederfinden — die Wiederherstellung vergleicht ebenso.
+        await _sut.UpsertAsync(CreateRecord("sig-1", SortMemoryStatus.Proposed), CancellationToken.None);
+
+        int count = await _sut.CountProposalsAsync(Folder, "urlaub", CancellationToken.None);
+
+        Assert.Equal(1, count);
+    }
+
+    [Fact]
+    public async Task CountProposals_SeparatesFoldersAndGroups()
+    {
+        await _sut.UpsertAsync(CreateRecord("sig-1", SortMemoryStatus.Proposed), CancellationToken.None);
+
+        Assert.Equal(0, await _sut.CountProposalsAsync(@"C:\Fotos\Anders", "Urlaub", CancellationToken.None));
+        Assert.Equal(0, await _sut.CountProposalsAsync(Folder, "Familie", CancellationToken.None));
+    }
+
     private static SortMemoryRecord CreateRecord(string signature, SortMemoryStatus status) => new()
     {
         FolderPath = Folder,
