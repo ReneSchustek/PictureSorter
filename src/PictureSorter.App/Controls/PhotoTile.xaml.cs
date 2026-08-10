@@ -3,6 +3,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
+using PictureSorter.App.Views;
 
 namespace PictureSorter.App.Controls;
 
@@ -50,6 +51,11 @@ internal sealed partial class PhotoTile : UserControl
     {
         InitializeComponent();
         Head.Height = PreviewHeight;
+
+        // Erst wenn eine Vorschau wirklich geladen ist, gibt es etwas zu vergrößern. Ohne
+        // diese Vorgabe böte eine Kachel ohne Bild eine Lupe an, die ein leeres Fenster
+        // öffnet — die Eigenschaft meldet keine Änderung, wenn nie ein Pfad gesetzt wird.
+        ZoomButton.IsEnabled = false;
     }
 
     /// <summary>Meldet den Klick auf das Bild — der Weg in die Detailansicht.</summary>
@@ -162,6 +168,7 @@ internal sealed partial class PhotoTile : UserControl
             tile.Preview.Source = null;
             tile.Preview.Visibility = Visibility.Collapsed;
             tile.InitialsText.Visibility = Visibility.Visible;
+            tile.ZoomButton.IsEnabled = false;
             return;
         }
 
@@ -199,6 +206,7 @@ internal sealed partial class PhotoTile : UserControl
     {
         Preview.Visibility = Visibility.Visible;
         InitialsText.Visibility = Visibility.Collapsed;
+        ZoomButton.IsEnabled = true;
     }
 
     // Eine kaputte, gesperrte oder gelöschte Datei ist kein Grund für ein graues Loch.
@@ -206,13 +214,40 @@ internal sealed partial class PhotoTile : UserControl
     {
         Preview.Visibility = Visibility.Collapsed;
         InitialsText.Visibility = Visibility.Visible;
+
+        // Ohne Vorschau gibt es auch nichts zu vergrößern. Die Lupe stehen zu lassen
+        // hieße, ein leeres Fenster anzubieten.
+        ZoomButton.IsEnabled = false;
     }
 
     private void OnHeadClick(object sender, RoutedEventArgs e) => Opened?.Invoke(this, EventArgs.Empty);
 
-    private void OnPointerEntered(object sender, PointerRoutedEventArgs e) =>
+    private void OnPointerEntered(object sender, PointerRoutedEventArgs e)
+    {
         Frame.BorderBrush = (Brush)Microsoft.UI.Xaml.Application.Current.Resources["AppCardBorderHoverBrush"];
+        ShowZoom(visible: true);
+    }
 
-    private void OnPointerExited(object sender, PointerRoutedEventArgs e) =>
+    private void OnPointerExited(object sender, PointerRoutedEventArgs e)
+    {
         Frame.BorderBrush = (Brush)Microsoft.UI.Xaml.Application.Current.Resources["AppCardBorderBrush"];
+
+        // Wer die Lupe mit der Tastatur angesteuert hat, soll sie nicht dadurch verlieren,
+        // dass der Zeiger nebenher die Kachel verlässt.
+        ShowZoom(ZoomButton.FocusState != FocusState.Unfocused);
+    }
+
+    private void OnZoomFocused(object sender, RoutedEventArgs e) => ShowZoom(visible: true);
+
+    private void OnZoomUnfocused(object sender, RoutedEventArgs e) => ShowZoom(visible: false);
+
+    // Die Lupe erscheint nur, wo es etwas zu vergrößern gibt.
+    private void ShowZoom(bool visible) =>
+        ZoomButton.Opacity = visible && ZoomButton.IsEnabled ? 1.0 : 0.0;
+
+    // Die Kachel öffnet das Fenster selbst, statt die Bitte nach außen zu melden: Sie
+    // bringt die Lupe mit, also soll sie auch wirken — sonst hinge an jeder Seite, die
+    // eine Kachel einsetzt, derselbe Dreizeiler, und die nächste vergäße ihn.
+    private void OnZoomClick(object sender, RoutedEventArgs e) =>
+        PhotoZoomWindow.Show(ImagePath, FileName);
 }

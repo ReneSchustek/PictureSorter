@@ -421,6 +421,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(CanSuggestTrips));
         OnPropertyChanged(nameof(CanSortByDate));
         OnPropertyChanged(nameof(CanRecoverFromMemory));
+        OnPropertyChanged(nameof(ShowsRecoverOffer));
         SuggestTripsCommand.NotifyCanExecuteChanged();
         SortByDateCommand.NotifyCanExecuteChanged();
         Resume.NotifyStateChanged();
@@ -434,6 +435,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         // nach früheren Vorschlägen gesucht wird.
         OnPropertyChanged(nameof(CanSortByDate));
         OnPropertyChanged(nameof(CanRecoverFromMemory));
+        OnPropertyChanged(nameof(ShowsRecoverOffer));
         SortByDateCommand.NotifyCanExecuteChanged();
         Resume.NotifyStateChanged();
         Wizard.NotifyStateChanged();
@@ -1060,6 +1062,18 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     public bool CanRecoverFromMemory =>
         IsInteractive
         && !string.IsNullOrWhiteSpace(SourceFolder)
+        && !string.IsNullOrWhiteSpace(CategoryName);
+
+    /// <summary>
+    /// <see langword="true"/>, sobald Ordner und Gruppenname feststehen — unabhängig
+    /// davon, ob gerade etwas läuft.
+    ///
+    /// Steuert allein die Sichtbarkeit des Angebots. Hinge sie an
+    /// <see cref="CanRecoverFromMemory"/>, verschwände das Angebot während jedes Laufs
+    /// und der Rest der Seite spränge; grau werden reicht.
+    /// </summary>
+    public bool ShowsRecoverOffer =>
+        !string.IsNullOrWhiteSpace(SourceFolder)
         && !string.IsNullOrWhiteSpace(CategoryName);
 
     // Das Angebot kennt Ordner und Gruppenname nicht; es fragt hier nach, bevor es den

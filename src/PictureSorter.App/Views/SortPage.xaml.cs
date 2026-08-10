@@ -152,6 +152,55 @@ internal sealed partial class SortPage : Page
         }
     }
 
+    // Die Lupe neben einem Vorschlag: dasselbe Fenster wie an der Bildkachel, damit
+    // Vergrößern sich überall gleich anfühlt.
+    private void OnProposalZoomClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { Tag: ProposalViewModel proposal })
+        {
+            PhotoZoomWindow.Show(proposal.FilePath, proposal.FileName);
+        }
+    }
+
+    // Klick auf ein Beispielbild öffnet seine Angaben. In der Kachel erkennt man, was auf
+    // dem Bild ist, aber nicht, ob es als Beispiel taugt — und genau darüber wird hier
+    // entschieden. Für den schnellen Blick gibt es daneben die Lupe der Kachel.
+    private async void OnExampleOpened(object? sender, EventArgs e)
+    {
+        // Wiedereintritt verhindern, aus demselben Grund wie bei den Vorschlägen: Ein
+        // zweiter Dialog reißt im async-void-Handler den Prozess mit.
+        if (_previewOpen || sender is not PhotoTile { Tag: ExampleCandidateViewModel candidate })
+        {
+            return;
+        }
+
+        _previewOpen = true;
+        try
+        {
+            PhotoEditOutcome ergebnis = await PhotoPreviewDialog
+                .ShowAsync(this, candidate.Photo)
+                .ConfigureAwait(true);
+
+            // Umbenannt, verschoben oder gelöscht: Das Beispiel zeigt auf einen Pfad, den
+            // es nicht mehr gibt, und würde beim Anlernen als Fehler zurückkommen. Welche
+            // der beiden Seiten es war, muss nicht unterschieden werden — das Entfernen
+            // greift nur dort, wo es tatsächlich steht.
+            if (ergebnis.NeedsRefresh)
+            {
+                ViewModel.PositiveExamples.RemoveCommand.Execute(candidate);
+                ViewModel.NegativeExamples.RemoveCommand.Execute(candidate);
+            }
+        }
+        catch (InvalidOperationException)
+        {
+            // Ein Dialog war bereits offen – für den Nutzer kein Fehler.
+        }
+        finally
+        {
+            _previewOpen = false;
+        }
+    }
+
     private void OnPositivesDragOver(object sender, DragEventArgs e) => AcceptImageDrop(e, "SortPage_DropCaption");
 
     private void OnNegativesDragOver(object sender, DragEventArgs e) => AcceptImageDrop(e, "SortPage_DropCaptionNegative");

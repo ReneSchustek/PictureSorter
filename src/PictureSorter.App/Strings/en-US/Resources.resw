@@ -895,6 +895,18 @@
   <data name="SortPage_RecoverButton.Content" xml:space="preserve">
     <value>Bring back suggestions from an earlier analysis</value>
   </data>
+  <data name="PhotoTile_ZoomButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Enlarge picture</value>
+  </data>
+  <data name="SortPage_ProposalZoomButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Enlarge picture</value>
+  </data>
+  <data name="SortPage_ProposalZoomButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>View the picture large without leaving the list. Clicking the picture itself opens its details.</value>
+  </data>
+  <data name="PhotoTile_ZoomButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>View the picture large without leaving the page. Clicking the picture itself opens its details.</value>
+  </data>
   <data name="SortPage_PauseButton.Content" xml:space="preserve">
     <value>Pause the analysis</value>
   </data>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+    Das Fenster der Lupe: nichts als das Bild.
+
+    Es ist bewusst ein eigenes Fenster und kein Flyout und kein Dialog — beide lassen
+    sich nicht in der Größe verändern. Hier soll die Nutzerin ziehen können, bis das
+    Bild so groß ist, wie sie es braucht.
+
+    „Uniform" ist der ganze Trick der Anpassung: Das Bild füllt den Fensterinhalt, ohne
+    sein Seitenverhältnis zu verlieren — beim Vergrößern wie beim Verkleinern.
+-->
+<Window
+    x:Class="PictureSorter.App.Views.PhotoZoomWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:PictureSorter.App.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource SolidBackgroundFillColorBaseBrush}">
+        <Grid.KeyboardAccelerators>
+            <!-- Escape schließt. Am Wurzelelement gilt die Tastenkürzel-Bindung im
+                 ganzen Fenster, unabhängig davon, was gerade den Fokus hat. -->
+            <KeyboardAccelerator Key="Escape" Invoked="OnEscape" />
+        </Grid.KeyboardAccelerators>
+
+        <Image
+            x:Name="LargeImage"
+            ImageOpened="OnImageOpened"
+            Stretch="Uniform" />
+    </Grid>
+</Window>
