@@ -98,6 +98,81 @@ internal sealed class FakeModelAvailabilityChecker(ModelAvailability availabilit
 }
 
 /// <summary>Liefert einen festen Ordnerpfad und eine feste Bildauswahl.</summary>
+/// <summary>
+/// Ordnersuche mit vorgegebener Antwort. Ohne Vorgabe gibt es keinen Zwilling - das
+/// ist der Normalfall und hält die übrigen Tests von der Frage frei.
+/// </summary>
+/// <summary>
+/// Liefert feste Vorschläge und legt offen, was tatsächlich angewendet wurde.
+/// </summary>
+internal sealed class FakeFileNameRepairService(IReadOnlyList<RenameProposal> proposals) : IFileNameRepairService
+{
+    /// <summary>Die Vorschläge, die angewendet wurden.</summary>
+    public List<RenameProposal> Applied { get; } = [];
+
+    public Task<IReadOnlyList<RenameProposal>> ProposeAsync(
+        string folder,
+        bool includeSubfolders,
+        IProgress<PhotoScanProgress>? progress,
+        CancellationToken cancellationToken) => Task.FromResult(proposals);
+
+    public Task<RenameResult> ApplyAsync(
+        string folder,
+        IReadOnlyList<RenameProposal> selected,
+        IProgress<PhotoScanProgress>? progress,
+        CancellationToken cancellationToken)
+    {
+        Applied.AddRange(selected);
+        return Task.FromResult(new RenameResult { Renamed = selected.Count, Skipped = 0 });
+    }
+}
+
+/// <summary>Scheitert bei jedem Aufruf mit einer vorgegebenen Störung.</summary>
+internal sealed class FailingFileNameRepairService(Exception failure) : IFileNameRepairService
+{
+    public Task<IReadOnlyList<RenameProposal>> ProposeAsync(
+        string folder,
+        bool includeSubfolders,
+        IProgress<PhotoScanProgress>? progress,
+        CancellationToken cancellationToken) => Task.FromException<IReadOnlyList<RenameProposal>>(failure);
+
+    public Task<RenameResult> ApplyAsync(
+        string folder,
+        IReadOnlyList<RenameProposal> selected,
+        IProgress<PhotoScanProgress>? progress,
+        CancellationToken cancellationToken) => Task.FromException<RenameResult>(failure);
+}
+
+/// <summary>Hält einen zurücknehmbaren Lauf bereit und merkt sich das Zurücknehmen.</summary>
+internal sealed class FakeRenameUndoService : IRenameUndoService
+{
+    /// <summary>Der Lauf, der zum Zurücknehmen bereitsteht.</summary>
+    public RenameRun? Run { get; set; }
+
+    /// <summary><see langword="true"/>, wenn zurückgenommen wurde.</summary>
+    public bool WasUndone { get; private set; }
+
+    public Task<RenameRun?> GetUndoableRunAsync(CancellationToken cancellationToken) => Task.FromResult(Run);
+
+    public Task<UndoResult?> UndoLastRunAsync(CancellationToken cancellationToken)
+    {
+        if (Run is null)
+        {
+            return Task.FromResult<UndoResult?>(null);
+        }
+
+        WasUndone = true;
+        int restored = Run.Items.Count;
+        Run = null;
+        return Task.FromResult<UndoResult?>(new UndoResult { Restored = restored, Skipped = 0 });
+    }
+}
+
+internal sealed class FakeFolderLookup(string? lookalike = null) : IFolderLookup
+{
+    public string? FindLookalike(string requestedPath) => lookalike;
+}
+
 internal sealed class FakeFolderPicker(string? folder, IReadOnlyList<string>? images = null) : IFolderPicker
 {
     public Task<string?> PickFolderAsync(CancellationToken cancellationToken) => Task.FromResult(folder);

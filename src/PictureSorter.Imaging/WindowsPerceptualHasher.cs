@@ -69,11 +69,20 @@ public sealed class WindowsPerceptualHasher : IPerceptualHasher
             using IRandomAccessStream stream = await file.OpenAsync(FileAccessMode.Read).AsTask(cancellationToken).ConfigureAwait(false);
             BitmapDecoder decoder = await BitmapDecoder.CreateAsync(stream).AsTask(cancellationToken).ConfigureAwait(false);
 
+            // Fant und nicht Linear: Ein Foto schrumpft hier von mehreren Millionen
+            // Bildpunkten auf 72. Linear tastet dabei nur einzelne Punkte ab, statt
+            // über die Fläche zu mitteln – ganze Rasterzeilen kommen dann konstant
+            // heraus. Der Difference-Hash setzt ein Bit nur, wenn ein Punkt heller ist
+            // als sein rechter Nachbar; bei gleichen Nachbarn bleibt es aus. Aus einem
+            // flachen Raster wurde so ein Fingerabdruck aus fast lauter Nullen, und
+            // völlig verschiedene Fotos lagen wenige Bit auseinander: Sie erschienen
+            // als Duplikate und wurden zum Löschen angeboten. Fant mittelt über die
+            // Fläche und erhält die Struktur.
             BitmapTransform transform = new()
             {
                 ScaledWidth = GridWidth,
                 ScaledHeight = GridHeight,
-                InterpolationMode = BitmapInterpolationMode.Linear,
+                InterpolationMode = BitmapInterpolationMode.Fant,
             };
 
             PixelDataProvider provider = await decoder.GetPixelDataAsync(

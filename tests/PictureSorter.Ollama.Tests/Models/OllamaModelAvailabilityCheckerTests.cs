@@ -111,12 +111,17 @@ public sealed class OllamaModelAvailabilityCheckerTests
         Assert.False(availability.IsReachable);
     }
 
+    // Das geprüfte Modell steht hier ausdrücklich und wird nicht aus der Vorgabe
+    // geerbt: Diese Tests handeln von der Tag-Schreibweise, nicht von der Wahl des
+    // Modells. Sonst fielen sie jedes Mal um, wenn die Anwendung ein anderes
+    // Bild-Modell mitbringt - und man suchte den Fehler an der falschen Stelle.
     private static async Task<ModelAvailability> CheckAsync(params string[] installed)
     {
         FakeOllamaClient client = new(string.Empty);
         client.InstalledModels.AddRange(installed);
 
-        return await CreateSut(client).CheckAsync(CancellationToken.None).ConfigureAwait(false);
+        OllamaOptions options = new() { VisionModel = "llava", EmbeddingModel = "nomic-embed-text" };
+        return await CreateSut(client, options).CheckAsync(CancellationToken.None).ConfigureAwait(false);
     }
 
     private static OllamaModelAvailabilityChecker CreateSut(IOllamaClient client, OllamaOptions? options = null) => new(

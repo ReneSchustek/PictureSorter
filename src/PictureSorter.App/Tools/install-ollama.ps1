@@ -13,7 +13,7 @@
 $ErrorActionPreference = 'Stop'
 
 # Diese beiden Modelle benötigt PictureSorter (siehe appsettings.json).
-$models = @('nomic-embed-text', 'llava')
+$models = @('nomic-embed-text', 'qwen2.5vl:7b')
 
 function Write-Step($text) {
     Write-Host ''

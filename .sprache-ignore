@@ -14,3 +14,9 @@
 # „Guessing" ist englisch und bleibt es. Mit Umlaut wird daraus „Güssing" — eine
 # Stadt im Burgenland, die das Wörterbuch kennt und die hier niemand meint.
 Guessing
+
+# --- Dateinamen, die keine Umlaute tragen dürfen ------------------------------
+# „06-gedaechtnis.png" ist ein Dateiname der Bildschirmfoto-Serie, keine Prosa.
+# Dateinamen bleiben nach der Bezeichner-Regel ASCII: Sie stehen im Repository, in
+# Skripten und später in der Adresse einer Webseite.
+gedaechtnis

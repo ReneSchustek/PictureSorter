@@ -63,8 +63,22 @@ public sealed class CachingEmbeddingProvider : IEmbeddingProvider
         return embedding;
     }
 
-    // Schlüssel = Hash über Pfad, Größe, Änderungszeit und Modelle. Ändert sich die
-    // Datei oder ein Modell, entsteht ein neuer Schlüssel und es wird neu berechnet.
+    // Kennzeichen dafür, wie ein Vektor zustande kam. Hochzählen, sobald sich an der
+    // Erzeugung etwas ändert, das den Vektor beeinflusst - dann rechnet die Anwendung
+    // einmal neu, statt weiter mit den alten Werten zu arbeiten.
+    //
+    // 2: Das Bild-Modell wird seither mit fester Temperatur befragt. Vorher schrieb es
+    //    zu jedem Aufruf einen anderen Text; die davon abgeleiteten Vektoren tragen
+    //    diesen Zufall in sich und würden sonst unbegrenzt weiterverwendet.
+    // 3: Die Beschreibung wird seither auf Englisch erfragt. Auf Deutsch schrieb das
+    //    Bild-Modell holprige und teils falsche Sätze, und das Embedding-Modell ist
+    //    auf Englisch trainiert - die alten Vektoren beruhen auf schlechteren
+    //    Beschreibungen.
+    private const int EmbeddingRecipe = 3;
+
+    // Schlüssel = Hash über Pfad, Größe, Änderungszeit, Modelle und Erzeugungsart.
+    // Ändert sich die Datei, ein Modell oder die Erzeugung, entsteht ein neuer
+    // Schlüssel und es wird neu berechnet.
     private string BuildKey(Photo photo)
     {
         long lastWriteTicks = 0;
@@ -83,7 +97,8 @@ public sealed class CachingEmbeddingProvider : IEmbeddingProvider
             photo.SizeBytes,
             lastWriteTicks,
             _options.VisionModel,
-            _options.EmbeddingModel);
+            _options.EmbeddingModel,
+            EmbeddingRecipe);
         byte[] hash = SHA256.HashData(Encoding.UTF8.GetBytes(raw));
         return Convert.ToHexString(hash);
     }

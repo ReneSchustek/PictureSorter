@@ -46,6 +46,16 @@ public sealed class PictureSorterDbContext : DbContext
     /// </summary>
     internal DbSet<AnalysisRunItemEntity> AnalysisRunItems => Set<AnalysisRunItemEntity>();
 
+    /// <summary>
+    /// Die protokollierten Umbenennungs-Läufe (Grundlage des Zurücknehmens).
+    /// </summary>
+    internal DbSet<RenameRunEntity> RenameRuns => Set<RenameRunEntity>();
+
+    /// <summary>
+    /// Die einzelnen Umbenennungen der Läufe.
+    /// </summary>
+    internal DbSet<RenameRunItemEntity> RenameRunItems => Set<RenameRunItemEntity>();
+
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

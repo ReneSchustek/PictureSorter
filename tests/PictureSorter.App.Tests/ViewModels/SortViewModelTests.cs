@@ -432,6 +432,7 @@ public sealed class SortViewModelTests
             new FakeCategoryTrainer(CreateCategory()),
             new FakeCategoryRepository(),
             new FakeFolderPicker(SourceFolder),
+            new FakeFolderLookup(),
             new StubConfirmationService(confirms),
             new StatusBarViewModel(localizer),
             Options.Create(new SortingOptions()),

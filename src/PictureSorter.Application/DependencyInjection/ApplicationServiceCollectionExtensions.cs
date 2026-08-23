@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using PictureSorter.Application.Duplicates;
 using PictureSorter.Application.Learning;
+using PictureSorter.Application.Naming;
 using PictureSorter.Application.Sorting;
 using PictureSorter.Core.Interfaces;
 
@@ -34,6 +35,8 @@ public static class ApplicationServiceCollectionExtensions
         _ = services.AddTransient<ICategoryTrainer, CategoryLearningService>();
         _ = services.AddTransient<IDuplicateScanner, DuplicateScanService>();
         _ = services.AddTransient<ISortUndoService, SortUndoService>();
+        _ = services.AddTransient<IFileNameRepairService, FileNameRepairService>();
+        _ = services.AddTransient<IRenameUndoService, RenameUndoService>();
 
         // Zustandslose Rechnerei auf den Aufnahmedaten, ohne KI-Abhängigkeit: Singleton.
         _ = services.AddSingleton<ITripDetector, TripDetectionService>();

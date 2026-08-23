@@ -99,6 +99,35 @@ public sealed class WindowsPerceptualHasherTests : IDisposable
     }
 
     [Fact]
+    public async Task ComputeAsync_ForDifferentMotifsInPhotoSize_ProducesDistantPerceptualHashes()
+    {
+        // In Fotogröße wird aus Millionen Bildpunkten ein Raster von 72. Wird dabei
+        // nur abgetastet statt gemittelt, kommen ganze Rasterzeilen konstant heraus,
+        // der Fingerabdruck besteht fast nur aus Nullen – und zwei völlig verschiedene
+        // Fotos liegen wenige Bit auseinander. Gemessen an einem Bestand aus zwölf
+        // Motiven waren das siebzehn falsche Paare; jedes davon hätte die Nutzerin
+        // gefragt, ob sie eines der beiden Bilder in den Papierkorb legen will.
+        //
+        // Die übrigen Tests hier arbeiten mit 32×32 Punkten. In der Größe fällt der
+        // Unterschied nicht an, und genau deshalb ist er lange nicht aufgefallen.
+        const int width = 1600;
+        const int height = 1067;
+        string left = Path.Combine(_root, "berge-links.png");
+        await TestImage.WriteLandscapePngAsync(left, width, height, shapeStart: 0.05);
+        string right = Path.Combine(_root, "berge-rechts.png");
+        await TestImage.WriteLandscapePngAsync(right, width, height, shapeStart: 0.65);
+
+        ImageFingerprint one = await _sut.ComputeAsync(left, TestContext.Current.CancellationToken);
+        ImageFingerprint two = await _sut.ComputeAsync(right, TestContext.Current.CancellationToken);
+
+        // Acht ist die Grenze, ab der die Duplikat-Suche zwei Bilder noch als ähnlich
+        // führt (MaxHammingDistance in der appsettings.json).
+        Assert.True(
+            one.Perceptual!.Value.DistanceTo(two.Perceptual!.Value) > 8,
+            "Zwei klar verschiedene Motive in Fotogröße dürfen nicht als ähnlich gelten.");
+    }
+
+    [Fact]
     public async Task ComputeAsync_ForUndecodableFile_KeepsContentHashAndOmitsPerceptualHash()
     {
         // Eine kaputte oder falsch benannte Datei darf den Duplikat-Lauf nicht

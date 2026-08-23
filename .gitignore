@@ -5,8 +5,15 @@
 # ============================================================
 # Lokale Werkzeug- und Editordateien (nicht versionieren)
 # ============================================================
-NOTIZEN.md
-**/NOTIZEN.md
+.ai/
+**/.ai/
+CLAUDE.md
+**/CLAUDE.md
+.claude/
+**/.claude/
+_ai/
+**/_ai/
+brief-template.md
 .gitignore-template
 
 # ============================================================
@@ -103,3 +110,11 @@ $RECYCLE.BIN/
 # Dateinamen und Textproben aus dem ganzen Repository und gehört damit weder
 # in die Verfolgung noch in eine Auslieferung.
 .localpilot/
+
+# ============================================================
+# Bildschirmfotos der Webseite
+# ============================================================
+# Die globale Ignorierliste schließt `docs/` aus. Hier gehören die Bilder aber ins
+# Repository: Sie zeigen eine bestimmte Fassung und sollen mit ihr wandern.
+!docs/
+!docs/**

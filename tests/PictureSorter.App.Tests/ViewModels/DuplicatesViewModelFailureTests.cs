@@ -74,6 +74,42 @@ public sealed class DuplicatesViewModelFailureTests
     }
 
     [Fact]
+    public async Task Scan_WhenAFolderLooksTheSameButIsNotFound_NamesTheOneThatIsMeant()
+    {
+        // „Der Ordner wurde nicht gefunden" stimmt, hilft aber nicht weiter, wenn der
+        // Ordner im Explorer sichtbar danebenliegt. Genau das kommt bei einem aus
+        // iCloud geladenen Bestand vor: Der Name trägt ein geschütztes Leerzeichen,
+        // das wie ein gewöhnliches aussieht. Dann gehört der wirkliche Name in die
+        // Meldung, sonst sucht die Nutzerin an der falschen Stelle.
+        string meant = "E:\\Fotos\\iCloud\u00a0Fotos";
+        StatusBarViewModel status = new(new ReswLocalizer());
+        using DuplicatesViewModel sut = CreateSut(
+            scanner: new FailingDuplicateScanner(new DirectoryNotFoundException()),
+            lookalikeFolder: meant,
+            status: status);
+        sut.SourceFolder = "E:\\Fotos\\iCloud Fotos";
+
+        await sut.ScanCommand.ExecuteAsync(parameter: null);
+
+        Assert.Equal(DuplicateState.Error, sut.State);
+        Assert.Contains(meant, status.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Scan_WhenTheFolderIsMissingWithoutALookalike_KeepsThePlainMessage()
+    {
+        StatusBarViewModel status = new(new ReswLocalizer());
+        using DuplicatesViewModel sut = CreateSut(
+            scanner: new FailingDuplicateScanner(new DirectoryNotFoundException()),
+            status: status);
+        sut.SourceFolder = SourceFolder;
+
+        await sut.ScanCommand.ExecuteAsync(parameter: null);
+
+        Assert.DoesNotContain("vermutlich", status.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task Scan_WhenCanceled_ReturnsToTheIdleState()
     {
         using DuplicatesViewModel sut = CreateSut(
@@ -225,7 +261,9 @@ public sealed class DuplicatesViewModelFailureTests
         IFileDeleter? deleter = null,
         bool confirmed = true,
         IDuplicateScanner? scanner = null,
-        IFolderPicker? folderPicker = null)
+        IFolderPicker? folderPicker = null,
+        string? lookalikeFolder = null,
+        StatusBarViewModel? status = null)
     {
         ReswLocalizer localizer = new();
 
@@ -233,8 +271,9 @@ public sealed class DuplicatesViewModelFailureTests
             scanner ?? new FakeDuplicateScanner(groups ?? []),
             deleter ?? new FakeFileDeleter(),
             folderPicker ?? new FakeFolderPicker(SourceFolder),
+            new FakeFolderLookup(lookalikeFolder),
             new StubConfirmationService(confirmed),
-            new StatusBarViewModel(localizer),
+            status ?? new StatusBarViewModel(localizer),
             localizer,
             NullLogger<DuplicatesViewModel>.Instance);
     }

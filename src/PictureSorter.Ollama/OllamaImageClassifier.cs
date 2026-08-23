@@ -68,17 +68,22 @@ public sealed class OllamaImageClassifier : IImageClassifier
 
     private static string BuildPrompt(string categoryDescription, string metadata)
     {
+        // Englisch aus demselben Grund wie die Bildbeschreibung: Weder Frage noch
+        // Antwort erreichen die Nutzerin, das Urteil wird als JSON ausgewertet. Auf
+        // Englisch hält sich das Bild-Modell zuverlässiger an die geforderte Form.
+        // Die Beschreibung der Gruppe bleibt unangetastet - sie sind die Worte der
+        // Nutzerin, und die werden nicht übersetzt.
         string metadataLine = string.IsNullOrWhiteSpace(metadata)
             ? string.Empty
-            : $"Bekannte Bildinformationen: {metadata} ";
+            : $"Known image information: {metadata} ";
 
-        return "Du prüfst, ob ein Foto zu einer Kategorie gehört. "
-            + $"Kategorie-Beschreibung: \"{categoryDescription}\". "
+        return "You decide whether a photo belongs to a category. "
+            + $"Category description (in German): \"{categoryDescription}\". "
             + metadataLine
-            + "Berücksichtige sowohl das Bild als auch die bekannten Bildinformationen. "
-            + "Antworte ausschließlich mit einem JSON-Objekt der Form "
-            + "{\"matches\": true|false, \"confidence\": 0.0-1.0, \"reason\": \"kurz\"}. "
-            + "Kein weiterer Text.";
+            + "Take both the image and the known image information into account. "
+            + "Answer with nothing but a JSON object of the form "
+            + "{\"matches\": true|false, \"confidence\": 0.0-1.0, \"reason\": \"short\"}. "
+            + "No other text.";
     }
 
     private VisionVerdict ParseVerdict(string answer, string fileName)

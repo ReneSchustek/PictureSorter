@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+    Alle Anzeigetexte kommen über x:Uid aus der Resources.resw und stehen bewusst
+    NICHT zusätzlich als Zeichenkette im Markup. Die übrigen Seiten führen dort noch
+    einen deutschen Text als Entwurfsansicht mit; zur Laufzeit gewinnt ohnehin die
+    resw, und der Prüfstand meldet jede solche Zeile. Eine neue Seite soll den Stand
+    nicht verschlechtern.
+-->
+<Page
+    x:Class="PictureSorter.App.Views.NameRepairPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:PictureSorter.App.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:PictureSorter.App.ViewModels"
+    Loaded="OnPageLoaded"
+    mc:Ignorable="d">
+
+    <Grid Padding="24" Background="{ThemeResource AppBackgroundBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Der Kopf der Linie: Titel und was man hier tut. Ohne Suche - gesucht wird
+             nicht, es geht um alles, was in diesem Ordner unlesbar heißt. -->
+        <controls:ListPageHeader x:Uid="NameRepair_Header" />
+
+        <ScrollViewer Grid.Row="1" Margin="0,16,0,0">
+            <!-- Breite begrenzt wie auf den übrigen Seiten: Ein Eingabefeld für einen
+                 Ordnerpfad über die volle Breite eines großen Bildschirms liest sich
+                 schlecht. -->
+            <StackPanel
+                MaxWidth="980"
+                HorizontalAlignment="Left"
+                Spacing="16">
+
+                <!-- Das Angebot zum Zurücknehmen steht ganz oben und nicht bei der
+                     Vorschau: Nach einem Lauf ist die Vorschau leer, und wer den Lauf
+                     bereut, sucht ihn nicht unter einer leeren Liste. Es überlebt einen
+                     Neustart, weil es aus dem Protokoll kommt. -->
+                <InfoBar
+                    x:Uid="NameRepair_UndoBar"
+                    IsClosable="False"
+                    IsOpen="{x:Bind ViewModel.HasUndoableRun, Mode=OneWay}"
+                    Message="{x:Bind ViewModel.UndoSummary, Mode=OneWay}"
+                    Severity="Success">
+                    <InfoBar.ActionButton>
+                        <Button x:Uid="NameRepair_Undo" Command="{x:Bind ViewModel.UndoCommand}" />
+                    </InfoBar.ActionButton>
+                </InfoBar>
+
+                <Border Style="{StaticResource CardBorderStyle}">
+                    <StackPanel Spacing="12">
+                        <Grid ColumnSpacing="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <!-- UpdateSourceTrigger: Ohne die Angabe schreibt WinUI den
+                                 Text erst beim Verlassen des Feldes ins Anzeige-Modell,
+                                 und „Namen prüfen" bliebe grau, solange die Nutzerin im
+                                 Feld steht. -->
+                            <TextBox
+                                x:Uid="NameRepair_FolderBox"
+                                Text="{x:Bind ViewModel.SourceFolder, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <Button
+                                x:Uid="NameRepair_PickFolder"
+                                Grid.Column="1"
+                                VerticalAlignment="Bottom"
+                                Command="{x:Bind ViewModel.PickFolderCommand}" />
+                        </Grid>
+
+                        <CheckBox x:Uid="NameRepair_Subfolders" IsChecked="{x:Bind ViewModel.IncludeSubfolders, Mode=TwoWay}" />
+
+                        <Button
+                            x:Uid="NameRepair_Scan"
+                            Command="{x:Bind ViewModel.ScanCommand}"
+                            Style="{StaticResource AccentButtonStyle}" />
+                    </StackPanel>
+                </Border>
+
+                <controls:EmptyState
+                    x:Uid="NameRepair_EmptyState"
+                    Visibility="{x:Bind ViewModel.ShowsEmptyState, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+                <Border
+                    Style="{StaticResource CardBorderStyle}"
+                    Visibility="{x:Bind ViewModel.HasPreview, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel Spacing="12">
+                        <TextBlock x:Uid="NameRepair_PreviewHeading" Style="{StaticResource SectionHeadingStyle}" />
+
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Button x:Uid="NameRepair_ToggleAll" Command="{x:Bind ViewModel.ToggleAllCommand}" />
+                            <TextBlock
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                Foreground="{ThemeResource AppTextMutedBrush}"
+                                Text="{x:Bind ViewModel.SelectionSummary, Mode=OneWay}" />
+                        </Grid>
+
+                        <ListView
+                            x:Uid="NameRepair_PreviewList"
+                            MaxHeight="420"
+                            ItemsSource="{x:Bind ViewModel.Items}"
+                            SelectionMode="None">
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="vm:RenameProposalViewModel">
+                                    <Grid
+                                        Padding="0,6"
+                                        AutomationProperties.Name="{x:Bind AutomationName}"
+                                        ColumnSpacing="12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <CheckBox
+                                            x:Uid="NameRepair_SelectCheck"
+                                            VerticalAlignment="Center"
+                                            IsChecked="{x:Bind IsSelected, Mode=TwoWay}" />
+                                        <Image
+                                            Grid.Column="1"
+                                            Width="56"
+                                            Height="56"
+                                            Source="{x:Bind FilePath, Converter={StaticResource ThumbnailConverter}}"
+                                            Stretch="UniformToFill" />
+                                        <!-- Der alte Name steht gedämpft, der neue kräftig:
+                                             Der alte ist ohnehin nicht zu lesen, und die
+                                             Frage lautet, ob der neue taugt. -->
+                                        <TextBlock
+                                            Grid.Column="2"
+                                            VerticalAlignment="Center"
+                                            Foreground="{ThemeResource AppTextMutedBrush}"
+                                            Text="{x:Bind CurrentName}"
+                                            TextTrimming="CharacterEllipsis" />
+                                        <TextBlock
+                                            Grid.Column="3"
+                                            VerticalAlignment="Center"
+                                            FontWeight="SemiBold"
+                                            Foreground="{ThemeResource AppTextPrimaryBrush}"
+                                            Text="{x:Bind SuggestedName}"
+                                            TextTrimming="CharacterEllipsis" />
+                                        <TextBlock
+                                            Grid.Column="4"
+                                            VerticalAlignment="Center"
+                                            FontSize="{StaticResource FontSizeCaption}"
+                                            Foreground="{ThemeResource AppTextMutedBrush}"
+                                            Text="{x:Bind SourceText}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+
+                        <Button
+                            x:Uid="NameRepair_Apply"
+                            Command="{x:Bind ViewModel.ApplyCommand}"
+                            Style="{StaticResource AccentButtonStyle}" />
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>

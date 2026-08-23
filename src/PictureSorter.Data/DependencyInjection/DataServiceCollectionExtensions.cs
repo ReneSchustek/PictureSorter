@@ -36,6 +36,7 @@ public static class DataServiceCollectionExtensions
         _ = services.AddSingleton<ISortMemory, SortMemoryRepository>();
         _ = services.AddSingleton<ISortJournal, SortJournalRepository>();
         _ = services.AddSingleton<IAnalysisJournal, AnalysisJournalRepository>();
+        _ = services.AddSingleton<IRenameJournal, RenameJournalRepository>();
         _ = services.AddSingleton<DatabaseBackup>();
         _ = services.AddSingleton<DatabaseInitializer>();
 

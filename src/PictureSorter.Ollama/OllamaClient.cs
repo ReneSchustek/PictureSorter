@@ -231,8 +231,21 @@ public sealed class OllamaClient : IOllamaClient
 
     // Ollama nimmt Modellparameter unter „options" entgegen; „num_predict" begrenzt die
     // Zahl der erzeugten Token und damit die Dauer des Aufrufs.
+    //
+    // „temperature" und „seed" sind kein Feinschliff, sondern der Unterschied zwischen
+    // einem Urteil und einem Würfel: Ohne sie schreibt Ollama mit seiner Voreinstellung
+    // (0,8) zu jedem Aufruf einen anderen Text. Zwei byteweise identische Dateien
+    // bekamen dadurch gemessen zwei völlig verschiedene Beschreibungen – einmal
+    // „Sonnenuntergang", einmal „Abstraktion mit graublauem Himmel" –, und aus
+    // verschiedenen Beschreibungen werden verschiedene Vergleichsvektoren und am Ende
+    // verschiedene Zielordner. Dasselbe Foto landete beim zweiten Lauf woanders.
+    //
+    // Das wiegt hier doppelt: Das Sortier-Gedächtnis hält jedes Urteil dauerhaft fest.
+    // Ein gewürfeltes Urteil bleibt also stehen und wird nie wieder überprüft.
     private sealed record GenerateOptions(
-        [property: JsonPropertyName("num_predict")] int NumPredict);
+        [property: JsonPropertyName("num_predict")] int NumPredict,
+        [property: JsonPropertyName("temperature")] double Temperature = 0.0,
+        [property: JsonPropertyName("seed")] int Seed = 0);
 
     private sealed record GenerateResponse(
         [property: JsonPropertyName("response")] string? Response);

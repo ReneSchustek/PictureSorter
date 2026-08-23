@@ -22,6 +22,7 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
     private readonly IDuplicateScanner _scanner;
     private readonly IFileDeleter _fileDeleter;
     private readonly IFolderPicker _folderPicker;
+    private readonly IFolderLookup _folderLookup;
     private readonly IConfirmationService _confirmationService;
     private readonly StatusBarViewModel _status;
     private readonly ILocalizer _localizer;
@@ -56,6 +57,7 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
     /// <param name="scanner">Die Duplikat-Suche.</param>
     /// <param name="fileDeleter">Das Löschen in den Papierkorb.</param>
     /// <param name="folderPicker">Der Ordnerauswahl-Dialog.</param>
+    /// <param name="folderLookup">Findet den Ordner, der gemeint war, wenn der Pfad ins Leere geht.</param>
     /// <param name="confirmationService">Die Rückfrage vor dem Löschen.</param>
     /// <param name="status">Die gemeinsame Statusleiste der Anwendung.</param>
     /// <param name="localizer">Die Textquelle.</param>
@@ -64,6 +66,7 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
         IDuplicateScanner scanner,
         IFileDeleter fileDeleter,
         IFolderPicker folderPicker,
+        IFolderLookup folderLookup,
         IConfirmationService confirmationService,
         StatusBarViewModel status,
         ILocalizer localizer,
@@ -72,6 +75,7 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
         ArgumentNullException.ThrowIfNull(scanner);
         ArgumentNullException.ThrowIfNull(fileDeleter);
         ArgumentNullException.ThrowIfNull(folderPicker);
+        ArgumentNullException.ThrowIfNull(folderLookup);
         ArgumentNullException.ThrowIfNull(confirmationService);
         ArgumentNullException.ThrowIfNull(status);
         ArgumentNullException.ThrowIfNull(localizer);
@@ -80,6 +84,7 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
         _scanner = scanner;
         _fileDeleter = fileDeleter;
         _folderPicker = folderPicker;
+        _folderLookup = folderLookup;
         _confirmationService = confirmationService;
         _status = status;
         _localizer = localizer;
@@ -246,6 +251,23 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
             || photo.FilePath.Contains(gesucht, StringComparison.OrdinalIgnoreCase));
     }
 
+    // Steht der Ordner sichtbar im Explorer und wird trotzdem nicht gefunden, liegt es
+    // meist an einem Zeichen, das man nicht sieht - etwa einem geschützten Leerzeichen
+    // aus einem iCloud-Bestand. Dann wird der wirkliche Name genannt.
+    private string DescribeMissingFolder()
+    {
+        if (!string.IsNullOrWhiteSpace(SourceFolder))
+        {
+            string? lookalike = _folderLookup.FindLookalike(SourceFolder);
+            if (lookalike is not null)
+            {
+                return _localizer.Format("Duplicates_FolderNotFoundButLookalike", lookalike);
+            }
+        }
+
+        return _localizer.Get("Duplicates_FolderNotFound");
+    }
+
     private void BuildFilters()
     {
         Filters.Clear();
@@ -305,7 +327,7 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
         {
             DuplicatesLog.ScanFailed(_logger, ex);
             State = DuplicateState.Error;
-            _status.Finish(_localizer.Get("Duplicates_FolderNotFound"), StatusSeverity.Error);
+            _status.Finish(DescribeMissingFolder(), StatusSeverity.Error);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {

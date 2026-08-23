@@ -285,11 +285,17 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
+                            <!-- UpdateSourceTrigger wie beim Gruppennamen: Ohne die
+                                 Angabe schreibt WinUI den Text erst beim Verlassen des
+                                 Feldes ins Anzeige-Modell. „Weiter" hängt aber am
+                                 Ordner — es bliebe grau, solange die Nutzerin im Feld
+                                 steht, und niemand käme auf die Idee, erst woanders
+                                 hinzuklicken. -->
                             <TextBox
                                 x:Uid="SortPage_SourceFolderBox"
                                 Header="Ordner mit Fotos"
                                 PlaceholderText="z. B. C:\Fotos"
-                                Text="{x:Bind ViewModel.SourceFolder, Mode=TwoWay}" />
+                                Text="{x:Bind ViewModel.SourceFolder, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                             <Button
                                 Grid.Column="1"
                                 VerticalAlignment="Bottom"

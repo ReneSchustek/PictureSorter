@@ -90,6 +90,11 @@
                         <FontIcon Glyph="&#xE787;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
+                <NavigationViewItem x:Uid="MainWindow_NameRepairNavItem" Tag="namerepair">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE8AC;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
                 <NavigationViewItem x:Uid="MainWindow_MemoryNavItem" Content="Gedächtnis" Tag="memory">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE81C;" />

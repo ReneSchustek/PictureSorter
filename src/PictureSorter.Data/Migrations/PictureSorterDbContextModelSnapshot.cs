@@ -118,6 +118,65 @@ namespace PictureSorter.Data.Migrations
                     b.ToTable("AnalysisRunItem", (string)null);
                 });
 
+            modelBuilder.Entity("PictureSorter.Data.Entities.RenameRunEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Folder")
+                        .IsRequired()
+                        .HasMaxLength(1024)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsUndone")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("RunId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("StartedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RunId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_RenameRun_RunId");
+
+                    b.HasIndex("IsUndone", "StartedAtUtc")
+                        .HasDatabaseName("IX_RenameRun_IsUndone_StartedAtUtc");
+
+                    b.ToTable("RenameRun", (string)null);
+                });
+
+            modelBuilder.Entity("PictureSorter.Data.Entities.RenameRunItemEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("NewPath")
+                        .IsRequired()
+                        .HasMaxLength(1024)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("OriginalPath")
+                        .IsRequired()
+                        .HasMaxLength(1024)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("RenameRunId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RenameRunId")
+                        .HasDatabaseName("IX_RenameRunItem_RenameRunId");
+
+                    b.ToTable("RenameRunItem", (string)null);
+                });
+
             modelBuilder.Entity("PictureSorter.Data.Entities.SortMemoryEntity", b =>
                 {
                     b.Property<int>("Id")
@@ -254,6 +313,17 @@ namespace PictureSorter.Data.Migrations
                     b.Navigation("AnalysisRun");
                 });
 
+            modelBuilder.Entity("PictureSorter.Data.Entities.RenameRunItemEntity", b =>
+                {
+                    b.HasOne("PictureSorter.Data.Entities.RenameRunEntity", "RenameRun")
+                        .WithMany("Items")
+                        .HasForeignKey("RenameRunId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("RenameRun");
+                });
+
             modelBuilder.Entity("PictureSorter.Data.Entities.SortRunItemEntity", b =>
                 {
                     b.HasOne("PictureSorter.Data.Entities.SortRunEntity", "SortRun")
@@ -266,6 +336,11 @@ namespace PictureSorter.Data.Migrations
                 });
 
             modelBuilder.Entity("PictureSorter.Data.Entities.AnalysisRunEntity", b =>
+                {
+                    b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("PictureSorter.Data.Entities.RenameRunEntity", b =>
                 {
                     b.Navigation("Items");
                 });

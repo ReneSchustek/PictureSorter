@@ -67,6 +67,7 @@ public static class InfrastructureServiceCollectionExtensions
         _ = services.AddSingleton<IPhotoFileEditor, PhotoFileEditor>();
         _ = services.AddSingleton<IPhotoSource, FileSystemPhotoSource>();
         _ = services.AddSingleton<IFileOrganizer, FileOrganizer>();
+        _ = services.AddSingleton<IFolderLookup, FolderLookup>();
         _ = services.AddSingleton<IClock, SystemClock>();
         _ = services.AddSingleton<ICategoryRepository>(provider => new JsonCategoryRepository(
             dataDirectory,

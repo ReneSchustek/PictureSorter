@@ -185,6 +185,24 @@ public sealed class OllamaClientTests : IDisposable
         Assert.Contains(expected, _handler!.LastRequestBody, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public async Task GenerateAsync_AsksTheModelForAReproducibleAnswer()
+    {
+        // Ohne feste Temperatur würfelt Ollama (Voreinstellung 0,8) zu jedem Aufruf
+        // einen anderen Text. Gemessen an zwei byteweise identischen Dateien kam
+        // einmal „Sonnenuntergang" heraus und einmal „Abstraktion mit graublauem
+        // Himmel" – aus verschiedenen Beschreibungen werden verschiedene
+        // Vergleichsvektoren und am Ende verschiedene Zielordner. Dasselbe Foto
+        // landete beim zweiten Lauf woanders, und weil das Sortier-Gedächtnis jedes
+        // Urteil dauerhaft hält, blieb das gewürfelte Urteil stehen.
+        OllamaClient sut = CreateSut(StubHttpMessageHandler.Json("""{"response":"ein Foto am Strand"}"""));
+
+        _ = await sut.GenerateAsync("llava", "Beschreibe", ["base64"], CancellationToken.None);
+
+        Assert.Contains("\"temperature\":0", _handler!.LastRequestBody, StringComparison.Ordinal);
+        Assert.Contains("\"seed\":0", _handler!.LastRequestBody, StringComparison.Ordinal);
+    }
+
     // Der Handler entsteht nur hier, nie als lokale Variable eines Tests: So gehört
     // seine Lebensdauer eindeutig dem HttpClient bzw. Dispose().
     private OllamaClient CreateSut(Func<HttpRequestMessage, int, HttpResponseMessage> responder)

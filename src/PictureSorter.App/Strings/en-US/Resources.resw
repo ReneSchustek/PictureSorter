@@ -79,6 +79,9 @@
   <data name="MainWindow_DuplicatesNavItem.Content" xml:space="preserve">
     <value>Duplicates</value>
   </data>
+  <data name="MainWindow_NameRepairNavItem.Content" xml:space="preserve">
+    <value>Fix names</value>
+  </data>
   <data name="MainWindow_MemoryNavItem.Content" xml:space="preserve">
     <value>Memory</value>
   </data>
@@ -421,6 +424,9 @@
   <data name="Sort_FolderNotFound" xml:space="preserve">
     <value>The folder was not found. Please check the path in step 1.</value>
   </data>
+  <data name="Sort_FolderNotFoundButLookalike" xml:space="preserve">
+    <value>The folder was not found. You probably mean "{0}" — its name contains a character that looks like a space but is not one. Best pick it with "Browse…".</value>
+  </data>
   <data name="Sort_FolderUnreadable" xml:space="preserve">
     <value>The folder could not be read.</value>
   </data>
@@ -591,6 +597,9 @@
   </data>
   <data name="Duplicates_FolderNotFound" xml:space="preserve">
     <value>The folder was not found. Please check the path.</value>
+  </data>
+  <data name="Duplicates_FolderNotFoundButLookalike" xml:space="preserve">
+    <value>The folder was not found. You probably mean "{0}" — its name contains a character that looks like a space but is not one. Best pick it with "Browse…".</value>
   </data>
   <data name="Duplicates_ScanFailed" xml:space="preserve">
     <value>The search failed.</value>
@@ -1329,5 +1338,143 @@
   </data>
   <data name="PhotoDetail_CancelDeleteButton.Content" xml:space="preserve">
     <value>Keep</value>
+  </data>
+  <data name="NameRepair_SourceCaptureDate" xml:space="preserve">
+    <value>From the capture date</value>
+  </data>
+  <data name="NameRepair_SourceFolderAndNumber" xml:space="preserve">
+    <value>Folder and number</value>
+  </data>
+  <data name="NameRepair_ItemAutomationName" xml:space="preserve">
+    <value>Will be renamed to {0}</value>
+  </data>
+  <data name="NameRepair_SelectionSummary" xml:space="preserve">
+    <value>{0} of {1} selected</value>
+  </data>
+  <data name="NameRepair_UndoSummary" xml:space="preserve">
+    <value>Last renamed: {0} files in {1}. This can be undone.</value>
+  </data>
+  <data name="NameRepair_Scanning" xml:space="preserve">
+    <value>Checking names…</value>
+  </data>
+  <data name="NameRepair_ScanProgress" xml:space="preserve">
+    <value>{0} of {1} files checked</value>
+  </data>
+  <data name="NameRepair_ScanFailed" xml:space="preserve">
+    <value>The names could not be checked: {0}</value>
+  </data>
+  <data name="NameRepair_NothingToDo" xml:space="preserve">
+    <value>All names are readable. Nothing to do.</value>
+  </data>
+  <data name="NameRepair_ProposalsReady" xml:space="preserve">
+    <value>{0} files have an unreadable name.</value>
+  </data>
+  <data name="NameRepair_ConfirmTitle" xml:space="preserve">
+    <value>Rename?</value>
+  </data>
+  <data name="NameRepair_ConfirmQuestion" xml:space="preserve">
+    <value>{0} files get a new name. The run can be undone completely — the old names stay in the journal.</value>
+  </data>
+  <data name="NameRepair_ConfirmAccept" xml:space="preserve">
+    <value>Yes, rename</value>
+  </data>
+  <data name="NameRepair_ConfirmReject" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="NameRepair_ApplyCanceled" xml:space="preserve">
+    <value>Nothing was renamed.</value>
+  </data>
+  <data name="NameRepair_Applying" xml:space="preserve">
+    <value>Renaming files…</value>
+  </data>
+  <data name="NameRepair_ApplyFailed" xml:space="preserve">
+    <value>The files could not be renamed: {0}</value>
+  </data>
+  <data name="NameRepair_Renamed" xml:space="preserve">
+    <value>{0} files renamed.</value>
+  </data>
+  <data name="NameRepair_RenamedWithSkips" xml:space="preserve">
+    <value>{0} files renamed, {1} kept their name.</value>
+  </data>
+  <data name="NameRepair_Undoing" xml:space="preserve">
+    <value>Restoring the old names…</value>
+  </data>
+  <data name="NameRepair_UndoFailed" xml:space="preserve">
+    <value>The run could not be undone: {0}</value>
+  </data>
+  <data name="NameRepair_NothingToUndo" xml:space="preserve">
+    <value>There is no run that could be undone.</value>
+  </data>
+  <data name="NameRepair_Undone" xml:space="preserve">
+    <value>{0} files have their old name back.</value>
+  </data>
+  <data name="NameRepair_UndoneWithSkips" xml:space="preserve">
+    <value>{0} files have their old name back, {1} do not.</value>
+  </data>
+  <data name="NameRepair_Canceling" xml:space="preserve">
+    <value>Cancelling…</value>
+  </data>
+  <data name="NameRepair_Canceled" xml:space="preserve">
+    <value>Cancelled.</value>
+  </data>
+  <data name="NameRepair_FolderNotFound" xml:space="preserve">
+    <value>The folder was not found. Please check the path.</value>
+  </data>
+  <data name="NameRepair_FolderNotFoundButLookalike" xml:space="preserve">
+    <value>The folder was not found. You probably mean “{0}” — its name contains a character that looks like a space but is not one. Best pick it with “Browse…”.</value>
+  </data>
+  <data name="NameRepair_Header.Title" xml:space="preserve">
+    <value>Fix file names</value>
+  </data>
+  <data name="NameRepair_Header.Subtitle" xml:space="preserve">
+    <value>Finds files whose name cannot be read — for instance from an iCloud export. The images stay untouched, only their name changes.</value>
+  </data>
+  <data name="NameRepair_FolderBox.Header" xml:space="preserve">
+    <value>Folder</value>
+  </data>
+  <data name="NameRepair_FolderBox.PlaceholderText" xml:space="preserve">
+    <value>e.g. C:\Photos</value>
+  </data>
+  <data name="NameRepair_PickFolder.Content" xml:space="preserve">
+    <value>Browse…</value>
+  </data>
+  <data name="NameRepair_Subfolders.Content" xml:space="preserve">
+    <value>Include subfolders</value>
+  </data>
+  <data name="NameRepair_Scan.Content" xml:space="preserve">
+    <value>Check names</value>
+  </data>
+  <data name="NameRepair_Apply.Content" xml:space="preserve">
+    <value>Rename</value>
+  </data>
+  <data name="NameRepair_ToggleAll.Content" xml:space="preserve">
+    <value>Select/clear all</value>
+  </data>
+  <data name="NameRepair_Undo.Content" xml:space="preserve">
+    <value>Undo</value>
+  </data>
+  <data name="NameRepair_UndoBar.Title" xml:space="preserve">
+    <value>Last rename</value>
+  </data>
+  <data name="NameRepair_PreviewHeading.Text" xml:space="preserve">
+    <value>Preview</value>
+  </data>
+  <data name="NameRepair_CurrentHeading.Text" xml:space="preserve">
+    <value>Currently</value>
+  </data>
+  <data name="NameRepair_SuggestedHeading.Text" xml:space="preserve">
+    <value>New</value>
+  </data>
+  <data name="NameRepair_SelectCheck.Content" xml:space="preserve">
+    <value>Rename</value>
+  </data>
+  <data name="NameRepair_EmptyState.Title" xml:space="preserve">
+    <value>Nothing checked yet</value>
+  </data>
+  <data name="NameRepair_EmptyState.Message" xml:space="preserve">
+    <value>Pick a folder and let the names be checked. Nothing is changed before you confirm it.</value>
+  </data>
+  <data name="NameRepair_PreviewList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Proposals</value>
   </data>
 </root>

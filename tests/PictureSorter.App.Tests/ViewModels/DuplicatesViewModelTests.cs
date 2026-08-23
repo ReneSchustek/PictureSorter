@@ -254,6 +254,7 @@ public sealed class DuplicatesViewModelTests
             new FakeDuplicateScanner(groups),
             deleter,
             new FakeFolderPicker(@"C:\fotos"),
+            new FakeFolderLookup(),
             new StubConfirmationService(confirmed),
             new StatusBarViewModel(localizer),
             localizer,

@@ -1194,6 +1194,7 @@ public sealed class SortViewModelFlowTests : IDisposable
             trainer ?? new FakeCategoryTrainer(CreateCategory()),
             new FakeCategoryRepository(),
             folderPicker ?? new FakeFolderPicker(SourceFolder),
+            new FakeFolderLookup(),
             new StubConfirmationService(confirms),
             status ?? new StatusBarViewModel(localizer),
             Options.Create(new SortingOptions

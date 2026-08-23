@@ -38,6 +38,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     private readonly ICategoryTrainer _trainer;
     private readonly ICategoryRepository _categoryRepository;
     private readonly IFolderPicker _folderPicker;
+    private readonly IFolderLookup _folderLookup;
     private readonly IConfirmationService _confirmationService;
     private readonly StatusBarViewModel _status;
     private readonly SortingOptions _options;
@@ -174,6 +175,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     /// <param name="trainer">Lernt das Kategorie-Profil aus Beispielen.</param>
     /// <param name="categoryRepository">Persistiert die gelernten Kategorien.</param>
     /// <param name="folderPicker">Der Ordnerauswahl-Dialog.</param>
+    /// <param name="folderLookup">Findet den Ordner, der gemeint war, wenn der Pfad ins Leere geht.</param>
     /// <param name="confirmationService">Die Rückfrage bei großen Mengen.</param>
     /// <param name="status">Die gemeinsame Statusleiste der Anwendung.</param>
     /// <param name="options">Schwellwerte der Sortierlogik.</param>
@@ -190,6 +192,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         ICategoryTrainer trainer,
         ICategoryRepository categoryRepository,
         IFolderPicker folderPicker,
+        IFolderLookup folderLookup,
         IConfirmationService confirmationService,
         StatusBarViewModel status,
         IOptions<SortingOptions> options,
@@ -206,6 +209,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         ArgumentNullException.ThrowIfNull(trainer);
         ArgumentNullException.ThrowIfNull(categoryRepository);
         ArgumentNullException.ThrowIfNull(folderPicker);
+        ArgumentNullException.ThrowIfNull(folderLookup);
         ArgumentNullException.ThrowIfNull(confirmationService);
         ArgumentNullException.ThrowIfNull(status);
         ArgumentNullException.ThrowIfNull(options);
@@ -222,6 +226,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         _trainer = trainer;
         _categoryRepository = categoryRepository;
         _folderPicker = folderPicker;
+        _folderLookup = folderLookup;
         _confirmationService = confirmationService;
         _status = status;
         _options = options.Value;
@@ -1328,10 +1333,28 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     private string DescribeFailure(Exception exception, string fallbackKey) => exception switch
     {
         AiUnavailableException => _localizer.Get("Sort_AiUnavailable"),
-        DirectoryNotFoundException => _localizer.Get("Sort_FolderNotFound"),
+        DirectoryNotFoundException => DescribeMissingFolder(),
         UnauthorizedAccessException => _localizer.Get("Sort_FolderUnreadable"),
         _ => _localizer.Get(fallbackKey),
     };
+
+    // „Der Ordner wurde nicht gefunden" stimmt, hilft aber nicht weiter, wenn der
+    // Ordner im Explorer sichtbar danebenliegt. Das kommt vor: Namen aus einem
+    // iCloud-Bestand tragen mitunter ein geschütztes Leerzeichen, das wie ein
+    // gewöhnliches aussieht. Findet sich ein solcher Zwilling, wird er genannt.
+    private string DescribeMissingFolder()
+    {
+        if (!string.IsNullOrWhiteSpace(SourceFolder))
+        {
+            string? lookalike = _folderLookup.FindLookalike(SourceFolder);
+            if (lookalike is not null)
+            {
+                return _localizer.Format("Sort_FolderNotFoundButLookalike", lookalike);
+            }
+        }
+
+        return _localizer.Get("Sort_FolderNotFound");
+    }
 
     // Übernimmt ein Ergebnis in die Vorschau. Gemeinsam für Analyse, Datumssuche und das
     // Zurückholen eines protokollierten Laufs — drei Wege, ein Ergebnis.

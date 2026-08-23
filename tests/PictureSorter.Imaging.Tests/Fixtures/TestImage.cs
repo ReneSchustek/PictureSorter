@@ -41,6 +41,43 @@ internal static class TestImage
     }
 
     /// <summary>
+    /// Schreibt ein Bild in Fotogröße: ein Verlauf von oben nach unten wie ein Himmel,
+    /// darin eine dunkle Fläche an wählbarer Stelle wie eine Bergkette. Zwei solche
+    /// Bilder mit der Fläche an verschiedenen Stellen sind für das Auge klar zwei
+    /// verschiedene Motive.
+    /// </summary>
+    /// <param name="path">Zielpfad.</param>
+    /// <param name="width">Breite in Pixeln.</param>
+    /// <param name="height">Höhe in Pixeln.</param>
+    /// <param name="shapeStart">Linker Rand der dunklen Fläche als Anteil der Breite (0–1).</param>
+    public static async Task WriteLandscapePngAsync(string path, int width, int height, double shapeStart)
+    {
+        byte[] pixels = new byte[width * height * 4];
+        int shapeLeft = (int)(width * shapeStart);
+        int shapeRight = Math.Min(width, shapeLeft + (width / 4));
+        int shapeTop = height / 2;
+
+        for (int y = 0; y < height; y++)
+        {
+            // Der Himmel wird nach unten heller – ein Verlauf ohne jede Struktur von
+            // links nach rechts, genau wie bei einem echten Foto.
+            byte sky = (byte)(60 + (height == 1 ? 0 : y * 150 / (height - 1)));
+            for (int x = 0; x < width; x++)
+            {
+                bool inShape = y >= shapeTop && x >= shapeLeft && x < shapeRight;
+                byte level = inShape ? (byte)25 : sky;
+                int offset = ((y * width) + x) * 4;
+                pixels[offset] = level;      // B
+                pixels[offset + 1] = level;  // G
+                pixels[offset + 2] = level;  // R
+                pixels[offset + 3] = 255;    // A
+            }
+        }
+
+        await EncodeAsync(BitmapEncoder.PngEncoderId, path, width, height, pixels).ConfigureAwait(false);
+    }
+
+    /// <summary>
     /// Schreibt ein JPEG mit EXIF-Block: Aufnahmedatum, Kamera und Koordinaten in
     /// Grad/Minuten/Sekunden samt Himmelsrichtung.
     /// </summary>

@@ -13,9 +13,21 @@ namespace PictureSorter.Ollama;
 /// </summary>
 public sealed class OllamaEmbeddingProvider : IEmbeddingProvider
 {
+    // Die Frage steht auf Englisch, obwohl die Anwendung deutsch ist. Das ist kein
+    // Versehen und auch keine Stilfrage: Der Text geht nie an die Nutzerin, sondern
+    // ausschließlich in den Vergleichsvektor. Auf Deutsch gefragt schreibt das
+    // Bild-Modell holpriges und teils falsches Deutsch - dasselbe Bild wurde als
+    // „Sonnen- oder Mondenkugel" beschrieben, auf Englisch dagegen richtig als
+    // „stylized graphic of a sunset". Und das Embedding-Modell ist ohnehin auf
+    // Englisch trainiert; eine schiefe deutsche Beschreibung ist der schlechteste
+    // aller Eingaben.
+    //
+    // An zwölf Motiven gemessen: Auf Deutsch rutschten ein Bergbild und eine
+    // Picknickdecke in die Gruppe „Sonnenuntergang", auf Englisch bleiben genau die
+    // Beispiele und das eine wirklich passende Bild übrig.
     private const string DescribePrompt =
-        "Beschreibe den Inhalt dieses Fotos sachlich in ein bis zwei Sätzen. "
-        + "Nenne Personen, Orte, Anlass und Stimmung, soweit erkennbar.";
+        "Describe the content of this photo factually in one or two sentences. "
+        + "Name people, places, occasion and mood as far as recognisable.";
 
     private readonly IOllamaClient _client;
     private readonly IVisionImageEncoder _encoder;

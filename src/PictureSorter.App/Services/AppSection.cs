@@ -19,6 +19,9 @@ internal enum AppSection
     /// <summary>Die Ablage nach Aufnahmedatum.</summary>
     Calendar,
 
+    /// <summary>Die Namensreparatur.</summary>
+    NameRepair,
+
     /// <summary>Die Gedächtnis-Verwaltung.</summary>
     Memory,
 

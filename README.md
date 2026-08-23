@@ -23,6 +23,11 @@ Bildanalysen laufen vollständig offline auf dem eigenen Rechner.
   über einen Wahrnehmungs-Hash – auch **visuell ähnliche** Bilder (skaliert oder
   neu komprimiert). In jeder Gruppe ist das beste Bild vorausgewählt zum Behalten,
   die übrigen zum Löschen. Gelöschte Dateien wandern in den **Papierkorb**.
+- **Namen in Ordnung bringen**: Findet Dateien, deren Name sich nicht lesen lässt —
+  etwa aus einem iCloud-Export, wo Ersatzzeichen statt der ursprünglichen Zeichen
+  stehen. Der Vorschlag kommt aus dem Aufnahmedatum, wo eines im Dateikopf steht,
+  sonst aus Ordnername und laufender Nummer. Die Endung bleibt unangetastet, jede
+  Zeile lässt sich abwählen, und der Lauf ist zurücknehmbar.
 - **Sicher**: Vorschau vor jeder Aktion, Rückfrage bei großen Mengen, Verschieben
   kollisionssicher, Löschen wiederherstellbar.
 - **Rückgängig**: Ein Sortierlauf lässt sich vollständig zurücknehmen – auch nach
@@ -55,7 +60,8 @@ Bildanalysen laufen vollständig offline auf dem eigenen Rechner.
 - [Ollama](https://ollama.com/) lokal installiert und laufend (`http://127.0.0.1:11434`)
 - **Benötigte Ollama-Modelle** (einmalig laden) — ohne sie ist nur die
   Duplikat-Erkennung nutzbar:
-  - `ollama pull llava` — Vision-Modell: beschreibt das Bild und prüft Grenzfälle
+  - `ollama pull qwen2.5vl:7b` — Vision-Modell: beschreibt das Bild und prüft
+    Grenzfälle (rund 6 GB)
   - `ollama pull nomic-embed-text` — Embedding-Modell: wandelt die Beschreibung in
     einen Vergleichsvektor für das Ähnlichkeitslernen
 

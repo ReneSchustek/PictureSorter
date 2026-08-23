@@ -6,6 +6,66 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
+## [1.11.0] - 2026-08-23
+
+### Hinzugefügt
+
+- **Namen in Ordnung bringen.** Eine neue Seite findet Dateien, deren Name sich nicht
+  lesen lässt — aus einem iCloud-Export waren das 159 von 1507 Dateien, mit Namen wie
+  `?4?ӝ___.JPEG`. Die Bilder selbst sind dabei in Ordnung; unbrauchbar ist nur der Name,
+  und mit ihm jede Möglichkeit, das Foto zu suchen, zu nennen oder weiterzugeben. Die
+  Seite schlägt für jede solche Datei einen lesbaren Namen vor — aus dem Aufnahmedatum,
+  wo eines im Dateikopf steht, sonst aus Ordnername und laufender Nummer. Erst wird
+  gezeigt, dann gefragt, dann umbenannt: Jede Zeile lässt sich einzeln abwählen, und der
+  ganze Lauf lässt sich zurücknehmen, auch nach einem Neustart. Die Endung bleibt
+  unangetastet, ein vergebener Name wird umgangen, und überschrieben wird nie.
+
+- **Ein Ordner, der da ist und trotzdem nicht gefunden wird, wird jetzt benannt.** Namen
+  aus einem iCloud-Bestand tragen mitunter ein Leerzeichen, das keines ist — auf dem
+  Bildschirm nicht zu unterscheiden, für das Betriebssystem ein anderer Ordner. Wer den
+  Pfad abtippte oder aus einer Nachricht kopierte, bekam „Der Ordner wurde nicht
+  gefunden" zu lesen, während der Ordner im Explorer sichtbar danebenlag. PictureSorter
+  sieht jetzt nach und nennt den Ordner, der gemeint ist.
+
+### Geändert
+
+- **Ein neues Bild-Modell erkennt deutlich mehr auf den Fotos.** Wo bisher „ein
+  bedrucktes Blatt, offenbar auf Deutsch" stand, steht jetzt „eine Rezeptseite:
+  Fisch-Kebabs mit Auberginenpüree" — das Modell liest Text im Bild, benennt Farben und
+  Gegenstände. Genau davon lebt das Wiederfinden. Nebenbei braucht es weniger Zeit je
+  Foto als das bisherige. Beim ersten Start nach der Aktualisierung wird das neue Modell
+  einmalig geladen (rund 6 GB); der Hinweis auf der Startseite führt durch die
+  Einrichtung.
+
+- **Die Bilderkennung ordnet zusammengehörige Fotos deutlich zuverlässiger zu.** Sie
+  beschreibt jedes Foto für sich, bevor sie es mit den angelernten Beispielen vergleicht;
+  diese Beschreibung entsteht jetzt in der Sprache, in der das Modell am sichersten ist.
+  An 40 eigenen Aufnahmen gemessen fand die Analyse vorher zu 72 % ein Foto vom selben
+  Tag als nächsten Verwandten, jetzt zu 80 %, und der Abstand zwischen zusammengehörigen
+  und fremden Fotos hat sich fast verdoppelt. Sichtbar wird das an Bildern, die vorher
+  knapp danebenlagen: Ein Wasserturm wurde als Wasserkraftanlage geführt, ein Bergfoto
+  rutschte in die Gruppe „Sonnenuntergang".
+
+### Behoben
+
+- **Die Duplikat-Suche hielt völlig verschiedene Fotos für Duplikate.** Beim Verkleinern
+  auf den Fingerabdruck tastete die Anwendung einzelne Bildpunkte ab, statt über die
+  Fläche zu mitteln; bei einem Foto in voller Größe kam dabei ein nahezu leerer
+  Fingerabdruck heraus, und die Bilder unterschieden sich für den Vergleich kaum noch. An
+  einem Bestand aus zwölf verschiedenen Motiven meldete die Suche fünf Fundgruppen statt
+  zwei und schlug sieben Bilder zum Löschen vor — jetzt sind es die zwei, die wirklich
+  doppelt sind.
+- **Dasselbe Foto konnte bei zwei Läufen in zwei verschiedenen Ordnern landen.** Die
+  Bilderkennung wurde ohne feste Einstellung befragt und beschrieb jedes Foto bei jedem
+  Aufruf anders — zwei identische Dateien bekamen nachweislich zwei verschiedene
+  Beschreibungen. Damit wurde auch die Zuordnung zur Gruppe zum Zufall, und weil das
+  Gedächtnis jedes Urteil dauerhaft festhält, blieb ein einmal gewürfeltes Urteil stehen.
+  Die Bilderkennung antwortet jetzt reproduzierbar; zuvor gespeicherte Vergleichswerte
+  werden beim nächsten Lauf einmalig neu berechnet.
+- Der Ordner im ersten Schritt der Sortierung wurde erst übernommen, wenn man das
+  Eingabefeld verließ. Wer den Pfad tippte und hinsah, wartete auf ein „Weiter", das grau
+  blieb.
+
 ## [1.10.1] - 2026-08-10
 
 ### Geändert
