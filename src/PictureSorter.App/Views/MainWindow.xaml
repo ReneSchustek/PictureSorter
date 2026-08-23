@@ -45,14 +45,12 @@
             IsClosable="True"
             IsOpen="{Binding IsUpdateAvailable, Mode=OneWay}"
             Message="{Binding Message}"
-            Severity="Informational"
-            Title="Aktualisierung verfügbar">
+            Severity="Informational">
             <InfoBar.ActionButton>
                 <Button
                     x:Uid="MainWindow_UpdateNowButton"
                     VerticalAlignment="Center"
-                    Click="OnUpdateNowClick"
-                    Content="Aktualisieren" />
+                    Click="OnUpdateNowClick" />
             </InfoBar.ActionButton>
         </InfoBar>
 
@@ -68,24 +66,23 @@
             <NavigationView.MenuItems>
                 <NavigationViewItem
                     x:Uid="MainWindow_DashboardNavItem"
-                    Content="Start"
                     IsSelected="True"
                     Tag="dashboard">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE80F;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem x:Uid="MainWindow_SortNavItem" Content="Sortieren" Tag="sort">
+                <NavigationViewItem x:Uid="MainWindow_SortNavItem" Tag="sort">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE8B7;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem x:Uid="MainWindow_DuplicatesNavItem" Content="Duplikate" Tag="duplicates">
+                <NavigationViewItem x:Uid="MainWindow_DuplicatesNavItem" Tag="duplicates">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE8C8;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem x:Uid="MainWindow_CalendarNavItem" Content="Nach Datum ablegen" Tag="calendar">
+                <NavigationViewItem x:Uid="MainWindow_CalendarNavItem" Tag="calendar">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE787;" />
                     </NavigationViewItem.Icon>
@@ -95,12 +92,12 @@
                         <FontIcon Glyph="&#xE8AC;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem x:Uid="MainWindow_MemoryNavItem" Content="Gedächtnis" Tag="memory">
+                <NavigationViewItem x:Uid="MainWindow_MemoryNavItem" Tag="memory">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE81C;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem x:Uid="MainWindow_SettingsNavItem" Content="Einstellungen" Tag="about">
+                <NavigationViewItem x:Uid="MainWindow_SettingsNavItem" Tag="about">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE713;" />
                     </NavigationViewItem.Icon>
@@ -128,7 +125,6 @@
                         x:Uid="MainWindow_StopButton"
                         VerticalAlignment="Center"
                         Command="{Binding StopCommand}"
-                        Content="Stopp"
                         Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}" />
                 </InfoBar.ActionButton>
             </InfoBar>
@@ -149,12 +145,11 @@
                     VerticalAlignment="Center"
                     Opacity="0.7"
                     Style="{ThemeResource CaptionTextBlockStyle}"
-                    Text="Laden"
                     Visibility="{Binding ShowsBothPhases, Converter={StaticResource BoolToVisibilityConverter}}" />
                 <ProgressBar
+                    x:Uid="MainWindow_GatherProgress"
                     Width="120"
                     VerticalAlignment="Center"
-                    AutomationProperties.Name="Fortschritt des Ladens"
                     Foreground="{ThemeResource SystemFillColorSuccessBrush}"
                     Maximum="100"
                     Value="{Binding GatherValue}"
@@ -164,12 +159,11 @@
                     VerticalAlignment="Center"
                     Opacity="0.7"
                     Style="{ThemeResource CaptionTextBlockStyle}"
-                    Text="Analyse"
                     Visibility="{Binding ShowsBothPhases, Converter={StaticResource BoolToVisibilityConverter}}" />
                 <ProgressBar
+                    x:Uid="MainWindow_AnalyzeProgress"
                     Width="140"
                     VerticalAlignment="Center"
-                    AutomationProperties.Name="Fortschritt der Auswertung"
                     IsIndeterminate="{Binding IsIndeterminate}"
                     Maximum="100"
                     Value="{Binding ProgressValue}"
@@ -177,7 +171,6 @@
                 <TextBlock
                     x:Uid="MainWindow_AppVersionText"
                     VerticalAlignment="Center"
-                    AutomationProperties.Name="Programmversion"
                     Opacity="0.7"
                     Style="{ThemeResource CaptionTextBlockStyle}"
                     Text="{Binding AppVersion}" />

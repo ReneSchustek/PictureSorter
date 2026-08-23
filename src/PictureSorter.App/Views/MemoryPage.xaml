@@ -26,37 +26,27 @@
             Grid.RowSpan="2"
             Margin="24,16,24,8"
             SearchChanged="OnSearchChanged"
-            SearchPlaceholder="Dateiname, Ordner oder Gruppe"
-            x:Uid="MemoryPage_Header"
-            Subtitle="Was sich PictureSorter gemerkt hat. Gemerkte Fotos werden beim nächsten Sortieren übersprungen – vergisst du einen Eintrag, wird das Foto wieder neu bewertet."
-            Title="Gedächtnis">
+            x:Uid="MemoryPage_Header">
             <controls:ListPageHeader.FilterContent>
                 <StackPanel Orientation="Horizontal" Spacing="12">
                     <ComboBox
                         x:Uid="MemoryPage_FolderFilter"
                         MinWidth="200"
-                        AutomationProperties.Name="Nach Ordner filtern"
-                        Header="Ordner"
                         ItemsSource="{x:Bind ViewModel.Folders}"
                         SelectedItem="{x:Bind ViewModel.SelectedFolder, Mode=TwoWay}" />
                     <ComboBox
                         x:Uid="MemoryPage_CategoryFilter"
                         MinWidth="160"
-                        AutomationProperties.Name="Nach Kategorie filtern"
-                        Header="Kategorie"
                         ItemsSource="{x:Bind ViewModel.Categories}"
                         SelectedItem="{x:Bind ViewModel.SelectedCategory, Mode=TwoWay}" />
                     <Button
                         x:Uid="MemoryPage_ClearFolderButton"
                         VerticalAlignment="Bottom"
-                        Command="{x:Bind ViewModel.ClearFolderCommand}"
-                        Content="Ordner vergessen"
-                        ToolTipService.ToolTip="Verwirft alle gemerkten Entscheidungen des oben gewählten Ordners." />
+                        Command="{x:Bind ViewModel.ClearFolderCommand}" />
                     <Button
                         x:Uid="MemoryPage_RefreshButton"
                         VerticalAlignment="Bottom"
-                        Command="{x:Bind ViewModel.RefreshCommand}"
-                        Content="Aktualisieren" />
+                        Command="{x:Bind ViewModel.RefreshCommand}" />
                 </StackPanel>
             </controls:ListPageHeader.FilterContent>
         </controls:ListPageHeader>
@@ -66,18 +56,13 @@
         <controls:EmptyState
             Grid.Row="2"
             x:Uid="MemoryPage_EmptyState"
-            Message="Sobald du zum ersten Mal sortierst, erscheinen hier die Entscheidungen."
             ResetRequested="OnResetSearch"
-            Title="Noch nichts gemerkt"
             Visibility="{x:Bind ViewModel.ShowsNothingYet, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
 
         <controls:EmptyState
             Grid.Row="2"
             x:Uid="MemoryPage_NoMatchState"
-            Message="Zu dieser Suche gibt es keinen Eintrag. Vielleicht ist der Ordner-Filter zu eng gesetzt."
-            ResetLabel="Suche zurücksetzen"
             ResetRequested="OnResetSearch"
-            Title="Nichts gefunden"
             Visibility="{x:Bind ViewModel.ShowsNoMatch, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
 
         <!-- Liste der gemerkten Entscheidungen -->
@@ -85,7 +70,6 @@
             x:Uid="MemoryPage_ItemList"
             Grid.Row="2"
             Padding="24,4,24,16"
-            AutomationProperties.Name="Gemerkte Entscheidungen"
             ItemsSource="{x:Bind ViewModel.Items}"
             SelectionMode="None">
             <ListView.ItemTemplate>
@@ -138,9 +122,7 @@
                             x:Uid="MemoryPage_ForgetItemButton"
                             Grid.Column="3"
                             VerticalAlignment="Center"
-                            AutomationProperties.Name="Diesen Eintrag vergessen"
                             Click="OnDeleteClick"
-                            Content="Vergessen"
                             Tag="{x:Bind}" />
                     </Grid>
                 </DataTemplate>

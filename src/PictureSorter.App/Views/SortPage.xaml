@@ -27,10 +27,9 @@
                 IsClosable="False"
                 IsOpen="{x:Bind ModelHint.IsHintVisible, Mode=OneWay}"
                 Message="{x:Bind ModelHint.Message, Mode=OneWay}"
-                Severity="Warning"
-                Title="KI noch nicht einsatzbereit">
+                Severity="Warning">
                 <InfoBar.ActionButton>
-                    <Button x:Uid="SortPage_SetupOllamaButton" Click="OnSetupOllamaClick" Content="Jetzt einrichten" />
+                    <Button x:Uid="SortPage_SetupOllamaButton" Click="OnSetupOllamaClick" />
                 </InfoBar.ActionButton>
             </InfoBar>
 
@@ -44,13 +43,11 @@
                 IsClosable="False"
                 IsOpen="{x:Bind ViewModel.HasUndoableRun, Mode=OneWay}"
                 Message="{x:Bind ViewModel.UndoSummary, Mode=OneWay}"
-                Severity="Success"
-                Title="Letzte Sortierung">
+                Severity="Success">
                 <InfoBar.ActionButton>
                     <Button
                         x:Uid="SortPage_UndoButton"
-                        Command="{x:Bind ViewModel.UndoCommand}"
-                        Content="Rückgängig machen" />
+                        Command="{x:Bind ViewModel.UndoCommand}" />
                 </InfoBar.ActionButton>
             </InfoBar>
 
@@ -65,11 +62,10 @@
                 IsClosable="False"
                 IsOpen="{x:Bind ViewModel.Resume.HasRun, Mode=OneWay}"
                 Message="{x:Bind ViewModel.Resume.Summary, Mode=OneWay}"
-                Severity="Informational"
-                Title="Letzte Analyse">
+                Severity="Informational">
                 <InfoBar.ActionButton>
                     <Button
-                        AutomationProperties.Name="Analyse fortsetzen oder Ergebnis zurückholen"
+                        x:Uid="SortPage_ResumeButton"
                         Command="{x:Bind ViewModel.Resume.ResumeCommand}"
                         Content="{x:Bind ViewModel.Resume.ActionLabel, Mode=OneWay}"
                         Style="{ThemeResource AccentButtonStyle}" />
@@ -80,8 +76,7 @@
                 <Button
                     Margin="0,8,0,8"
                     x:Uid="SortPage_DiscardRunButton"
-                    Command="{x:Bind ViewModel.Resume.DiscardCommand}"
-                    Content="Verwerfen" />
+                    Command="{x:Bind ViewModel.Resume.DiscardCommand}" />
             </InfoBar>
 
             <!--
@@ -100,13 +95,11 @@
                 IsClosable="False"
                 IsOpen="{x:Bind ViewModel.ShowsRecoverOffer, Mode=OneWay}"
                 Message="{x:Bind ViewModel.RecoverOfferSummary, Mode=OneWay}"
-                Severity="Informational"
-                Title="Frühere Analyse">
+                Severity="Informational">
                 <InfoBar.ActionButton>
                     <Button
                         x:Uid="SortPage_RecoverButton"
                         Command="{x:Bind ViewModel.Resume.RecoverFromMemoryCommand}"
-                        Content="Zurückholen"
                         IsEnabled="{x:Bind ViewModel.CanRecoverFromMemory, Mode=OneWay}"
                         Style="{ThemeResource AccentButtonStyle}" />
                 </InfoBar.ActionButton>
@@ -119,11 +112,10 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <StackPanel VerticalAlignment="Center" Spacing="4">
-                        <TextBlock x:Uid="SortPage_HeroTitle" Style="{StaticResource HeroTitleStyle}" Text="Fotos sortieren" />
+                        <TextBlock x:Uid="SortPage_HeroTitle" Style="{StaticResource HeroTitleStyle}" />
                         <TextBlock
                             x:Uid="SortPage_HeroSubtitle"
-                            Style="{StaticResource HeroSubtitleStyle}"
-                            Text="Beschreibe eine Gruppe, bestätige ein paar Beispiele – den Rest übernimmt PictureSorter." />
+                            Style="{StaticResource HeroSubtitleStyle}" />
                     </StackPanel>
                 </Grid>
             </Border>
@@ -142,15 +134,14 @@
                     <TextBlock
                         VerticalAlignment="Center"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        x:Uid="SortPage_ViewModeLabel"
-                        Text="Ansicht:" />
+                        x:Uid="SortPage_ViewModeLabel" />
                     <ComboBox
                         x:Name="ViewModeCombo"
+                        x:Uid="SortPage_ViewModeCombo"
                         MinWidth="170"
-                        AutomationProperties.Name="Ansicht"
                         SelectionChanged="OnViewModeChanged">
-                        <ComboBoxItem x:Uid="SortPage_ViewModeStepByStep" Content="Schritt für Schritt" />
-                        <ComboBoxItem x:Uid="SortPage_ViewModeStandard" Content="Standard" />
+                        <ComboBoxItem x:Uid="SortPage_ViewModeStepByStep" />
+                        <ComboBoxItem x:Uid="SortPage_ViewModeStandard" />
                     </ComboBox>
                 </StackPanel>
             </Grid>
@@ -173,7 +164,6 @@
                     Padding="4,2"
                     Click="OnStepClick"
                     x:Uid="SortPage_Step1Link"
-                    Content="1. Ordner"
                     FontWeight="{x:Bind ViewModel.Wizard.IsStep1, Mode=OneWay, Converter={StaticResource BoolToFontWeightConverter}}"
                     IsEnabled="{x:Bind ViewModel.Wizard.MaxReachedStep, Mode=OneWay, Converter={StaticResource StepReachedConverter}, ConverterParameter=0}"
                     Tag="0" />
@@ -185,7 +175,6 @@
                     Padding="4,2"
                     Click="OnStepClick"
                     x:Uid="SortPage_Step2Link"
-                    Content="2. Kategorie"
                     FontWeight="{x:Bind ViewModel.Wizard.IsStep2, Mode=OneWay, Converter={StaticResource BoolToFontWeightConverter}}"
                     IsEnabled="{x:Bind ViewModel.Wizard.MaxReachedStep, Mode=OneWay, Converter={StaticResource StepReachedConverter}, ConverterParameter=1}"
                     Tag="1" />
@@ -200,7 +189,6 @@
                     Padding="4,2"
                     Click="OnStepClick"
                     x:Uid="SortPage_Step3Link"
-                    Content="3. Passende"
                     FontWeight="{x:Bind ViewModel.Wizard.IsStep3, Mode=OneWay, Converter={StaticResource BoolToFontWeightConverter}}"
                     IsEnabled="{x:Bind ViewModel.Wizard.MaxReachedStep, Mode=OneWay, Converter={StaticResource StepReachedConverter}, ConverterParameter=2}"
                     Tag="2"
@@ -214,7 +202,6 @@
                     Padding="4,2"
                     Click="OnStepClick"
                     x:Uid="SortPage_Step4Link"
-                    Content="4. Gegenbeispiele"
                     FontWeight="{x:Bind ViewModel.Wizard.IsStep4, Mode=OneWay, Converter={StaticResource BoolToFontWeightConverter}}"
                     IsEnabled="{x:Bind ViewModel.Wizard.MaxReachedStep, Mode=OneWay, Converter={StaticResource StepReachedConverter}, ConverterParameter=3}"
                     Tag="3"
@@ -227,7 +214,6 @@
                     Padding="4,2"
                     Click="OnStepClick"
                     x:Uid="SortPage_Step5Link"
-                    Content="5. Analyse"
                     FontWeight="{x:Bind ViewModel.Wizard.IsStep5, Mode=OneWay, Converter={StaticResource BoolToFontWeightConverter}}"
                     IsEnabled="{x:Bind ViewModel.Wizard.MaxReachedStep, Mode=OneWay, Converter={StaticResource StepReachedConverter}, ConverterParameter=4}"
                     Tag="4" />
@@ -239,7 +225,6 @@
                     Padding="4,2"
                     Click="OnStepClick"
                     x:Uid="SortPage_Step6Link"
-                    Content="6. Sortieren"
                     FontWeight="{x:Bind ViewModel.Wizard.IsStep6, Mode=OneWay, Converter={StaticResource BoolToFontWeightConverter}}"
                     IsEnabled="{x:Bind ViewModel.Wizard.MaxReachedStep, Mode=OneWay, Converter={StaticResource StepReachedConverter}, ConverterParameter=5}"
                     Tag="5" />
@@ -260,8 +245,7 @@
                 <Button
                     Grid.Column="1"
                     Command="{x:Bind ViewModel.Wizard.RestartCommand}"
-                    x:Uid="SortPage_RestartButton"
-                    Content="↺ Neu starten" />
+                    x:Uid="SortPage_RestartButton" />
             </Grid>
         </StackPanel>
 
@@ -274,11 +258,10 @@
                     Style="{StaticResource CardBorderStyle}"
                     Visibility="{x:Bind ViewModel.Wizard.ShowStep1, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                     <StackPanel Spacing="12">
-                        <TextBlock x:Uid="SortPage_Step1Heading" FontWeight="SemiBold" Text="1. Ordner mit Fotos wählen" />
+                        <TextBlock x:Uid="SortPage_Step1Heading" FontWeight="SemiBold" />
                         <TextBlock
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             x:Uid="SortPage_Step1Description"
-                            Text="Wähle den Ordner, in dem deine Fotos liegen. PictureSorter sieht sie sich an und hilft dir, sie zu ordnen."
                             TextWrapping="Wrap" />
                         <Grid ColumnSpacing="8">
                             <Grid.ColumnDefinitions>
@@ -293,19 +276,15 @@
                                  hinzuklicken. -->
                             <TextBox
                                 x:Uid="SortPage_SourceFolderBox"
-                                Header="Ordner mit Fotos"
-                                PlaceholderText="z. B. C:\Fotos"
                                 Text="{x:Bind ViewModel.SourceFolder, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                             <Button
                                 Grid.Column="1"
                                 VerticalAlignment="Bottom"
                                 Command="{x:Bind ViewModel.BrowseCommand}"
-                                x:Uid="SortPage_BrowseButton"
-                                Content="Durchsuchen…" />
+                                x:Uid="SortPage_BrowseButton" />
                         </Grid>
                         <CheckBox
                             x:Uid="SortPage_IncludeSubfoldersCheck"
-                            Content="Auch Unterordner einbeziehen"
                             IsChecked="{x:Bind ViewModel.IncludeSubfolders, Mode=TwoWay}" />
                     </StackPanel>
                 </Border>
@@ -315,7 +294,7 @@
                     Style="{StaticResource CardBorderStyle}"
                     Visibility="{x:Bind ViewModel.Wizard.ShowStep2, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                     <StackPanel Spacing="12">
-                        <TextBlock x:Uid="SortPage_Step2Heading" FontWeight="SemiBold" Text="2. Kategorie beschreiben" />
+                        <TextBlock x:Uid="SortPage_Step2Heading" FontWeight="SemiBold" />
 
                         <!-- Die Wahl des Weges steht bewusst hier und nicht erst beim
                              Zeitraum: Sie entscheidet darüber, ob überhaupt Beispiele
@@ -323,18 +302,15 @@
                              Nutzerin dreißig Bilder umsonst angelernt. -->
                         <CheckBox
                             x:Uid="SortPage_SortModeByDateCheck"
-                            Content="Nur nach Aufnahmedatum sortieren (ohne KI)"
                             IsChecked="{x:Bind ViewModel.SortByDateOnly, Mode=TwoWay}" />
                         <TextBlock
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             x:Uid="SortPage_SortModeByDateHint"
-                            Text="Für einen Urlaub genügt das Datum. Dann werden weder Beispiele gebraucht noch Bilder von der KI angesehen — die Schritte 3 und 4 entfallen, und der Lauf dauert Sekunden statt Minuten."
                             TextWrapping="Wrap" />
 
                         <TextBlock
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             x:Uid="SortPage_Step2Description"
-                            Text="Was sollen wir heraussuchen? Gib der Gruppe einen Namen und beschreibe in eigenen Worten, was darauf zu sehen ist."
                             TextWrapping="Wrap"
                             Visibility="{x:Bind ViewModel.Wizard.ShowExampleSteps, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                         <!-- UpdateSourceTrigger: Ohne die Angabe schreibt WinUI den Text
@@ -344,8 +320,6 @@
                              und bis dahin sieht sie es nicht. -->
                         <TextBox
                             x:Uid="SortPage_CategoryNameBox"
-                            Header="Name der Gruppe"
-                            PlaceholderText="z. B. Familie"
                             Text="{x:Bind ViewModel.CategoryName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
                         <!-- Beschreibung und Ereignis-Kennzeichen wirken ausschließlich auf
@@ -353,15 +327,12 @@
                              Felder ohne jede Wirkung. -->
                         <TextBox
                             x:Uid="SortPage_CategoryDescriptionBox"
-                            Header="Beschreibung (in eigenen Worten)"
                             AcceptsReturn="True"
-                            PlaceholderText="z. B. Bilder, auf denen meine Familie zu sehen ist"
                             Text="{x:Bind ViewModel.CategoryDescription, Mode=TwoWay}"
                             TextWrapping="Wrap"
                             Visibility="{x:Bind ViewModel.Wizard.ShowExampleSteps, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                         <CheckBox
                             x:Uid="SortPage_EventCategoryCheck"
-                            Content="Ereignis-Gruppe (Ordnername erhält das Aufnahmedatum, z. B. „Urlaub 14.07.25“)"
                             IsChecked="{x:Bind ViewModel.IsEventCategory, Mode=TwoWay}"
                             Visibility="{x:Bind ViewModel.Wizard.ShowExampleSteps, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                     </StackPanel>
@@ -372,11 +343,10 @@
                     Style="{StaticResource CardBorderStyle}"
                     Visibility="{x:Bind ViewModel.Wizard.ShowStep3, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                     <StackPanel Spacing="12">
-                        <TextBlock x:Uid="SortPage_Step3Heading" FontWeight="SemiBold" Text="3. Diese Bilder gehören dazu" />
+                        <TextBlock x:Uid="SortPage_Step3Heading" FontWeight="SemiBold" />
                         <TextBlock
                             x:Uid="SortPage_Step3Description"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Text="Suche Bilder heraus, die eindeutig zur Gruppe gehören. Wenige klare Beispiele wirken besser als viele unklare."
                             TextWrapping="Wrap" />
                         <TextBlock
                             AutomationProperties.LiveSetting="Polite"
@@ -385,12 +355,10 @@
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <Button
                                 x:Uid="SortPage_SuggestPositivesButton"
-                                Command="{x:Bind ViewModel.SuggestPositivesCommand}"
-                                Content="Vorschläge holen" />
+                                Command="{x:Bind ViewModel.SuggestPositivesCommand}" />
                             <Button
                                 x:Uid="SortPage_PickPositivesButton"
-                                Command="{x:Bind ViewModel.PickPositivesCommand}"
-                                Content="Selbst auswählen" />
+                                Command="{x:Bind ViewModel.PickPositivesCommand}" />
                         </StackPanel>
                         <Border
                             Padding="8"
@@ -405,12 +373,10 @@
                                 <TextBlock
                                     x:Uid="SortPage_DropHint"
                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                    Text="Du kannst Bilder auch aus dem Explorer hierher ziehen."
                                     TextWrapping="Wrap" />
                                 <GridView
                                     x:Uid="SortPage_PositiveExampleList"
                                     MaxHeight="320"
-                                    AutomationProperties.Name="Passende Beispielbilder"
                                     ItemsSource="{x:Bind ViewModel.PositiveExamples.Items}"
                                     SelectionMode="None">
                                     <GridView.ItemTemplate>
@@ -430,7 +396,6 @@
                                                         Padding="{StaticResource TileGap}"
                                                         Command="{Binding ViewModel.PositiveExamples.RemoveCommand, ElementName=SortPageRoot}"
                                                         CommandParameter="{x:Bind}"
-                                                        Content="Entfernen"
                                                         FontSize="{StaticResource FontSizeCaption}" />
                                                 </controls:PhotoTile.ActionContent>
                                             </controls:PhotoTile>
@@ -447,11 +412,10 @@
                     Style="{StaticResource CardBorderStyle}"
                     Visibility="{x:Bind ViewModel.Wizard.ShowStep4, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                     <StackPanel Spacing="12">
-                        <TextBlock x:Uid="SortPage_Step4Heading" FontWeight="SemiBold" Text="4. Diese Bilder gehören nicht dazu" />
+                        <TextBlock x:Uid="SortPage_Step4Heading" FontWeight="SemiBold" />
                         <TextBlock
                             x:Uid="SortPage_Step4Description"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Text="Am hilfreichsten sind Bilder, die dem Motiv nahe kommen, aber nicht gemeint sind. Dieser Schritt ist freiwillig."
                             TextWrapping="Wrap" />
                         <TextBlock
                             AutomationProperties.LiveSetting="Polite"
@@ -460,16 +424,13 @@
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <Button
                                 x:Uid="SortPage_SuggestNegativesButton"
-                                Command="{x:Bind ViewModel.SuggestNegativesCommand}"
-                                Content="Vorschläge holen" />
+                                Command="{x:Bind ViewModel.SuggestNegativesCommand}" />
                             <Button
                                 x:Uid="SortPage_PickNegativesButton"
-                                Command="{x:Bind ViewModel.PickNegativesCommand}"
-                                Content="Selbst auswählen" />
+                                Command="{x:Bind ViewModel.PickNegativesCommand}" />
                             <Button
                                 x:Uid="SortPage_LearnButton"
                                 Command="{x:Bind ViewModel.LearnCommand}"
-                                Content="Profil lernen"
                                 Style="{ThemeResource AccentButtonStyle}"
                                 Visibility="{x:Bind ViewModel.Wizard.ShowStandardActions, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                         </StackPanel>
@@ -486,12 +447,10 @@
                                 <TextBlock
                                     x:Uid="SortPage_DropHintNegative"
                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                    Text="Auch hier lassen sich Bilder aus dem Explorer hereinziehen."
                                     TextWrapping="Wrap" />
                                 <GridView
                                     x:Uid="SortPage_NegativeExampleList"
                                     MaxHeight="320"
-                                    AutomationProperties.Name="Gegenbeispiele"
                                     ItemsSource="{x:Bind ViewModel.NegativeExamples.Items}"
                                     SelectionMode="None">
                                     <GridView.ItemTemplate>
@@ -511,7 +470,6 @@
                                                         Padding="{StaticResource TileGap}"
                                                         Command="{Binding ViewModel.NegativeExamples.RemoveCommand, ElementName=SortPageRoot}"
                                                         CommandParameter="{x:Bind}"
-                                                        Content="Entfernen"
                                                         FontSize="{StaticResource FontSizeCaption}" />
                                                 </controls:PhotoTile.ActionContent>
                                             </controls:PhotoTile>
@@ -521,7 +479,7 @@
                             </StackPanel>
                         </Border>
                         <TextBlock>
-                            <Run x:Uid="SortPage_ActiveGroupLabel" Text="Aktive Gruppe:" />
+                            <Run x:Uid="SortPage_ActiveGroupLabel" />
                             <Run FontWeight="SemiBold" Text="{x:Bind ViewModel.ActiveCategoryName, Mode=OneWay}" />
                         </TextBlock>
                     </StackPanel>
@@ -531,38 +489,32 @@
                     Style="{StaticResource CardBorderStyle}"
                     Visibility="{x:Bind ViewModel.Wizard.ShowStep5, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                     <StackPanel Spacing="12">
-                        <TextBlock x:Uid="SortPage_Step5Heading" FontWeight="SemiBold" Text="5. Analyse starten" />
+                        <TextBlock x:Uid="SortPage_Step5Heading" FontWeight="SemiBold" />
                         <TextBlock
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             x:Uid="SortPage_Step5Description"
-                            Text="Jetzt sieht sich PictureSorter alle Fotos im Ordner an und schlägt vor, welche zur Gruppe passen. Das kann je nach Anzahl etwas dauern."
                             TextWrapping="Wrap" />
 
                         <!-- Zeitraum: schränkt die Analyse ein, bevor der teure Teil
                              beginnt. Fotos außerhalb kommen der KI gar nicht erst vor. -->
                         <TextBlock
                             x:Uid="SortPage_DateRangeHeading"
-                            FontWeight="SemiBold"
-                            Text="Zeitraum (freiwillig)" />
+                            FontWeight="SemiBold" />
                         <TextBlock
                             x:Uid="SortPage_DateRangeDescription"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Text="Beschränkt die Analyse auf Fotos aus diesen Tagen — praktisch für einen Urlaub. Bilder außerhalb sieht sich die KI gar nicht erst an, der Lauf wird dadurch deutlich kürzer. Ohne Angabe werden alle Fotos geprüft."
                             TextWrapping="Wrap" />
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <DatePicker
                                 x:Uid="SortPage_DateFromPicker"
-                                Header="Von"
                                 SelectedDate="{x:Bind ViewModel.DateFrom, Mode=TwoWay}" />
                             <DatePicker
                                 x:Uid="SortPage_DateToPicker"
-                                Header="Bis"
                                 SelectedDate="{x:Bind ViewModel.DateTo, Mode=TwoWay}" />
                             <Button
                                 x:Uid="SortPage_ClearDateRangeButton"
                                 VerticalAlignment="Bottom"
-                                Command="{x:Bind ViewModel.ClearDateRangeCommand}"
-                                Content="Aufheben" />
+                                Command="{x:Bind ViewModel.ClearDateRangeCommand}" />
                         </StackPanel>
 
                         <!-- Urlaube vorschlagen: reine Rechnerei auf den Aufnahmedaten,
@@ -570,8 +522,7 @@
                              endet ein Zeitraum. -->
                         <Button
                             x:Uid="SortPage_SuggestTripsButton"
-                            Command="{x:Bind ViewModel.SuggestTripsCommand}"
-                            Content="Urlaube vorschlagen" />
+                            Command="{x:Bind ViewModel.SuggestTripsCommand}" />
                         <TextBlock
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             Text="{x:Bind ViewModel.TripHint, Mode=OneWay}"
@@ -594,13 +545,11 @@
                         <Button
                             Command="{x:Bind ViewModel.AnalyzeCommand}"
                             x:Uid="SortPage_AnalyzeButton"
-                            Content="Analysieren"
                             Style="{ThemeResource AccentButtonStyle}"
                             Visibility="{x:Bind ViewModel.Wizard.ShowStandardAnalyzeAction, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                         <Button
                             Command="{x:Bind ViewModel.SortByDateCommand}"
                             x:Uid="SortPage_FindByDateButton"
-                            Content="Fotos im Zeitraum suchen"
                             Style="{ThemeResource AccentButtonStyle}"
                             Visibility="{x:Bind ViewModel.Wizard.ShowStandardDateAction, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
 
@@ -614,12 +563,10 @@
                             <Button
                                 Command="{x:Bind ViewModel.CancelCommand}"
                                 x:Uid="SortPage_PauseButton"
-                                Content="Analyse anhalten"
                                 Visibility="{x:Bind ViewModel.Wizard.ShowStandardActions, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                             <TextBlock
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 x:Uid="SortPage_PauseHint"
-                                Text="Der Stand bleibt erhalten. Du kannst später genau hier weitermachen – auch nach einem Neustart des Rechners."
                                 TextWrapping="Wrap" />
                         </StackPanel>
                     </StackPanel>
@@ -630,16 +577,14 @@
                     Style="{StaticResource CardBorderStyle}"
                     Visibility="{x:Bind ViewModel.Wizard.ShowStep6, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                     <StackPanel Spacing="12">
-                        <TextBlock x:Uid="SortPage_Step6Heading" FontWeight="SemiBold" Text="6. Sortieren" />
+                        <TextBlock x:Uid="SortPage_Step6Heading" FontWeight="SemiBold" />
                         <TextBlock
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             x:Uid="SortPage_Step6Description"
-                            Text="Prüfe die Vorschläge. Bei Bildern, die du nicht möchtest, das Häkchen entfernen – sie werden nicht verschoben und nicht erneut vorgeschlagen. Klicke auf ein Bild, um es groß anzusehen."
                             TextWrapping="Wrap" />
                         <TextBlock
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             x:Uid="SortPage_BackupHint"
-                            Text="Vor dem ersten Sortieren: Lege eine Sicherungskopie deiner Fotos an. Ein Lauf lässt sich zwar vollständig zurücknehmen, eine Kopie schützt aber auch vor allem, was PictureSorter nicht in der Hand hat."
                             TextWrapping="Wrap" />
 
                         <Grid ColumnSpacing="8">
@@ -650,8 +595,7 @@
                             </Grid.ColumnDefinitions>
                             <Button
                                 Command="{x:Bind ViewModel.Proposals.ToggleAllCommand}"
-                                x:Uid="SortPage_ToggleAllButton"
-                                Content="Alle aus-/abwählen" />
+                                x:Uid="SortPage_ToggleAllButton" />
                             <TextBlock
                                 Grid.Column="1"
                                 VerticalAlignment="Center"
@@ -661,7 +605,6 @@
                                 Grid.Column="2"
                                 Command="{x:Bind ViewModel.ApplyCommand}"
                                 x:Uid="SortPage_ApplyButton"
-                                Content="Sortieren"
                                 Style="{ThemeResource AccentButtonStyle}"
                                 Visibility="{x:Bind ViewModel.Wizard.ShowStandardActions, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                         </Grid>
@@ -671,7 +614,6 @@
                              auslöst, nicht in eine Einstellungsseite. -->
                         <CheckBox
                             x:Uid="SortPage_CopyInsteadOfMoveCheck"
-                            Content="Fotos kopieren statt verschieben (Originale bleiben liegen)"
                             IsChecked="{x:Bind ViewModel.CopyInsteadOfMove, Mode=TwoWay}"
                             Visibility="{x:Bind ViewModel.Wizard.ShowStandardActions, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
 
@@ -687,13 +629,11 @@
                                 x:Name="ProposalSearch"
                                 Width="260"
                                 x:Uid="SortPage_ProposalSearch"
-                                Placeholder="Dateiname oder Zielordner"
                                 SearchChanged="OnProposalSearchChanged" />
                             <controls:FilterChips
                                 Grid.Column="1"
                                 VerticalAlignment="Center"
                                 x:Uid="SortPage_ProposalFilter"
-                                Label="Vorschläge filtern"
                                 Options="{x:Bind ViewModel.Proposals.Filters}"
                                 SelectionChanged="OnProposalFilterChanged" />
                         </Grid>
@@ -702,16 +642,12 @@
                              Bestand ist vorhanden, nur die Suche trifft ihn nicht. -->
                         <controls:EmptyState
                             x:Uid="SortPage_ProposalNoMatch"
-                            Message="Zu dieser Suche gibt es keinen Vorschlag. Die übrigen bleiben ausgewählt und werden mit sortiert."
-                            ResetLabel="Suche zurücksetzen"
                             ResetRequested="OnProposalSearchReset"
-                            Title="Nichts gefunden"
                             Visibility="{x:Bind ViewModel.Proposals.ShowsNoMatch, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
 
                         <ListView
                             x:Uid="SortPage_ProposalList"
                             MaxHeight="360"
-                            AutomationProperties.Name="Vorschläge"
                             ItemsSource="{x:Bind ViewModel.Proposals.Items}"
                             SelectionMode="None">
                             <ListView.ItemTemplate>
@@ -729,15 +665,13 @@
                                         </Grid.ColumnDefinitions>
                                         <CheckBox
                                             VerticalAlignment="Center"
-                                            AutomationProperties.Name="Diesen Vorschlag übernehmen"
                                             IsChecked="{x:Bind IsSelected, Mode=TwoWay}"
-                                            x:Uid="SortPage_ProposalSelectCheck"
-                                            ToolTipService.ToolTip="Häkchen entfernen heißt: nicht verschieben und künftig nicht mehr vorschlagen." />
+                                            x:Uid="SortPage_ProposalSelectCheck" />
                                         <!-- Klick auf das Bild öffnet die Großansicht. -->
                                         <Button
+                                            x:Uid="SortPage_ProposalImageButton"
                                             Grid.Column="1"
                                             Padding="0"
-                                            AutomationProperties.Name="Bild groß ansehen"
                                             Background="Transparent"
                                             BorderThickness="0"
                                             Click="OnProposalImageClick"
@@ -812,8 +746,7 @@
             </Grid.ColumnDefinitions>
             <Button
                 Command="{x:Bind ViewModel.Wizard.GoBackCommand}"
-                x:Uid="SortPage_BackButton"
-                Content="◀ Zurück" />
+                x:Uid="SortPage_BackButton" />
 
             <!-- Während eines Laufs steht das Anhalten hier unten, neben dem
                  Aktionsknopf: Dort sucht man es, wenn ein Lauf über Stunden geht. In der
@@ -823,7 +756,6 @@
                 HorizontalAlignment="Right"
                 Command="{x:Bind ViewModel.CancelCommand}"
                 x:Uid="SortPage_PauseButtonBottom"
-                Content="Analyse anhalten"
                 Visibility="{x:Bind ViewModel.CanCancel, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
 
             <Button

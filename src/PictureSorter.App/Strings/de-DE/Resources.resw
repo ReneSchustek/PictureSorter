@@ -1477,4 +1477,55 @@
   <data name="NameRepair_PreviewList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Vorschläge</value>
   </data>
+  <data name="MemoryPage_FolderFilter.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Nach Ordner filtern</value>
+  </data>
+  <data name="MemoryPage_CategoryFilter.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Nach Kategorie filtern</value>
+  </data>
+  <data name="MemoryPage_ForgetItemButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Diesen Eintrag vergessen</value>
+  </data>
+  <data name="SortPage_ProposalSelectCheck.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Diesen Vorschlag übernehmen</value>
+  </data>
+  <data name="DashboardPage_SortTile.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Fotos sortieren</value>
+  </data>
+  <data name="DashboardPage_DuplicatesTile.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Duplikate finden</value>
+  </data>
+  <data name="DashboardPage_MemoryTile.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Gedächtnis verwalten</value>
+  </data>
+  <data name="MainWindow_GatherProgress.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Fortschritt des Ladens</value>
+  </data>
+  <data name="MainWindow_AnalyzeProgress.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Fortschritt der Auswertung</value>
+  </data>
+  <data name="PhotoDetail_PreviewImage.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Vergrößerte Ansicht des Fotos</value>
+  </data>
+  <data name="SortPage_ResumeButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Analyse fortsetzen oder Ergebnis zurückholen</value>
+  </data>
+  <data name="SortPage_ViewModeCombo.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Ansicht</value>
+  </data>
+  <data name="SortPage_ProposalImageButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Bild groß ansehen</value>
+  </data>
+  <data name="AboutPage_UpdateCheckToggle.OffContent" xml:space="preserve">
+    <value>Aus</value>
+  </data>
+  <data name="AboutPage_UpdateCheckToggle.OnContent" xml:space="preserve">
+    <value>An</value>
+  </data>
+  <data name="AboutPage_UpdateStatusBar.Message" xml:space="preserve">
+    <value>Noch nicht geprüft.</value>
+  </data>
+  <data name="AboutPage_KiStatusBar.Message" xml:space="preserve">
+    <value>Status wird geprüft…</value>
+  </data>
 </root>

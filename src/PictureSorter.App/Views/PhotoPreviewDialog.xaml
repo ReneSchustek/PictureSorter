@@ -7,7 +7,6 @@
     xmlns:controls="using:PictureSorter.App.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    CloseButtonText="Schließen"
     DefaultButton="Close"
     mc:Ignorable="d">
 
@@ -32,8 +31,8 @@
                 CornerRadius="{StaticResource AppCardCornerRadius}">
                 <Image
                     x:Name="PreviewImage"
+                    x:Uid="PhotoDetail_PreviewImage"
                     MaxHeight="520"
-                    AutomationProperties.Name="Vergrößerte Ansicht des Fotos"
                     Stretch="Uniform" />
             </Border>
 
@@ -42,23 +41,18 @@
                 <StackPanel Spacing="{StaticResource SpacingS}">
                     <TextBlock
                         x:Uid="PhotoDetail_FactsHeading"
-                        Style="{StaticResource SectionHeadingStyle}"
-                        Text="Angaben" />
+                        Style="{StaticResource SectionHeadingStyle}" />
                     <controls:InfoField
                         x:Uid="PhotoDetail_FolderField"
-                        Label="Ordner"
                         Text="{x:Bind ViewModel.FolderPath, Mode=OneWay}" />
                     <controls:InfoField
                         x:Uid="PhotoDetail_SizeField"
-                        Label="Größe"
                         Text="{x:Bind ViewModel.SizeText}" />
                     <controls:InfoField
                         x:Uid="PhotoDetail_DimensionsField"
-                        Label="Auflösung"
                         Text="{x:Bind ViewModel.DimensionsText}" />
                     <controls:InfoField
                         x:Uid="PhotoDetail_CapturedField"
-                        Label="Aufgenommen"
                         Text="{x:Bind ViewModel.CapturedText}" />
                 </StackPanel>
 
@@ -69,8 +63,7 @@
                     Visibility="{x:Bind ViewModel.HasTarget, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                     <TextBlock
                         x:Uid="PhotoDetail_TargetHeading"
-                        Style="{StaticResource SectionHeadingStyle}"
-                        Text="Einsortiert nach" />
+                        Style="{StaticResource SectionHeadingStyle}" />
                     <TextBlock
                         Foreground="{ThemeResource AppTextPrimaryBrush}"
                         Text="{x:Bind ViewModel.TargetFolder, Mode=OneWay}"
@@ -82,8 +75,7 @@
                     Visibility="{x:Bind ViewModel.HasDuplicates, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                     <TextBlock
                         x:Uid="PhotoDetail_DuplicatesHeading"
-                        Style="{StaticResource SectionHeadingStyle}"
-                        Text="Doppelgänger" />
+                        Style="{StaticResource SectionHeadingStyle}" />
                     <ItemsControl ItemsSource="{x:Bind ViewModel.Duplicates}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="x:String">
@@ -100,12 +92,10 @@
                 <StackPanel Spacing="{StaticResource SpacingS}">
                     <TextBlock
                         x:Uid="PhotoDetail_ActionsHeading"
-                        Style="{StaticResource SectionHeadingStyle}"
-                        Text="Bearbeiten" />
+                        Style="{StaticResource SectionHeadingStyle}" />
 
                     <TextBox
                         x:Uid="PhotoDetail_NameBox"
-                        Header="Name"
                         IsEnabled="{x:Bind ViewModel.IsUsable, Mode=OneWay}"
                         Text="{x:Bind ViewModel.NewName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
@@ -117,14 +107,12 @@
                         <Button
                             x:Uid="PhotoDetail_RenameButton"
                             HorizontalAlignment="Stretch"
-                            Command="{x:Bind ViewModel.RenameCommand}"
-                            Content="Umbenennen" />
+                            Command="{x:Bind ViewModel.RenameCommand}" />
                         <Button
                             x:Uid="PhotoDetail_MoveButton"
                             Grid.Column="1"
                             HorizontalAlignment="Stretch"
-                            Command="{x:Bind ViewModel.MoveCommand}"
-                            Content="Verschieben" />
+                            Command="{x:Bind ViewModel.MoveCommand}" />
                     </Grid>
 
                     <Grid ColumnSpacing="{StaticResource SpacingS}">
@@ -135,14 +123,12 @@
                         <Button
                             x:Uid="PhotoDetail_FolderButton"
                             HorizontalAlignment="Stretch"
-                            Command="{x:Bind ViewModel.OpenFolderCommand}"
-                            Content="Im Explorer zeigen" />
+                            Command="{x:Bind ViewModel.OpenFolderCommand}" />
                         <Button
                             x:Uid="PhotoDetail_DeleteButton"
                             Grid.Column="1"
                             HorizontalAlignment="Stretch"
-                            Command="{x:Bind ViewModel.AskDeleteCommand}"
-                            Content="In den Papierkorb" />
+                            Command="{x:Bind ViewModel.AskDeleteCommand}" />
                     </Grid>
 
                     <!-- Die Rückfrage steht in dieser Ansicht, nicht in einem eigenen
@@ -160,14 +146,12 @@
                             x:Uid="PhotoDetail_ConfirmDeleteButton"
                             HorizontalAlignment="Stretch"
                             Command="{x:Bind ViewModel.DeleteCommand}"
-                            Content="Ja, in den Papierkorb"
                             Style="{StaticResource AccentButtonStyle}" />
                         <Button
                             x:Uid="PhotoDetail_CancelDeleteButton"
                             Grid.Column="1"
                             HorizontalAlignment="Stretch"
-                            Command="{x:Bind ViewModel.CancelDeleteCommand}"
-                            Content="Behalten" />
+                            Command="{x:Bind ViewModel.CancelDeleteCommand}" />
                     </Grid>
                 </StackPanel>
 

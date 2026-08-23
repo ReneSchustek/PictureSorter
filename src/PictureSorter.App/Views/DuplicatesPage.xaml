@@ -29,14 +29,10 @@
             <controls:ListPageHeader
                 x:Name="PageHeader"
                 x:Uid="DuplicatesPage_Header"
-                SearchChanged="OnSearchChanged"
-                SearchPlaceholder="Dateiname oder Ordner"
-                Subtitle="Findet gleiche und sehr ähnliche Bilder. Gelöschte Dateien landen im Papierkorb und bleiben wiederherstellbar."
-                Title="Duplikate finden">
+                SearchChanged="OnSearchChanged">
                 <controls:ListPageHeader.FilterContent>
                     <controls:FilterChips
                         x:Uid="DuplicatesPage_Filter"
-                        Label="Fundgruppen filtern"
                         Options="{x:Bind ViewModel.Filters}"
                         SelectionChanged="OnFilterChanged" />
                 </controls:ListPageHeader.FilterContent>
@@ -49,19 +45,15 @@
                 </Grid.ColumnDefinitions>
                 <TextBox
                     x:Uid="DuplicatesPage_FolderTextBox"
-                    Header="Ordner"
-                    PlaceholderText="z. B. C:\Fotos"
                     Text="{x:Bind ViewModel.SourceFolder, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                 <Button
                     x:Uid="DuplicatesPage_BrowseButton"
                     Grid.Column="1"
                     VerticalAlignment="Bottom"
-                    Command="{x:Bind ViewModel.BrowseCommand}"
-                    Content="Durchsuchen…" />
+                    Command="{x:Bind ViewModel.BrowseCommand}" />
             </Grid>
             <CheckBox
                 x:Uid="DuplicatesPage_IncludeSubfoldersCheckBox"
-                Content="Unterordner einbeziehen"
                 IsChecked="{x:Bind ViewModel.IncludeSubfolders, Mode=TwoWay}" />
 
             <StackPanel
@@ -71,12 +63,10 @@
                 <Button
                     x:Uid="DuplicatesPage_ScanButton"
                     Command="{x:Bind ViewModel.ScanCommand}"
-                    Content="Duplikate suchen"
                     Style="{ThemeResource AccentButtonStyle}" />
                 <Button
                     x:Uid="DuplicatesPage_DeleteSelectedButton"
-                    Command="{x:Bind ViewModel.DeleteSelectedCommand}"
-                    Content="Ausgewählte in den Papierkorb" />
+                    Command="{x:Bind ViewModel.DeleteSelectedCommand}" />
             </StackPanel>
         </StackPanel>
 
@@ -93,10 +83,7 @@
         <controls:EmptyState
             x:Uid="DuplicatesPage_NoMatch"
             Grid.Row="1"
-            Message="Zu dieser Suche gibt es keine Fundgruppe. Vielleicht ist der Filter zu eng gesetzt."
-            ResetLabel="Suche zurücksetzen"
             ResetRequested="OnResetSearch"
-            Title="Nichts gefunden"
             Visibility="{x:Bind ViewModel.ShowsNoMatch, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
 
         <ListView
@@ -153,7 +140,6 @@
                                                     <CheckBox
                                                         x:Uid="DuplicatesPage_DeleteCheckBox"
                                                         AutomationProperties.Name="{x:Bind DeletionLabel, Mode=OneWay}"
-                                                        Content="Löschen"
                                                         IsChecked="{x:Bind IsMarkedForDeletion, Mode=TwoWay}"
                                                         IsEnabled="{x:Bind CanToggleDeletion, Mode=OneWay}" />
                                                     <TextBlock

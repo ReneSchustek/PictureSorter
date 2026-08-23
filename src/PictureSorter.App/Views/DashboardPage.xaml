@@ -20,12 +20,10 @@
                 <StackPanel Spacing="6">
                     <TextBlock
                         x:Uid="DashboardPage_HeroTitle"
-                        Style="{StaticResource HeroTitleStyle}"
-                        Text="Willkommen bei PictureSorter" />
+                        Style="{StaticResource HeroTitleStyle}" />
                     <TextBlock
                         x:Uid="DashboardPage_HeroSubtitle"
-                        Style="{StaticResource HeroSubtitleStyle}"
-                        Text="Ordne deine Fotos in wenigen Schritten. Alles läuft auf deinem Rechner – nichts wird ins Internet geladen." />
+                        Style="{StaticResource HeroSubtitleStyle}" />
                 </StackPanel>
             </Border>
 
@@ -35,14 +33,12 @@
                 IsClosable="False"
                 IsOpen="True"
                 Message="{x:Bind ViewModel.AiStatusText, Mode=OneWay}"
-                Severity="{x:Bind ViewModel.IsAiReady, Mode=OneWay, Converter={StaticResource BoolToInfoBarSeverityConverter}}"
-                Title="Lokale KI" />
+                Severity="{x:Bind ViewModel.IsAiReady, Mode=OneWay, Converter={StaticResource BoolToInfoBarSeverityConverter}}" />
 
             <TextBlock
                 x:Uid="DashboardPage_ActionsPrompt"
                 FontSize="16"
-                FontWeight="SemiBold"
-                Text="Was möchtest du tun?" />
+                FontWeight="SemiBold" />
 
             <!-- Kacheln in die drei Bereiche.
                  Bewusst kein GridView: Dort steckte jede Schaltfläche zusätzlich in
@@ -51,11 +47,10 @@
                  erreichbar statt über Tab wie jede andere Schaltfläche. -->
             <VariableSizedWrapGrid
                 x:Uid="DashboardPage_Tiles"
-                AutomationProperties.Name="Bereiche"
                 Orientation="Horizontal">
                 <Button
+                    x:Uid="DashboardPage_SortTile"
                     Margin="0,0,12,12"
-                    AutomationProperties.Name="Fotos sortieren"
                     Command="{x:Bind ViewModel.OpenSortCommand}"
                     Style="{StaticResource TileButtonStyle}">
                     <StackPanel Spacing="8">
@@ -66,20 +61,18 @@
                             Glyph="&#xE8B7;" />
                         <TextBlock
                             x:Uid="DashboardPage_SortTileTitle"
-                            FontWeight="SemiBold"
-                            Text="Fotos sortieren" />
+                            FontWeight="SemiBold" />
                         <TextBlock
                             x:Uid="DashboardPage_SortTileDescription"
                             MaxWidth="220"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Text="Beschreibe eine Gruppe, bestätige ein paar Beispiele – der Rest passiert automatisch."
                             TextWrapping="Wrap" />
                     </StackPanel>
                 </Button>
 
                 <Button
+                    x:Uid="DashboardPage_DuplicatesTile"
                     Margin="0,0,12,12"
-                    AutomationProperties.Name="Duplikate finden"
                     Command="{x:Bind ViewModel.OpenDuplicatesCommand}"
                     Style="{StaticResource TileButtonStyle}">
                     <StackPanel Spacing="8">
@@ -90,20 +83,18 @@
                             Glyph="&#xE8C8;" />
                         <TextBlock
                             x:Uid="DashboardPage_DuplicatesTileTitle"
-                            FontWeight="SemiBold"
-                            Text="Duplikate finden" />
+                            FontWeight="SemiBold" />
                         <TextBlock
                             x:Uid="DashboardPage_DuplicatesTileDescription"
                             MaxWidth="220"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Text="Doppelte und sehr ähnliche Bilder aufspüren und in den Papierkorb legen."
                             TextWrapping="Wrap" />
                     </StackPanel>
                 </Button>
 
                 <Button
+                    x:Uid="DashboardPage_MemoryTile"
                     Margin="0,0,12,12"
-                    AutomationProperties.Name="Gedächtnis verwalten"
                     Command="{x:Bind ViewModel.OpenMemoryCommand}"
                     Style="{StaticResource TileButtonStyle}">
                     <StackPanel Spacing="8">
@@ -114,13 +105,11 @@
                             Glyph="&#xE81C;" />
                         <TextBlock
                             x:Uid="DashboardPage_MemoryTileTitle"
-                            FontWeight="SemiBold"
-                            Text="Gedächtnis" />
+                            FontWeight="SemiBold" />
                         <TextBlock
                             x:Uid="DashboardPage_MemoryTileDescription"
                             MaxWidth="220"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Text="Sieh nach, was sich PictureSorter gemerkt hat – und vergiss, was nicht stimmt."
                             TextWrapping="Wrap" />
                     </StackPanel>
                 </Button>

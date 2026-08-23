@@ -18,9 +18,7 @@
         <!-- Der Kopf der Linie: Titel und was man hier tut. Ohne Suche - gesucht wird
              erst in der Vorschau, und die hat ihre eigene. -->
         <controls:ListPageHeader
-            x:Uid="CalendarPage_Header"
-            Subtitle="Legt Bilder nach ihrem Aufnahmedatum in Ordner. Bilder ohne Datum bleiben liegen."
-            Title="Nach Datum ablegen" />
+            x:Uid="CalendarPage_Header" />
 
         <ScrollViewer Grid.Row="1" Margin="0,16,0,0">
             <!-- Die Breite ist begrenzt wie auf den übrigen Seiten: Ein Eingabefeld für
@@ -35,8 +33,7 @@
                     <StackPanel Spacing="12">
                         <TextBlock
                             x:Uid="CalendarPage_FolderHeading"
-                            Style="{StaticResource SectionHeadingStyle}"
-                            Text="Ordner" />
+                            Style="{StaticResource SectionHeadingStyle}" />
 
                         <Grid ColumnSpacing="8">
                             <Grid.ColumnDefinitions>
@@ -45,15 +42,12 @@
                             </Grid.ColumnDefinitions>
                             <TextBox
                                 x:Uid="CalendarPage_SourceBox"
-                                Header="Bilder aus"
-                                PlaceholderText="z. B. C:\Fotos"
                                 Text="{x:Bind ViewModel.SourceFolder, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                             <Button
                                 Grid.Column="1"
                                 x:Uid="CalendarPage_PickSource"
                                 VerticalAlignment="Bottom"
-                                Command="{x:Bind ViewModel.PickSourceFolderCommand}"
-                                Content="Durchsuchen" />
+                                Command="{x:Bind ViewModel.PickSourceFolderCommand}" />
                         </Grid>
 
                         <Grid ColumnSpacing="8">
@@ -63,20 +57,16 @@
                             </Grid.ColumnDefinitions>
                             <TextBox
                                 x:Uid="CalendarPage_TargetBox"
-                                Header="Ordner anlegen unter"
-                                PlaceholderText="z. B. D:\Archiv"
                                 Text="{x:Bind ViewModel.TargetRoot, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                             <Button
                                 Grid.Column="1"
                                 x:Uid="CalendarPage_PickTarget"
                                 VerticalAlignment="Bottom"
-                                Command="{x:Bind ViewModel.PickTargetRootCommand}"
-                                Content="Durchsuchen" />
+                                Command="{x:Bind ViewModel.PickTargetRootCommand}" />
                         </Grid>
 
                         <CheckBox
                             x:Uid="CalendarPage_Subfolders"
-                            Content="Unterordner einbeziehen"
                             IsChecked="{x:Bind ViewModel.IncludeSubfolders, Mode=TwoWay}" />
                     </StackPanel>
                 </Border>
@@ -85,23 +75,19 @@
                     <StackPanel Spacing="12">
                         <TextBlock
                             x:Uid="CalendarPage_StepHeading"
-                            Style="{StaticResource SectionHeadingStyle}"
-                            Text="Wie fein unterteilen?" />
+                            Style="{StaticResource SectionHeadingStyle}" />
 
                         <StackPanel Orientation="Horizontal" Spacing="24">
                             <RadioButton
                                 x:Uid="CalendarPage_StepYear"
-                                Content="Nach Jahr"
                                 GroupName="CalendarStep"
                                 IsChecked="{x:Bind ViewModel.IsYear, Mode=TwoWay}" />
                             <RadioButton
                                 x:Uid="CalendarPage_StepMonth"
-                                Content="Nach Monat"
                                 GroupName="CalendarStep"
                                 IsChecked="{x:Bind ViewModel.IsMonth, Mode=TwoWay}" />
                             <RadioButton
                                 x:Uid="CalendarPage_StepDay"
-                                Content="Nach Tag"
                                 GroupName="CalendarStep"
                                 IsChecked="{x:Bind ViewModel.IsDay, Mode=TwoWay}" />
                         </StackPanel>
@@ -110,8 +96,7 @@
                         <StackPanel Orientation="Horizontal" Spacing="6">
                             <TextBlock
                                 x:Uid="CalendarPage_ExampleLabel"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Text="Die Ordner heißen dann etwa:" />
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                             <TextBlock
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 FontWeight="SemiBold"
@@ -120,13 +105,11 @@
 
                         <CheckBox
                             x:Uid="CalendarPage_Copy"
-                            Content="Kopieren statt verschieben"
                             IsChecked="{x:Bind ViewModel.CopyInsteadOfMove, Mode=TwoWay}" />
 
                         <Button
                             x:Uid="CalendarPage_Analyze"
                             Command="{x:Bind ViewModel.AnalyzeCommand}"
-                            Content="Vorschau erstellen"
                             Style="{StaticResource AccentButtonStyle}" />
                     </StackPanel>
                 </Border>
@@ -137,8 +120,7 @@
                     <StackPanel Spacing="12">
                         <TextBlock
                             x:Uid="CalendarPage_PreviewHeading"
-                            Style="{StaticResource SectionHeadingStyle}"
-                            Text="Vorschau" />
+                            Style="{StaticResource SectionHeadingStyle}" />
 
                         <TextBlock
                             Foreground="{ThemeResource AppTextMutedBrush}"
@@ -156,29 +138,23 @@
                                 x:Uid="CalendarPage_ProposalSearch"
                                 Width="300"
                                 VerticalAlignment="Center"
-                                Placeholder="Dateiname oder Zielordner"
                                 SearchChanged="OnProposalSearchChanged" />
                             <controls:FilterChips
                                 x:Uid="CalendarPage_ProposalFilter"
                                 Grid.Column="1"
                                 VerticalAlignment="Center"
-                                Label="Vorschläge filtern"
                                 Options="{x:Bind ViewModel.Proposals.Filters}"
                                 SelectionChanged="OnProposalFilterChanged" />
                         </Grid>
 
                         <controls:EmptyState
                             x:Uid="CalendarPage_ProposalNoMatch"
-                            Message="Zu dieser Suche gibt es keinen Vorschlag. Die übrigen bleiben ausgewählt und werden mit abgelegt."
-                            ResetLabel="Suche zurücksetzen"
                             ResetRequested="OnProposalSearchReset"
-                            Title="Nichts gefunden"
                             Visibility="{x:Bind ViewModel.Proposals.ShowsNoMatch, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
 
                         <ListView
                             x:Uid="CalendarPage_ProposalList"
                             MaxHeight="360"
-                            AutomationProperties.Name="Vorschläge"
                             ItemsSource="{x:Bind ViewModel.Proposals.Items}"
                             SelectionMode="None">
                             <ListView.ItemTemplate>
@@ -195,7 +171,6 @@
                                         <CheckBox
                                             x:Uid="CalendarPage_ProposalSelectCheck"
                                             VerticalAlignment="Center"
-                                            AutomationProperties.Name="Dieses Bild ablegen"
                                             IsChecked="{x:Bind IsSelected, Mode=TwoWay}" />
                                         <Image
                                             Grid.Column="1"
@@ -224,7 +199,6 @@
                         <Button
                             x:Uid="CalendarPage_Apply"
                             Command="{x:Bind ViewModel.ApplyCommand}"
-                            Content="Bilder ablegen"
                             Style="{StaticResource AccentButtonStyle}" />
                     </StackPanel>
                 </Border>
