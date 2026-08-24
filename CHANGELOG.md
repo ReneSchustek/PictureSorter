@@ -6,6 +6,16 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
+## [1.11.2] - 2026-08-24
+
+### Behoben
+
+- **Die Großansicht eines Bildes trug eine weiße Fensterleiste und ein fremdes
+  Symbol.** Wer im dunklen Erscheinungsbild ein Foto groß ansah, bekam über dem Bild
+  einen hellen Balken, und darin stand statt des Programmsymbols das blasse
+  Ersatzsymbol von Windows. Beides folgt jetzt der Anwendung: dunkle Leiste, eigenes
+  Symbol.
+
 ## [1.11.1] - 2026-08-24
 
 ### Behoben

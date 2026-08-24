@@ -44,6 +44,17 @@ public partial class App : Microsoft.UI.Xaml.Application
     private const string DataFolderName = "PictureSorter";
     private static readonly TimeSpan MinimumSplashDuration = TimeSpan.FromSeconds(1.5);
 
+    /// <summary>
+    /// Das Symbol, das jedes Fenster in seiner Titelleiste trägt.
+    /// </summary>
+    /// <remarks>
+    /// An einer Stelle gehalten, weil es an mehreren Fenstern gebraucht wird und der
+    /// Pfad zur Laufzeit aufgelöst wird: Fehlt die Datei neben der Programmdatei, bleibt
+    /// das Symbol stumm generisch — genau das ist in einer Auslieferung schon einmal
+    /// passiert.
+    /// </remarks>
+    internal const string WindowIconPath = "Assets/AppIcon.ico";
+
     private Window? _window;
     private ILogger<App>? _logger;
 

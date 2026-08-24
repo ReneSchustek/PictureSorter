@@ -118,3 +118,11 @@ $RECYCLE.BIN/
 # Repository: Sie zeigen eine bestimmte Fassung und sollen mit ihr wandern.
 !docs/
 !docs/**
+
+# ============================================================
+# Werkzeug für die Suche nach Geheimnissen
+# ============================================================
+# Liegt je Projekt unter tools/, weil das Qualitäts-Gate es dort erwartet. Es ist
+# ein fremdes Programm von 22 MB und hat im Repository nichts verloren - die
+# Konfiguration daneben (.gitleaks.toml) dagegen schon.
+tools/gitleaks.exe

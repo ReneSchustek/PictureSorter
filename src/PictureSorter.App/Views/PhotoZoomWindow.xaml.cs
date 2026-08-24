@@ -33,6 +33,12 @@ internal sealed partial class PhotoZoomWindow : Window
     public PhotoZoomWindow()
     {
         InitializeComponent();
+
+        // Ohne diese Zeile steht in der Titelleiste das blasse Ersatzsymbol des
+        // Systems: Ein Fenster mit der Titelleiste des Systems holt sich sein Symbol
+        // nicht von selbst.
+        AppWindow.SetIcon(App.WindowIconPath);
+
         Closed += OnClosed;
     }
 
@@ -57,10 +63,10 @@ internal sealed partial class PhotoZoomWindow : Window
     {
         Title = string.IsNullOrWhiteSpace(fileName) ? imagePath : fileName;
 
-        // Ein eigenes Fenster hat seinen eigenen Inhalt und erbt das Design des
-        // Hauptfensters nicht. Bei jedem Bild neu gesetzt, damit es auch dann stimmt,
-        // wenn zwischendurch umgeschaltet wurde.
-        App.Services.GetRequiredService<ThemeService>().ApplyTo(Content as FrameworkElement);
+        // Ein eigenes Fenster hat seinen eigenen Inhalt und seine eigene Titelleiste; es
+        // erbt vom Hauptfenster nichts. Bei jedem Bild neu gesetzt, damit es auch dann
+        // stimmt, wenn zwischendurch umgeschaltet wurde.
+        App.Services.GetRequiredService<ThemeService>().ApplyToWindow(this);
 
         // Jedes neue Bild bekommt seine eigene Größe: Sonst behielte ein Hochformat die
         // Maße des Querformats, das vorher darin stand.

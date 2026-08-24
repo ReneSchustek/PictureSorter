@@ -50,7 +50,7 @@ internal sealed partial class MainWindow : Window
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(AppTitleBar);
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
-        AppWindow.SetIcon("Assets/AppIcon.ico");
+        AppWindow.SetIcon(App.WindowIconPath);
 
         // Ab hier gehört die Navigation dem Dienst: Er hört auf die Leiste, füllt den
         // Rahmen und zeigt die Startseite.

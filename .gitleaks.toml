@@ -1,0 +1,68 @@
+# gitleaks-Konfiguration für .NET-Projekte (Vorlage).
+# Dokumentation: https://github.com/gitleaks/gitleaks/blob/master/README.md#configuration
+#
+# Strategie: gitleaks-Defaults erweitern, projekt-spezifische Pfade ausschließen,
+# zusätzliche Regeln je Projekt ergänzen (DPAPI-Blob, OAuth-Token, plattformspezifische Tokens).
+# Bei der Übernahme in ein konkretes Projekt: Datei nach `.gitleaks.toml` umbenennen
+# und projektspezifische Regeln/Allowlists ergänzen.
+
+[extend]
+useDefault = true
+
+# ── Zusätzliche projektbezogene Regeln ──────────────────────────────────────
+
+[[rules]]
+id = "dpapi-blob"
+description = "Hardcodiertes DPAPI-Cipher-Blob (Base64 mit langem Präfix-Tag)"
+regex = '''(?i)(dpapi[_\-\s]?blob|cipher[_\-\s]?bytes)['"\s:=]+([A-Za-z0-9+/=]{200,})'''
+secretGroup = 2
+tags = ["secret", "dpapi"]
+
+# ── Globale Allowlist ───────────────────────────────────────────────────────
+
+[allowlist]
+description = "Pfade und Dateien, die nicht gescannt werden"
+paths = [
+    # Build-Output und IDE-Caches
+    '''(?i)(^|/)bin/''',
+    '''(?i)(^|/)obj/''',
+    '''(?i)(^|/)\.vs/''',
+    '''(?i)(^|/)node_modules/''',
+
+    # NuGet-Caches und Lockfiles haben keine Secrets
+    '''(?i)(^|/)packages/''',
+    '''(?i).*\.lock\.json$''',
+
+    # Embedded Test-Daten und Asset-Binaries
+    '''(?i).*\.png$''',
+    '''(?i).*\.jpg$''',
+    '''(?i).*\.ico$''',
+    '''(?i).*\.pdb$''',
+    '''(?i).*\.dll$''',
+
+    # Der Aushilfsschlüssel, den Visual Studio für das MSIX-Paket anlegt. Er liegt
+    # nur auf der Maschine des Entwicklers: `*.pfx` steht in der .gitignore, die Datei
+    # war nie im Index und nie in der Historie. Bewusst nur dieser eine Name -
+    # `*.pfx` allgemein freizugeben hieße, einen echten Schlüssel künftig zu übersehen.
+    '''(?i).*_TemporaryKey\.pfx$''',
+
+    # Lokale Workflow-Dateien (gitignored, niemals committed)
+    '''(?i)(^|/)\.ai/''',
+
+    # Gitleaks selbst (großes Binary, eigene README mit Beispiel-Findings)
+    '''(?i)(^|/)tools/gitleaks''',
+    '''(?i)(^|/)tools/README\.md$''',
+    '''(?i)(^|/)tools/LICENSE$''',
+]
+
+# Stopwords für die generischen Default-Regeln, um Test-Daten und kommentierte
+# Beispiele aus Fakes/Stubs herauszufiltern.
+stopwords = [
+    "fake",
+    "stub",
+    "placeholder",
+    "example",
+    "sample",
+    "test",
+    "dummy",
+]

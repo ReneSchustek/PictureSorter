@@ -1,7 +1,9 @@
 using System;
 using System.IO;
 using System.Text.Json;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Windows.UI;
 
 namespace PictureSorter.App.Services;
 
@@ -142,6 +144,58 @@ internal sealed class ThemeService
         }
 
         element.RequestedTheme = _current == AppTheme.Dark ? ElementTheme.Dark : ElementTheme.Light;
+    }
+
+    /// <summary>
+    /// Wendet das aktuelle Design auf ein ganzes Fenster an: auf seinen Inhalt und auf
+    /// die Titelleiste.
+    /// </summary>
+    /// <remarks>
+    /// Die Titelleiste des Systems richtet sich nach dem Erscheinungsbild von Windows,
+    /// nicht nach dem der Anwendung. Bei hellem Windows stand deshalb ein weißer Balken
+    /// über dem dunklen Bildfenster. Wer den Inhalt in die Titelleiste zieht und sie
+    /// selbst zeichnet — das Hauptfenster tut das —, braucht die Farben nicht und
+    /// bekommt sie hier auch nicht gesetzt.
+    /// </remarks>
+    /// <param name="window">Das Fenster; <see langword="null"/> wird übergangen.</param>
+    public void ApplyToWindow(Window? window)
+    {
+        if (window is null)
+        {
+            return;
+        }
+
+        ApplyTo(window.Content as FrameworkElement);
+
+        if (window.ExtendsContentIntoTitleBar)
+        {
+            return;
+        }
+
+        // Dieselben Grundfarben, die auch hinter dem Inhalt liegen. Fest eingetragen und
+        // nicht aus den Design-Mitteln gelesen: Die werden je Element aufgelöst, und ein
+        // Fenster ist keines — es käme die Farbe des Windows-Designs heraus, also genau
+        // die, von der wir hier wegwollen.
+        bool dark = _current == AppTheme.Dark;
+        Color background = dark ? Color.FromArgb(255, 32, 32, 32) : Color.FromArgb(255, 243, 243, 243);
+        Color foreground = dark ? Color.FromArgb(255, 255, 255, 255) : Color.FromArgb(255, 26, 26, 26);
+        Color hover = dark ? Color.FromArgb(255, 55, 55, 55) : Color.FromArgb(255, 224, 224, 224);
+        Color pressed = dark ? Color.FromArgb(255, 70, 70, 70) : Color.FromArgb(255, 204, 204, 204);
+        Color inactive = dark ? Color.FromArgb(255, 150, 150, 150) : Color.FromArgb(255, 130, 130, 130);
+
+        AppWindowTitleBar titleBar = window.AppWindow.TitleBar;
+        titleBar.BackgroundColor = background;
+        titleBar.ForegroundColor = foreground;
+        titleBar.InactiveBackgroundColor = background;
+        titleBar.InactiveForegroundColor = inactive;
+        titleBar.ButtonBackgroundColor = background;
+        titleBar.ButtonForegroundColor = foreground;
+        titleBar.ButtonInactiveBackgroundColor = background;
+        titleBar.ButtonInactiveForegroundColor = inactive;
+        titleBar.ButtonHoverBackgroundColor = hover;
+        titleBar.ButtonHoverForegroundColor = foreground;
+        titleBar.ButtonPressedBackgroundColor = pressed;
+        titleBar.ButtonPressedForegroundColor = foreground;
     }
 
     private void ApplyToRoot() => ApplyTo(_windowContext.MainWindow?.Content as FrameworkElement);
