@@ -554,9 +554,23 @@ try {
 }
 finally {
     if ($beiseite) {
-        Remove-Item -LiteralPath $datenOrdner -Recurse -Force -ErrorAction SilentlyContinue
-        Move-Item -LiteralPath $beiseite -Destination $datenOrdner
-        Write-Host 'Vorhandene Daten zurückgeholt.'
+        # Der Ordner des Laufs muss weg sein, bevor der echte zurückkommt: Move-Item
+        # verschiebt sonst in den bestehenden Ordner hinein, und die Daten der Nutzerin
+        # liegen danach eine Ebene tiefer - beim nächsten Lauf noch eine. Die Datenbank
+        # gibt ihre Dateien nach dem Beenden nicht sofort frei, ein einzelner Versuch
+        # scheitert deshalb still. Genau so ist es passiert.
+        for ($versuch = 0; $versuch -lt 20 -and (Test-Path -LiteralPath $datenOrdner); $versuch++) {
+            Remove-Item -LiteralPath $datenOrdner -Recurse -Force -ErrorAction SilentlyContinue
+            if (Test-Path -LiteralPath $datenOrdner) { Start-Sleep -Milliseconds 500 }
+        }
+
+        if (Test-Path -LiteralPath $datenOrdner) {
+            Write-Warning "Der Ordner des Laufs ließ sich nicht räumen. Die vorhandenen Daten liegen weiterhin unter: $beiseite"
+        }
+        else {
+            Move-Item -LiteralPath $beiseite -Destination $datenOrdner
+            Write-Host 'Vorhandene Daten zurückgeholt.'
+        }
     }
 }
 
