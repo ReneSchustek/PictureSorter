@@ -75,6 +75,10 @@ internal sealed partial class PhotoPreviewDialog : ContentDialog
             XamlRoot = owner.XamlRoot,
         };
 
+        // Der Dialog liegt über dem Fenster, nicht darin — das Design muss ihm eigens
+        // mitgegeben werden, sonst steht er hell vor der dunklen Anwendung.
+        App.Services.GetRequiredService<ThemeService>().ApplyTo(dialog);
+
         await dialog.ViewModel
             .LoadRelationsAsync(duplicates ?? [], CancellationToken.None)
             .ConfigureAwait(true);

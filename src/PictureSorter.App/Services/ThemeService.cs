@@ -124,13 +124,27 @@ internal sealed class ThemeService
         Save();
     }
 
-    private void ApplyToRoot()
+    /// <summary>
+    /// Wendet das aktuelle Design auf ein weiteres Wurzelelement an.
+    /// </summary>
+    /// <remarks>
+    /// Ein Dialog hängt nicht unter dem Inhalt des Hauptfensters, sondern wird in einer
+    /// eigenen Ebene darüber dargestellt; ein zweites Fenster hat ohnehin seinen eigenen
+    /// Inhalt. Beide erben das Design deshalb nicht und stünden hell vor einer dunklen
+    /// Anwendung. Wer so etwas öffnet, reicht es hier durch.
+    /// </remarks>
+    /// <param name="element">Das Wurzelelement; <see langword="null"/> wird übergangen.</param>
+    public void ApplyTo(FrameworkElement? element)
     {
-        if (_windowContext.MainWindow?.Content is FrameworkElement root)
+        if (element is null)
         {
-            root.RequestedTheme = _current == AppTheme.Dark ? ElementTheme.Dark : ElementTheme.Light;
+            return;
         }
+
+        element.RequestedTheme = _current == AppTheme.Dark ? ElementTheme.Dark : ElementTheme.Light;
     }
+
+    private void ApplyToRoot() => ApplyTo(_windowContext.MainWindow?.Content as FrameworkElement);
 
     private void Load()
     {

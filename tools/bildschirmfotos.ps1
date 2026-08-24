@@ -89,6 +89,12 @@ $RenderFullContent = 2
 # DWMWA_EXTENDED_FRAME_BOUNDS: der sichtbare Fensterbereich ohne Griffrand.
 $ExtendedFrameBounds = 9
 
+# Grenzen für die Gegenprobe am Ende, in Prozent heller Bildpunkte. Über die ganze
+# Serie gemessen liegt die helle Reihe bei 87 bis 97, die dunkle bei 1 bis 11 - und
+# das eine Bild, auf dem der Dialog sein Design nicht geerbt hatte, bei 34.
+$MaxBrightInDark = 20
+$MinBrightInLight = 70
+
 $Automation = [System.Windows.Automation.AutomationElement]
 $Scope = [System.Windows.Automation.TreeScope]
 
@@ -232,10 +238,15 @@ function Save-WindowShot([IntPtr]$fenster, [string]$pfad) {
     Set-RoundedCorners $bild
     $bild.Save($pfad, [System.Drawing.Imaging.ImageFormat]::Png)
 
-    $farben = Measure-Colors $bild
+    $mass = Measure-Image $bild
     $size = "$($bild.Width)x$($bild.Height)"
     $bild.Dispose()
-    return [pscustomobject]@{ File = Split-Path -Leaf $pfad; Size = $size; Colors = $farben }
+    return [pscustomobject]@{
+        File   = Split-Path -Leaf $pfad
+        Size   = $size
+        Colors = $mass.Colors
+        Bright = $mass.Bright
+    }
 }
 
 function Set-RoundedCorners($bild) {
@@ -263,14 +274,41 @@ function Set-RoundedCorners($bild) {
     $pfad.Dispose()
 }
 
-function Measure-Colors($bild) {
+function Measure-Image($bild) {
+    # Zwei Kennzahlen aus einem Durchlauf: die Zahl der Farben verrät eine leere
+    # Fläche, der Anteil heller Punkte die falsche Reihe. Beides in einer Schleife,
+    # weil GetPixel teuer ist - es geht über gut hunderttausend Punkte.
     $farben = New-Object 'System.Collections.Generic.HashSet[int]'
+
+    # Gezählt wird nur im Inhaltsbereich: Navigationsleiste, Titelleiste und
+    # Statuszeile sind in beiden Reihen dunkel und sähen überall gleich aus.
+    #
+    # Gezählt wird der Anteil heller Punkte und nicht die mittlere Helligkeit. Der
+    # Mittelwert taugt nicht: Hinter einem offenen Dialog blendet WinUI die Seite ab,
+    # und dieser Schleier hebt ihn so weit an, dass ein heiles Bild sich von einem
+    # kaputten kaum unterscheidet (125 gegen 188). Der Anteil trennt sauber, denn der
+    # Fehler zeigt sich als große weiße Fläche: 4 Prozent gegen 34.
+    $vonX = [int]($bild.Width * 0.20)
+    $vonY = [int]($bild.Height * 0.06)
+    $bisY = [int]($bild.Height * 0.94)
+    $hell = 0
+    $anzahl = 0
+
     for ($y = 0; $y -lt $bild.Height; $y += 3) {
         for ($x = 0; $x -lt $bild.Width; $x += 3) {
-            [void]$farben.Add($bild.GetPixel($x, $y).ToArgb())
+            $punkt = $bild.GetPixel($x, $y)
+            [void]$farben.Add($punkt.ToArgb())
+            if ($x -ge $vonX -and $y -ge $vonY -and $y -lt $bisY) {
+                $anzahl++
+                if ((($punkt.R + $punkt.G + $punkt.B) / 3.0) -gt 200) { $hell++ }
+            }
         }
     }
-    return $farben.Count
+
+    return [pscustomobject]@{
+        Colors = $farben.Count
+        Bright = [Math]::Round(100.0 * $hell / $anzahl, 1)
+    }
 }
 
 # --------------------------------------------------------- Anwendung steuern
@@ -524,10 +562,29 @@ finally {
 
 Write-Host ''
 $alle | Format-Table -AutoSize
-$leer = $alle | Where-Object { $_.Colors -lt 20 }
-if ($leer) {
-    Write-Warning 'Diese Aufnahmen sind fast einfarbig - da steht vermutlich eine leere Fläche im Bild:'
-    $leer | ForEach-Object { Write-Warning ("  " + $_.Datei) }
+$beanstandet = [System.Collections.Generic.List[string]]::new()
+
+foreach ($bericht in $alle) {
+    if ($bericht.Colors -lt 20) {
+        $beanstandet.Add("  $($bericht.File): fast einfarbig ($($bericht.Colors) Farben) - da steht vermutlich eine leere Fläche im Bild.")
+        continue
+    }
+
+    # Ein Bild in der falschen Helligkeit sieht aus wie ein richtiges. Es entsteht,
+    # wenn ein Dialog oder ein eigenes Fenster das Design der Anwendung nicht erbt -
+    # dann steht eine weiße Fläche mitten in der dunklen Reihe.
+    $dunkleReihe = $bericht.File -like '*-dunkel.png'
+    if ($dunkleReihe -and $bericht.Bright -gt $MaxBrightInDark) {
+        $beanstandet.Add("  $($bericht.File): zu hell für die dunkle Reihe ($($bericht.Bright) Prozent helle Fläche).")
+    }
+    elseif (-not $dunkleReihe -and $bericht.Bright -lt $MinBrightInLight) {
+        $beanstandet.Add("  $($bericht.File): zu dunkel für die helle Reihe ($($bericht.Bright) Prozent helle Fläche).")
+    }
+}
+
+if ($beanstandet.Count -gt 0) {
+    Write-Warning 'Diese Aufnahmen taugen nicht:'
+    $beanstandet | ForEach-Object { Write-Warning $_ }
     exit 1
 }
 Write-Host "Fertig: $Ziel" -ForegroundColor Green

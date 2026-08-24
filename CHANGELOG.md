@@ -6,6 +6,16 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
+## [1.11.1] - 2026-08-24
+
+### Behoben
+
+- **Im dunklen Erscheinungsbild blieben Detailansicht, Rückfragen und die Lupe hell.**
+  Wer ein Bild groß ansah, bekam eine weiße Fläche mitten in die dunkle Anwendung —
+  hell genug, um im abgedunkelten Zimmer zu blenden. Ein Dialog liegt über dem Fenster
+  und nicht darin, ein zweites Fenster hat seinen eigenen Inhalt; beide übernahmen das
+  eingestellte Erscheinungsbild deshalb nicht von selbst. Jetzt tun sie es.
+
 ## [1.11.0] - 2026-08-23
 
 ### Hinzugefügt

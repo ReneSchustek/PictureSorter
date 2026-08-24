@@ -11,15 +11,19 @@ namespace PictureSorter.App.Services;
 internal sealed class ContentDialogConfirmationService : IConfirmationService
 {
     private readonly WindowContext _windowContext;
+    private readonly ThemeService _themeService;
 
     /// <summary>
     /// Initialisiert den Dialogdienst.
     /// </summary>
     /// <param name="windowContext">Der Fensterkontext.</param>
-    public ContentDialogConfirmationService(WindowContext windowContext)
+    /// <param name="themeService">Liefert das Design, das der Dialog tragen soll.</param>
+    public ContentDialogConfirmationService(WindowContext windowContext, ThemeService themeService)
     {
         ArgumentNullException.ThrowIfNull(windowContext);
+        ArgumentNullException.ThrowIfNull(themeService);
         _windowContext = windowContext;
+        _themeService = themeService;
     }
 
     /// <inheritdoc />
@@ -40,6 +44,9 @@ internal sealed class ContentDialogConfirmationService : IConfirmationService
             DefaultButton = ContentDialogButton.Close,
             XamlRoot = xamlRoot,
         };
+
+        // Der Dialog liegt über dem Fenster, nicht darin, und erbt dessen Design nicht.
+        _themeService.ApplyTo(dialog);
 
         ContentDialogResult result = await dialog.ShowAsync();
         return result == ContentDialogResult.Primary;

@@ -31,6 +31,10 @@ internal sealed partial class SplashWindow : Window
         InitializeComponent();
         ConfigurePresenter();
 
+        // Ein eigenes Fenster erbt das Design der Anwendung nicht. Ohne diese Zeile
+        // blitzt beim Start eine weiße Fläche auf, obwohl dunkel eingestellt ist.
+        App.Services.GetRequiredService<ThemeService>().ApplyTo(Content as FrameworkElement);
+
         ILocalizer localizer = App.Services.GetRequiredService<ILocalizer>();
         VersionText.Text = localizer.Format("Common_Version", GetVersion());
     }

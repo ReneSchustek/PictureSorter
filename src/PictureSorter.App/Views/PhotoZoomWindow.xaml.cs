@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Input;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -55,6 +56,11 @@ internal sealed partial class PhotoZoomWindow : Window
     private void ShowPhoto(string imagePath, string? fileName)
     {
         Title = string.IsNullOrWhiteSpace(fileName) ? imagePath : fileName;
+
+        // Ein eigenes Fenster hat seinen eigenen Inhalt und erbt das Design des
+        // Hauptfensters nicht. Bei jedem Bild neu gesetzt, damit es auch dann stimmt,
+        // wenn zwischendurch umgeschaltet wurde.
+        App.Services.GetRequiredService<ThemeService>().ApplyTo(Content as FrameworkElement);
 
         // Jedes neue Bild bekommt seine eigene Größe: Sonst behielte ein Hochformat die
         // Maße des Querformats, das vorher darin stand.

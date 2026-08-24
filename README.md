@@ -148,6 +148,9 @@ Anwendungen update-unfähig** – sie kennen nur den alten Schlüssel.
 - Tests: je `src`-Projekt ein Testprojekt unter `tests/` (`PictureSorter.App.Tests`,
   `.Application.Tests`, `.Core.Tests`, `.Data.Tests`, `.Infrastructure.Tests`,
   `.Ollama.Tests`).
+- Bildschirmfotos für die Webseite: `tools/bildschirmfotos.ps1` nimmt die ganze Serie mit
+  einem Aufruf an einem Demo-Bestand neu auf; sie liegt unter `docs/bilder/` und ist dort
+  beschrieben.
 - Qualitäts-Gate vor jedem Abschluss:
 
   ```pwsh

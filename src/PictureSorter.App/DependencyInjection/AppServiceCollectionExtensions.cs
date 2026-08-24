@@ -39,7 +39,9 @@ internal static class AppServiceCollectionExtensions
         _ = services.AddSingleton<IFolderPicker>(static provider =>
             new WindowsFolderPicker(provider.GetRequiredService<WindowContext>()));
         _ = services.AddSingleton<IConfirmationService>(static provider =>
-            new ContentDialogConfirmationService(provider.GetRequiredService<WindowContext>()));
+            new ContentDialogConfirmationService(
+                provider.GetRequiredService<WindowContext>(),
+                provider.GetRequiredService<ThemeService>()));
         _ = services.AddSingleton<IApplicationShutdown>(static provider =>
             new WindowShutdown(provider.GetRequiredService<WindowContext>()));
         _ = services.AddSingleton(provider =>

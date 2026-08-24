@@ -48,4 +48,9 @@ Die Anwendung darf beim Start des Werkzeugs nicht laufen. Ihr Datenordner im
 Benutzerprofil wird für die Aufnahme beiseitegelegt und danach zurückgeholt, damit auf
 keinem Bild ein privat sortierter Ordner auftaucht.
 
-Aufgenommen mit Fassung 1.10.1 bei 1386 × 993 Punkten.
+Nach jedem Lauf prüft das Werkzeug seine eigenen Bilder nach: Wie viele Farben stecken
+darin, und wie viel helle Fläche? Eine leere Aufnahme hat genau eine Farbe, und ein Bild
+der dunklen Reihe, auf dem ein Dialog sein Design nicht übernommen hat, fällt durch den
+Anteil weißer Fläche auf. Beanstandete Bilder werden beim Namen genannt.
+
+Aufgenommen mit Fassung 1.11.1 bei 1386 × 993 Punkten.
