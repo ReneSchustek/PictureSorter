@@ -5,9 +5,11 @@ tags: anleitung, dotnet, oberfläche
 # Bildschirmfotos
 
 Sieben Ansichten der Anwendung, je einmal im hellen und im dunklen Erscheinungsbild.
-Aufgenommen an einem Demo-Bestand: vierzehn gezeichnete Bilder mit Aufnahmedatum,
-darunter zwei Paare, die sich gleichen — und daneben ein zweiter, kleiner Bestand mit
-vier unlesbaren Dateinamen, wie ihn ein iCloud-Export mitbringt.
+Aufgenommen an einem Demo-Bestand: vierzehn Fotos von der Nordseeküste mit
+Aufnahmedatum, darunter zwei Paare, die sich gleichen — und daneben ein zweiter,
+kleiner Bestand mit vier unlesbaren Dateinamen, wie ihn ein iCloud-Export mitbringt.
+Die Fotos stammen aus einer eigenen, veröffentlichten Serie; `tools/demobilder.ps1`
+holt sie und bereitet sie auf.
 
 | Datei | Was zu sehen ist |
 |---|---|
@@ -53,4 +55,4 @@ darin, und wie viel helle Fläche? Eine leere Aufnahme hat genau eine Farbe, und
 der dunklen Reihe, auf dem ein Dialog sein Design nicht übernommen hat, fällt durch den
 Anteil weißer Fläche auf. Beanstandete Bilder werden beim Namen genannt.
 
-Aufgenommen mit Fassung 1.11.2 bei 1386 × 993 Punkten.
+Aufgenommen mit Fassung 1.11.3 bei 1386 × 993 Punkten.

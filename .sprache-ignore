@@ -20,3 +20,10 @@ Guessing
 # Dateinamen bleiben nach der Bezeichner-Regel ASCII: Sie stehen im Repository, in
 # Skripten und später in der Adresse einer Webseite.
 gedaechtnis
+
+# --- Zweignamen, die in Merge-Betreffen stehen --------------------------------
+# „startpruefungen" ist der Name eines Zweiges aus dem Juli 2026 und steht damit
+# unveränderlich im Betreff seines Merge-Commits. Ein Zweigname ist ein Bezeichner,
+# keine Prosa; ihn nachträglich mit Umlaut zu schreiben hieße, einen Namen zu
+# erfinden, den es nie gegeben hat.
+startpruefungen

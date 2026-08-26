@@ -441,10 +441,11 @@ function Close-Dialog($fenster) {
 # aus demobilder.ps1 und gehören zu dieser Reihenfolge; wird der Bestand dort
 # geändert, meldet Select-Examples die fehlende Datei beim Namen.
 # Gewählt, weil der Bestand diese Gruppe sauber hergibt: Zwei Beispiele genügen, und
-# die Erkennung findet ein drittes Bild dazu, das nicht vorgegeben war (den Hafen bei
-# Nacht). Eine Gruppe, in der am Ende nur die Beispiele stehen, zeigt nichts.
-$MatchingExamples = @('IMG_2047.jpg', 'IMG_2048.jpg')                 # Stadt bei Nacht, Lichter
-$CounterExamples = @('IMG_2041.jpg', 'IMG_2043.jpg', 'IMG_2045.jpg')  # Sonnenuntergang, Berge, Wald
+# die Erkennung findet ein drittes Bild dazu, das nicht vorgegeben war (die einzelne
+# Muschel im Schlick). Eine Gruppe, in der am Ende nur die Beispiele stehen, zeigt
+# nichts.
+$MatchingExamples = @('IMG_2047.jpg', 'IMG_2048.jpg')                 # Muscheln im Watt
+$CounterExamples = @('IMG_2041.jpg', 'IMG_2043.jpg', 'IMG_2045.jpg')  # Deich, Marsch, Sonnenuntergang
 
 function Get-ExampleName($eintrag) {
     # Der Dateiname hängt am Vorschaubild der Kachel; die Kachel selbst trägt ihn seit
@@ -494,9 +495,9 @@ function Invoke-SortWizard($fenster) {
     Invoke-Element (Find-Element $fenster 'Weiter ▶' 'Button')
 
     # Schritt 2: Kategorie beschreiben
-    Set-Text (Find-Element $fenster 'Name der Gruppe' 'Edit') 'Stadt bei Nacht'
+    Set-Text (Find-Element $fenster 'Name der Gruppe' 'Edit') 'Muscheln im Watt'
     Set-Text (Find-Element $fenster 'Beschreibung (in eigenen Worten)' 'Edit') `
-        'Aufnahmen einer Stadt bei Nacht, mit beleuchteten Fenstern und Lichtern.'
+        'Nahaufnahmen vom Boden: Muscheln und Schneckenhäuser im Schlick.'
     Invoke-Element (Find-Element $fenster 'Weiter ▶' 'Button')
 
     # Schritt 3: passende Beispiele - die Vorschläge kommen aus dem Quellordner

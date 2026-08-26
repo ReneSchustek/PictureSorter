@@ -1,234 +1,143 @@
-# demobilder.ps1 - erzeugt einen Demo-Bestand für Bildschirmfotos.
+# demobilder.ps1 - stellt den Demo-Bestand für Bildschirmfotos bereit.
 #
 # Warum: Für Bilder auf einer Webseite braucht es einen Bestand, der etwas hergibt -
-# und der keine privaten Fotos zeigt. Die Bilder hier sind gezeichnet, tragen aber ein
-# Aufnahmedatum im Dateikopf, sodass die Ablage nach Datum echte Ordner bildet.
+# und der keine privaten Fotos zeigt. Der Bestand besteht deshalb aus veröffentlichten
+# Aufnahmen des Entwicklers: Watt und Marsch an der Nordsee, ohne Personen, ohne
+# fremde Rechte. Sie stehen ohnehin öffentlich im Netz.
+#
+# Vorher waren die Bilder gezeichnet. Für sechs der sieben Ansichten trug das; auf der
+# Sortier-Seite nicht. Das Bild-Modell kann gezeichnete Motive nicht lesen und
+# antwortet mit Erfundenem - auf einem Werbebild wirkt dann ein Vorschlag willkürlich,
+# obwohl die Anwendung nicht der Grund ist. Echte Fotos beheben das an der Wurzel,
+# ohne an der Erkennung selbst zu drehen.
+#
+# Die Fotos liegen nicht im Repository - sie sind groß und gehören dort nicht hin.
+# Hier steht nur der Weg zu ihnen. Einmal geladen, bleiben sie im Vorrat liegen; ein
+# zweiter Aufruf kommt ohne Netz aus.
 #
 # Der Zielordner ist bewusst neutral: Auf einem Bildschirmfoto hat kein Benutzername
 # etwas verloren.
-#
-# Erzeugt einen Demo-Bestand: Bilder, die auf einem Bildschirmfoto nach Fotos aussehen,
-# mit Aufnahmedatum im Dateikopf - und zwei Paaren, die sich gleichen.
-#
-# Die Motive unterscheiden sich bewusst in der Helligkeitsverteilung von links nach
-# rechts. Der Wahrnehmungs-Hash der Anwendung vergleicht jeden Bildpunkt eines 9x8-
-# Rasters mit seinem rechten Nachbarn; Bilder, die nur einen Verlauf von oben nach
-# unten tragen, sehen für ihn deshalb alle gleich aus. Genau das war der Grund, warum
-# ein früherer Bestand fünf Duplikat-Gruppen ergab statt der zwei gewollten. Am Ende
-# rechnet das Skript denselben Hash nach und meldet, ob der Abstand reicht.
 param(
     [string]$Ordner = "F:\Fotos",
     [string]$NamensOrdner = "F:\Fotos aus iCloud",
+    [string]$Vorrat = (Join-Path $env:LOCALAPPDATA "PictureSorter-Demobestand"),
     [int]$MindestAbstand = 12
 )
 
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
+Add-Type -AssemblyName PresentationCore
 
-if (Test-Path $Ordner) { Remove-Item $Ordner -Recurse -Force }
-New-Item -ItemType Directory -Path $Ordner | Out-Null
+# Woher die Bilder stammen. Der Bestand ist eine öffentliche Galerie; die Dateinamen
+# dort tragen Ortsangaben, die hier nirgends auftauchen - gespeichert wird unter
+# IMG_20xx.jpg, so wie eine Kamera es täte.
+$Bezugsquelle = "https://ruhrcoder.de/wp-content/uploads/2026/03/2026_{0}-2400x1551.webp"
 
-# Jedes Motiv: Name, Aufnahmedatum, Himmel oben, Grund unten, Art und Lage der Formen.
+# Die Bilder der Galerie stecken in einem weißen Rahmen mit Titel und Signatur. Auf
+# einem Bildschirmfoto, das Fotos einer Kamera zeigen soll, hat der nichts verloren.
+# Der Rahmen ist bei allen Dateien gleich breit; gemessen wurde die Kante über alle
+# 33 Bilder der Galerie.
+$Rahmen = @{ Left = 152; Top = 152; Width = 2096; Height = 1170 }
+$Zielbreite = 1600
+
+# Die zwölf Motive in der Reihenfolge, in der sie zu IMG_2041 bis IMG_2052 werden.
+# Drei Rollen hängen an dieser Reihenfolge, und bildschirmfotos.ps1 nennt sie beim
+# Dateinamen:
 #
-#   Ort     - waagerechte Lage der Hauptform (0 = links, 1 = rechts)
-#   Horizont- Höhe der Grundlinie (Anteil der Bildhöhe)
-#   Hoch    - hochkant statt quer; der Bildbereich der Detailansicht ist hochkant
-#             und zeigt ein Querformat mit breiten Rändern
-$motifs = @(
-    @{ Name = "strand-sonnenuntergang"; Datum = "2021:07:14 19:42:00"; Oben = "#FF7043"; Unten = "#FFCA28"; Form = "sonne";  Ort = 0.72; Horizont = 0.58; Hoch = $false },
-    @{ Name = "strand-abends";          Datum = "2021:07:14 20:10:00"; Oben = "#4E342E"; Unten = "#FFB74D"; Form = "steg";   Ort = 0.18; Horizont = 0.66; Hoch = $false },
-    @{ Name = "berge-morgens";          Datum = "2021:07:18 07:15:00"; Oben = "#64B5F6"; Unten = "#37474F"; Form = "berge";  Ort = 0.08; Horizont = 0.74; Hoch = $true },
-    @{ Name = "berge-mittags";          Datum = "2021:07:18 12:30:00"; Oben = "#42A5F5"; Unten = "#455A64"; Form = "berge";  Ort = 0.24; Horizont = 0.62; Hoch = $false },
-    @{ Name = "wald-im-nebel";          Datum = "2021:09:03 08:05:00"; Oben = "#B0BEC5"; Unten = "#2E7D32"; Form = "trees";  Ort = 0.12; Horizont = 0.82; Hoch = $true },
-    @{ Name = "see-spiegelung";         Datum = "2021:09:03 17:20:00"; Oben = "#4FC3F7"; Unten = "#0277BD"; Form = "sonne";  Ort = 0.22; Horizont = 0.42; Hoch = $false },
-    @{ Name = "stadt-bei-nacht";        Datum = "2021:12:24 21:00:00"; Oben = "#1A237E"; Unten = "#212121"; Form = "stadt";  Ort = 0.55; Horizont = 0.46; Hoch = $false },
-    @{ Name = "weihnachtsmarkt";        Datum = "2021:12:24 18:30:00"; Oben = "#311B92"; Unten = "#4E342E"; Form = "lichter";Ort = 0.50; Horizont = 0.70; Hoch = $true },
-    @{ Name = "fruehling-im-garten";    Datum = "2023:05:01 11:00:00"; Oben = "#81D4FA"; Unten = "#66BB6A"; Form = "trees";  Ort = 0.62; Horizont = 0.55; Hoch = $false },
-    @{ Name = "picknick";               Datum = "2023:05:01 13:45:00"; Oben = "#90CAF9"; Unten = "#7CB342"; Form = "decke";  Ort = 0.38; Horizont = 0.62; Hoch = $false },
-    @{ Name = "segeln";                 Datum = "2023:08:12 15:20:00"; Oben = "#29B6F6"; Unten = "#01579B"; Form = "segel";  Ort = 0.30; Horizont = 0.60; Hoch = $true },
-    @{ Name = "hafen";                  Datum = "2023:08:12 16:05:00"; Oben = "#039BE5"; Unten = "#01579B"; Form = "stadt";  Ort = 0.15; Horizont = 0.68; Hoch = $false }
+#   IMG_2047, IMG_2048  die beiden Beispiele, aus denen die Gruppe gelernt wird
+#   IMG_2052            das Bild, das die Erkennung von sich aus dazufindet
+#   IMG_2041, 2043, 2045  Gegenbeispiele - weite Landschaft statt Fund am Boden
+#
+# Gewählt ist als Gruppe der Fund am Boden: Muscheln im Schlick. Das ist ein Motiv,
+# das ein Bild-Modell sicher benennt, und es unterscheidet sich für den Betrachter
+# unmissverständlich von Deich, Marsch und Sonnenuntergang. Wer das Werbebild ansieht,
+# soll jeden Vorschlag nachvollziehen können.
+#
+# Die Aufnahmedaten liegen über vier Tage, damit die Ablage nach Datum echte Ordner
+# bildet.
+$motive = @(
+    @{ Quelle = "Deichlinie_Tossens";             Datum = "2026:03:12 08:40:00" },
+    @{ Quelle = "Gezeitenpause_Fedderwardersiel"; Datum = "2026:03:12 10:15:00" },
+    @{ Quelle = "Marschweite_Fedderwardersiel";   Datum = "2026:03:12 16:30:00" },
+    @{ Quelle = "Seezeichen_Fedderwardersiel";    Datum = "2026:03:13 09:05:00" },
+    @{ Quelle = "Industriefeuer_Ruhwarden";       Datum = "2026:03:13 18:55:00" },
+    @{ Quelle = "Lachmoewe_Fedderwardersiel";     Datum = "2026:03:13 11:20:00" },
+    @{ Quelle = "Kalk-Mosaik_Tossens";            Datum = "2026:03:14 10:40:00" },
+    @{ Quelle = "Kalk-Schlick_Tossens";           Datum = "2026:03:14 11:05:00" },
+    @{ Quelle = "SalzwiesenPfad_Fedderwardersiel"; Datum = "2026:03:14 15:20:00" },
+    @{ Quelle = "Rotkehlchen_Ruhwarden";          Datum = "2026:03:15 08:30:00" },
+    @{ Quelle = "Waechter_des_Watts_Fedderwardersiel"; Datum = "2026:03:15 17:45:00" },
+    @{ Quelle = "Herzmuschel_Fedderwardersiel";   Datum = "2026:03:15 12:10:00" }
 )
 
-# Fester Startwert: Der Bestand muss bei jedem Aufruf gleich aussehen, sonst zeigen
-# zwei Bildschirmfoto-Serien derselben Fassung verschiedene Bilder.
-$dice = New-Object System.Random 20260823
+function Get-Vorratsdatei([string]$quelle) {
+    # Einmal geladen, bleibt die Datei liegen. Das hält den zweiten Lauf schnell und
+    # macht ihn vom Netz unabhängig - eine Bildschirmfoto-Serie soll sich nicht daran
+    # entscheiden, ob gerade eine Verbindung steht.
+    $ziel = Join-Path $Vorrat ($quelle + ".webp")
+    if (Test-Path $ziel) { return $ziel }
 
-function New-Brush([string]$html, [int]$alpha = 255) {
-    $farbe = [System.Drawing.ColorTranslator]::FromHtml($html)
-    return New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb($alpha, $farbe.R, $farbe.G, $farbe.B))
+    $adresse = $Bezugsquelle -f $quelle
+    Write-Verbose "Lade $quelle"
+    Invoke-WebRequest -Uri $adresse -OutFile $ziel -UseBasicParsing
+    return $ziel
 }
 
-function Draw-Motif($motif, $width, $height) {
-    $image = New-Object System.Drawing.Bitmap $width, $height
-    $canvas = [System.Drawing.Graphics]::FromImage($image)
-    $canvas.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
+function Save-Foto([string]$vorratsdatei, [string]$pfad, [string]$datum) {
+    # Der ganze Weg läuft über die Windows-Bildverwaltung: Sie liest WebP, während
+    # System.Drawing das nicht kann, und sie schreibt das Aufnahmedatum gleich mit.
+    $quelle = [System.IO.File]::OpenRead($vorratsdatei)
+    try {
+        $frame = ([System.Windows.Media.Imaging.BitmapDecoder]::Create(
+            $quelle, 'None', 'OnLoad')).Frames[0]
 
-    $horizont = [int]($height * $motif.Horizont)
-    $ort = [int]($width * $motif.Ort)
+        $box = New-Object System.Windows.Int32Rect `
+            $Rahmen.Left, $Rahmen.Top, $Rahmen.Width, $Rahmen.Height
+        $ohneRahmen = New-Object System.Windows.Media.Imaging.CroppedBitmap $frame, $box
 
-    # Himmel und Grund als getrennte Flächen: Die Grundlinie liegt bei jedem Motiv
-    # woanders und trägt damit schon einen Teil des Unterschieds.
-    $himmel = New-Object System.Drawing.Drawing2D.LinearGradientBrush(
-        (New-Object System.Drawing.Rectangle -ArgumentList 0, 0, $width, $horizont),
-        [System.Drawing.ColorTranslator]::FromHtml($motif.Oben),
-        [System.Drawing.ColorTranslator]::FromHtml($motif.Unten), 90.0)
-    $canvas.FillRectangle($himmel, 0, 0, $width, $horizont)
-    $himmel.Dispose()
+        $faktor = $Zielbreite / $Rahmen.Width
+        $skaliert = New-Object System.Windows.Media.Imaging.TransformedBitmap `
+            $ohneRahmen, (New-Object System.Windows.Media.ScaleTransform $faktor, $faktor)
 
-    $grund = New-Brush $motif.Unten
-    $canvas.FillRectangle($grund, 0, $horizont, $width, $height - $horizont)
-    $grund.Dispose()
+        $meta = New-Object System.Windows.Media.Imaging.BitmapMetadata "jpg"
+        $meta.SetQuery("/app1/ifd/exif/{ushort=36867}", $datum)   # DateTimeOriginal
 
-    switch ($motif.Form) {
-        "sonne" {
-            $sonne = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(240, 255, 241, 118))
-            $d = [int]([Math]::Min($width, $height) * 0.30)
-            $canvas.FillEllipse($sonne, $ort - [int]($d / 2), $horizont - [int]($d * 0.9), $d, $d)
-            # Lichtspur auf dem Wasser: liegt genau unter der Sonne und verschiebt
-            # damit den Helligkeitsschwerpunkt nach links oder rechts.
-            $spur = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(90, 255, 255, 255))
-            $canvas.FillRectangle($spur, $ort - [int]($d * 0.28), $horizont, [int]($d * 0.56), $height - $horizont)
-            $sonne.Dispose(); $spur.Dispose()
-        }
-        "berge" {
-            $fels = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(225, 38, 50, 56))
-            $schnee = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(235, 236, 239, 241))
-            foreach ($versatz in @(0.0, 0.22, 0.44)) {
-                $links = $ort + [int]($width * $versatz)
-                $spitze = $links + [int]($width * 0.16)
-                $rechts = $links + [int]($width * 0.32)
-                $gipfel = [int]($horizont * 0.30)
-                $canvas.FillPolygon($fels, [System.Drawing.Point[]]@(
-                    (New-Object System.Drawing.Point -ArgumentList $links, $horizont),
-                    (New-Object System.Drawing.Point -ArgumentList $spitze, $gipfel),
-                    (New-Object System.Drawing.Point -ArgumentList $rechts, $horizont)))
-                $canvas.FillPolygon($schnee, [System.Drawing.Point[]]@(
-                    (New-Object System.Drawing.Point -ArgumentList ($spitze - [int]($width * 0.05)), ($gipfel + [int]($horizont * 0.18))),
-                    (New-Object System.Drawing.Point -ArgumentList $spitze, $gipfel),
-                    (New-Object System.Drawing.Point -ArgumentList ($spitze + [int]($width * 0.05)), ($gipfel + [int]($horizont * 0.18)))))
-            }
-            $fels.Dispose(); $schnee.Dispose()
-        }
-        "trees" {
-            $stamm = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(225, 78, 52, 46))
-            $krone = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(225, 27, 94, 32))
-            foreach ($versatz in @(0.0, 0.20, 0.40)) {
-                $x = $ort + [int]($width * $versatz)
-                $canvas.FillRectangle($stamm, $x, [int]($horizont * 0.62), [int]($width * 0.035), $horizont - [int]($horizont * 0.62))
-                $canvas.FillEllipse($krone, $x - [int]($width * 0.08), [int]($horizont * 0.20), [int]($width * 0.20), [int]($horizont * 0.55))
-            }
-            $stamm.Dispose(); $krone.Dispose()
-        }
-        "stadt" {
-            $haus = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(240, 33, 33, 33))
-            $fenster = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(235, 255, 213, 79))
-            $x = $ort - [int]($width * 0.30)
-            while ($x -lt $ort + [int]($width * 0.34)) {
-                $h = [int]($horizont * (0.35 + $dice.NextDouble() * 0.55))
-                $b = [int]($width * (0.05 + $dice.NextDouble() * 0.06))
-                if ($x + $b -gt 0) {
-                    $canvas.FillRectangle($haus, $x, $horizont - $h, $b, $h)
-                    for ($fy = $horizont - $h + 14; $fy -lt $horizont - 18; $fy += 28) {
-                        for ($fx = $x + 10; $fx -lt $x + $b - 12; $fx += 22) {
-                            if ($dice.Next(0, 3) -gt 0) { $canvas.FillRectangle($fenster, $fx, $fy, 9, 13) }
-                        }
-                    }
-                }
-                $x += $b + 7
-            }
-            $haus.Dispose(); $fenster.Dispose()
-        }
-        "steg" {
-            # Ein Steg, der von links ins Bild läuft: eine helle Bahn quer über den
-            # dunklen Grund, klar auf einer Seite.
-            $holz = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(235, 141, 110, 99))
-            $canvas.FillPolygon($holz, [System.Drawing.Point[]]@(
-                (New-Object System.Drawing.Point -ArgumentList 0, $height),
-                (New-Object System.Drawing.Point -ArgumentList ($ort + [int]($width * 0.22)), $horizont),
-                (New-Object System.Drawing.Point -ArgumentList ($ort + [int]($width * 0.40)), $horizont),
-                (New-Object System.Drawing.Point -ArgumentList ([int]($width * 0.42)), $height)))
-            $pfosten = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(235, 62, 39, 35))
-            foreach ($versatz in @(0.28, 0.55, 0.85)) {
-                $px = [int]($width * 0.06 + $ort * $versatz)
-                $canvas.FillRectangle($pfosten, $px, $horizont - [int]($height * 0.10), [int]($width * 0.022), [int]($height * 0.24))
-            }
-            $holz.Dispose(); $pfosten.Dispose()
-        }
-        "lichter" {
-            # Lichterketten über einem Platz: helle Punkte in Reihen, die sich nach
-            # rechts verdichten.
-            $bude = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(235, 62, 39, 35))
-            $canvas.FillRectangle($bude, [int]($width * 0.12), $horizont - [int]($height * 0.16), [int]($width * 0.34), [int]($height * 0.16))
-            $canvas.FillRectangle($bude, [int]($width * 0.56), $horizont - [int]($height * 0.11), [int]($width * 0.28), [int]($height * 0.11))
-            $licht = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(240, 255, 236, 179))
-            for ($reihe = 0; $reihe -lt 3; $reihe++) {
-                $y = [int]($horizont * (0.24 + $reihe * 0.16))
-                for ($i = 0; $i -lt 14; $i++) {
-                    $x = [int]($width * (0.08 + $i * 0.065))
-                    $bogen = [int]([Math]::Sin($i / 2.2) * $height * 0.02)
-                    $canvas.FillEllipse($licht, $x, $y + $bogen, [int]($width * 0.016), [int]($width * 0.016))
-                }
-            }
-            $bude.Dispose(); $licht.Dispose()
-        }
-        "decke" {
-            # Eine karierte Decke auf der Wiese - kräftige Streifen quer und längs.
-            $tuch = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(235, 239, 154, 154))
-            $links = $ort - [int]($width * 0.22)
-            $width = [int]($width * 0.44)
-            $oben = $horizont + [int](($height - $horizont) * 0.12)
-            $height = [int](($height - $horizont) * 0.72)
-            $canvas.FillRectangle($tuch, $links, $oben, $width, $height)
-            $streifen = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(200, 255, 255, 255))
-            for ($i = 1; $i -lt 6; $i++) {
-                $canvas.FillRectangle($streifen, $links + [int]($width * $i / 6.0), $oben, [int]($width * 0.03), $height)
-            }
-            for ($i = 1; $i -lt 4; $i++) {
-                $canvas.FillRectangle($streifen, $links, $oben + [int]($height * $i / 4.0), $width, [int]($height * 0.05))
-            }
-            $korb = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(235, 141, 110, 99))
-            $canvas.FillRectangle($korb, $links + [int]($width * 0.72), $oben - [int]($height * 0.18), [int]($width * 0.20), [int]($height * 0.22))
-            $tuch.Dispose(); $streifen.Dispose(); $korb.Dispose()
-        }
-        "segel" {
-            # Zwei weiße Segel auf dunklem Wasser - der hellste Fleck sitzt weit links.
-            $segel = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(240, 250, 250, 250))
-            $rumpf = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(240, 33, 33, 33))
-            foreach ($paar in @(@(0.0, 1.0), @(0.30, 0.62))) {
-                $x = $ort + [int]($width * $paar[0])
-                $scale = $paar[1]
-                $spitze = $horizont - [int]($height * 0.34 * $scale)
-                $canvas.FillPolygon($segel, [System.Drawing.Point[]]@(
-                    (New-Object System.Drawing.Point -ArgumentList $x, $spitze),
-                    (New-Object System.Drawing.Point -ArgumentList ($x + [int]($width * 0.13 * $scale)), $horizont),
-                    (New-Object System.Drawing.Point -ArgumentList ($x - [int]($width * 0.04 * $scale)), $horizont)))
-                $canvas.FillRectangle($rumpf, $x - [int]($width * 0.07 * $scale), $horizont, [int]($width * 0.22 * $scale), [int]($height * 0.035 * $scale))
-            }
-            $segel.Dispose(); $rumpf.Dispose()
-        }
+        $encoder = New-Object System.Windows.Media.Imaging.JpegBitmapEncoder
+        $encoder.QualityLevel = 92
+        $encoder.Frames.Add(
+            [System.Windows.Media.Imaging.BitmapFrame]::Create($skaliert, $null, $meta, $null))
+
+        $ziel = [System.IO.File]::Create($pfad)
+        try { $encoder.Save($ziel) } finally { $ziel.Dispose() }
     }
-
-    $canvas.Dispose()
-    return $image
+    finally { $quelle.Dispose() }
 }
 
-function Save-Motif($image, $pfad, $datum) {
-    # Zwischenschritt über eine Datei, weil ein frisch gezeichnetes Bitmap keine
-    # Eigenschaftsliste hat, in die sich das Aufnahmedatum eintragen ließe.
-    $roh = [System.IO.Path]::GetTempFileName() + ".jpg"
-    $image.Save($roh, [System.Drawing.Imaging.ImageFormat]::Jpeg)
+function Save-FotoOhneDatum([string]$vorratsdatei, [string]$pfad) {
+    # Ohne Aufnahmedatum: Die Seite „Namen richten" soll beide Quellen eines
+    # Vorschlags nebeneinander zeigen - das Datum, wo eines dasteht, sonst Ordnername
+    # und laufende Nummer.
+    $quelle = [System.IO.File]::OpenRead($vorratsdatei)
+    try {
+        $frame = ([System.Windows.Media.Imaging.BitmapDecoder]::Create(
+            $quelle, 'None', 'OnLoad')).Frames[0]
 
-    $mit = [System.Drawing.Image]::FromFile($roh)
-    $eigenschaft = $mit.PropertyItems[0]
-    $eigenschaft.Id = 36867      # DateTimeOriginal
-    $eigenschaft.Type = 2
-    $bytes = [System.Text.Encoding]::ASCII.GetBytes($datum + [char]0)
-    $eigenschaft.Len = $bytes.Length
-    $eigenschaft.Value = $bytes
-    $mit.SetPropertyItem($eigenschaft)
-    $mit.Save($pfad, [System.Drawing.Imaging.ImageFormat]::Jpeg)
-    $mit.Dispose()
-    Remove-Item $roh -Force
+        $box = New-Object System.Windows.Int32Rect `
+            $Rahmen.Left, $Rahmen.Top, $Rahmen.Width, $Rahmen.Height
+        $ohneRahmen = New-Object System.Windows.Media.Imaging.CroppedBitmap $frame, $box
+
+        $faktor = $Zielbreite / $Rahmen.Width
+        $skaliert = New-Object System.Windows.Media.Imaging.TransformedBitmap `
+            $ohneRahmen, (New-Object System.Windows.Media.ScaleTransform $faktor, $faktor)
+
+        $encoder = New-Object System.Windows.Media.Imaging.JpegBitmapEncoder
+        $encoder.QualityLevel = 92
+        $encoder.Frames.Add([System.Windows.Media.Imaging.BitmapFrame]::Create($skaliert))
+
+        $ziel = [System.IO.File]::Create($pfad)
+        try { $encoder.Save($ziel) } finally { $ziel.Dispose() }
+    }
+    finally { $quelle.Dispose() }
 }
 
 # Der Wahrnehmungs-Hash der Anwendung, hier nachgerechnet: 9x8-Raster, jeder Punkt
@@ -283,29 +192,31 @@ function Get-HammingDistance([uint64]$links, [uint64]$rechts) {
     return $anzahl
 }
 
+if (-not (Test-Path $Vorrat)) { New-Item -ItemType Directory -Path $Vorrat | Out-Null }
+if (Test-Path $Ordner) { Remove-Item $Ordner -Recurse -Force }
+New-Item -ItemType Directory -Path $Ordner | Out-Null
+
 $nummer = 2041
 $dateien = @()
-foreach ($m in $motifs) {
-    if ($m.Hoch) { $width = 1067; $height = 1600 } else { $width = 1600; $height = 1067 }
-    $image = Draw-Motif $m $width $height
+foreach ($m in $motive) {
+    $vorratsdatei = Get-Vorratsdatei $m.Quelle
     $pfad = Join-Path $Ordner ("IMG_{0}.jpg" -f $nummer)
-    Save-Motif $image $pfad $m.Datum
-    $image.Dispose()
-    $dateien += [pscustomobject]@{ Name = $m.Name; Pfad = $pfad }
+    Save-Foto $vorratsdatei $pfad $m.Datum
+    $dateien += [pscustomobject]@{ Name = $m.Quelle; Pfad = $pfad }
     $nummer++
 }
 
 # Zwei Paare, die sich gleichen - damit die Duplikat-Suche etwas zu zeigen hat.
-Copy-Item (Join-Path $Ordner "IMG_2041.jpg") (Join-Path $Ordner "IMG_2041 - Kopie.jpg")
-Copy-Item (Join-Path $Ordner "IMG_2047.jpg") (Join-Path $Ordner "IMG_2047 - Kopie.jpg")
+# Bewusst nicht die beiden Lernbeispiele: Ein doppeltes Beispiel verschöbe die Gruppe
+# auf der Sortier-Seite, ohne dass es der Duplikat-Suche etwas brächte.
+Copy-Item (Join-Path $Ordner "IMG_2042.jpg") (Join-Path $Ordner "IMG_2042 - Kopie.jpg")
+Copy-Item (Join-Path $Ordner "IMG_2049.jpg") (Join-Path $Ordner "IMG_2049 - Kopie.jpg")
 
 # Ein zweiter, kleiner Bestand mit unlesbaren Namen - so, wie ein aus iCloud geladener
 # Ordner sie mitbringt. Bewusst getrennt vom Hauptbestand: Auf einem Werbebild der
 # Sortierung oder der Duplikat-Suche hat solcher Zeichensalat nichts verloren.
 #
-# Zwei der vier Dateien tragen ein Aufnahmedatum, zwei nicht. Damit zeigt die Vorschau
-# beide Quellen eines Vorschlags nebeneinander: das Datum, wo eines dasteht, sonst
-# Ordnername und laufende Nummer.
+# Zwei der vier Dateien tragen ein Aufnahmedatum, zwei nicht.
 if (Test-Path $NamensOrdner) { Remove-Item $NamensOrdner -Recurse -Force }
 New-Item -ItemType Directory -Path $NamensOrdner | Out-Null
 
@@ -318,19 +229,11 @@ $kaputteNamen = @(
 )
 
 foreach ($k in $kaputteNamen) {
-    $m = $motifs[$k.Motiv]
-    if ($m.Hoch) { $breite = 1067; $hoehe = 1600 } else { $breite = 1600; $hoehe = 1067 }
-    $image = Draw-Motif $m $breite $hoehe
+    $m = $motive[$k.Motiv]
+    $vorratsdatei = Get-Vorratsdatei $m.Quelle
     $ziel = Join-Path $NamensOrdner $k.Name
-    if ($k.MitDatum) {
-        Save-Motif $image $ziel $m.Datum
-    }
-    else {
-        # Ohne Aufnahmedatum: Ein frisch gezeichnetes Bitmap hat keine
-        # Eigenschaftsliste, das Speichern schreibt also auch keine.
-        $image.Save($ziel, [System.Drawing.Imaging.ImageFormat]::Jpeg)
-    }
-    $image.Dispose()
+    if ($k.MitDatum) { Save-Foto $vorratsdatei $ziel $m.Datum }
+    else { Save-FotoOhneDatum $vorratsdatei $ziel }
 }
 
 # Gegenprobe: Die zwölf Motive müssen sich für den Wahrnehmungs-Hash deutlich

@@ -10,6 +10,10 @@
     vereinigt die Berichte deshalb je Datei und Zeile: Eine Zeile gilt als
     abgedeckt, sobald irgendein Testprojekt sie erreicht.
 
+    Gewertet wird nur der jüngste Lauf. Berichte älterer Läufe bleiben im
+    Ergebnisordner liegen und würden die Zahl beschönigen, weil eine Zeile schon
+    als gedeckt gälte, sobald irgendein Lauf der Vergangenheit sie erreicht hat.
+
     Der Schwellwert sichert den erreichten Stand ab; er ist keine Zielmarke. Sinkt
     die Abdeckung darunter, wurde ungetesteter Code hinzugefügt.
 
@@ -37,13 +41,26 @@ if ($reports.Count -eq 0) {
     Write-Error "Keine Coverage-Berichte unter '$ResultsDirectory' gefunden."
 }
 
-# Welche Berichte gelesen wurden, gehört in die Ausgabe. Das Skript nimmt alles, was
-# unter dem Ergebnisordner liegt – auch Berichte eines früheren Laufs. Wer lokal
-# `dotnet test` ohne `--results-directory TestResults` aufruft, schreibt die neuen
-# Berichte woanders hin; das Gate wertet dann stillschweigend den alten Stand aus und
-# meldet grün, ohne die aktuelle Änderung je gesehen zu haben.
+# Welche Berichte gelesen wurden, gehört in die Ausgabe. Wer lokal `dotnet test` ohne
+# `--results-directory TestResults` aufruft, schreibt die neuen Berichte woanders hin;
+# das Gate wertet dann stillschweigend den alten Stand aus und meldet grün, ohne die
+# aktuelle Änderung je gesehen zu haben.
+#
+# Deshalb zählt nur der jüngste Lauf. `dotnet test` legt je Lauf neue Unterordner an
+# und räumt die alten nicht weg; weil das Skript die Berichte vereinigt, würde sonst
+# jede Zeile als gedeckt gelten, die irgendein Lauf der letzten Wochen einmal erreicht
+# hat. Die Zahl beschriebe dann keinen Stand, sondern die Summe aller je gemessenen.
 $newest = ($reports | Sort-Object LastWriteTime -Descending | Select-Object -First 1).LastWriteTime
+$oldestOfRun = $newest.AddHours(-1)
+$stale = @($reports | Where-Object { $_.LastWriteTime -lt $oldestOfRun })
+$reports = @($reports | Where-Object { $_.LastWriteTime -ge $oldestOfRun })
+
 Write-Output ("Gelesen: {0} Bericht(e), neuester vom {1:dd.MM.yyyy HH:mm}." -f $reports.Count, $newest)
+if ($stale.Count -gt 0) {
+    Write-Output ("Übergangen: {0} Bericht(e) aus früheren Läufen, ältester vom {1:dd.MM.yyyy HH:mm}." -f
+        $stale.Count, ($stale | Sort-Object LastWriteTime | Select-Object -First 1).LastWriteTime)
+}
+
 Write-Output ''
 
 # Schlüssel: "Datei|Zeile" -> wurde die Zeile von irgendeinem Testprojekt erreicht?

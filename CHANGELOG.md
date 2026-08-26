@@ -6,6 +6,16 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
+## [1.11.3] - 2026-08-26
+
+### Geändert
+
+- **Die Bildschirmfotos auf der Webseite zeigen jetzt echte Fotos.** Der Beispiel-Bestand
+  bestand bisher aus gezeichneten Motiven. Für die meisten Ansichten reichte das; beim
+  Sortieren nicht, denn die Bilderkennung kann gezeichnete Motive nicht deuten und
+  antwortete entsprechend — einer der gezeigten Vorschläge wirkte dadurch willkürlich.
+  An der Erkennung selbst ändert sich nichts.
+
 ## [1.11.2] - 2026-08-24
 
 ### Behoben
