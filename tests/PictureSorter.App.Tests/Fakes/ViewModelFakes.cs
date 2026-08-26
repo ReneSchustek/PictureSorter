@@ -105,7 +105,9 @@ internal sealed class FakeModelAvailabilityChecker(ModelAvailability availabilit
 /// <summary>
 /// Liefert feste Vorschläge und legt offen, was tatsächlich angewendet wurde.
 /// </summary>
-internal sealed class FakeFileNameRepairService(IReadOnlyList<RenameProposal> proposals) : IFileNameRepairService
+internal sealed class FakeFileNameRepairService(
+    IReadOnlyList<RenameProposal> proposals,
+    IReadOnlyList<PhotoScanProgress>? progressReports = null) : IFileNameRepairService
 {
     /// <summary>Die Vorschläge, die angewendet wurden.</summary>
     public List<RenameProposal> Applied { get; } = [];
@@ -114,7 +116,18 @@ internal sealed class FakeFileNameRepairService(IReadOnlyList<RenameProposal> pr
         string folder,
         bool includeSubfolders,
         IProgress<PhotoScanProgress>? progress,
-        CancellationToken cancellationToken) => Task.FromResult(proposals);
+        CancellationToken cancellationToken)
+    {
+        // Ein Suchlauf meldet unterwegs seinen Stand. Ohne diese Meldungen bliebe der
+        // Balken der Seite ungeprüft — und ein stehender Balken ist genau das, was
+        // Nutzer als „hängt" melden.
+        foreach (PhotoScanProgress report in progressReports ?? [])
+        {
+            progress?.Report(report);
+        }
+
+        return Task.FromResult(proposals);
+    }
 
     public Task<RenameResult> ApplyAsync(
         string folder,

@@ -405,6 +405,108 @@ public sealed class SortViewModelTests
         }
     }
 
+    // ── Vorbedingungen der Knöpfe ─────────────────────────────────────────────
+
+    [Fact]
+    public void CanBrowse_OnlyWhileNothingIsRunning()
+    {
+        // Ein Ordnerwechsel mitten im Lauf zöge dem Vorgang den Boden weg.
+        using SortViewModel sut = CreateSut(new FakePhotoSorter([]));
+
+        Assert.True(sut.CanBrowse);
+
+        sut.State = SortState.Analyzing;
+
+        Assert.False(sut.CanBrowse);
+        Assert.False(sut.IsInteractive);
+    }
+
+    [Fact]
+    public void CanLoadExamples_NeedsAFolderAndAQuietState()
+    {
+        // Beispiele kommen aus dem Quellordner. Ohne ihn gäbe es nichts vorzuschlagen.
+        using SortViewModel sut = CreateSut(new FakePhotoSorter([]));
+
+        Assert.False(sut.CanLoadExamples);
+
+        sut.SourceFolder = SourceFolder;
+
+        Assert.True(sut.CanLoadExamples);
+
+        sut.State = SortState.Sorting;
+
+        Assert.False(sut.CanLoadExamples);
+    }
+
+    [Fact]
+    public void CanSuggestTrips_NeedsAFolderAndAQuietState()
+    {
+        // Die Urlaubs-Erkennung liest denselben Ordner; dieselbe Bedingung gilt.
+        using SortViewModel sut = CreateSut(new FakePhotoSorter([]));
+
+        Assert.False(sut.CanSuggestTrips);
+
+        sut.SourceFolder = SourceFolder;
+
+        Assert.True(sut.CanSuggestTrips);
+
+        sut.State = SortState.Analyzing;
+
+        Assert.False(sut.CanSuggestTrips);
+    }
+
+    [Fact]
+    public void IsInteractive_IsFalseExactlyWhileSomethingRuns()
+    {
+        // Der Zustand ist ein interner Typ und taugt deshalb nicht als Parameter
+        // einer Theorie.
+        using SortViewModel sut = CreateSut(new FakePhotoSorter([]));
+
+        foreach (SortState ruhend in new[]
+                 { SortState.Idle, SortState.Preview, SortState.Completed, SortState.Error })
+        {
+            sut.State = ruhend;
+            Assert.True(sut.IsInteractive);
+        }
+
+        foreach (SortState laufend in new[] { SortState.Analyzing, SortState.Sorting })
+        {
+            sut.State = laufend;
+            Assert.False(sut.IsInteractive);
+        }
+    }
+
+    [Fact]
+    public void CanLearn_NeedsANameAndAtLeastOnePositiveExample()
+    {
+        // Ein Profil ohne Beispiel wäre eine Beschreibung ohne Beleg — die Erkennung
+        // hätte nichts, woran sie sich ausrichten könnte.
+        using SortViewModel sut = CreateSut(new FakePhotoSorter([]));
+
+        Assert.False(sut.CanLearn);
+
+        sut.CategoryName = "Muscheln im Watt";
+
+        Assert.False(sut.CanLearn);
+    }
+
+    [Fact]
+    public async Task RefreshRecoverOffer_WithoutFolderOrCategory_OffersNothing()
+    {
+        // Ohne Ordner und Kategorie gibt es nichts zurückzuholen. Ein Angebot an
+        // dieser Stelle verspräche etwas, das die Anwendung nicht halten kann.
+        using SortViewModel sut = CreateSut(new FakePhotoSorter([]));
+
+        await sut.RefreshRecoverOfferAsync();
+
+        Assert.Equal(0, sut.RecoverableCount);
+
+        sut.SourceFolder = SourceFolder;
+        await sut.RefreshRecoverOfferAsync();
+
+        Assert.Equal(0, sut.RecoverableCount);
+    }
+
     private static SortViewModel CreateSut(
         ITestSorter sorter,
         FakeSortUndoService? undo = null,
