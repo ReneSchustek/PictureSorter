@@ -11,10 +11,10 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 ### Geändert
 
 - **Die Bildschirmfotos auf der Webseite zeigen jetzt echte Fotos.** Der Beispiel-Bestand
-  bestand bisher aus gezeichneten Motiven. Für die meisten Ansichten reichte das; beim
-  Sortieren nicht, denn die Bilderkennung kann gezeichnete Motive nicht deuten und
-  antwortete entsprechend — einer der gezeigten Vorschläge wirkte dadurch willkürlich.
-  An der Erkennung selbst ändert sich nichts.
+  bestand bisher aus gezeichneten Motiven. Für die meisten Ansichten reichte das, beim
+  Sortieren nicht: Die Bilderkennung kann gezeichnete Motive nicht deuten und antwortete
+  entsprechend, sodass einer der gezeigten Vorschläge willkürlich wirkte. An der
+  Erkennung selbst ändert sich nichts.
 
 ## [1.11.2] - 2026-08-24
 
@@ -31,7 +31,7 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 ### Behoben
 
 - **Im dunklen Erscheinungsbild blieben Detailansicht, Rückfragen und die Lupe hell.**
-  Wer ein Bild groß ansah, bekam eine weiße Fläche mitten in die dunkle Anwendung —
+  Wer ein Bild groß ansah, bekam eine weiße Fläche mitten in die dunkle Anwendung,
   hell genug, um im abgedunkelten Zimmer zu blenden. Ein Dialog liegt über dem Fenster
   und nicht darin, ein zweites Fenster hat seinen eigenen Inhalt; beide übernahmen das
   eingestellte Erscheinungsbild deshalb nicht von selbst. Jetzt tun sie es.
@@ -41,29 +41,29 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 ### Hinzugefügt
 
 - **Namen in Ordnung bringen.** Eine neue Seite findet Dateien, deren Name sich nicht
-  lesen lässt — aus einem iCloud-Export waren das 159 von 1507 Dateien, mit Namen wie
+  lesen lässt. Aus einem iCloud-Export waren das 159 von 1507 Dateien, mit Namen wie
   `?4?ӝ___.JPEG`. Die Bilder selbst sind dabei in Ordnung; unbrauchbar ist nur der Name,
   und mit ihm jede Möglichkeit, das Foto zu suchen, zu nennen oder weiterzugeben. Die
-  Seite schlägt für jede solche Datei einen lesbaren Namen vor — aus dem Aufnahmedatum,
+  Seite schlägt für jede solche Datei einen lesbaren Namen vor: aus dem Aufnahmedatum,
   wo eines im Dateikopf steht, sonst aus Ordnername und laufender Nummer. Erst wird
-  gezeigt, dann gefragt, dann umbenannt: Jede Zeile lässt sich einzeln abwählen, und der
+  gezeigt, dann gefragt, dann umbenannt. Jede Zeile lässt sich einzeln abwählen, und der
   ganze Lauf lässt sich zurücknehmen, auch nach einem Neustart. Die Endung bleibt
   unangetastet, ein vergebener Name wird umgangen, und überschrieben wird nie.
 
 - **Ein Ordner, der da ist und trotzdem nicht gefunden wird, wird jetzt benannt.** Namen
-  aus einem iCloud-Bestand tragen mitunter ein Leerzeichen, das keines ist — auf dem
-  Bildschirm nicht zu unterscheiden, für das Betriebssystem ein anderer Ordner. Wer den
-  Pfad abtippte oder aus einer Nachricht kopierte, bekam „Der Ordner wurde nicht
-  gefunden" zu lesen, während der Ordner im Explorer sichtbar danebenlag. PictureSorter
-  sieht jetzt nach und nennt den Ordner, der gemeint ist.
+  aus einem iCloud-Bestand tragen mitunter ein Leerzeichen, das keines ist. Auf dem
+  Bildschirm ist es nicht zu unterscheiden, für das Betriebssystem ist es ein anderer
+  Ordner. Wer den Pfad abtippte oder aus einer Nachricht kopierte, bekam „Der Ordner wurde
+  nicht gefunden" zu lesen, während der Ordner im Explorer sichtbar danebenlag.
+  PictureSorter sieht jetzt nach und nennt den Ordner, der gemeint ist.
 
 ### Geändert
 
 - **Ein neues Bild-Modell erkennt deutlich mehr auf den Fotos.** Wo bisher „ein
   bedrucktes Blatt, offenbar auf Deutsch" stand, steht jetzt „eine Rezeptseite:
-  Fisch-Kebabs mit Auberginenpüree" — das Modell liest Text im Bild, benennt Farben und
-  Gegenstände. Genau davon lebt das Wiederfinden. Nebenbei braucht es weniger Zeit je
-  Foto als das bisherige. Beim ersten Start nach der Aktualisierung wird das neue Modell
+  Fisch-Kebabs mit Auberginenpüree". Das Modell liest Text im Bild und benennt Farben und
+  Gegenstände, und genau davon lebt das Wiederfinden. Nebenbei braucht es je Foto weniger
+  Zeit als das bisherige. Beim ersten Start nach der Aktualisierung wird das neue Modell
   einmalig geladen (rund 6 GB); der Hinweis auf der Startseite führt durch die
   Einrichtung.
 
@@ -80,14 +80,14 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 - **Die Duplikat-Suche hielt völlig verschiedene Fotos für Duplikate.** Beim Verkleinern
   auf den Fingerabdruck tastete die Anwendung einzelne Bildpunkte ab, statt über die
-  Fläche zu mitteln; bei einem Foto in voller Größe kam dabei ein nahezu leerer
+  Fläche zu mitteln. Bei einem Foto in voller Größe kam dabei ein nahezu leerer
   Fingerabdruck heraus, und die Bilder unterschieden sich für den Vergleich kaum noch. An
   einem Bestand aus zwölf verschiedenen Motiven meldete die Suche fünf Fundgruppen statt
-  zwei und schlug sieben Bilder zum Löschen vor — jetzt sind es die zwei, die wirklich
+  zwei und schlug sieben Bilder zum Löschen vor. Jetzt sind es die zwei, die wirklich
   doppelt sind.
 - **Dasselbe Foto konnte bei zwei Läufen in zwei verschiedenen Ordnern landen.** Die
   Bilderkennung wurde ohne feste Einstellung befragt und beschrieb jedes Foto bei jedem
-  Aufruf anders — zwei identische Dateien bekamen nachweislich zwei verschiedene
+  Aufruf anders; zwei identische Dateien bekamen nachweislich zwei verschiedene
   Beschreibungen. Damit wurde auch die Zuordnung zur Gruppe zum Zufall, und weil das
   Gedächtnis jedes Urteil dauerhaft festhält, blieb ein einmal gewürfeltes Urteil stehen.
   Die Bilderkennung antwortet jetzt reproduzierbar; zuvor gespeicherte Vergleichswerte
@@ -101,9 +101,9 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 ### Geändert
 
 - **Das Zurückholen früherer Urteile meldet sich jetzt von selbst.** Statt eines Verweises,
-  den man suchen musste, erscheint oben eine Hinweisleiste — aber nur, wenn zu Ordner und
-  Gruppe wirklich etwas im Gedächtnis liegt, und sie nennt gleich die Anzahl. Sie steht ab
-  dem zweiten Schritt bereit: Zum Nachschlagen braucht es weder Beispiele noch ein
+  den man suchen musste, erscheint oben eine Hinweisleiste. Sie kommt nur, wenn zu Ordner
+  und Gruppe wirklich etwas im Gedächtnis liegt, und nennt gleich die Anzahl. Bereit steht
+  sie ab dem zweiten Schritt, denn zum Nachschlagen braucht es weder Beispiele noch ein
   gelerntes Profil.
 
 ### Behoben
@@ -116,7 +116,7 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 ### Hinzugefügt
 
 - **Eine Lupe an jedem Bild.** In der Kachel erscheint sie beim Überfahren oben rechts, in
-  der Vorschlagsliste steht sie neben dem Bildchen — für die Frage „taugt das als
+  der Vorschlagsliste steht sie neben dem Bildchen, denn für die Frage „taugt das als
   Beispiel?" reicht eine Kachel nicht. Sie öffnet ein eigenes Fenster, dessen Startgröße
   dem Seitenverhältnis des Bildes folgt: Ein Hochformat bekommt ein hohes Fenster, kein
   breites mit zwei Dritteln leerer Fläche. Das Fenster lässt sich frei ziehen, das Bild
@@ -128,10 +128,10 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 ### Geändert
 
 - **„Vorschläge einer früheren Analyse zurückholen" steht jetzt über den Karten** statt in
-  der Analyse-Karte. Im geführten Modus lag die hinter dem Anlernen — wer nur nachschlagen
-  wollte, musste erst Beispiele wählen und lernen lassen, was dafür überflüssig ist und
-  obendrein die vorhandene Gruppe überschrieben hätte. Der Weg ist damit in beiden
-  Ansichten und ab dem Gruppennamen erreichbar.
+  der Analyse-Karte. Im geführten Modus lag der Weg hinter dem Anlernen. Wer nur
+  nachschlagen wollte, musste also erst Beispiele wählen und lernen lassen, was dafür
+  überflüssig ist und obendrein die vorhandene Gruppe überschrieben hätte. Jetzt ist er in
+  beiden Ansichten und ab dem Gruppennamen erreichbar.
 - Die Seite „Nach Datum ablegen" zog ihre Eingabefelder über die volle Breite eines
   großen Bildschirms. Sie ist jetzt begrenzt wie die übrigen Seiten.
 
@@ -140,23 +140,24 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 ### Hinzugefügt
 
 - **Nach Datum ablegen:** Eine eigene Seite legt Bilder nach ihrem Aufnahmedatum in
-  Ordner — wahlweise nach Jahr (`2021`), Monat (`2021-07`) oder Tag (`2021-07-15`). Der
-  Ort, unter dem die Ordner entstehen, ist frei wählbar; verschieben oder kopieren bleibt
-  zur Wahl. Bilder ohne Aufnahmedatum bleiben liegen — geraten wird nicht.
+  Ordner, wahlweise nach Jahr (`2021`), Monat (`2021-07`) oder Tag (`2021-07-15`). Der
+  Ort, unter dem die Ordner entstehen, ist frei wählbar, und ob verschoben oder kopiert
+  wird, bleibt ebenfalls offen. Bilder ohne Aufnahmedatum bleiben liegen; geraten wird
+  nicht.
 - **Bearbeiten aus der Detailansicht:** Ein Klick auf ein Bild zeigt seine Angaben, wohin
   es einsortiert wurde und wer seine Doppelgänger sind. Von dort lässt es sich umbenennen,
   verschieben, im Explorer zeigen und in den Papierkorb legen. Jede Aktion endet in einem
   Satz, der sagt, was zu tun ist, wenn sie nicht ging.
 - **Suche und Filter auf jeder Listen-Seite:** Vorschläge, Gedächtnis, Duplikate und die
-  neue Ablage führen dieselbe Anordnung — Suche links, Filter rechts, ein Leerzustand mit
-  Weg zurück.
+  neue Ablage folgen derselben Anordnung. Links steht die Suche, rechts der Filter, und ein
+  Leerzustand zeigt den Weg zurück.
 - **Kaffee spendieren** in den Einstellungen, freiwillig und ohne Wiederkehr.
 
 ### Geändert
 
 - Bildkacheln sehen überall gleich aus und tragen die Vorschau; fehlt sie, tritt das
   Kürzel des Dateinamens an ihre Stelle statt einer leeren Fläche.
-- Das Zeichen der Marke steckt jetzt in allen Größen — auch im Startbild.
+- Das Zeichen der Marke steckt jetzt in allen Größen, auch im Startbild.
 
 ### Behoben
 
@@ -172,7 +173,8 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 ### Hinzugefügt
 
 - **Suche im Gedächtnis.** Ein Feld über der Liste durchsucht Dateiname, Ordner und
-  Gruppe zugleich — wer etwas sucht, weiß meist nur eines davon. Es filtert beim Tippen.
+  Gruppe zugleich, denn wer etwas sucht, weiß meist nur eines davon. Gefiltert wird beim
+  Tippen.
 - **Der Leerzustand sagt jetzt, was los ist.** „Hier ist noch nichts" und „deine Suche
   trifft nichts" sind zwei verschiedene Lagen: Die eine heißt, dass man etwas tun muss,
   die andere, dass der Suchtext daneben liegt. Im zweiten Fall gibt es einen Knopf, der
@@ -180,50 +182,52 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 ### Geändert
 
-- **Das Programm trägt jetzt die Farben der Werkstatt** statt eines eigenen Blaus: im
-  Hellen dunkles Petrol, im Dunklen ein helles Stahlgrau. Damit ist auf einen Blick zu
-  sehen, dass es aus derselben Werkstatt stammt wie die übrigen Programme. Der Verlauf im
-  Kopfbereich ist entfallen — ruhige Flächen statt Effekte.
+- **Das Programm trägt jetzt die gemeinsamen Hausfarben** statt eines eigenen Blaus: im
+  Hellen dunkles Petrol, im Dunklen ein helles Stahlgrau. So ist auf einen Blick zu
+  sehen, dass es aus derselben Hand stammt wie die übrigen Programme. Der Verlauf im
+  Kopfbereich ist entfallen, ruhige Flächen ersetzen die Effekte.
 - Abstände, Ecken und Schriftgrößen kommen aus einem gemeinsamen Satz Bausteine. Das
   fällt einzeln kaum auf und macht im Ganzen den Unterschied zwischen „gewachsen" und
   „aus einem Guss".
-- Der Kopf jeder Listenseite hat dieselbe Anordnung: Titel, eine Zeile die sagt was man
+- Der Kopf jeder Listenseite hat dieselbe Anordnung: Titel, eine Zeile, die sagt, was man
   hier tut, darunter Suche und Filter.
 
 ### Behoben
 
 - Die Paketfassung war bei der vorigen Auslieferung erneut nicht mitgezogen worden.
 
+## [1.7.0] - 2026-08-08
+
 ### Hinzugefügt
 
 - **Analysen lassen sich anhalten und später fortsetzen.** Ein Ordner mit tausenden
   Fotos beschäftigt die KI je nach Rechner viele Stunden. Bisher hieß das: durchlaufen
   lassen oder von vorn anfangen. Jetzt hält ein Klick den Lauf an, der Stand bleibt
-  gespeichert, und „Fortsetzen" macht genau dort weiter — auch nach einem Neustart des
+  gespeichert, und „Fortsetzen" macht genau dort weiter, auch nach einem Neustart des
   Rechners und auch Tage später. Kein Foto, über das schon ein Urteil vorliegt, wird der
   KI ein zweites Mal vorgelegt.
 - **Das Ergebnis einer fertigen Analyse lässt sich zurückholen**, ohne dass ein einziges
   Bild neu berechnet wird. Wer das Programm nach der Analyse schließt, verliert die
   Vorschläge damit nicht mehr.
 - **Vorschläge aus früheren Läufen kommen zurück, auch ohne Protokoll.** Was die KI
-  entschieden hat, stand schon immer im Gedächtnis des Programms — genutzt wurde davon
-  bisher nur die Ablehnung. Ein Knopf im Analyse-Schritt holt jetzt auch die Vorschläge
-  zurück, selbst aus einem Lauf, der abgestürzt oder stehengeblieben ist.
+  entschieden hat, stand schon immer im Gedächtnis des Programms, nur wurde davon bisher
+  allein die Ablehnung genutzt. Ein Knopf im Analyse-Schritt holt jetzt auch die
+  Vorschläge zurück, selbst aus einem Lauf, der abgestürzt oder stehengeblieben ist.
 - **Jede Analyse führt ein Protokoll:** Ordner, Gruppe, Zeitraum, Beginn, letzte Bewegung,
-  Ende und das Urteil zu jedem einzelnen Foto. Geschrieben wird fortlaufend, nicht am
-  Ende — was einmal entschieden ist, überlebt auch einen Stromausfall.
+  Ende und das Urteil zu jedem einzelnen Foto. Geschrieben wird fortlaufend und nicht erst
+  am Ende. Was einmal entschieden ist, überlebt so auch einen Stromausfall.
 
 ### Behoben
 
 - **Eine unerwartete Störung ließ das Programm stumm stehenbleiben.** Erwischt wurden nur
   drei Arten von Fehlern; bei jeder anderen blieb die Anzeige beim zuletzt gezählten Bild
   stehen, alle Knöpfe waren gesperrt, und der Stopp-Knopf löste nichts mehr aus. Von einem
-  Stillstand war das nicht zu unterscheiden, und es half nur noch das Beenden des
-  Programms — nach womöglich Tagen Arbeit. Jetzt endet jeder Lauf mit einer verständlichen
+  Stillstand war das nicht zu unterscheiden, und es half nur noch, das Programm zu
+  beenden, womöglich nach Tagen Arbeit. Jetzt endet jeder Lauf mit einer verständlichen
   Meldung und einer bedienbaren Oberfläche. Bekannte Ursachen werden beim Namen genannt,
   statt pauschal „fehlgeschlagen" zu melden.
-- **Der Fortschritt kam am Ende nicht an.** Ließ sich auch nur eine Datei nicht einlesen —
-  Virenscanner, Cloud-Ordner, fehlender Codec —, blieb die Anzeige für immer kurz vor dem
+- **Der Fortschritt kam am Ende nicht an.** Ließ sich auch nur eine Datei nicht einlesen
+  (Virenscanner, Cloud-Ordner, fehlender Codec), blieb die Anzeige für immer kurz vor dem
   Ende stehen. Der Abschluss wird jetzt ausdrücklich gemeldet.
 - Die Paketfassung war seit der vorletzten Auslieferung nicht mit der Programmfassung
   mitgezogen worden.
@@ -233,18 +237,18 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 ### Hinzugefügt
 
 - **Sortieren allein nach Aufnahmedatum, ganz ohne KI.** Für einen Urlaub entscheidet der
-  Zeitraum, nicht das Motiv — bisher musste man trotzdem erst dreißig Beispielbilder
+  Zeitraum, nicht das Motiv. Bisher musste man trotzdem erst dreißig Beispielbilder
   anlernen und danach jedes Foto des Ordners von der KI bewerten lassen. Beides entfällt
   jetzt: Im zweiten Schritt lässt sich „Nur nach Aufnahmedatum sortieren" wählen, worauf
   die Schritte 3 und 4 verschwinden. Gelesen werden nur noch die Metadaten der Dateien,
   der Lauf dauert Sekunden statt Minuten.
-- Ohne Zeitraum läuft dieser Weg nicht los: Sonst stünde jedes Foto des Ordners als
+- Ohne Zeitraum läuft dieser Weg nicht los, sonst stünde jedes Foto des Ordners als
   Vorschlag zum Verschieben bereit.
 
 ### Behoben
 
 - **Das Programm zeigte kein eigenes Symbol in der Titelleiste.** Die Symboldateien
-  fehlten in der ausgelieferten Fassung — im ZIP wie im Setup, und das von Anfang an.
+  fehlten in der ausgelieferten Fassung, im ZIP wie im Setup, und das von Anfang an.
   Sie werden jetzt mitgeliefert.
 - **Nach einer Aktualisierung blieb auf dem Desktop und in der Taskleiste das alte
   Symbol stehen.** Windows erfuhr vom Austausch der Programmdatei nichts und zeichnete
@@ -252,8 +256,8 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 - **Die Oberfläche stand zu Beginn eines Laufs still, und „Stopp" wirkte erst mit
   Verzögerung.** Das Durchsuchen des Ordners lief auf demselben Strang wie die Bedienung;
   bei vielen Bildern oder einem Ordner aus der Cloud dauerte das spürbar. Analysieren,
-  Anlernen, Sortieren und die Suche nach Datum laufen jetzt vollständig im Hintergrund —
-  die Anwendung bleibt bedienbar und hält sofort an.
+  Anlernen, Sortieren und die Suche nach Datum laufen jetzt vollständig im Hintergrund.
+  Die Anwendung bleibt bedienbar und hält sofort an.
 
 ### Geändert
 
@@ -267,8 +271,8 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 ### Behoben
 
 - **Ein Zeitraum gilt jetzt streng von Tag bis Tag.** Fotos ohne Aufnahmedatum wurden
-  bisher auch dann bewertet, wenn sie außerhalb lagen — die Angabe war damit eine
-  ungefähre statt einer Grenze. Drin ist nur noch, was nachweislich in den Zeitraum
+  bisher auch dann bewertet, wenn sie außerhalb lagen. Die Angabe war damit eher ein
+  Richtwert als eine Grenze. Drin ist nur noch, was nachweislich in den Zeitraum
   fällt. Ohne Zeitraum ändert sich nichts: Dort werden solche Fotos wie bisher geprüft.
 
 ## [1.5.1] - 2026-08-03
@@ -276,7 +280,7 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 ### Behoben
 
 - **Die ersten beiden Schritte des Assistenten zählten falsch.** Sie meldeten „von 5",
-  obwohl es sechs Schritte sind — die Überschriften waren beim Aufteilen der
+  obwohl es sechs Schritte sind. Die Überschriften waren beim Aufteilen der
   Beispielauswahl nicht nachgezogen worden.
 
 ## [1.5.0] - 2026-08-03
@@ -285,7 +289,7 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 - **Zeitraum für die Analyse.** Zwei Datumsfelder im Analyse-Schritt begrenzen die Suche
   auf Fotos aus diesen Tagen, beide Tage eingeschlossen. Bilder außerhalb werden gar nicht
-  erst bewertet — wer in einem großen Ordner einen Urlaub sucht, wartet dadurch erheblich
+  erst bewertet. Wer in einem großen Ordner einen Urlaub sucht, wartet dadurch erheblich
   kürzer. Ohne Angabe bleibt alles wie bisher. Fotos ohne Aufnahmedatum werden immer
   mitgeprüft.
 - **„Urlaube vorschlagen".** Findet Zeiträume, in denen sich die Aufnahmen ballen, und
@@ -295,7 +299,7 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
   der `appsettings.json` (`TripDetection:MaxGapDays`, `TripDetection:MinPhotos`).
 - **Zwei Fortschrittsbalken**, solange Laden und Auswerten gleichzeitig laufen: ein grüner
   für „Laden", einer in der Akzentfarbe für „Analyse". Damit ist zu sehen, worauf gewartet
-  wird — bei Fotos aus der Cloud auf die Leitung, sonst auf die KI. Beide Balken sind
+  wird, bei Fotos aus der Cloud auf die Leitung, sonst auf die KI. Beide Balken sind
   beschriftet, die Farbe kommt nur hinzu. Bei Vorgängen mit nur einem Abschnitt bleibt es
   beim einzelnen Balken.
 
@@ -324,10 +328,11 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 ### Behoben
 
 - **Der Fortschritt der Analyse erschien viel zu spät.** Bevor das erste Bild bewertet
-  wird, liest die Anwendung die Aufnahmedaten aller Dateien — bei vielen Bildern der
-  längste Teil des Laufs. Er lief bisher ohne jede Rückmeldung ab; zu sehen war nur ein
-  durchlaufender Balken ohne Zahlen. Jetzt zählt er von Anfang an mit („Bild 5 von 1100
-  erfasst"). Betrifft die Analyse, die Duplikatsuche und das Laden der Beispielbilder.
+  wird, liest die Anwendung die Aufnahmedaten aller Dateien, und bei vielen Bildern ist
+  das der längste Teil des Laufs. Er lief bisher ohne jede Rückmeldung ab; zu sehen war
+  nur ein durchlaufender Balken ohne Zahlen. Jetzt zählt er von Anfang an mit („Bild 5
+  von 1100 erfasst"). Das betrifft die Analyse, die Duplikatsuche und das Laden der
+  Beispielbilder.
 - **Die Duplikatsuche zeigte ihren Fortschritt nur als Text**, der Balken daneben stand für
   nichts. Jetzt zeigt er den tatsächlichen Anteil.
 - **Bei großen Ordnern erstarrte die Anzeige, statt den Fortschritt zu zeigen.** Die
@@ -337,7 +342,7 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 - **Die Ergebnisliste der Duplikatsuche konnte die Anwendung zum Absturz bringen.** Bei
   Ordnern mit vielen doppelten Bildern wurden sämtliche Gruppen samt Vorschaubildern auf
   einmal aufgebaut. Die Oberfläche stand dabei minutenlang, und ab einigen hundert Gruppen
-  brach der Aufbau ganz ab — das Ergebnis eines langen Laufs war damit verloren. Die Liste
+  brach der Aufbau ganz ab. Das Ergebnis eines langen Laufs war damit verloren. Die Liste
   baut jetzt nur noch auf, was sichtbar ist.
 
 ## [1.4.11] - 2026-08-02
@@ -349,8 +354,8 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
   der Tabulatortaste angesteuert werden.
 - **Zwei Textfarben waren zu blass:** der Untertitel der Kopfbereiche und weiße Schrift
   auf hellem Akzent im dunklen Design. Beide sind jetzt gut lesbar.
-- **Scheiterte das Einrichten der lokalen KI, blieb das unbemerkt** — im Protokoll stand
-  nichts. Jetzt wird der Grund festgehalten.
+- **Scheiterte das Einrichten der lokalen KI, blieb das unbemerkt**, denn im Protokoll
+  stand nichts. Jetzt wird der Grund festgehalten.
 
 ### Geändert
 
@@ -362,9 +367,9 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 ### Behoben
 
 - **Beim Aufräumen von Duplikaten ließ sich die letzte Kopie mitlöschen.** Wurden in
-  einer Gruppe alle Bilder zum Löschen vorgemerkt, verschwand am Ende auch das Motiv —
-  aus dem Aufräumen wurde ein Verlust. Das jeweils letzte verbleibende Bild einer Gruppe
-  lässt sich jetzt nicht mehr vormerken und ist als geschützt gekennzeichnet.
+  einer Gruppe alle Bilder zum Löschen vorgemerkt, verschwand am Ende auch das Motiv,
+  und aus dem Aufräumen wurde ein Verlust. Das jeweils letzte verbleibende Bild einer
+  Gruppe lässt sich jetzt nicht mehr vormerken und ist als geschützt gekennzeichnet.
 - **Ein laufendes Löschen ließ sich nicht anhalten.** Wer die falsche Auswahl bestätigt
   hatte, konnte nur zusehen. Der Stopp-Knopf wirkt jetzt auch hier, und die Statusleiste
   zeigt, wie weit der Lauf ist.
@@ -372,8 +377,8 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 ### Geändert
 
-- **Vor dem Sortieren steht ein Hinweis auf eine Sicherungskopie** — dort, wo er zählt:
-  unmittelbar vor dem Verschieben. Die Liesmich-Datei nennt ihn ebenfalls.
+- **Vor dem Sortieren steht ein Hinweis auf eine Sicherungskopie**, und zwar dort, wo er
+  zählt: unmittelbar vor dem Verschieben. Die Liesmich-Datei nennt ihn ebenfalls.
 - **Das installierbare Paket trägt jetzt den richtigen Herausgeber und Namen** statt
   der Platzhalter aus der Projektvorlage.
 
@@ -382,11 +387,11 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 ### Behoben
 
 - **Die Aktualisierung aus dem Programm heraus schlug immer fehl.** Sie lud die neue
-  Fassung vollständig herunter, prüfte sie und begann, die Dateien zu ersetzen — und
-  scheiterte dann zuverlässig an einer Laufzeitdatei, die ein Virenscanner im Speicher
+  Fassung vollständig herunter, prüfte sie und begann, die Dateien zu ersetzen. Dann
+  scheiterte sie zuverlässig an einer Laufzeitdatei, die ein Virenscanner im Speicher
   abgebildet hält. Solche Dateien lässt Windows nicht überschreiben, dauerhaft nicht;
   das Abwarten, auf das sich die Anwendung verließ, konnte nie zum Ziel führen. Die
-  alte Fassung wurde jedes Mal korrekt wiederhergestellt und der Grund gemeldet — aber
+  alte Fassung wurde jedes Mal korrekt wiederhergestellt und der Grund gemeldet, doch
   aktualisieren ließ sich das Programm nur über das Setup. Es legt die betroffene Datei
   jetzt beiseite, statt sie zu überschreiben; das erlaubt Windows.
 - **Jede Aktualisierung ließ rund 325 MB im Temp-Ordner zurück.** Auch eine gelungene:
@@ -399,8 +404,8 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 - **Die Statusleiste am unteren Rand war zweizeilig.** Fortschrittsbalken und
   Versionsangabe standen unter der Meldung statt neben ihr und nahmen dauerhaft eine
-  zweite Zeile ein — auch dann, wenn gerade nichts lief. Beides steht jetzt in
-  derselben Zeile wie die Meldung.
+  zweite Zeile ein, auch wenn gerade nichts lief. Beides steht jetzt in derselben Zeile
+  wie die Meldung.
 
 ## [1.4.7] - 2026-08-01
 
@@ -408,7 +413,7 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 - **Die Beispiele werden nicht mehr vorab geladen, sondern in zwei getrennten Schritten
   selbst zusammengestellt.** Vorher standen dreißig Bilder des Ordners bereits in der
-  Auswahl, von denen zu einem bestimmten Thema oft kaum eines passte — der Platz war
+  Auswahl, von denen zu einem bestimmten Thema oft kaum eines passte. Der Platz war
   trotzdem belegt, und jedes Bild musste einzeln als passend oder nicht passend markiert
   werden. Jetzt gibt es je einen Schritt für die passenden Bilder und für die
   Gegenbeispiele, beide leer beginnend, mit eigener Obergrenze und ständig ablesbarem
@@ -424,8 +429,8 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 - **Die Erklärung im letzten Schritt blieb in der englischen Fassung deutsch.** Für
   diesen einen Text fehlte die Übersetzung; angezeigt wurde ersatzweise das deutsche
   Original.
-- **Der Hinweis am Häkchen sagte das Gegenteil dessen, was er meinte.** „Abhaken heißt:
-  nicht verschieben" — gemeint war das Entfernen des Häkchens.
+- **Der Hinweis am Häkchen sagte das Gegenteil dessen, was er meinte.** Dort stand
+  „Abhaken heißt: nicht verschieben", gemeint war aber das Entfernen des Häkchens.
 - **„Vorschläge holen" meldete „keine Bilder im Ordner", obwohl welche da waren.** Waren
   alle gefundenen Bilder bereits gewählt oder lagen auf der anderen Seite, ließ die
   Meldung den Fehler im Ordner vermuten statt in der eigenen Auswahl.
@@ -437,21 +442,21 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 - **Eine einzelne unlesbare Datei beendete den ganzen Durchlauf.** Zieht ein
   Virenscanner ein Foto während der Arbeit weg, ist es in einem Cloud-Ordner noch nicht
   heruntergeladen oder fehlen die Rechte, stand am Ende eine Fehlermeldung statt eines
-  Ergebnisses — nach der vollen Wartezeit. Solche Fotos werden jetzt übersprungen und
-  im Protokoll benannt, der Rest wird zu Ende bearbeitet.
+  Ergebnisses, und das nach der vollen Wartezeit. Solche Fotos werden jetzt übersprungen
+  und im Protokoll benannt, der Rest wird zu Ende bearbeitet.
 - **Der Screenreader nannte mehrere Listen nur „Liste".** Das Protokollfeld, die
   Bereichsauswahl auf der Startseite, das Gedächtnis, die Beispielbilder und die
   Vorschläge haben jetzt einen sprechenden Namen.
 - **Nach einem Wechsel des Bilderkennungs-Modells galt ein Ordner dauerhaft als
   abgehakt.** Die gespeicherten Beispiele stammten noch vom alten Modell und ließen
   sich mit den neuen Werten nicht vergleichen. Statt das zu melden, merkte sich die
-  Anwendung jedes Foto als „passt nicht" — auch nach dem Zurückstellen auf das alte
+  Anwendung jedes Foto als „passt nicht". Selbst nach dem Zurückstellen auf das alte
   Modell wäre der Ordner leer geblieben. Unvergleichbare Beispiele werden jetzt
   übersprungen, nichts wird gemerkt, und die Zahl der betroffenen Fotos steht einmal
   je Lauf im Protokoll. Wer das Modell wechselt, muss die Kategorie neu anlernen.
 - **Ein Datenbankfehler mitten im Sortieren beendete den ganzen Lauf.** Zugesagt war,
   dass das Gedächtnis und das Protokoll der Sortierläufe eine Störung überstehen, ohne
-  die Arbeit abzubrechen — tatsächlich wurde die Fehlerart, mit der sich SQLite meldet,
+  die Arbeit abzubrechen. Tatsächlich wurde die Fehlerart, mit der sich SQLite meldet,
   gar nicht abgefangen. Jetzt wird sie es, und der Lauf geht weiter.
 - **Die Versionsangabe im Fußbereich klebte am rechten Rand.**
 
@@ -464,15 +469,15 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
   eine unveränderte Zeile. Jetzt steht dort „Bild 7 von 15" samt Balken.
 - **Das Anlernen dauerte unnötig lange.** Die Bilderkennung beschreibt jedes Bild in
   Worten, und die Dauer hängt fast unmittelbar an der Länge dieser Beschreibung. Sie
-  ist jetzt begrenzt — für den Vergleich genügen ein bis zwei Sätze, geschrieben wurden
+  ist jetzt begrenzt. Für den Vergleich genügen ein bis zwei Sätze, geschrieben wurden
   oft deutlich mehr.
 
 ### Geändert
 
 - **Für die Beispiele gilt eine einstellbare Obergrenze, ab Werk fünfzehn je Seite.**
-  Entschieden wird über die höchste Ähnlichkeit zu einem einzelnen Beispiel: Ein
+  Entschieden wird über die höchste Ähnlichkeit zu einem einzelnen Beispiel. Ein
   halbpassendes Beispiel zieht deshalb eine ganze Nachbarschaft falscher Fotos mit
-  herein. Wenige eindeutige Beispiele wirken besser als viele mittelmäßige — und jedes
+  herein. Wenige eindeutige Beispiele wirken besser als viele mittelmäßige, und jedes
   zusätzliche kostet Wartezeit beim Anlernen.
 
 ## [1.4.5] - 2026-07-31
@@ -481,9 +486,9 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 - **Beispielbilder lassen sich jetzt selbst bestimmen.** „Andere Beispiele" holt den
   nächsten Schwung aus dem Ordner, „Eigene Bilder wählen" öffnet einen Auswahldialog,
-  und Bilder lassen sich auch direkt aus dem Explorer in die Auswahl ziehen — auch aus
-  mehreren Ordnern nacheinander. Zuvor waren es immer dieselben ersten dreißig Bilder;
-  bei einem gemischten Ordner war darunter oft kaum eines, das zum gesuchten Thema
+  und Bilder lassen sich auch direkt aus dem Explorer in die Auswahl ziehen, auch aus
+  mehreren Ordnern nacheinander. Zuvor waren es immer dieselben ersten dreißig Bilder.
+  Bei einem gemischten Ordner war darunter oft kaum eines, das zum gesuchten Thema
   passte, und damit stand das ganze Anlernen auf einem einzigen Beispiel.
 
 ### Behoben
@@ -494,8 +499,8 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
   einsortiert. Das trennt vor allem die Fälle, die dem gesuchten Motiv nahe kommen,
   aber nicht gemeint sind.
 - **Eine gescheiterte Aktualisierung verschwand spurlos.** Ließen sich die Dateien
-  nicht ersetzen, startete das Programm einfach mit der alten Fassung neu — ohne
-  Meldung, ohne Protokolleintrag. Der Grund wird jetzt festgehalten und nach dem
+  nicht ersetzen, startete das Programm einfach mit der alten Fassung neu, ohne
+  Meldung und ohne Protokolleintrag. Der Grund wird jetzt festgehalten und nach dem
   Neustart angezeigt. Ist der Programmordner gar nicht beschreibbar (Installation
   „für alle Benutzer"), wird das vor dem Herunterladen erkannt und erklärt, statt
   hundert Megabyte umsonst zu laden.
@@ -511,8 +516,8 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 - **„Jetzt aktualisieren" sah aus, als bewirke es nichts.** Die neue Fassung ist rund
   hundert Megabyte groß; während sie geladen wurde, blieb der Bildschirm unverändert.
-  Jetzt zeigt der Fußbereich einen Balken mit Prozentangabe und benennt jeden Schritt
-  — Laden, Echtheitsprüfung, Entpacken, Neustart. Abbrechen ist über „Stopp" möglich,
+  Jetzt zeigt der Fußbereich einen Balken mit Prozentangabe und benennt jeden Schritt:
+  Laden, Echtheitsprüfung, Entpacken, Neustart. Abbrechen ist über „Stopp" möglich,
   und ein Fehlschlag wird gemeldet, statt still zu enden. Das gilt ebenso für die
   Aktualisierung über die Einstellungen und für die automatische beim Programmstart.
 - **Beim Laden der Beispiele fehlte der Fortschrittsbalken.** Angezeigt wurde nur ein
@@ -526,11 +531,11 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 - **Das Laden der Beispiele dauerte bei großen Ordnern endlos.** Für die dreißig
   Bilder, die zur Auswahl stehen, wurde zuvor der gesamte Ordner eingelesen und erst
   danach abgeschnitten. Da für jedes Foto die Datei geöffnet werden muss, traf es
-  Ordner besonders hart, deren Bilder erst aus der Cloud geholt werden — bei den
+  Ordner besonders hart, deren Bilder erst aus der Cloud geholt werden. Bei den
   iCloud-Fotos unter Windows lud die Anwendung so die halbe Mediathek herunter, um
   eine Handvoll Vorschauen zu zeigen. Jetzt werden nur noch so viele Bilder
   eingelesen, wie auch angezeigt werden. Das Sortieren und die Duplikat-Suche lesen
-  weiterhin den ganzen Ordner — dort ist es ihre Aufgabe.
+  weiterhin den ganzen Ordner, denn dort ist genau das ihre Aufgabe.
 - **Der Hinweis auf eine neue Fassung konnte beim Start ausbleiben.** Die Suche nach
   Aktualisierungen lief erst, nachdem die Prüfung der lokalen KI fertig war. Antwortete
   die KI nicht, verzögerte das den Hinweis um deren gesamte Wartezeit; endete sie mit
@@ -544,7 +549,7 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 - **„Zustand der KI wird geprüft" blieb minutenlang oder dauerhaft stehen.** Die
   Erreichbarkeitsprüfung lief mit demselben Zeitlimit wie eine vollständige
   Bildbeschreibung und wurde zudem mehrfach wiederholt. Nahm die KI die Verbindung
-  zwar an, antwortete aber nicht – etwa während sie selbst gerade aktualisiert wurde –,
+  zwar an, antwortete aber nicht (etwa während sie selbst gerade aktualisiert wurde),
   wartete die Anwendung über Minuten, ohne dass auf dem Bildschirm etwas darauf
   hindeutete. Die Prüfung hat jetzt ein eigenes, kurzes Zeitlimit und endet immer mit
   einer klaren Aussage statt im Ungewissen.
@@ -554,7 +559,7 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
   ersten Versuch stillschweigend, gilt eine einwandfrei laufende KI als nicht
   vorhanden. Angesprochen wird jetzt direkt die IPv4-Adresse.
 - **„Jetzt einrichten" scheiterte in jeder ausgelieferten Fassung.** Das
-  Einrichtungsskript für die KI wurde nie mitgeliefert: Es lag nur auf dem
+  Einrichtungsskript für die KI wurde nie mitgeliefert. Es lag nur auf dem
   Entwicklungsrechner, weil die Vorgaben der Versionsverwaltung sämtliche Skripte
   ausschlossen. Auf dem Entwicklungsrechner war deshalb nichts zu bemerken, während
   jeder weitergegebene Stand nur „Die Einrichtung konnte nicht gestartet werden"
@@ -573,8 +578,8 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 - **Die ausgelieferte Fassung ließ sich nicht starten.** Der Veröffentlichungsschritt
   gab die eigene Ressourcendatei der Anwendung nicht mit aus. Ohne sie findet die
   Oberflächenbibliothek keine einzige Ansicht und die Anwendung bricht schon beim
-  ersten Fenster ab. Betroffen war jedes weitergegebene Paket – Setup wie portable
-  Fassung –, während die aus den Quellen gebaute Fassung einwandfrei lief; deshalb
+  ersten Fenster ab. Betroffen war jedes weitergegebene Paket, Setup wie portable
+  Fassung. Die aus den Quellen gebaute Fassung lief dagegen einwandfrei, und deshalb
   ist es so lange unbemerkt geblieben. Die Datei wird jetzt mit ausgegeben, und die
   Veröffentlichung bricht ab, wenn sie einmal fehlen sollte, statt ein Paket zu
   erzeugen, das sich nicht öffnen lässt.
@@ -586,8 +591,8 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 - **Kopieren statt Verschieben**: Direkt über dem Sortieren-Knopf lässt sich für den
   einzelnen Lauf wählen, ob die Fotos verschoben oder kopiert werden. Die
   Voreinstellung bleibt das Verschieben. Beim Kopieren bleiben die Originale im
-  Quellordner liegen; das Rückgängigmachen entfernt dann die Kopien, statt Dateien
-  zurückzuholen – und nur die Kopien, die seit dem Lauf unverändert geblieben sind.
+  Quellordner liegen. Das Rückgängigmachen entfernt dann die Kopien, statt Dateien
+  zurückzuholen, und zwar nur die, die seit dem Lauf unverändert geblieben sind.
   Eine nachträglich bearbeitete Kopie bleibt stehen und wird als übersprungen
   gemeldet.
 
@@ -595,11 +600,11 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 - **Erstelldatum ging beim Sortieren über eine Laufwerksgrenze verloren.** Wurde aus
   einem Ordner auf `C:` in ein Archiv auf einem anderen Laufwerk sortiert, machte
-  Windows aus dem Verschieben intern ein Kopieren mit anschließendem Löschen – die
-  Zieldatei trug danach den heutigen Tag als Erstelldatum. Bei einer Fotosammlung ist
-  genau dieses Datum die Ordnung. Das Datum wird jetzt in beiden Betriebsarten aus
+  Windows aus dem Verschieben intern ein Kopieren mit anschließendem Löschen. Die
+  Zieldatei trug danach den heutigen Tag als Erstelldatum, und bei einer Fotosammlung
+  ist genau dieses Datum die Ordnung. Das Datum wird jetzt in beiden Betriebsarten aus
   der Quelle übernommen. Innerhalb desselben Laufwerks bestand das Problem nicht.
-  Aufnahmedaten in den Bildern selbst (EXIF) waren nie betroffen – sie stehen in den
+  Aufnahmedaten in den Bildern selbst (EXIF) waren nie betroffen: Sie stehen in den
   Dateibytes und überstehen beide Vorgänge unverändert.
 
 ## [1.3.1] - 2026-07-30
@@ -608,30 +613,30 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 - **Automatische Sicherung vor Schemaänderungen**: Steht beim Start eine Migration
   an, legt die Anwendung vorher eine Kopie der Datenbank an
-  (`picturesorter.vor-<Migration>.bak`) – über die Online-Backup-Schnittstelle von
-  SQLite, damit auch noch nicht verdichtete Schreibvorgänge mitkommen. Eine
+  (`picturesorter.vor-<Migration>.bak`). Sie entsteht über die Online-Backup-Schnittstelle
+  von SQLite, damit auch noch nicht verdichtete Schreibvorgänge mitkommen. Eine
   vorhandene Sicherung wird nie überschrieben. Lässt sich nicht sichern, unterbleibt
   die Migration.
 - **Protokoll-Ansicht mit Filter und Suche**: Der Bereich *Einstellungen →
   Protokoll* lässt sich auf Warnungen und Fehler eingrenzen und durchsuchen.
-  Mehrzeilige Einträge bleiben dabei zusammen – eine Stapelüberwachung erscheint
-  weder ohne ihre Fehlermeldung noch verschwindet sie mit ihr.
+  Mehrzeilige Einträge bleiben dabei zusammen. Eine Stapelüberwachung erscheint also
+  weder ohne ihre Fehlermeldung, noch verschwindet sie mit ihr.
 - **Betriebshandbuch** (`BETRIEB.md`): Ablageorte, Sicherung und
   Wiederherstellung, Rücknahme von Sortierlauf und Update, Schlüsselwechsel.
 
 ### Behoben
 
 - **iPhone-Fotos (HEIC) wurden nicht wirklich angesehen**: Die Bilder wurden zwar
-  gefunden und einsortiert, an die Bilderkennung ging aber die Originaldatei – und
+  gefunden und einsortiert, an die Bilderkennung ging aber die Originaldatei, und
   die kann sie nicht öffnen. Beurteilt wurde damit nichts, obwohl ein Urteil
   herauskam. Jeder Vorschlag beruhte auf einer Beschreibung ohne Bild. Fotos werden
-  jetzt vor der Beurteilung umgewandelt und dabei auf eine sinnvolle Größe gebracht;
-  das spart nebenbei Speicher und Wartezeit. Lässt sich ein Bild nicht öffnen – etwa
-  weil unter Windows die HEIF-/HEVC-Erweiterung fehlt –, wird es übersprungen und
+  jetzt vor der Beurteilung umgewandelt und dabei auf eine sinnvolle Größe gebracht,
+  was nebenbei Speicher und Wartezeit spart. Lässt sich ein Bild nicht öffnen, etwa
+  weil unter Windows die HEIF-/HEVC-Erweiterung fehlt, wird es übersprungen und
   nicht als beurteilt gemerkt, statt still falsch einsortiert zu werden.
 - **Update: Eine misslungene Ersetzung ließ eine Datei beschädigt zurück**: Schlug
   das Ersetzen einer einzelnen Programmdatei fehl, wurden alle übrigen sauber
-  zurückgeholt – ausgerechnet die betroffene nicht. Jetzt kommt auch sie zurück.
+  zurückgeholt, ausgerechnet die betroffene aber nicht. Jetzt kommt auch sie zurück.
 - **Update-Prüfung sagt jetzt, wenn sie nichts sagen kann**: Eine Prüfung ohne
   Netz oder ohne erreichbare Quelle wurde wie „Sie sind auf dem neuesten Stand"
   behandelt. Sie wird nun als solche gemeldet.
@@ -640,7 +645,7 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
   jetzt einen Zusatz und funktionieren.
 - **Abgebrochener Sortierlauf war nicht mehr rücknehmbar**: Wurde das Verschieben
   mittendrin abgebrochen, lagen die bis dahin verschobenen Fotos im Zielordner und
-  galten als einsortiert – protokolliert wurde der Lauf aber nie. „Rückgängig" bot
+  galten als einsortiert, protokolliert wurde der Lauf aber nie. „Rückgängig" bot
   für sie nichts an. Der Lauf wird jetzt auch bei Abbruch mit dem bereits
   Verschobenen protokolliert.
 - **Beschädigte Datenbank beendete den Programmstart**: Ein SQLite-Fehler beim
@@ -667,7 +672,7 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
   startet damit auf Rechnern ohne vorinstallierte Runtime.
 - Die Application-Schicht ist plattformneutral (`net10.0`).
 - Die Einstellung `Ollama.MaxParallelRequests` ist entfallen. Sie stand in der
-  Konfiguration, hatte aber keine Wirkung – die Bilder werden nacheinander bewertet.
+  Konfiguration, hatte aber keine Wirkung, denn die Bilder werden nacheinander bewertet.
 - Update-Prüfung und -Installation der Einstellungsseite liegen im ViewModel und sind
   damit ohne laufende Oberfläche prüfbar.
 
@@ -677,12 +682,12 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 - **Sortier-Gedächtnis**: PictureSorter merkt sich dauerhaft (SQLite), was zu welchem
   Foto entschieden wurde. Ein zweiter Lauf überspringt bereits einsortierte, abgewählte
-  und von der KI abgelehnte Fotos – das spart die teuren KI-Aufrufe. Dasselbe Foto darf
+  und von der KI abgelehnte Fotos und spart so die teuren KI-Aufrufe. Dasselbe Foto darf
   je Kategorie unterschiedlich beurteilt werden.
 - **Seite „Gedächtnis"**: zeigt alle gemerkten Entscheidungen, filterbar nach Ordner und
-  Kategorie. Einzelne Einträge oder ein ganzes Ordner-Gedächtnis lassen sich verwerfen –
+  Kategorie. Einzelne Einträge oder ein ganzes Ordner-Gedächtnis lassen sich verwerfen;
   die betroffenen Fotos werden dann wieder neu bewertet.
-- **Vorschau: Bilder abwählen** – jeder Vorschlag hat eine Auswahl-Box, dazu
+- **Vorschau: Bilder abwählen**: Jeder Vorschlag hat eine Auswahl-Box, dazu kommen
   „Alle aus-/abwählen" und die Anzeige „x von y ausgewählt". Nur ausgewählte Bilder
   werden verschoben; abgewählte werden gemerkt und nicht erneut vorgeschlagen.
 - **Großansicht**: Klick auf ein Vorschaubild zeigt das Foto in voller Größe samt allen
@@ -711,8 +716,8 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 - Ein einzelner Dateifehler (z. B. gesperrte Datei) brach bisher den gesamten
   Sortiervorgang ab. Jetzt werden die übrigen Dateien weiter verschoben; die
   fehlgeschlagene bleibt ungemerkt und wird erneut vorgeschlagen.
-- Ein KI-Ausfall wurde nicht mehr als „Foto passt nicht" gemerkt – nur tatsächlich
-  gefällte Urteile landen im Gedächtnis.
+- Ein KI-Ausfall wurde nicht mehr als „Foto passt nicht" gemerkt. Im Gedächtnis landen
+  nur tatsächlich gefällte Urteile.
 - Die Protokolldatei ist auf 100 MB je Tag begrenzt; der Log-Viewer lädt nur noch das
   Dateiende statt der kompletten Datei.
 - Fremd-Protokolle (Datenbank, HTTP) fluten die Logdatei nicht mehr auf „Information".
@@ -756,8 +761,8 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
   über die Windows-Bild-API). Auswahl je Bild, Löschen in den Papierkorb mit
   Rückfrage; das beste Bild je Gruppe ist zum Behalten vorausgewählt.
 - **Metadaten beim Sortieren**: Aufnahmedatum, Aufnahmeort (GPS), Kamera und
-  Auflösung werden aus den EXIF-Daten gelesen und fließen – zusätzlich zum Bild –
-  in Embedding- und Vision-Bewertung ein.
+  Auflösung werden aus den EXIF-Daten gelesen und fließen zusätzlich zum Bild in
+  Embedding- und Vision-Bewertung ein.
 - **Beispiel-Lernen in der Oberfläche**: Beispielbilder laden, als „gehört dazu" /
   „Gegenbeispiel" markieren, Profil lernen und persistieren.
 - **Ordnerauswahl-Dialog** statt manueller Pfadeingabe.

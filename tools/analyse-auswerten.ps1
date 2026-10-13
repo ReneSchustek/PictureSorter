@@ -3,8 +3,8 @@
 # Warum es dieses Werkzeug gibt
 # -----------------------------
 # Seit Fassung 1.7.0 hält die Anwendung je Foto fest, auf welchem Weg entschieden wurde
-# (Embedding oder Bild-Modell) und wann. Damit stecken die Antworten auf die Fragen des
-# Briefs bereits in der Datenbank — nur konnte sie niemand herausholen, ohne SQL zu
+# (Embedding oder Bild-Modell) und wann. Damit steckt die Antwort auf die Frage, wohin die
+# Zeit geht, bereits in der Datenbank — nur konnte sie niemand herausholen, ohne SQL zu
 # schreiben.
 #
 # Gemessen wird nichts hinzu: Das Werkzeug liest nur, was ein Lauf ohnehin geschrieben

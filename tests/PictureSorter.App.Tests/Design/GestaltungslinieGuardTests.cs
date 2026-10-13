@@ -4,7 +4,7 @@ using System.Xml.Linq;
 namespace PictureSorter.App.Tests.Design;
 
 /// <summary>
-/// Hält die Gestaltungslinie (<c>F:\Entwicklung\_ai\rules\global\design-system.md</c>).
+/// Hält die gemeinsame Gestaltungslinie aller Programme ein.
 /// </summary>
 /// <remarks>
 /// Eine Gestaltungslinie, die nur in einem Dokument steht, hält kein Jahr: Nach dem

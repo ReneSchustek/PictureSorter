@@ -4,7 +4,7 @@
 
     <!--
         Farben der Gestaltungslinie. Die Werte stammen aus der Marke und nicht aus
-        diesem Projekt — maßgeblich ist F:\Entwicklung\_ai\rules\global\design-system.md.
+        diesem Projekt; maßgeblich ist die gemeinsame Gestaltungslinie aller Programme.
 
         Beide Belegungen führen denselben Satz Schlüssel. Fehlt einer in einer
         Belegung, bricht die Bindung genau dort — und das fällt erst beim Nutzer

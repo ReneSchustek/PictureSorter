@@ -46,9 +46,6 @@ paths = [
     # `*.pfx` allgemein freizugeben hieße, einen echten Schlüssel künftig zu übersehen.
     '''(?i).*_TemporaryKey\.pfx$''',
 
-    # Lokale Workflow-Dateien (gitignored, niemals committed)
-    '''(?i)(^|/)\.ai/''',
-
     # Gitleaks selbst (großes Binary, eigene README mit Beispiel-Findings)
     '''(?i)(^|/)tools/gitleaks''',
     '''(?i)(^|/)tools/README\.md$''',

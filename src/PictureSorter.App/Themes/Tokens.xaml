@@ -6,7 +6,7 @@
     liegen — und nur Farben kippen zwischen hell und dunkel. Ansichten binden
     diese Werte über StaticResource; zur Laufzeit ändern sie sich nie.
 
-    Maßgeblich ist F:\Entwicklung\_ai\rules\global\design-system.md. Wer einen
+    Maßgeblich ist die gemeinsame Gestaltungslinie aller Programme. Wer einen
     Wert ändert, ändert ihn zuerst dort.
 -->
 <ResourceDictionary

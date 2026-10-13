@@ -3,20 +3,6 @@
 # ============================================================
 
 # ============================================================
-# Lokale Werkzeug- und Editordateien (nicht versionieren)
-# ============================================================
-.ai/
-**/.ai/
-CLAUDE.md
-**/CLAUDE.md
-.claude/
-**/.claude/
-_ai/
-**/_ai/
-brief-template.md
-.gitignore-template
-
-# ============================================================
 # SCRIPTE nie committen — Ausnahme: tools/ liefert Repo-Skripte
 # ============================================================
 *.ps1
@@ -105,11 +91,6 @@ $RECYCLE.BIN/
 
 # Rider
 .idea/
-
-# Arbeitsstand eines Werkzeugs, das den Projektbaum zusammenfasst. Enthält
-# Dateinamen und Textproben aus dem ganzen Repository und gehört damit weder
-# in die Verfolgung noch in eine Auslieferung.
-.localpilot/
 
 # ============================================================
 # Bildschirmfotos der Webseite
