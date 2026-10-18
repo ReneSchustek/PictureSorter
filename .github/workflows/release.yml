@@ -111,10 +111,9 @@ jobs:
           Get-ChildItem PictureSorter-Setup-*.exe | ForEach-Object { Write-Output "Erstellt: $($_.Name)" }
 
       # Die drei Architektur-Läufe legen ihre Dateien nur ab; das Release entsteht
-      # danach EINMAL im Job "publish". Früher hat jeder Lauf das Release
-      # selbst angelegt bzw. bestückt - liefen zwei gleichzeitig, erzeugte einer ein
-      # zweites, unbenanntes Release, und dessen Dateien fehlten im eigentlichen. Bei
-      # v1.4.5 ist genau das mit der ARM64-Fassung passiert.
+      # danach EINMAL im Job "publish". Legte jeder Lauf das Release selbst an,
+      # erzeugte bei zwei gleichzeitigen Läufen einer ein zweites, unbenanntes Release,
+      # und dessen Dateien fehlten im eigentlichen.
       - name: Dateien ablegen
         uses: actions/upload-artifact@v6
         with:
