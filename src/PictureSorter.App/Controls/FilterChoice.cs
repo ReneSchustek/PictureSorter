@@ -9,7 +9,7 @@ namespace PictureSorter.App.Controls;
 /// <remarks>
 /// Eigener Typ statt einer Zeichenkette, weil ein Chip zwei Dinge tragen muss: was er
 /// anbietet und ob er gerade gilt. Der Schlüssel bleibt dabei getrennt von der
-/// Beschriftung — sonst hinge die Filterlogik an einem übersetzten Text.
+/// Beschriftung, sonst hinge die Filterlogik an einem übersetzten Text.
 /// </remarks>
 internal sealed partial class FilterChoice : ObservableObject
 {
@@ -24,7 +24,7 @@ internal sealed partial class FilterChoice : ObservableObject
         Label = label;
     }
 
-    /// <summary>Der Schlüssel, nach dem gefiltert wird — unabhängig von der Sprache.</summary>
+    /// <summary>Der Schlüssel, nach dem gefiltert wird (unabhängig von der Sprache).</summary>
     public string Key { get; }
 
     /// <summary>Die Beschriftung des Chips.</summary>

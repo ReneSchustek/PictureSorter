@@ -12,8 +12,8 @@ namespace PictureSorter.App.ViewModels;
 /// Quellordner, eigene Auswahl über den Dateidialog und aus dem Explorer
 /// hereingezogene Bilder.
 ///
-/// Eigene Klasse, weil hier ein eigener Zustand liegt — der Startpunkt des nächsten
-/// Vorschlags-Schwungs je Seite — und weil dieser Vorgang mit dem Sortierablauf nichts
+/// Eigene Klasse, weil hier ein eigener Zustand liegt (der Startpunkt des nächsten
+/// Vorschlags-Schwungs je Seite) und weil dieser Vorgang mit dem Sortierablauf nichts
 /// zu tun hat: Er läuft mit eigenem Abbruch und berührt weder Kategorie noch Vorschau.
 /// Den Quellordner erfährt sie über Delegaten, statt ihn selbst zu halten; so bleibt
 /// eine einzige Stelle für die Eingabe zuständig.
@@ -81,7 +81,7 @@ internal sealed class ExampleGatheringViewModel
 
     /// <summary>
     /// Öffnet den Auswahldialog für eigene Bilder. Anders als die Vorschläge braucht
-    /// die eigene Auswahl keinen Quellordner — die Bilder dürfen von überall kommen.
+    /// die eigene Auswahl keinen Quellordner; die Bilder dürfen von überall kommen.
     /// </summary>
     /// <param name="set">Die Seite, die die Bilder aufnimmt.</param>
     public async Task PickAsync(ExampleSetViewModel set)
@@ -148,15 +148,15 @@ internal sealed class ExampleGatheringViewModel
                 .ConfigureAwait(true);
 
             // Bilder, die auf der anderen Seite schon liegen, gehören nicht in die
-            // Vorschläge – sonst stünde dasselbe Foto als passend und als Gegenbeispiel.
+            // Vorschläge, sonst stünde dasselbe Foto als passend und als Gegenbeispiel.
             ExampleSetViewModel.AddResult result =
                 set.Add(photos.Where(photo => !otherSide.Contains(photo.FullPath)));
 
             if (result.Added == 0)
             {
                 // „Keine Bilder im Ordner" nur, wenn der Ordner wirklich keines mehr
-                // hergab. Wurden welche gefunden und bloß übergangen – schon gewählt
-                // oder auf der anderen Seite –, muss die Meldung das sagen, sonst sucht
+                // hergab. Wurden welche gefunden und bloß übergangen (schon gewählt
+                // oder auf der anderen Seite), muss die Meldung das sagen, sonst sucht
                 // die Nutzerin den Fehler im Ordner statt in ihrer Auswahl.
                 _status.Finish(
                     photos.Count == 0

@@ -10,7 +10,7 @@ namespace PictureSorter.Data.Tests.Repositories;
 /// <summary>
 /// Integrationstests des Umbenennungs-Protokolls gegen eine echte SQLite-Datei.
 /// Es ist die einzige Stelle, an der nach einem Lauf noch steht, wie eine Datei
-/// vorher hieß — geht es verloren, ist der alte Name unwiederbringlich fort.
+/// vorher hieß. Geht es verloren, ist der alte Name unwiederbringlich fort.
 /// </summary>
 public sealed class RenameJournalRepositoryTests : IAsyncLifetime
 {
@@ -29,7 +29,7 @@ public sealed class RenameJournalRepositoryTests : IAsyncLifetime
         _ = services.AddPictureSorterData(_dataDirectory);
         _provider = services.BuildServiceProvider();
 
-        // Schema anlegen – wie beim App-Start. Damit läuft auch die neue Migration.
+        // Schema anlegen, wie beim App-Start. Damit läuft auch die neue Migration.
         bool ready = await _provider.GetRequiredService<DatabaseInitializer>()
             .InitializeAsync(CancellationToken.None)
             .ConfigureAwait(false);

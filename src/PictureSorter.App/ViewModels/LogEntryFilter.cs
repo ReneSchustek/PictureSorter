@@ -9,7 +9,7 @@ namespace PictureSorter.App.ViewModels;
 ///
 /// Ein Protokolleintrag kann mehrzeilig sein: Auf die Kopfzeile mit Zeitstempel und
 /// Stufe folgt bei einer Ausnahme die Stapelüberwachung. Gefiltert wird deshalb je
-/// Eintrag, nicht je Zeile – sonst stünde eine Stapelüberwachung ohne ihre
+/// Eintrag, nicht je Zeile, sonst stünde eine Stapelüberwachung ohne ihre
 /// Fehlermeldung da oder umgekehrt.
 /// </summary>
 internal static class LogEntryFilter
@@ -79,7 +79,7 @@ internal static class LogEntryFilter
             return false;
         }
 
-        // Der Suchbegriff darf irgendwo im Eintrag stehen – auch in der
+        // Der Suchbegriff darf irgendwo im Eintrag stehen, auch in der
         // Stapelüberwachung, denn dort steht oft der eigentliche Hinweis.
         return term.Length == 0
             || entry.Any(line => line.Contains(term, StringComparison.OrdinalIgnoreCase));

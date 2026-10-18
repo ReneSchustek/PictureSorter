@@ -16,7 +16,7 @@ namespace PictureSorter.Integration.Tests.Sorting;
 /// Die Rettung eines Laufs, den es nur noch im Gedächtnis gibt: echte Dateien, echte
 /// SQLite-Datenbank.
 ///
-/// Das Ergebnis eines unterbrochenen Laufs steht vollständig im Gedächtnis — genutzt
+/// Das Ergebnis eines unterbrochenen Laufs steht vollständig im Gedächtnis. Genutzt
 /// wurde davon aber nur die Ablehnung, sodass jeder zweite Anlauf die Vorschläge neu
 /// berechnen musste. Diese Tests halten fest, dass sie sich zurückholen lassen.
 /// </summary>
@@ -145,7 +145,7 @@ public sealed class AnalysisRecoveryIntegrationTests : IAsyncLifetime
     /// <summary>
     /// Liefert keine Metadaten. Der echte Leser hängt an Windows-Bild-Schnittstellen und
     /// braucht ein echtes Bild; hier geht es um die Signatur und darum, welche Einträge
-    /// zurückkommen — nicht um EXIF.
+    /// zurückkommen, nicht um EXIF.
     /// </summary>
     private sealed class NoMetadataReader : IImageMetadataReader
     {

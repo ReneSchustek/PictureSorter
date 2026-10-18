@@ -19,7 +19,7 @@ public sealed class WindowsImageMetadataReader : IImageMetadataReader
 
     // EXIF legt eine Koordinate als drei Brüche ab (Grad, Minuten, Sekunden). Die
     // Bild-API gibt Zähler und Nenner getrennt heraus; die zusammengesetzte
-    // Eigenschaft „System.GPS.Latitude" liefert sie nicht – die berechnet erst der
+    // Eigenschaft „System.GPS.Latitude" liefert sie nicht. Die berechnet erst der
     // Explorer. Wer nach ihr fragt, bekommt nie einen Ort zu sehen.
     private const string LatitudeNumeratorKey = "System.GPS.LatitudeNumerator";
     private const string LatitudeDenominatorKey = "System.GPS.LatitudeDenominator";

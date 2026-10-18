@@ -7,7 +7,7 @@ namespace PictureSorter.Application.Tests.Fakes;
 /// <summary>
 /// Steht für die Ausnahme, die ein Datenbank-Anbieter meldet. Die echte
 /// <c>SqliteException</c> erbt ebenso von <see cref="DbException"/>, ist in dieser
-/// Schicht aber bewusst nicht verfügbar — die Application-Schicht kennt die
+/// Schicht aber bewusst nicht verfügbar: Die Application-Schicht kennt die
 /// Persistenz-Technologie nicht.
 /// </summary>
 internal sealed class FakeDbException : DbException

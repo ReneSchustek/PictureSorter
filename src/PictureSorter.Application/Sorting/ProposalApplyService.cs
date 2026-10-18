@@ -11,7 +11,7 @@ namespace PictureSorter.Application.Sorting;
 ///
 /// Der einzige Dienst der Anwendung, der Dateien der Nutzerin bewegt. Er steht deshalb
 /// für sich: Wer Vorschläge nur erzeugt, bekommt ihn gar nicht in die Hand. Ein einzelner
-/// Dateifehler bricht den Lauf nicht ab — sonst bliebe die Sortierung auf halber Strecke
+/// Dateifehler bricht den Lauf nicht ab, sonst bliebe die Sortierung auf halber Strecke
 /// stehen und niemand wüsste, wo.
 /// </summary>
 public sealed class ProposalApplyService : IProposalApplier
@@ -64,7 +64,7 @@ public sealed class ProposalApplyService : IProposalApplier
 
         // Jede Verschiebung wird mitgeschrieben: Quelle und tatsächliches Ziel. Der
         // Zielpfad ist nicht vorhersagbar (bei Namenskonflikt hängt der Organizer eine
-        // Nummer an) – ohne ihn ließe sich der Lauf später nicht zurücknehmen.
+        // Nummer an). Ohne ihn ließe sich der Lauf später nicht zurücknehmen.
         List<SortRunItem> moved = [];
 
         try
@@ -83,7 +83,7 @@ public sealed class ProposalApplyService : IProposalApplier
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                 {
                     // Eine einzelne gesperrte oder verschwundene Datei darf den Lauf nicht
-                    // abbrechen – sonst bliebe die Sortierung auf halber Strecke stehen.
+                    // abbrechen, sonst bliebe die Sortierung auf halber Strecke stehen.
                     // Das Foto wird nicht als erledigt gemerkt und beim nächsten Lauf
                     // erneut vorgeschlagen.
                     ApplyLog.MoveFailed(_logger, proposal.Photo.FileName, ex);
@@ -91,20 +91,20 @@ public sealed class ProposalApplyService : IProposalApplier
                     continue;
                 }
 
-                // Im Probelauf wird nichts verschoben – dann darf auch nichts als
+                // Im Probelauf wird nichts verschoben. Dann darf auch nichts als
                 // erledigt gemerkt oder protokolliert werden.
                 if (!dryRun)
                 {
                     await _memory.MarkSortedAsync(proposal, cancellationToken).ConfigureAwait(false);
 
-                    // Lag das Foto schon am Ziel, hat sich nichts bewegt – es gäbe nichts
+                    // Lag das Foto schon am Ziel, hat sich nichts bewegt: Es gäbe nichts
                     // zurückzuholen, und ein Rückgängig würde die Datei sonst an einen Ort
                     // „zurück" schieben, an dem sie nie war.
                     if (!string.Equals(proposal.Photo.FullPath, targetPath, StringComparison.OrdinalIgnoreCase))
                     {
                         // Größe und Änderungszeit werden unmittelbar nach der Operation
                         // gelesen. Sie sind später der einzige Beleg dafür, dass eine
-                        // Kopie noch die ist, die dieser Lauf angelegt hat – und damit
+                        // Kopie noch die ist, die dieser Lauf angelegt hat, und damit
                         // gefahrlos wieder entfernt werden darf.
                         (long? length, DateTime? lastWriteUtc) = ReadTargetStamp(targetPath);
 
@@ -126,7 +126,7 @@ public sealed class ProposalApplyService : IProposalApplier
         {
             // Auch ein abgebrochener Lauf muss protokolliert werden: Was bis zum Abbruch
             // verschoben wurde, liegt bereits im Zielordner und ist im Gedächtnis als
-            // einsortiert vermerkt. Ohne Protokoll gäbe es dafür keinen Weg zurück –
+            // einsortiert vermerkt. Ohne Protokoll gäbe es dafür keinen Weg zurück,
             // ausgerechnet nach einem Abbruch, wo die Nutzerin ihn am ehesten sucht.
             // Der Abbruch-Token wird hier bewusst nicht durchgereicht: Er ist bereits
             // ausgelöst und würde das Protokollieren sofort wieder abwürgen.
@@ -148,7 +148,7 @@ public sealed class ProposalApplyService : IProposalApplier
     // Alle Vorschläge eines Laufs stammen aus demselben Quellordner und derselben
     // Kategorie; der erste Vorschlag liefert daher beides für den Lauf. Die Annahme wird
     // geprüft, nicht nur vorausgesetzt: Träfe sie einmal nicht zu, stünden im Protokoll
-    // Ordner und Kategorie eines beliebigen Vorschlags – und das Rückgängigmachen
+    // Ordner und Kategorie eines beliebigen Vorschlags, und das Rückgängigmachen
     // arbeitete mit falschen Angaben.
     private Task RecordRunAsync(
         IReadOnlyList<SortProposal> proposals,

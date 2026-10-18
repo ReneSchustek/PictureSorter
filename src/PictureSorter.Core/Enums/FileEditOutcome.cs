@@ -6,7 +6,7 @@ namespace PictureSorter.Core.Enums;
 /// <remarks>
 /// Jeder Wert steht für einen Satz, den die Oberfläche der Nutzerin sagen kann. Ein
 /// „Fehlgeschlagen" ohne Grund wäre wertlos: Bei einem vergebenen Namen wählt man einen
-/// anderen, bei einer geöffneten Datei schließt man das Programm, das sie hält — zwei
+/// anderen, bei einer geöffneten Datei schließt man das Programm, das sie hält: zwei
 /// ganz verschiedene Wege.
 /// </remarks>
 public enum FileEditOutcome
@@ -23,7 +23,7 @@ public enum FileEditOutcome
     /// <summary>Der Name enthält Zeichen, die Windows nicht zulässt, oder ist leer.</summary>
     NameInvalid = 3,
 
-    /// <summary>Die Datei ist gesperrt — meist, weil ein Programm sie geöffnet hat.</summary>
+    /// <summary>Die Datei ist gesperrt, meist, weil ein Programm sie geöffnet hat.</summary>
     Locked = 4,
 
     /// <summary>Das Recht fehlt.</summary>

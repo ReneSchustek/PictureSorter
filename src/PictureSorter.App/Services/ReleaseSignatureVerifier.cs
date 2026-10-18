@@ -8,7 +8,7 @@ namespace PictureSorter.App.Services;
 /// Prüft die Echtheit eines Update-Pakets über eine losgelöste ECDSA-Signatur
 /// (P-256 über SHA-256) gegen den hier einkompilierten öffentlichen Schlüssel.
 ///
-/// Das ist der Vertrauensanker der Update-Kette – und ein bewusst anderer als eine
+/// Das ist der Vertrauensanker der Update-Kette und ein bewusst anderer als eine
 /// Authenticode-Signatur: Diese sagt nur „irgendein Zertifikat hat unterschrieben",
 /// und ein Zertifikat kann sich jeder besorgen. Hier ist genau <em>ein</em>
 /// Unterzeichner zugelassen. Selbst wer den Release-Kanal übernimmt, kann kein Update
@@ -32,7 +32,7 @@ internal static class ReleaseSignatureVerifier
     /// Mehrere sind zugelassen, damit ein Schlüsselwechsel überhaupt möglich ist: Eine
     /// ausgelieferte Anwendung kennt nur die Schlüssel, die zum Zeitpunkt ihrer
     /// Auslieferung hier standen. Wird einfach ausgetauscht, nimmt jede bereits
-    /// installierte Fassung kein Update mehr an – und kann sich damit auch nicht mehr
+    /// installierte Fassung kein Update mehr an und kann sich damit auch nicht mehr
     /// auf die Fassung mit dem neuen Schlüssel bringen. Der Wechsel läuft deshalb in
     /// drei Schritten: den Nachfolger hier aufnehmen und ausliefern, danach mit ihm
     /// signieren, und erst wenn die Installationen nachgezogen sind, den alten Schlüssel
@@ -117,7 +117,7 @@ internal static class ReleaseSignatureVerifier
         catch (Exception ex) when (ex is CryptographicException or FormatException)
         {
             // Beschädigte Signatur oder fremdes Schlüsselformat: dasselbe Ergebnis wie
-            // eine falsche Signatur – das Paket wird nicht angefasst.
+            // eine falsche Signatur (das Paket wird nicht angefasst).
             return false;
         }
     }

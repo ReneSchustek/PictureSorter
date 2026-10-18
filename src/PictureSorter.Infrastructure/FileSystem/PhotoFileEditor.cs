@@ -9,7 +9,7 @@ namespace PictureSorter.Infrastructure.FileSystem;
 /// Benennt einzelne Bilddateien um und verschiebt sie.
 /// </summary>
 /// <remarks>
-/// Jedes vorhersehbare Hindernis wird zu einem Ergebnis, nicht zu einer Ausnahme —
+/// Jedes vorhersehbare Hindernis wird zu einem Ergebnis, nicht zu einer Ausnahme,
 /// siehe <see cref="IPhotoFileEditor"/>. Was nicht vorhersehbar ist (ein Laufwerk fällt
 /// mitten im Vorgang aus), fliegt weiter nach oben; dort gehört es hin.
 /// </remarks>
@@ -130,7 +130,7 @@ public sealed class PhotoFileEditor : IPhotoFileEditor
 
         string trimmed = newName.Trim();
 
-        // Ein Pfad im Namensfeld wäre ein stilles Verschieben — womöglich aus dem Ordner
+        // Ein Pfad im Namensfeld wäre ein stilles Verschieben, womöglich aus dem Ordner
         // heraus. Umbenennen heißt umbenennen.
         if (trimmed.IndexOfAny([Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar, Path.VolumeSeparatorChar]) >= 0)
         {

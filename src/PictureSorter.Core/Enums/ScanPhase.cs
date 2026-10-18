@@ -6,7 +6,7 @@ namespace PictureSorter.Core.Enums;
 /// Datei einmal für die Metadaten, das Auswerten schickt sie danach durch die KI.
 ///
 /// Ohne die Unterscheidung stünde in der Statusleiste zweimal derselbe Text, und der
-/// Balken liefe zweimal von vorn nach hinten – ohne erkennbaren Grund.
+/// Balken liefe zweimal von vorn nach hinten, ohne erkennbaren Grund.
 /// </summary>
 public enum ScanPhase
 {

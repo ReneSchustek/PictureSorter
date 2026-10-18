@@ -8,7 +8,7 @@ using PictureSorter.Core.ValueObjects;
 namespace PictureSorter.App.Tests.ViewModels;
 
 /// <summary>
-/// Tests der Namensreparatur-Ansicht. Sie ändert Dateinamen — geprüft wird deshalb
+/// Tests der Namensreparatur-Ansicht. Sie ändert Dateinamen. Geprüft wird deshalb
 /// vor allem, dass nichts ohne Bestätigung geschieht und dass das Angebot zum
 /// Zurücknehmen erscheint, sobald es etwas zurückzunehmen gibt.
 /// </summary>
@@ -161,7 +161,7 @@ public sealed class NameRepairViewModelTests
     public async Task Scan_WhenTheFolderIsMissingNamesTheOneThatIsMeant()
     {
         // Wer unlesbare Namen sucht, hat einen Bestand, in dem auch der Ordnername
-        // unsichtbare Zeichen tragen kann — der Fall ist hier besonders wahrscheinlich.
+        // unsichtbare Zeichen tragen kann; der Fall ist hier besonders wahrscheinlich.
         string meant = "E:\\Fotos\\iCloud\u00a0Fotos";
         StatusBarViewModel status = new(new ReswLocalizer());
         using NameRepairViewModel sut = CreateSut(
@@ -237,7 +237,7 @@ public sealed class NameRepairViewModelTests
     [Fact]
     public void CanCancel_OnlyWhileAnythingIsRunning()
     {
-        // Abbrechen ist nur sinnvoll, solange etwas läuft — und dann muss es gehen.
+        // Abbrechen ist nur sinnvoll, solange etwas läuft, und dann muss es gehen.
         // Ein Stopp-Knopf, der nichts auslöst, ist schlimmer als keiner.
         // (Der Zustand ist ein interner Typ und taugt deshalb nicht als Parameter
         // einer Theorie.)
@@ -271,7 +271,7 @@ public sealed class NameRepairViewModelTests
     public async Task PickFolder_TakesOverTheChosenFolder()
     {
         // Der Knopf neben dem Eingabefeld ist für die meisten der einzige Weg zum
-        // Ordner — getippt wird ein Pfad selten.
+        // Ordner. Getippt wird ein Pfad selten.
         using NameRepairViewModel sut = CreateSut(new FakeFileNameRepairService([]));
 
         await sut.PickFolderCommand.ExecuteAsync(parameter: null);
@@ -282,7 +282,7 @@ public sealed class NameRepairViewModelTests
     [Fact]
     public async Task PickFolder_WhenTheDialogIsDismissed_KeepsTheOldFolder()
     {
-        // Wer die Auswahl abbricht, will den bisherigen Ordner behalten — nicht ein
+        // Wer die Auswahl abbricht, will den bisherigen Ordner behalten, nicht ein
         // leeres Feld vorfinden.
         using NameRepairViewModel sut = CreateSut(
             new FakeFileNameRepairService([]),
@@ -342,7 +342,7 @@ public sealed class NameRepairViewModelTests
     public async Task Scan_ReportsProgressWhileItRuns()
     {
         // Zwei Meldungen, zwei Fälle: eine ohne bekannte Gesamtzahl (der Balken läuft
-        // unbestimmt), eine mit — erst dann kann er einen Anteil zeigen.
+        // unbestimmt), eine mit. Erst dann kann er einen Anteil zeigen.
         FakeFileNameRepairService repair = new(
             [Proposal("kaputt.jpg", "2021-07-14_19-42-03.jpg")],
             [new PhotoScanProgress(0, 0), new PhotoScanProgress(3, 12)]);

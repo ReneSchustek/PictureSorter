@@ -4,7 +4,7 @@ namespace PictureSorter.Core.ValueObjects;
 
 /// <summary>
 /// Ein abgeschlossener Sortierlauf: welche Dateien wann von wo nach wo verschoben
-/// wurden. Erst dieses Protokoll macht den Lauf umkehrbar – ein Verschieben ist
+/// wurden. Erst dieses Protokoll macht den Lauf umkehrbar. Ein Verschieben ist
 /// sonst endgültig, und die Zielpfade sind nach dem Lauf nirgends mehr bekannt.
 /// </summary>
 public sealed record SortRun
@@ -23,7 +23,7 @@ public sealed record SortRun
 
     /// <summary>
     /// Ob der Lauf verschoben oder kopiert hat. Voreinstellung ist
-    /// <see cref="FileOperationMode.Move"/> – so tragen auch die Läufe, die vor
+    /// <see cref="FileOperationMode.Move"/>. So tragen auch die Läufe, die vor
     /// dieser Wahlmöglichkeit protokolliert wurden, den zutreffenden Wert.
     /// </summary>
     public FileOperationMode Operation { get; init; } = FileOperationMode.Move;

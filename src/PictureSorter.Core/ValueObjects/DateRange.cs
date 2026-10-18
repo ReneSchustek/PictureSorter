@@ -6,7 +6,7 @@ namespace PictureSorter.Core.ValueObjects;
 ///
 /// Bewusst auf Tage genau und nicht auf die Sekunde: Wer einen Urlaub sucht, denkt in
 /// Tagen. Mit einem Zeitpunkt als Obergrenze fielen ausgerechnet die Fotos des letzten
-/// Urlaubstages heraus, weil sie nach 00:00 Uhr aufgenommen wurden — ein Fehler, den
+/// Urlaubstages heraus, weil sie nach 00:00 Uhr aufgenommen wurden, ein Fehler, den
 /// niemand beim Eintippen erwartet.
 /// </summary>
 /// <param name="From">Erster eingeschlossener Tag, oder <see langword="null"/>.</param>
@@ -37,7 +37,7 @@ public readonly record struct DateRange(DateOnly? From, DateOnly? To)
     public bool Contains(DateTimeOffset moment)
     {
         // Die Wandzeit der Aufnahme, nicht in die Zeitzone des Rechners umgerechnet.
-        // Genau dieses Datum zeigt die Anwendung überall an — am Foto, im Ordnernamen
+        // Genau dieses Datum zeigt die Anwendung überall an: am Foto, im Ordnernamen
         // eines Ereignisses, in der Duplikat-Liste. Würde hier umgerechnet, fiele ein
         // Bild vom späten Abend aus dem Zeitraum, obwohl daneben der Tag steht, den die
         // Nutzerin eingetippt hat.

@@ -3,7 +3,7 @@
     einer Zeile Beiwerk und Platz für eine Aktion.
 
     Der eine Punkt, an dem die gemeinsame Gestaltungslinie nachgibt: Anderswo trägt der
-    Kachelkopf ein Kürzel auf der Primärfläche — hier ein Bild, denn genau darum geht es
+    Kachelkopf ein Kürzel auf der Primärfläche, hier ein Bild, denn genau darum geht es
     in dieser Anwendung. Form und Verhalten bleiben: kleine Radien, kein Schlagschatten,
     beim Überfahren wechselt der Rand die Farbe statt sich anzuheben.
 
@@ -71,7 +71,7 @@
 
                 <!-- Die Lupe: In der Kachel ist ein Bild so klein, dass man erkennt, was
                      darauf ist, aber nicht, ob es etwas taugt. Sie zeigt es groß, ohne die
-                     Seite zu verlassen — die Detailansicht bleibt dem Klick auf das Bild.
+                     Seite zu verlassen. Die Detailansicht bleibt dem Klick auf das Bild.
 
                      Sie liegt über dem Bildknopf statt in ihm: Ein Knopf im Knopf fängt
                      den Klick des äußeren ab, und dann führte die Lupe in die

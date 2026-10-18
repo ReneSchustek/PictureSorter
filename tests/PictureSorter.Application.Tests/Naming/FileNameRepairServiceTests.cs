@@ -9,7 +9,7 @@ using PictureSorter.Core.ValueObjects;
 namespace PictureSorter.Application.Tests.Naming;
 
 /// <summary>
-/// Tests der Namensreparatur. Sie ändert Dateinamen — das Einzige, was die Nutzerin
+/// Tests der Namensreparatur. Sie ändert Dateinamen, das Einzige, was die Nutzerin
 /// im Explorer von einem Foto sieht. Geprüft wird deshalb beides: dass nur angefasst
 /// wird, was wirklich unlesbar ist, und dass jeder Schritt im Protokoll steht.
 /// </summary>
@@ -64,7 +64,7 @@ public sealed class FileNameRepairServiceTests
     public async Task ProposeAsync_CountsOnlyWhereTheNumberIsActuallyUsed()
     {
         // Zwischen zwei Dateien ohne Datum liegt eine mit. Zählte die Nummer auch für
-        // sie mit, hieße die letzte „002" und es fehlte ein „001" davor — das sieht
+        // sie mit, hieße die letzte „002" und es fehlte ein „001" davor. Das sieht
         // aus, als sei etwas verlorengegangen.
         FileNameRepairService sut = CreateSut(
             out _,
@@ -86,7 +86,7 @@ public sealed class FileNameRepairServiceTests
     [Fact]
     public async Task ProposeAsync_DoesNotSuggestANameThatIsAlreadyTaken()
     {
-        // Der vorgeschlagene Name darf keine vorhandene Datei treffen — sonst
+        // Der vorgeschlagene Name darf keine vorhandene Datei treffen, sonst
         // scheiterte die Umbenennung, oder schlimmer: Sie überschriebe ein Foto.
         FileNameRepairService sut = CreateSut(
             out _,
@@ -162,7 +162,7 @@ public sealed class FileNameRepairServiceTests
     public async Task ApplyAsync_WhenNothingSucceededWritesNoRun()
     {
         // Ein leerer Eintrag verdeckte im Angebot den letzten Lauf, der wirklich etwas
-        // geändert hat — und „Rückgängig" täte dann nichts.
+        // geändert hat, und „Rückgängig" täte dann nichts.
         FileNameRepairService sut = CreateSut(out FakePhotoFileEditor editor, out FakeRenameJournal journal, []);
         editor.FailFor(Path.Combine(Folder, "a.jpg"), FileEditOutcome.NameTaken);
 

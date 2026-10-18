@@ -15,7 +15,7 @@ namespace PictureSorter.Infrastructure.Caching;
 public sealed class JsonlEmbeddingCache : IEmbeddingCache, IDisposable
 {
     // Zusätzlicher Puffer an „toten" Zeilen, die wir tolerieren, bevor kompaktiert
-    // wird – verhindert ständiges Neuschreiben bei kleinen Caches.
+    // wird. Das verhindert ständiges Neuschreiben bei kleinen Caches.
     private const int CompactionSlack = 100;
 
     private readonly string _path;
@@ -73,7 +73,7 @@ public sealed class JsonlEmbeddingCache : IEmbeddingCache, IDisposable
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            // Der Cache ist nur eine Optimierung – Schreibfehler werden geloggt,
+            // Der Cache ist nur eine Optimierung: Schreibfehler werden geloggt,
             // dürfen die Analyse aber nicht abbrechen.
             EmbeddingCacheLog.WriteFailed(_logger, ex);
         }

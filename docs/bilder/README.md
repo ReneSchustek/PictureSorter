@@ -6,7 +6,7 @@ tags: anleitung, dotnet, oberfläche
 
 Sieben Ansichten der Anwendung, je einmal im hellen und im dunklen Erscheinungsbild.
 Aufgenommen an einem Demo-Bestand: vierzehn Fotos von der Nordseeküste mit
-Aufnahmedatum, darunter zwei Paare, die sich gleichen — und daneben ein zweiter,
+Aufnahmedatum, darunter zwei Paare, die sich gleichen, und daneben ein zweiter,
 kleiner Bestand mit vier unlesbaren Dateinamen, wie ihn ein iCloud-Export mitbringt.
 Die Fotos stammen aus einer eigenen, veröffentlichten Serie; `tools/demobilder.ps1`
 holt sie und bereitet sie auf.
@@ -19,11 +19,11 @@ holt sie und bereitet sie auf.
 | `04-duplikate.png` | Fundgruppen mit Bildkacheln, Suche und Filter |
 | `05-detailansicht.png` | Detailansicht eines Bildes samt Angaben, Doppelgängern und Bearbeiten |
 | `06-gedaechtnis.png` | Was sich die Anwendung gemerkt hat, mit Ordner- und Kategorie-Filter |
-| `07-namen-richten.png` | Unlesbare Dateinamen mit ihren Vorschlägen — aus dem Aufnahmedatum oder aus Ordner und Nummer |
+| `07-namen-richten.png` | Unlesbare Dateinamen mit ihren Vorschlägen (aus dem Aufnahmedatum oder aus Ordner und Nummer) |
 
 Die dunkle Reihe trägt dieselben Namen mit dem Zusatz `-dunkel`.
 
-Die Pfade in den Bildern sind neutral gehalten (`F:\Fotos`) — auf einem Bildschirmfoto
+Die Pfade in den Bildern sind neutral gehalten (`F:\Fotos`), denn auf einem Bildschirmfoto
 für eine Webseite hat kein Benutzername etwas verloren.
 
 ## Neu aufnehmen
@@ -37,12 +37,12 @@ neu:
 
 Das Werkzeug baut die Anwendung, erzeugt beide Demo-Bestände über `tools/demobilder.ps1`,
 geht jede Ansicht an und legt die vierzehn Bilder hier ab. Es dauert einige Minuten, weil
-für die Sortier-Ansicht wirklich eine Analyse läuft — jedes Foto wird der Bilderkennung
+für die Sortier-Ansicht wirklich eine Analyse läuft. Jedes Foto wird der Bilderkennung
 vorgelegt. Ollama muss dafür laufen.
 
 Der Rechner bleibt währenddessen benutzbar: Aufgenommen wird über `PrintWindow` mit dem
 Kennwert `PW_RENDERFULLCONTENT`, und der zeichnet das Fenster auch aus dem Hintergrund.
-Der naheliegende Weg über `CopyFromScreen` kann das nicht — er liefert bei WinUI eine
+Der naheliegende Weg über `CopyFromScreen` kann das nicht: Er liefert bei WinUI eine
 weiße Fläche, solange das Fenster nicht vorn liegt, und fotografiert sonst mit, was
 gerade darüber steht.
 

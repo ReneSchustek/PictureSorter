@@ -10,7 +10,7 @@ namespace PictureSorter.Application.Services;
 public interface IShellLauncher
 {
     /// <summary>
-    /// Zeigt eine Datei im Datei-Explorer — den Ordner geöffnet, die Datei ausgewählt.
+    /// Zeigt eine Datei im Datei-Explorer: den Ordner geöffnet, die Datei ausgewählt.
     /// </summary>
     /// <param name="filePath">Absoluter Pfad der Datei.</param>
     /// <returns><see langword="true"/>, wenn der Explorer gestartet werden konnte.</returns>

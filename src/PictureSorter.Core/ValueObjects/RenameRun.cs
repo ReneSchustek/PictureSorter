@@ -2,7 +2,7 @@ namespace PictureSorter.Core.ValueObjects;
 
 /// <summary>
 /// Ein abgeschlossener Umbenennungs-Lauf: welche Datei wann von welchem Namen auf
-/// welchen kam. Erst dieses Protokoll macht den Lauf umkehrbar — der alte Name ist
+/// welchen kam. Erst dieses Protokoll macht den Lauf umkehrbar, denn der alte Name ist
 /// nach dem Umbenennen nirgends mehr zu finden, und gerade er war ja das, was
 /// verloren zu gehen drohte.
 ///

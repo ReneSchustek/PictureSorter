@@ -12,7 +12,7 @@ internal sealed class FakePerceptualHasher(Func<string, ImageFingerprint> factor
 
 /// <summary>
 /// Sammelt Fortschrittsmeldungen synchron ein. <see cref="Progress{T}"/> stellt sie
-/// ohne Synchronisationskontext über den Threadpool zu – der Test würde dann mal
+/// ohne Synchronisationskontext über den Threadpool zu. Der Test würde dann mal
 /// alle, mal nur einen Teil der Meldungen sehen.
 /// </summary>
 internal sealed class RecordingProgress<T> : IProgress<T>

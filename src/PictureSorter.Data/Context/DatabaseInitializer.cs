@@ -6,7 +6,7 @@ namespace PictureSorter.Data.Context;
 
 /// <summary>
 /// Bringt die Datenbank beim Start auf den aktuellen Schemastand. Schlägt das fehl
-/// (z. B. gesperrte oder beschädigte Datei), bleibt die Anwendung bedienbar – das
+/// (z. B. gesperrte oder beschädigte Datei), bleibt die Anwendung bedienbar, denn das
 /// Gedächtnis ist eine Komfortfunktion, kein Muss (Graceful Degradation).
 /// </summary>
 public sealed class DatabaseInitializer
@@ -36,7 +36,7 @@ public sealed class DatabaseInitializer
     }
 
     /// <summary>
-    /// Wendet ausstehende Migrationen an – nach einer Sicherung des bisherigen Standes.
+    /// Wendet ausstehende Migrationen an (nach einer Sicherung des bisherigen Standes).
     /// </summary>
     /// <param name="cancellationToken">Token zum Abbrechen des Vorgangs.</param>
     /// <returns>
@@ -73,7 +73,7 @@ public sealed class DatabaseInitializer
         }
     }
 
-    // Gesichert wird nur, wenn wirklich etwas am Schema geändert wird – ein normaler
+    // Gesichert wird nur, wenn wirklich etwas am Schema geändert wird. Ein normaler
     // Start soll keine Datei anfassen. Lässt sich nicht sichern, unterbleibt die
     // Migration: Lieber eine Sitzung ohne Gedächtnis als ein Gedächtnis, das eine
     // abgebrochene Migration unwiederbringlich zerlegt hat.
@@ -94,7 +94,7 @@ public sealed class DatabaseInitializer
 
         // Die Verbindung schließen, bevor die Sicherung ihre eigene öffnet: Solange
         // zwei Verbindungen auf derselben Datei liegen, scheitert der Wechsel in den
-        // WAL-Modus, den der Pragma-Interceptor beim nächsten Öffnen vornimmt – mit
+        // WAL-Modus, den der Pragma-Interceptor beim nächsten Öffnen vornimmt, mit
         // der irreführenden Meldung „attempt to write a readonly database".
         await context.Database.CloseConnectionAsync().ConfigureAwait(false);
 

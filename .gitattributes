@@ -1,6 +1,6 @@
 * text=auto eol=crlf
 
-# Binary — nicht normalisieren
+# Binary, nicht normalisieren
 *.png binary
 *.jpg binary
 *.jpeg binary

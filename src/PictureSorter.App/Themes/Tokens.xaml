@@ -3,7 +3,7 @@
     Abstände, Radien, Typografie, Kanten.
 
     Sie stehen hier und nicht in AppColors.xaml, weil dort ausschließlich Farben
-    liegen — und nur Farben kippen zwischen hell und dunkel. Ansichten binden
+    liegen, und nur Farben kippen zwischen hell und dunkel. Ansichten binden
     diese Werte über StaticResource; zur Laufzeit ändern sie sich nie.
 
     Maßgeblich ist die gemeinsame Gestaltungslinie aller Programme. Wer einen
@@ -35,8 +35,8 @@
     <Thickness x:Key="TileGap">4</Thickness>
 
     <!-- ── Radien ────────────────────────────────────────────────────────────
-         Klein halten: 4 bis 6. Nicht die weichen Radien der Dashboard-Mode —
-         die Marke ist Industrie, nicht Spielzeug. -->
+         Klein halten: 4 bis 6. Nicht die weichen Radien der Dashboard-Mode,
+         denn die Marke ist Industrie, nicht Spielzeug. -->
     <CornerRadius x:Key="AppControlCornerRadius">4</CornerRadius>
     <CornerRadius x:Key="AppCardCornerRadius">6</CornerRadius>
     <CornerRadius x:Key="AppBadgeCornerRadius">6</CornerRadius>
@@ -55,7 +55,7 @@
     <x:Double x:Key="FontSizeHeader">28</x:Double>
 
     <!-- Abschnittsüberschriften: klein, in Großbuchstaben, gesperrt und
-         gedämpft. Das ist das auffälligste Merkmal der Linie — es ersetzt
+         gedämpft. Das ist das auffälligste Merkmal der Linie; es ersetzt
          große Zwischenüberschriften. -->
     <x:Int32 x:Key="SectionHeadingLetterSpacing">80</x:Int32>
 

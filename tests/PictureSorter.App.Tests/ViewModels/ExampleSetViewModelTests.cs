@@ -63,7 +63,7 @@ public sealed class ExampleSetViewModelTests
     [Fact]
     public void Add_WithNothingNew_ReportsNoChange()
     {
-        // Ohne diese Bedingung meldete auch ein wirkungsloser Aufruf eine Änderung –
+        // Ohne diese Bedingung meldete auch ein wirkungsloser Aufruf eine Änderung,
         // und der Assistent prüfte seine Vorbedingungen ohne Anlass neu.
         int changes = 0;
         ExampleSetViewModel sut = CreateSut(capacity: 2, onChanged: () => changes++);

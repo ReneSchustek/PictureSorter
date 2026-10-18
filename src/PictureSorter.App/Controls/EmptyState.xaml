@@ -1,7 +1,7 @@
 <!--
     Leerzustand der Gestaltungslinie.
 
-    Er unterscheidet „nichts vorhanden" von „nichts gefunden" — das sind zwei
+    Er unterscheidet „nichts vorhanden" von „nichts gefunden". Das sind zwei
     verschiedene Lagen und brauchen zwei verschiedene Sätze. Im zweiten Fall gehört ein
     Weg zurück dazu, sonst steht die Nutzerin vor einer leeren Fläche und sucht den
     Fehler in ihren Daten statt in ihrem Suchtext.

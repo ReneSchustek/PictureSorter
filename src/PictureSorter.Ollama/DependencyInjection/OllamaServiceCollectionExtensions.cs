@@ -46,7 +46,7 @@ public static class OllamaServiceCollectionExtensions
         .ConfigurePrimaryHttpMessageHandler(static () => new SocketsHttpHandler
         {
             // Ollama läuft auf demselben Rechner. Ohne diese Vorgabe übernimmt .NET die
-            // Proxy-Einstellungen von Windows – setzt eine Sicherheits- oder VPN-Software
+            // Proxy-Einstellungen von Windows. Setzt eine Sicherheits- oder VPN-Software
             // dort einen Proxy ohne Ausnahme für lokale Adressen, liefe die Anfrage an den
             // eigenen Rechner über diesen Proxy und liefe ins Leere. Ein laufendes Ollama
             // gälte dann als nicht vorhanden, ohne dass die Nutzerin den Zusammenhang je

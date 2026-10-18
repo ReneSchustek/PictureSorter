@@ -8,7 +8,7 @@ namespace PictureSorter.App.Services;
 /// <summary>
 /// Startet die geführte Einrichtung der lokalen KI (Ollama + Modelle). Das
 /// eigentliche Installieren übernimmt ein mitgeliefertes PowerShell-Skript, das
-/// in einem sichtbaren Fenster läuft – so sieht der Nutzer den Download-Fortschritt
+/// in einem sichtbaren Fenster läuft. So sieht der Nutzer den Download-Fortschritt
 /// und kann eventuelle Windows-Sicherheitsabfragen (UAC) bestätigen.
 /// </summary>
 internal sealed class OllamaSetupService

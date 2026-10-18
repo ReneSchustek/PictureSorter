@@ -135,7 +135,7 @@ internal sealed partial class SortPage : Page
                 .ConfigureAwait(true);
 
             // Wurde das Bild aus der Detailansicht heraus umbenannt, verschoben oder
-            // gelöscht, gilt der Vorschlag dazu nicht mehr — er zeigte auf einen Pfad,
+            // gelöscht, gilt der Vorschlag dazu nicht mehr: Er zeigte auf einen Pfad,
             // den es nicht mehr gibt.
             if (ergebnis.NeedsRefresh)
             {
@@ -144,7 +144,7 @@ internal sealed partial class SortPage : Page
         }
         catch (InvalidOperationException)
         {
-            // Ein Dialog war bereits offen – für den Nutzer kein Fehler.
+            // Ein Dialog war bereits offen, für den Nutzer kein Fehler.
         }
         finally
         {
@@ -163,7 +163,7 @@ internal sealed partial class SortPage : Page
     }
 
     // Klick auf ein Beispielbild öffnet seine Angaben. In der Kachel erkennt man, was auf
-    // dem Bild ist, aber nicht, ob es als Beispiel taugt — und genau darüber wird hier
+    // dem Bild ist, aber nicht, ob es als Beispiel taugt, und genau darüber wird hier
     // entschieden. Für den schnellen Blick gibt es daneben die Lupe der Kachel.
     private async void OnExampleOpened(object? sender, EventArgs e)
     {
@@ -183,7 +183,7 @@ internal sealed partial class SortPage : Page
 
             // Umbenannt, verschoben oder gelöscht: Das Beispiel zeigt auf einen Pfad, den
             // es nicht mehr gibt, und würde beim Anlernen als Fehler zurückkommen. Welche
-            // der beiden Seiten es war, muss nicht unterschieden werden — das Entfernen
+            // der beiden Seiten es war, muss nicht unterschieden werden. Das Entfernen
             // greift nur dort, wo es tatsächlich steht.
             if (ergebnis.NeedsRefresh)
             {
@@ -193,7 +193,7 @@ internal sealed partial class SortPage : Page
         }
         catch (InvalidOperationException)
         {
-            // Ein Dialog war bereits offen – für den Nutzer kein Fehler.
+            // Ein Dialog war bereits offen, für den Nutzer kein Fehler.
         }
         finally
         {
@@ -234,7 +234,7 @@ internal sealed partial class SortPage : Page
             return;
         }
 
-        // Der Vorgang muss angemeldet werden, bevor der erste await läuft – sonst gilt
+        // Der Vorgang muss angemeldet werden, bevor der erste await läuft, sonst gilt
         // das Ziehen als beendet und die Daten sind nicht mehr abrufbar.
         DragOperationDeferral deferral = e.GetDeferral();
         try

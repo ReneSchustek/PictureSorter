@@ -9,7 +9,7 @@ namespace PictureSorter.App.Tests.ViewModels;
 
 /// <summary>
 /// Tests der Einstellungsseite. Das Protokoll ist die einzige Stelle, an der die
-/// Nutzerin nachsehen kann, warum etwas nicht funktioniert hat – Filter und Suche
+/// Nutzerin nachsehen kann, warum etwas nicht funktioniert hat. Filter und Suche
 /// entscheiden darüber, ob sie den einen Fehlereintrag zwischen hunderten
 /// Routinemeldungen überhaupt findet.
 /// </summary>
@@ -164,7 +164,7 @@ public sealed class SettingsViewModelTests : IDisposable
     [Fact]
     public async Task InstallUpdateAsync_WhenTheHelperStarts_EndsTheApplication()
     {
-        // Solange die Anwendung läuft, sind ihre Dateien gesperrt – ohne das Beenden
+        // Solange die Anwendung läuft, sind ihre Dateien gesperrt. Ohne das Beenden
         // käme das Update nie an.
         FakeApplicationShutdown shutdown = new();
         SettingsViewModel viewModel = CreateViewModel(

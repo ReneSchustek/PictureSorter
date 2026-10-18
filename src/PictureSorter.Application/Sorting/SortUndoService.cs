@@ -6,13 +6,13 @@ using PictureSorter.Core.ValueObjects;
 namespace PictureSorter.Application.Sorting;
 
 /// <summary>
-/// Nimmt den letzten Sortierlauf zurück. Ein Sortierlauf verschiebt Fotos – für die
+/// Nimmt den letzten Sortierlauf zurück. Ein Sortierlauf verschiebt Fotos. Für die
 /// Zielnutzerin ist das der einzige Schritt der Anwendung, der ihre Dateien wirklich
 /// bewegt, und er soll umkehrbar sein.
 ///
 /// Zurückgeholt wird nur, was sich zweifelsfrei zuordnen lässt: Die Datei muss noch
 /// dort liegen, wo der Lauf sie hingelegt hat, und ihr Ursprungsort muss frei sein.
-/// Überschrieben wird nie – sonst wäre ausgerechnet das Rückgängig die Stelle, an der
+/// Überschrieben wird nie, sonst wäre ausgerechnet das Rückgängig die Stelle, an der
 /// Daten verloren gehen. Was nicht zurückkann, wird gezählt und gemeldet.
 /// </summary>
 public sealed class SortUndoService : ISortUndoService
@@ -70,7 +70,7 @@ public sealed class SortUndoService : ISortUndoService
             try
             {
                 // Nach einem Kopierlauf liegt das Original noch im Quellordner.
-                // „Zurückholen" hieße dort, es ein zweites Mal hinzulegen – rückgängig
+                // „Zurückholen" hieße dort, es ein zweites Mal hinzulegen. Rückgängig
                 // ist hier das Entfernen der Kopie, und das nur, wenn sie noch
                 // unverändert ist.
                 moved = run.Operation is FileOperationMode.Copy
@@ -96,7 +96,7 @@ public sealed class SortUndoService : ISortUndoService
             }
 
             // Das Foto liegt wieder allein im Quellordner. Bliebe es als „einsortiert"
-            // gemerkt, würde es nie wieder vorgeschlagen – die Anwendung hätte ein
+            // gemerkt, würde es nie wieder vorgeschlagen. Die Anwendung hätte ein
             // Gedächtnis an eine Sortierung, die es nicht mehr gibt.
             await _memory
                 .ForgetAsync(run.SourceFolder, item.FileSignature, run.CategoryName, cancellationToken)

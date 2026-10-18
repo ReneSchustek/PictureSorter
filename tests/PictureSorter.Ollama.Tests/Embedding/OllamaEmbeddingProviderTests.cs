@@ -10,7 +10,7 @@ namespace PictureSorter.Ollama.Tests.Embedding;
 
 /// <summary>
 /// Tests des Embedding-Wegs. Der erzeugte Vektor entscheidet, welche Fotos die
-/// Vorsortierung überhaupt in dieselbe Nachbarschaft legt – geht hier etwas verloren
+/// Vorsortierung überhaupt in dieselbe Nachbarschaft legt. Geht hier etwas verloren
 /// (das aufbereitete Bild, die Metadaten, der Modellname), sortiert die Anwendung
 /// still nach etwas anderem als der Nutzer erwartet.
 /// </summary>
@@ -50,7 +50,7 @@ public sealed class OllamaEmbeddingProviderTests
     [Fact]
     public async Task CreateEmbeddingAsync_WithoutMetadata_EmbedsTheDescriptionAlone()
     {
-        // Ohne Metadaten darf kein leerer Anhang entstehen – der verschöbe jeden
+        // Ohne Metadaten darf kein leerer Anhang entstehen: Der verschöbe jeden
         // Vektor um denselben Betrag und verwässerte den Vergleich.
         FakeOllamaClient client = new(Beschreibung);
         OllamaEmbeddingProvider sut = CreateSut(client, new FakeVisionImageEncoder());
@@ -78,7 +78,7 @@ public sealed class OllamaEmbeddingProviderTests
     [Fact]
     public async Task CreateEmbeddingAsync_WhenTheImageCannotBePrepared_DoesNotEmbedAnything()
     {
-        // Fehlt der Codec, gibt es kein Bild – dann darf auch kein Vektor entstehen,
+        // Fehlt der Codec, gibt es kein Bild. Dann darf auch kein Vektor entstehen,
         // der auf einer Beschreibung ohne Bildgrundlage beruht.
         FakeOllamaClient client = new(Beschreibung);
         FakeVisionImageEncoder encoder = new(new ImageUnreadableException(@"C:\Fotos\strand.heic"));

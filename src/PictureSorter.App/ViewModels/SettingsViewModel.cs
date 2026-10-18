@@ -143,7 +143,7 @@ internal sealed partial class SettingsViewModel : ObservableObject
 
         UpdateInfo? info = await _updateService.CheckAsync(CancellationToken.None).ConfigureAwait(true);
 
-        // Kein Ergebnis heißt nicht „aktuell", sondern „nicht nachsehbar" – etwa ohne
+        // Kein Ergebnis heißt nicht „aktuell", sondern „nicht nachsehbar", etwa ohne
         // Netz. Das auseinanderzuhalten erspart der Nutzerin die falsche Gewissheit,
         // auf dem neuesten Stand zu sein.
         if (info is null)
@@ -166,7 +166,7 @@ internal sealed partial class SettingsViewModel : ObservableObject
 
     /// <summary>
     /// Lädt die neue Fassung, prüft sie und startet das Einspielen. Gelingt der Start,
-    /// beendet sich die Anwendung – solange sie läuft, sind ihre Dateien gesperrt.
+    /// beendet sich die Anwendung, denn solange sie läuft, sind ihre Dateien gesperrt.
     /// </summary>
     [RelayCommand]
     public async Task InstallUpdateAsync()

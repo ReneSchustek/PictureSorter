@@ -8,7 +8,7 @@ namespace PictureSorter.App.Services;
 /// Setzt die Anzeigetexte eines Fotos zusammen (Kurzzusammenfassung, Mouse-Over,
 /// Dateigröße). Diese Texte sind Darstellung, nicht Domäne: Sie sind übersetzt und
 /// in der Kultur des Nutzers formatiert und liegen deshalb in der App-Schicht.
-/// <see cref="Photo.DescribeMetadata"/> bleibt davon unberührt – der Text geht an
+/// <see cref="Photo.DescribeMetadata"/> bleibt davon unberührt, denn der Text geht an
 /// das KI-Modell, nicht an den Nutzer.
 /// </summary>
 internal static class PhotoTextFormatter

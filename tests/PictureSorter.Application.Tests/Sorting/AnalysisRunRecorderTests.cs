@@ -11,7 +11,7 @@ namespace PictureSorter.Application.Tests.Sorting;
 /// Tests des Protokoll-Schreibers.
 ///
 /// Er hat zwei Zusagen, die sich widersprechen könnten: Der Stand muss auf der Platte
-/// liegen, bevor irgendetwas schiefgeht — und ein Fehler beim Schreiben darf einen Lauf,
+/// liegen, bevor irgendetwas schiefgeht, und ein Fehler beim Schreiben darf einen Lauf,
 /// der Tage dauert, unter keinen Umständen abbrechen.
 /// </summary>
 public sealed class AnalysisRunRecorderTests
@@ -74,7 +74,7 @@ public sealed class AnalysisRunRecorderTests
     public async Task BeginAsync_WhenTheJournalIsBroken_StaysQuietInsteadOfThrowing()
     {
         // Eine gesperrte Datenbank darf den Lauf nicht abbrechen. Er läuft dann eben ohne
-        // Protokoll — und damit ohne die Möglichkeit, ihn später fortzusetzen.
+        // Protokoll, und damit ohne die Möglichkeit, ihn später fortzusetzen.
         using AnalysisRunRecorder recorder = new(new BrokenJournal(), NullLogger.Instance);
 
         await recorder.BeginAsync(NewRun(), CancellationToken.None);

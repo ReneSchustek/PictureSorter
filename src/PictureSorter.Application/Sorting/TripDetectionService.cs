@@ -36,8 +36,8 @@ public sealed class TripDetectionService : ITripDetector
         ArgumentNullException.ThrowIfNull(photos);
 
         // Nach der Wandzeit der Aufnahme gruppiert, nicht in die Zeitzone des Rechners
-        // umgerechnet — dasselbe Datum, das die Anwendung überall anzeigt und das der
-        // Zeitraum-Filter verwendet. Sonst schlüge die Erkennung Tage vor, die im Filter
+        // umgerechnet (dasselbe Datum, das die Anwendung überall anzeigt und das der
+        // Zeitraum-Filter verwendet). Sonst schlüge die Erkennung Tage vor, die im Filter
         // andere Bilder träfen.
         List<DateOnly> tage =
         [

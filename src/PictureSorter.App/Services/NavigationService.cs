@@ -7,7 +7,7 @@ namespace PictureSorter.App.Services;
 /// Führt die Navigation auf der Navigationsleiste und dem Rahmen des Hauptfensters
 /// aus. Beides gehört zusammen: Der Rahmen zeigt die Seite, die Leiste markiert den
 /// Eintrag. Lagen beide Schritte an verschiedenen Stellen, liefen sie irgendwann
-/// auseinander – deshalb kennt nur diese Klasse die Zuordnung Bereich → Seite.
+/// auseinander. Deshalb kennt nur diese Klasse die Zuordnung Bereich → Seite.
 /// </summary>
 internal sealed class NavigationService : INavigationService
 {
@@ -61,7 +61,7 @@ internal sealed class NavigationService : INavigationService
                 continue;
             }
 
-            // Die Auswahl zu setzen löst SelectionChanged aus – dort wird die Seite
+            // Die Auswahl zu setzen löst SelectionChanged aus, und dort wird die Seite
             // gezeigt. Ist der Eintrag schon ausgewählt, feuert das Ereignis nicht;
             // dann muss der Rahmen direkt folgen.
             if (ReferenceEquals(_navigationView.SelectedItem, entry))

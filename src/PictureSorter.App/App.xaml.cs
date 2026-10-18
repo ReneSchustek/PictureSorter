@@ -50,7 +50,7 @@ public partial class App : Microsoft.UI.Xaml.Application
     /// <remarks>
     /// An einer Stelle gehalten, weil es an mehreren Fenstern gebraucht wird und der
     /// Pfad zur Laufzeit aufgelöst wird: Fehlt die Datei neben der Programmdatei, bleibt
-    /// das Symbol stumm generisch — genau das ist in einer Auslieferung schon einmal
+    /// das Symbol stumm generisch. Genau das ist in einer Auslieferung schon einmal
     /// passiert.
     /// </remarks>
     internal const string WindowIconPath = "Assets/AppIcon.ico";
@@ -88,7 +88,7 @@ public partial class App : Microsoft.UI.Xaml.Application
     protected override void OnLaunched(LaunchActivatedEventArgs args) => _ = StartAsync();
 
     // Der Helfer-Modus: Diese Instanz ist die frisch entpackte, bereits geprüfte neue
-    // Fassung. Sie ersetzt die alte Installation und startet sie neu – ein eigenes
+    // Fassung. Sie ersetzt die alte Installation und startet sie neu. Ein eigenes
     // Updater-Programm gibt es nicht, die neue Fassung ist ihr eigener Installateur.
     // Es wird KEIN Fenster geöffnet.
     private async Task RunUpdateHelperAsync(UpdateApplyArgs apply)
@@ -116,7 +116,7 @@ public partial class App : Microsoft.UI.Xaml.Application
 
         // Der Vermerk überlebt den Neustart: Die frisch gestartete Anwendung liest ihn
         // und sagt der Nutzerin, ob die Aktualisierung gelungen ist. Ohne ihn sähe ein
-        // Fehlschlag genauso aus wie ein Erfolg – das Programm startet so oder so neu.
+        // Fehlschlag genauso aus wie ein Erfolg, denn das Programm startet so oder so neu.
         UpdateInstaller.WriteOutcome(dataDirectory, applied);
         AppLog.UpdateApplied(_logger!, applied.Success);
         if (!applied.Success)
@@ -124,7 +124,7 @@ public partial class App : Microsoft.UI.Xaml.Application
             AppLog.UpdateApplyFailed(_logger!, applied.FailedFile ?? "?", applied.Reason ?? "?");
         }
 
-        // Die getauschte EXE trägt das neue Symbol – die Shell weiß davon aber nichts und
+        // Die getauschte EXE trägt das neue Symbol, die Shell weiß davon aber nichts und
         // zeichnet auf dem Desktop und in der Taskleiste weiter das alte. Ein Setup meldet
         // das selbst; die Aktualisierung aus dem Programm heraus muss es hier nachholen.
         else if (!ShellIconRefresher.TryRefreshIcons())
@@ -132,7 +132,7 @@ public partial class App : Microsoft.UI.Xaml.Application
             AppLog.ShellRefreshFailed(_logger!);
         }
 
-        // Die Anwendung wieder aus dem Programmordner starten – nicht aus dem
+        // Die Anwendung wieder aus dem Programmordner starten, nicht aus dem
         // Staging-Ordner, aus dem dieser Helfer läuft.
         try
         {
@@ -198,8 +198,8 @@ public partial class App : Microsoft.UI.Xaml.Application
 
             // Beide Prüfungen gehen ins Netz und haben nichts miteinander zu tun.
             // Nacheinander ausgeführt schob die KI-Prüfung den Update-Hinweis um ihre
-            // gesamte Wartezeit nach hinten – bei einer KI, die die Verbindung annimmt
-            // und nicht antwortet, um Minuten – und nahm ihn ganz mit, sobald sie mit
+            // gesamte Wartezeit nach hinten (bei einer KI, die die Verbindung annimmt
+            // und nicht antwortet, um Minuten) und nahm ihn ganz mit, sobald sie mit
             // einer Ausnahme endete. Getrennt gestartet kann keine die andere aufhalten.
             await Task.WhenAll(
                 RunStartupCheckAsync(CheckModelsAtStartupAsync),
@@ -213,14 +213,14 @@ public partial class App : Microsoft.UI.Xaml.Application
     }
 
     // Meldet, wie die letzte Aktualisierung ausgegangen ist. Der Helfer, der die Dateien
-    // ersetzt, hat keine Oberfläche und beendet sich sofort – ohne diese Meldung sähe
+    // ersetzt, hat keine Oberfläche und beendet sich sofort. Ohne diese Meldung sähe
     // ein Fehlschlag für die Nutzerin genauso aus wie ein Erfolg: Das Programm startet
     // in beiden Fällen einfach neu, nur eben mit der alten Fassung.
     private void ReportUpdateOutcome()
     {
         // Erst aufräumen, dann melden: Der Arbeitsordner der Aktualisierung bleibt
-        // zwangsläufig liegen – der Helfer läuft aus ihm heraus und kann ihn nicht
-        // selbst löschen. Je Lauf sind das rund 325 MB.
+        // zwangsläufig liegen (der Helfer läuft aus ihm heraus und kann ihn nicht
+        // selbst löschen). Je Lauf sind das rund 325 MB.
         int removed = UpdateInstaller.RemoveWorkingDirectories();
         if (removed > 0)
         {
@@ -246,7 +246,7 @@ public partial class App : Microsoft.UI.Xaml.Application
 
     // Hält die Start-Prüfungen voneinander fern. Ohne diesen Riegel beendete eine
     // einzige unerwartete Ausnahme den gesamten Startablauf und unterdrückte die
-    // jeweils andere Prüfung – sichtbar wurde davon nichts.
+    // jeweils andere Prüfung. Sichtbar wurde davon nichts.
     [SuppressMessage(
         "Design",
         "CA1031:Do not catch general exception types",
@@ -266,7 +266,7 @@ public partial class App : Microsoft.UI.Xaml.Application
     // Prüft beim Start auf eine neuere Version. Ist eine verfügbar, erscheint ein
     // Hinweis im Hauptfenster; bei aktiviertem Auto-Update wird der Updater direkt
     // geladen und gestartet und die App beendet, damit er die Dateien ersetzen kann.
-    // In sich fehlertolerant – ein fehlgeschlagener Check stört den Start nie.
+    // In sich fehlertolerant: Ein fehlgeschlagener Check stört den Start nie.
     private async Task CheckForUpdatesAtStartupAsync()
     {
         ThemeService themeService = Services.GetRequiredService<ThemeService>();
@@ -363,7 +363,7 @@ public partial class App : Microsoft.UI.Xaml.Application
         ServiceCollection services = new();
         _ = services.AddSingleton(configuration);
 
-        // Persistente, täglich rollierende Logdatei – damit Fehler auch nach einem
+        // Persistente, täglich rollierende Logdatei, damit Fehler auch nach einem
         // Absturz nachvollziehbar sind. Die Instanz wird vom Container erzeugt und
         // verwaltet (Disposal), als Singleton für den In-App-Log-Viewer bereitgestellt
         // und der Logging-Infrastruktur als ILoggerProvider untergeschoben.

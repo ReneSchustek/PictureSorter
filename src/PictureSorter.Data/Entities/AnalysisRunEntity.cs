@@ -38,7 +38,7 @@ internal sealed class AnalysisRunEntity
 
     /// <summary>
     /// Beginn des Laufs in UTC. Wie beim Sortierlauf bewusst <see cref="DateTime"/>:
-    /// SQLite kann <see cref="DateTimeOffset"/> nicht in ORDER BY verwenden — und genau
+    /// SQLite kann <see cref="DateTimeOffset"/> nicht in ORDER BY verwenden, und genau
     /// danach wird gesucht, um den jüngsten Lauf zu finden.
     /// </summary>
     public DateTime StartedAtUtc { get; set; }

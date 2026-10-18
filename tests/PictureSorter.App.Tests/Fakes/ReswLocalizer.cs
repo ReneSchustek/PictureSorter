@@ -5,7 +5,7 @@ using PictureSorter.App.Tests.Resources;
 namespace PictureSorter.App.Tests.Fakes;
 
 /// <summary>
-/// Löst Schlüssel gegen die echte deutsche <c>Resources.resw</c> auf – ohne
+/// Löst Schlüssel gegen die echte deutsche <c>Resources.resw</c> auf, ohne
 /// WinUI-Laufzeit, die im Testprojekt nicht zur Verfügung steht.
 ///
 /// Bewusst kein stiller Ersatztext: Ein unbekannter Schlüssel lässt den Test

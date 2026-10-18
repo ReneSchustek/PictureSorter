@@ -2,7 +2,7 @@ namespace PictureSorter.Core.ValueObjects;
 
 /// <summary>
 /// Ein Vorschlag, wie eine Datei mit unlesbarem Namen künftig heißen soll. Er wird
-/// erst angezeigt und dann angewendet — nie umgekehrt: Ein Name ist das Einzige, was
+/// erst angezeigt und dann angewendet, nie umgekehrt: Ein Name ist das Einzige, was
 /// die Nutzerin von einem Foto im Explorer sieht, und ihn ungefragt zu ändern nähme
 /// ihr die Orientierung.
 /// </summary>

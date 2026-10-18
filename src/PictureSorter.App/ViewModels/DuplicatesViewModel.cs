@@ -95,7 +95,7 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
         IncludeSubfolders = true;
 
         // Die Filterleiste steht von Anfang an da, nicht erst nach dem ersten Fund: Eine
-        // Leiste, die nachträglich erscheint, verschiebt alles darunter — und wer die
+        // Leiste, die nachträglich erscheint, verschiebt alles darunter, und wer die
         // Seite zum ersten Mal sieht, hält sie für nicht vorhanden.
         BuildFilters();
     }
@@ -104,7 +104,7 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
     /// Die gefundenen Duplikat-Gruppen.
     /// </summary>
     // Der ganze Fund. Getrennt von der Anzeige, damit ein Filter nur bestimmt, was man
-    // sieht — und nicht klammheimlich den Bestand verkleinert.
+    // sieht, und nicht klammheimlich den Bestand verkleinert.
     private readonly List<DuplicateGroupViewModel> _allGroups = [];
 
     public ObservableCollection<DuplicateGroupViewModel> Groups { get; } = [];
@@ -113,7 +113,7 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
     public ObservableCollection<FilterChoice> Filters { get; } = [];
 
     /// <summary>
-    /// Der Suchtext. Er greift über Dateiname und Ordner — wer ein bestimmtes Bild sucht,
+    /// Der Suchtext. Er greift über Dateiname und Ordner, denn wer ein bestimmtes Bild sucht,
     /// weiß meist das eine oder das andere.
     /// </summary>
     public string SearchText
@@ -148,7 +148,7 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
     /// </summary>
     public bool CanDelete => State is DuplicateState.Review && MarkedCount > 0;
 
-    // Die Schlüssel der Filter — unabhängig von der Sprache ihrer Chips.
+    // Die Schlüssel der Filter, unabhängig von der Sprache ihrer Chips.
     private const string AllFilter = "all";
     private const string ExactFilter = "exact";
     private const string SimilarFilter = "similar";
@@ -167,11 +167,11 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
 
     // Baut die Anzeige aus dem Fund neu auf.
     //
-    // Der Zählstand der Vormerkungen richtet sich danach — und das ist Absicht: Gelöscht
+    // Der Zählstand der Vormerkungen richtet sich danach, und das ist Absicht: Gelöscht
     // wird nur, was man sieht. Bei einer Aktion, die Dateien in den Papierkorb legt, wäre
     // alles andere eine böse Überraschung. (In der Sortier-Vorschau ist es umgekehrt: Dort
     // würde ein Ausblenden dazu führen, dass Vorschläge als abgewählt gelten und dauerhaft
-    // verschwinden — dort zählt deshalb der ganze Bestand.)
+    // verschwinden; dort zählt deshalb der ganze Bestand.)
     private void ApplyFilter()
     {
         Groups.Clear();
@@ -204,7 +204,7 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
     }
 
     /// <summary>
-    /// Nimmt ein Bild aus seiner Fundgruppe — weil es umbenannt, verschoben oder
+    /// Nimmt ein Bild aus seiner Fundgruppe, weil es umbenannt, verschoben oder
     /// gelöscht wurde und der Fund für es nicht mehr gilt.
     /// </summary>
     /// <param name="photo">Das Bild.</param>
@@ -423,7 +423,7 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
             canceled ? StatusSeverity.Warning : StatusSeverity.Success);
     }
 
-    // Zwei Balken tragen den tatsächlichen Anteil – einer je Abschnitt, weil Laden und
+    // Zwei Balken tragen den tatsächlichen Anteil (einer je Abschnitt), weil Laden und
     // Prüfen gleichzeitig laufen. Ein Zählstand nur als Text, daneben ein unbestimmt
     // laufender Balken, zeigte nichts an.
     private ScanProgressPair _scanProgress;

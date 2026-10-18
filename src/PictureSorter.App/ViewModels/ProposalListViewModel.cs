@@ -19,7 +19,7 @@ namespace PictureSorter.App.ViewModels;
 /// </summary>
 internal sealed partial class ProposalListViewModel : ObservableObject
 {
-    // Die Schlüssel der Filter — unabhängig von der Sprache, in der ihre Chips stehen.
+    // Die Schlüssel der Filter, unabhängig von der Sprache, in der ihre Chips stehen.
     private const string AllFilter = "all";
     private const string SelectedFilter = "selected";
     private const string RejectedFilter = "rejected";
@@ -51,20 +51,20 @@ internal sealed partial class ProposalListViewModel : ObservableObject
     }
 
     // Der ganze Bestand. Getrennt von der Anzeige, weil ein Filter nur bestimmt, was man
-    // sieht — nicht, was sortiert wird. Ohne diese Trennung verschwänden ausgeblendete
+    // sieht, nicht, was sortiert wird. Ohne diese Trennung verschwänden ausgeblendete
     // Vorschläge beim Sortieren, und schlimmer: Sie gälten als abgewählt und würden
     // dauerhaft als „nicht gewünscht" gemerkt.
     private readonly List<ProposalViewModel> _all = [];
 
     /// <summary>
-    /// Die angezeigten Vorschläge — der Bestand, so weit Suche und Filter ihn durchlassen.
+    /// Die angezeigten Vorschläge: der Bestand, so weit Suche und Filter ihn durchlassen.
     /// </summary>
     public ObservableCollection<ProposalViewModel> Items { get; } = [];
 
     /// <summary>Die Filter der Vorschau: alle, nur ausgewählte, nur abgewählte.</summary>
     public ObservableCollection<FilterChoice> Filters { get; } = [];
 
-    /// <summary>Anzahl aller Vorschläge — nicht nur der angezeigten.</summary>
+    /// <summary>Anzahl aller Vorschläge (nicht nur der angezeigten).</summary>
     public int Count => _all.Count;
 
     /// <summary>Anzahl der angezeigten Vorschläge.</summary>
@@ -75,7 +75,7 @@ internal sealed partial class ProposalListViewModel : ObservableObject
 
     /// <summary>
     /// Zusammenfassung der Vorschau. Wird gerade gefiltert, steht die Zahl der
-    /// Angezeigten dabei — sonst entstünde der Eindruck, es seien Vorschläge
+    /// Angezeigten dabei, sonst entstünde der Eindruck, es seien Vorschläge
     /// verlorengegangen.
     /// </summary>
     public string SelectionSummary => _all.Count == 0
@@ -102,11 +102,11 @@ internal sealed partial class ProposalListViewModel : ObservableObject
     /// </summary>
     public bool ShowsNoMatch => _all.Count > 0 && Items.Count == 0;
 
-    /// <summary>Die ausgewählten Vorschläge in fachlicher Form — aus dem ganzen Bestand.</summary>
+    /// <summary>Die ausgewählten Vorschläge in fachlicher Form, aus dem ganzen Bestand.</summary>
     public IReadOnlyList<SortProposal> Selected =>
         [.. _all.Where(proposal => proposal.IsSelected).Select(proposal => proposal.Proposal)];
 
-    /// <summary>Die abgewählten Vorschläge in fachlicher Form — aus dem ganzen Bestand.</summary>
+    /// <summary>Die abgewählten Vorschläge in fachlicher Form, aus dem ganzen Bestand.</summary>
     public IReadOnlyList<SortProposal> Rejected =>
         [.. _all.Where(proposal => !proposal.IsSelected).Select(proposal => proposal.Proposal)];
 
@@ -134,7 +134,7 @@ internal sealed partial class ProposalListViewModel : ObservableObject
     /// hielten die Ereignis-Verweise jede Vorschau des Programmlaufs im Speicher.
     /// </summary>
     /// <summary>
-    /// Nimmt einen Vorschlag aus der Liste — weil das Bild dazu umbenannt, verschoben
+    /// Nimmt einen Vorschlag aus der Liste, weil das Bild dazu umbenannt, verschoben
     /// oder gelöscht wurde und der Vorschlag auf einen Pfad zeigte, den es nicht mehr
     /// gibt.
     /// </summary>
@@ -187,7 +187,7 @@ internal sealed partial class ProposalListViewModel : ObservableObject
     }
 
     // Baut die Anzeige aus dem Bestand neu auf. Die Auswahl der Einträge bleibt dabei
-    // unberührt — sie hängt am Vorschlag, nicht an seiner Sichtbarkeit.
+    // unberührt. Sie hängt am Vorschlag, nicht an seiner Sichtbarkeit.
     private void ApplyFilter()
     {
         Items.Clear();
@@ -248,7 +248,7 @@ internal sealed partial class ProposalListViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Meldet, dass sich der Ablaufzustand außerhalb geändert hat — davon hängt ab,
+    /// Meldet, dass sich der Ablaufzustand außerhalb geändert hat. Davon hängt ab,
     /// ob der Umschaltknopf bedienbar ist.
     /// </summary>
     public void NotifyStateChanged()

@@ -12,7 +12,7 @@ namespace PictureSorter.App.Tests.ViewModels;
 
 /// <summary>
 /// Tests der Ausnahmefälle der Duplikat-Ansicht. Beim Löschen gilt: Ein Bild, das
-/// nicht weggeht, darf weder den Lauf beenden noch aus der Liste verschwinden — sonst
+/// nicht weggeht, darf weder den Lauf beenden noch aus der Liste verschwinden, sonst
 /// hielte die Nutzerin es für gelöscht.
 /// </summary>
 public sealed class DuplicatesViewModelFailureTests

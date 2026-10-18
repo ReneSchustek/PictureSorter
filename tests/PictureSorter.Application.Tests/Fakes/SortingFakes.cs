@@ -56,7 +56,7 @@ internal sealed class FakePhotoSource(IReadOnlyList<Photo> photos) : IPhotoSourc
 }
 
 /// <summary>
-/// Liefert weniger Fotos, als der Ordner Dateien enthält — so, wie die echte Quelle es
+/// Liefert weniger Fotos, als der Ordner Dateien enthält, so, wie die echte Quelle es
 /// tut, wenn eine Datei vom Virenscanner weggeräumt wurde oder ihr Codec fehlt.
 ///
 /// Genau dieser Fall lässt den Zählstand der Bewertung die Gesamtzahl nie erreichen. Er
@@ -87,7 +87,7 @@ internal sealed class PartialPhotoSource(IReadOnlyList<Photo> photos, int total)
             cancellationToken.ThrowIfCancellationRequested();
             await Task.Yield();
 
-            // Gezählt werden die bearbeiteten Dateien, nicht die brauchbaren — auch die
+            // Gezählt werden die bearbeiteten Dateien, nicht die brauchbaren. Auch die
             // ausgefallene zählt mit.
             progress?.Report(new PhotoScanProgress(index + 1, total));
             yield return new ScannedPhoto(photos[index], index, total);
@@ -111,7 +111,7 @@ internal sealed class CountingEmbeddingProvider(float[] vector, string model = "
     private int _callCount;
 
     // Interlocked, weil der Sortierdienst mehrere Fotos gleichzeitig bewertet: Ein
-    // gewöhnliches ++ verlöre Aufrufe, und der Test meldete zu wenige KI-Anfragen —
+    // gewöhnliches ++ verlöre Aufrufe, und der Test meldete zu wenige KI-Anfragen,
     // ausgerechnet die Zahl, um die es hier geht.
     public int CallCount => Volatile.Read(ref _callCount);
 
@@ -155,7 +155,7 @@ internal sealed class FakeFileOrganizer : IFileOrganizer
     /// <summary>Zielpfade, die beim Zurückholen als „nicht auffindbar" gelten sollen.</summary>
     public HashSet<string> Unrestorable { get; } = new(StringComparer.OrdinalIgnoreCase);
 
-    /// <summary>Entfernte Kopien – gefüllt, wenn das Rückgängig einen Kopierlauf zurücknimmt.</summary>
+    /// <summary>Entfernte Kopien (gefüllt, wenn das Rückgängig einen Kopierlauf zurücknimmt).</summary>
     public List<string> Discarded { get; } = [];
 
     /// <summary>Kopien, die als „inzwischen verändert" gelten und nicht entfernt werden dürfen.</summary>
@@ -213,7 +213,7 @@ internal sealed class FakeFileOrganizer : IFileOrganizer
 
 /// <summary>
 /// Verschiebt Dateien wie <see cref="FakeFileOrganizer"/>, wirft aber für eine
-/// bestimmte Datei eine <see cref="IOException"/> – simuliert eine gesperrte Datei.
+/// bestimmte Datei eine <see cref="IOException"/> (simuliert eine gesperrte Datei).
 /// </summary>
 internal sealed class FailingFileOrganizer(string failOn) : IFileOrganizer
 {
@@ -264,7 +264,7 @@ internal sealed class FailingFileOrganizer(string failOn) : IFileOrganizer
 
 /// <summary>
 /// Verschiebt wie der <see cref="FakeFileOrganizer"/>, fordert aber nach der
-/// angegebenen Anzahl Dateien den Abbruch an – so, wie die Nutzerin mitten im
+/// angegebenen Anzahl Dateien den Abbruch an, so, wie die Nutzerin mitten im
 /// Sortierlauf auf „Abbrechen" klickt.
 /// </summary>
 internal sealed class CancellingFileOrganizer(CancellationTokenSource cancellation, int cancelAfter)
@@ -453,8 +453,8 @@ internal sealed class FakeAnalysisJournal : IAnalysisJournal
 /// <summary>
 /// Hält das Sortier-Gedächtnis im Speicher; legt die Einträge offen.
 ///
-/// Jeder Zugriff läuft unter einem Schloss. Das echte Repository ist thread-sicher —
-/// es erzeugt je Aufruf einen eigenen Datenbank-Kontext —, und der Sortierdienst
+/// Jeder Zugriff läuft unter einem Schloss. Das echte Repository ist thread-sicher
+/// (es erzeugt je Aufruf einen eigenen Datenbank-Kontext), und der Sortierdienst
 /// bewertet mehrere Fotos gleichzeitig. Ohne das Schloss beschriebe der Fake ein
 /// Verhalten, das es nicht gibt: Die Liste geriete unter gleichzeitigem Zugriff
 /// durcheinander, und der Test schlüge dort fehl, wo der Betrieb tadellos läuft.

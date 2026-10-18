@@ -41,7 +41,7 @@ public sealed class StatusBarViewModelTests
     public void ReportPipelineProgress_ShowsBothBarsWithTheirOwnValues()
     {
         // Zwei Balken sind nur dann eine Auskunft, wenn beide ihren eigenen Stand tragen:
-        // Bei einem Ordner aus der Cloud ist genau das die Frage — bremst die Leitung
+        // Bei einem Ordner aus der Cloud ist genau das die Frage: Bremst die Leitung
         // oder die KI?
         StatusBarViewModel status = new(new ReswLocalizer());
         status.Begin("Start", () => { });

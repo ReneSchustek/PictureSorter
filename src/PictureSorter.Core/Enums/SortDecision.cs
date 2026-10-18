@@ -16,7 +16,7 @@ public enum SortDecision
     Rejected,
 
     /// <summary>
-    /// Unsicher — sollte vom Nutzer oder vom Vision-Modell geprüft werden.
+    /// Unsicher, sollte vom Nutzer oder vom Vision-Modell geprüft werden.
     /// </summary>
     Uncertain,
 }

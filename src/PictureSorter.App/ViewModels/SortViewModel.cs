@@ -102,7 +102,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     /// <summary>
     /// <see langword="true"/>, wenn der Lauf die Fotos kopieren statt verschieben soll.
     /// Bewusst pro Lauf und nicht als dauerhafte Einstellung: Von der Speicherkarte
-    /// will man kopieren, innerhalb des Archivs verschieben – das hängt am Fall.
+    /// will man kopieren, innerhalb des Archivs verschieben. Das hängt am Fall.
     /// Voreinstellung bleibt das Verschieben, damit sich das gewohnte Verhalten nicht
     /// unbemerkt ändert.
     /// </summary>
@@ -111,7 +111,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
 
     /// <summary>
     /// Erster Tag des Zeitraums, auf den die Analyse beschränkt wird; leer für „ohne
-    /// Anfang". Fotos außerhalb kommen der KI gar nicht erst vor — bei einem Ordner mit
+    /// Anfang". Fotos außerhalb kommen der KI gar nicht erst vor; bei einem Ordner mit
     /// tausend Bildern verkürzt das den Lauf um ein Vielfaches.
     /// </summary>
     [ObservableProperty]
@@ -126,7 +126,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     public partial DateTimeOffset? DateTo { get; set; }
 
     /// <summary>
-    /// <see langword="true"/>, wenn allein nach dem Aufnahmedatum sortiert wird — ohne
+    /// <see langword="true"/>, wenn allein nach dem Aufnahmedatum sortiert wird, ohne
     /// Anlernen und ohne einen einzigen KI-Aufruf.
     ///
     /// Der Weg für „alles aus diesem Urlaub in einen Ordner": Dort entscheidet der
@@ -137,8 +137,8 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     public partial bool SortByDateOnly { get; set; }
 
     /// <summary>
-    /// Erkannte Zeiträume, in denen sich die Aufnahmen ballen — im Alltag Urlaube,
-    /// Feiern, Ausflüge. Ein Klick übernimmt einen davon als Zeitraum.
+    /// Erkannte Zeiträume, in denen sich die Aufnahmen ballen (im Alltag Urlaube,
+    /// Feiern, Ausflüge). Ein Klick übernimmt einen davon als Zeitraum.
     /// </summary>
     public ObservableCollection<TripSuggestionViewModel> TripSuggestions { get; } = [];
 
@@ -238,7 +238,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         PositiveExamples = new ExampleSetViewModel(_options.MaxExamplesPerSide, localizer, OnExampleSetChanged);
         NegativeExamples = new ExampleSetViewModel(_options.MaxExamplesPerSide, localizer, OnExampleSetChanged);
 
-        // Die Vorschau kennt den Ablauf nur über den Delegaten – wie der Assistent.
+        // Die Vorschau kennt den Ablauf nur über den Delegaten, wie der Assistent.
         Proposals = new ProposalListViewModel(localizer, () => IsInteractive, OnProposalSelectionChanged);
 
         // Die Beschaffung der Beispiele erfährt Ordner und Unterordner-Wahl ebenfalls
@@ -357,7 +357,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         && !IsDateRangeReversed;
 
     // Bewusst NICHT über SelectedRange geprüft: Das verwirft einen verdrehten Zeitraum
-    // bereits und liefert „ohne Grenze" zurück. Für die Analyse ist das richtig — dort
+    // bereits und liefert „ohne Grenze" zurück. Für die Analyse ist das richtig, denn dort
     // entscheidet die Kategorie, und ohne Zeitraum werden eben alle Fotos geprüft. Hier
     // wäre die Prüfung damit wirkungslos gewesen: Wer sich beim Tippen vertut, bekäme
     // einen freigegebenen Knopf und danach wortlos „kein Foto gefunden".
@@ -420,7 +420,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     {
         // Bei Ordnerwechsel die alten Beispiele verwerfen: Sie stammen aus dem vorigen
         // Ordner und würden dort weiterwirken, wo sie niemand mehr erwartet. Der
-        // Startpunkt beginnt wieder vorn – sonst überspränge der neue Ordner ohne
+        // Startpunkt beginnt wieder vorn, sonst überspränge der neue Ordner ohne
         // Grund seine ersten Bilder.
         _gathering.ResetOffsets();
         if (!PositiveExamples.IsEmpty || !NegativeExamples.IsEmpty)
@@ -513,7 +513,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     }
 
     // Bewusst ohne automatisches Laden: Beide Seiten beginnen leer. Lüden sie zufällige
-    // Bilder des Ordners vor, passte zu einem bestimmten Thema oft kaum eines – der Platz
+    // Bilder des Ordners vor, passte zu einem bestimmten Thema oft kaum eines. Der Platz
     // wäre trotzdem belegt.
     private void OnWizardStepEntered(int step) => Wizard.NotifyStateChanged();
 
@@ -570,8 +570,8 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
 
     /// <summary>
     /// Öffnet den Auswahldialog für eigene passende Bilder. Anders als die Vorschläge
-    /// braucht die eigene Auswahl keinen Quellordner – die Bilder dürfen von überall
-    /// kommen –, wohl aber einen ruhenden Ablauf.
+    /// braucht die eigene Auswahl keinen Quellordner (die Bilder dürfen von überall
+    /// kommen), wohl aber einen ruhenden Ablauf.
     /// </summary>
     [RelayCommand(CanExecute = nameof(IsInteractive))]
     private Task PickPositivesAsync() => _gathering.PickAsync(PositiveExamples);
@@ -678,7 +678,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
 
     // Beim Sortieren nach Datum ist der Zeitraum das einzige Kriterium: Ohne ihn bleibt
     // der Aktionsknopf gesperrt, mit ihm wird er frei. Der Assistent muss das sofort
-    // mitbekommen – sonst tippt die Nutzerin ein Datum ein und der Knopf bleibt grau.
+    // mitbekommen, sonst tippt die Nutzerin ein Datum ein und der Knopf bleibt grau.
     private void NotifyDateRangeChanged()
     {
         OnPropertyChanged(nameof(HasDateRange));
@@ -700,7 +700,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     /// Durchsucht den Ordner nach Zeiträumen, in denen sich die Aufnahmen ballen, und
     /// bietet sie zur Auswahl an.
     ///
-    /// Dafür müssen die Aufnahmedaten aller Bilder gelesen werden — dieselbe Arbeit wie
+    /// Dafür müssen die Aufnahmedaten aller Bilder gelesen werden: dieselbe Arbeit wie
     /// der Ladeteil einer Analyse, nur ohne KI danach. Der Fortschrittsbalken zeigt sie an.
     /// </summary>
     [RelayCommand(CanExecute = nameof(CanSuggestTrips))]
@@ -805,7 +805,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         // Task.Run ist hier kein Zierrat: Der Aufruf läuft bis zum ersten echten
         // Wartepunkt auf dem Oberflächen-Thread, und dazu gehört das rekursive
         // Durchsuchen des Ordners. Bei einem großen oder in der Cloud liegenden
-        // Ordner steht die Anwendung so lange still — der Stopp-Knopf lässt sich
+        // Ordner steht die Anwendung so lange still. Der Stopp-Knopf lässt sich
         // zwar drücken, wird aber erst bearbeitet, wenn das Durchsuchen fertig ist.
         // Die Werte werden vorher gelesen, damit im Hintergrund keine
         // Oberflächen-Eigenschaften mehr angefasst werden.
@@ -825,7 +825,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
 
     // Der Zwilling von AnalyzeAsync ohne KI: Statt jedes Foto zu bewerten, entscheidet
     // allein das Aufnahmedatum. Bewusst ein eigener Befehl statt eines Schalters in
-    // AnalyzeAsync — die beiden Wege teilen sich zwar den Ablauf, aber keine einzige
+    // AnalyzeAsync. Die beiden Wege teilen sich zwar den Ablauf, aber keine einzige
     // Vorbedingung, und ein „if" mitten im Analyse-Pfad hätte beide unklar gemacht.
     [RelayCommand(CanExecute = nameof(CanSortByDate))]
     private async Task SortByDateAsync()
@@ -890,7 +890,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         }
         finally
         {
-            // Erst jetzt steht der Lauf im Protokoll – der Hinweis „rückgängig machen"
+            // Erst jetzt steht der Lauf im Protokoll, und der Hinweis „rückgängig machen"
             // erscheint unmittelbar nach dem Sortieren.
             await RefreshUndoStateAsync().ConfigureAwait(true);
 
@@ -972,8 +972,8 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         HasUndoableRun = true;
     }
 
-    // Der Ablauf eines fortgesetzten Laufs. Das Angebot dazu — Erkennen, Beschriften,
-    // Verwerfen — liegt in AnalysisResumeViewModel und ruft hierher zurück.
+    // Der Ablauf eines fortgesetzten Laufs. Das Angebot dazu (Erkennen, Beschriften,
+    // Verwerfen) liegt in AnalysisResumeViewModel und ruft hierher zurück.
     private async Task RunResumeAsync(AnalysisRun run)
     {
         using IDisposable? logScope = _logger.BeginScope("Fortsetzen {CorrelationId}", NewCorrelationId());
@@ -1009,7 +1009,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
 
         if (!run.ByDateOnly && category is null)
         {
-            // Die Kategorie ist weg — ohne ihre Beispiele wäre jedes Urteil geraten.
+            // Die Kategorie ist weg; ohne ihre Beispiele wäre jedes Urteil geraten.
             State = SortState.Idle;
             _status.Finish(
                 _localizer.Format("Sort_ResumeCategoryMissing", run.CategoryName),
@@ -1038,7 +1038,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>
-    /// Holt die Vorschläge einer früheren Analyse aus dem Sortier-Gedächtnis zurück —
+    /// Holt die Vorschläge einer früheren Analyse aus dem Sortier-Gedächtnis zurück,
     /// ohne einen einzigen KI-Aufruf.
     ///
     /// Der Weg für Läufe, zu denen es kein Protokoll gibt: Das Gedächtnis wird nach jedem
@@ -1085,7 +1085,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>
-    /// Wiederherstellen ist möglich, sobald Ordner und Gruppenname feststehen — angelernt
+    /// Wiederherstellen ist möglich, sobald Ordner und Gruppenname feststehen. Angelernt
     /// sein muss dafür nichts: Es wird nichts berechnet, nur nachgeschlagen.
     /// </summary>
     public bool CanRecoverFromMemory =>
@@ -1096,7 +1096,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     /// <summary>
     /// <see langword="true"/>, wenn zu Ordner und Gruppe tatsächlich Urteile bereitliegen.
     ///
-    /// Das Angebot erscheint nur dann — ein Knopf, der bei den meisten Läufen „nichts
+    /// Das Angebot erscheint nur dann, denn ein Knopf, der bei den meisten Läufen „nichts
     /// gemerkt" meldet, ist kein Angebot, sondern eine Sackgasse mit Beschriftung.
     /// </summary>
     public bool ShowsRecoverOffer => RecoverableCount > 0;
@@ -1284,7 +1284,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     ///
     /// Ein Lauf über tausende Fotos dauert Stunden bis Tage. Er darf deshalb unter keinen
     /// Umständen stumm stehenbleiben: Wurden nur der Abbruch und zwei Datei-Ausnahmen
-    /// gefangen, ließ jede andere den Ablaufzustand auf „läuft" stehen — jeder Knopf
+    /// gefangen, ließ jede andere den Ablaufzustand auf „läuft" stehen: jeder Knopf
     /// gesperrt, die Statusleiste beim letzten Zählstand hängend, der Stopp-Knopf ohne
     /// Wirkung, weil das Abbruch-Objekt bereits verworfen war. Von einem Stillstand war
     /// das nicht zu unterscheiden, und es half nur noch das Beenden des Programms.
@@ -1328,7 +1328,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
 
     // Bekannte Störungen bekommen den Text, der die Nutzerin weiterbringt; alles Übrige
     // die allgemeine Meldung des Vorgangs. Stünde bei einem gelöschten Ordner dasselbe da
-    // wie bei einem Fehler in der KI — „Analyse fehlgeschlagen" —, wüsste die Nutzerin
+    // wie bei einem Fehler in der KI („Analyse fehlgeschlagen"), wüsste die Nutzerin
     // weder, was los ist, noch, was sie tun kann.
     private string DescribeFailure(Exception exception, string fallbackKey) => exception switch
     {
@@ -1357,7 +1357,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     }
 
     // Übernimmt ein Ergebnis in die Vorschau. Gemeinsam für Analyse, Datumssuche und das
-    // Zurückholen eines protokollierten Laufs — drei Wege, ein Ergebnis.
+    // Zurückholen eines protokollierten Laufs. Drei Wege, ein Ergebnis.
     private void ShowProposals(IReadOnlyList<SortProposal> proposals, string emptyMessageKey)
     {
         Proposals.Replace(proposals);
@@ -1371,7 +1371,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
 
     // Laden und Bewerten laufen gleichzeitig; jeder Abschnitt meldet für sich. Die beiden
     // Stände werden deshalb hier gehalten und bei jeder Meldung gemeinsam an die
-    // Statusleiste gegeben – sonst setzte die eine Meldung den Balken der anderen zurück.
+    // Statusleiste gegeben, sonst setzte die eine Meldung den Balken der anderen zurück.
     private ScanProgressPair _analyzeProgress;
 
     // Nicht jede Meldung wird gezeichnet: Bei tausend Bildern kämen zweitausend an, und
@@ -1387,10 +1387,10 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         _analyzeProgress = _analyzeProgress.With(
             progress.Phase, progress.Processed, progress.Total, progress.IsFinal);
 
-        // Die Abschlussmeldung kommt immer durch — und sie wird ausdrücklich als solche
+        // Die Abschlussmeldung kommt immer durch, und sie wird ausdrücklich als solche
         // gemeldet, nicht daraus erschlossen, dass der Zählstand die Gesamtzahl erreicht.
         // Fällt beim Einlesen eine Datei aus, träfe diese Bedingung nie zu, und die
-        // Anzeige bliebe kurz vor dem Ende stehen — von einem Stillstand nicht zu
+        // Anzeige bliebe kurz vor dem Ende stehen, von einem Stillstand nicht zu
         // unterscheiden.
         if (!_analyzeThrottle.ShouldReport(progress.IsFinal))
         {
@@ -1398,7 +1398,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         }
 
         // Der Text nennt die Bewertung, sobald sie läuft: Sie bestimmt die Gesamtdauer.
-        // Nur solange noch kein Bild bewertet ist, steht dort das Laden – sonst stünde in
+        // Nur solange noch kein Bild bewertet ist, steht dort das Laden. Sonst stünde in
         // den ersten Sekunden „Bild 0 von 1100 analysiert".
         string message = _analyzeProgress.HasAnalyzed
             ? _localizer.Format("Sort_AnalyzeProgress", _analyzeProgress.Analyzed, _analyzeProgress.Total)
@@ -1408,7 +1408,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     }
 
     // Kurze Korrelations-ID je Vorgang. Als Logging-Scope geöffnet, verknüpft sie
-    // alle Logeinträge eines Laufs – auch die der nachgelagerten Ollama-Aufrufe.
+    // alle Logeinträge eines Laufs, auch die der nachgelagerten Ollama-Aufrufe.
     private static string NewCorrelationId() => Guid.NewGuid().ToString("N")[..8];
 
     private async Task<bool> ConfirmBulkAsync()

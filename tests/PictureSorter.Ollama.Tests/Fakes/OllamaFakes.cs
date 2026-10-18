@@ -33,7 +33,7 @@ internal sealed class CountingEmbeddingProvider : IEmbeddingProvider
 
 /// <summary>
 /// Liefert eine feste Modellantwort (oder wirft eine feste Ausnahme), ohne HTTP.
-/// Damit lässt sich prüfen, was die Auswertung aus einer Modellantwort macht –
+/// Damit lässt sich prüfen, was die Auswertung aus einer Modellantwort macht,
 /// unabhängig davon, wie sie über die Leitung kam.
 /// </summary>
 internal sealed class FakeOllamaClient : IOllamaClient
@@ -91,7 +91,7 @@ internal sealed class FakeOllamaClient : IOllamaClient
 }
 
 /// <summary>
-/// Nimmt die Anfrage an und antwortet nie – das Bild eines Ollama, das gerade
+/// Nimmt die Anfrage an und antwortet nie. Das Bild eines Ollama, das gerade
 /// aktualisiert wird: Der Port ist belegt, aber es kommt nichts zurück. Damit lässt
 /// sich prüfen, dass die Prüfung von sich aus aufgibt statt zu hängen.
 /// </summary>
@@ -121,7 +121,7 @@ internal sealed class HangingOllamaClient : IOllamaClient
 }
 
 /// <summary>
-/// Liefert feste JPEG-Daten, statt eine Datei zu dekodieren – die echte Aufbereitung
+/// Liefert feste JPEG-Daten, statt eine Datei zu dekodieren: Die echte Aufbereitung
 /// braucht die Windows-Bild-API und damit ein Bild auf der Platte. Mit einem Fehler
 /// bestückt bildet sie den Fall ab, dass der Codec fehlt (etwa für HEIC).
 /// </summary>

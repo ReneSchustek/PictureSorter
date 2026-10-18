@@ -1,7 +1,7 @@
 <!--
     Filter als Chips zum Umschalten, nicht als Aufklappliste: Was gewählt ist, sieht man,
     ohne zu klicken. Ein Filter, der wirkt, aber nicht zu sehen ist, erzeugt den Eindruck
-    fehlender Daten — und dann sucht man den Fehler in den Daten statt im Filter.
+    fehlender Daten, und dann sucht man den Fehler in den Daten statt im Filter.
 
     Der aktive Zustand ist nie allein über Farbe erkennbar: Der gewählte Chip trägt
     zusätzlich ein Häkchen. Wer Farben schlecht unterscheidet, sieht trotzdem, was gilt.

@@ -18,7 +18,7 @@ internal sealed partial class ProposalViewModel : ObservableObject
 
     /// <summary>
     /// Erzeugt das Anzeige-Modell zu einem Vorschlag. Vorschläge sind anfangs
-    /// ausgewählt – der Nutzer wählt ab, was er nicht möchte.
+    /// ausgewählt; der Nutzer wählt ab, was er nicht möchte.
     /// </summary>
     /// <param name="proposal">Der zugrunde liegende Vorschlag.</param>
     /// <param name="localizer">Die Textquelle.</param>

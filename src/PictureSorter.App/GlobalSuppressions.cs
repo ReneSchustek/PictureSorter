@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 // Der Auto-Initialisierer des Windows App SDK (UndockedRegFreeWinRT-AutoInitializer.cs)
 // wird vom NuGet-Paket in die Kompilierung eingeschleust, sobald die App die Runtime
 // selbst mitbringt (WindowsAppSDKSelfContained). Er deklariert seinen P/Invoke ohne
-// [DefaultDllImportSearchPaths] und verletzt damit CA5392 – in einem Projekt, das alle
+// [DefaultDllImportSearchPaths] und verletzt damit CA5392. In einem Projekt, das alle
 // Analyzer-Regeln als Fehler behandelt, bricht daran der Build.
 //
 // Die Datei stammt aus dem SDK-Paket und darf nicht geändert werden ("DO NOT MODIFY.

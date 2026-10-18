@@ -8,7 +8,7 @@ namespace PictureSorter.Core.ValueObjects;
 /// <remarks>
 /// Ein Ergebnis statt einer Ausnahme: Ein vergebener Name oder eine geöffnete Datei ist
 /// kein Programmfehler, sondern der Alltag. Die Oberfläche soll daraus einen Satz machen
-/// können, der sagt, was zu tun ist — nicht eine Meldung anzeigen, die nach Absturz
+/// können, der sagt, was zu tun ist, nicht eine Meldung anzeigen, die nach Absturz
 /// aussieht.
 /// </remarks>
 public sealed record FileEditResult

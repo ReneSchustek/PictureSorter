@@ -9,8 +9,8 @@ namespace PictureSorter.Core.Enums;
 /// </summary>
 /// <remarks>
 /// Die Werte sind ausdrücklich vergeben, weil dieser Zustand als Zahl in der Datenbank
-/// steht: Käme später ein Zustand dazwischen, deutete er alle gespeicherten Läufe um —
-/// aus „angehalten" würde „fehlgeschlagen", und niemand bekäme es mit.
+/// steht: Käme später ein Zustand dazwischen, deutete er alle gespeicherten Läufe um.
+/// Aus „angehalten" würde „fehlgeschlagen", und niemand bekäme es mit.
 /// </remarks>
 public enum AnalysisRunState
 {

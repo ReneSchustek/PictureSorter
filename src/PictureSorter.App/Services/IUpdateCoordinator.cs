@@ -34,7 +34,7 @@ internal readonly record struct UpdateProgress(UpdateStage Stage, double Percent
 /// <summary>
 /// Prüfung und Einspielen einer neuen Fassung, so wie die Oberfläche beides braucht.
 /// Als Abstraktion, damit die ViewModels ohne Netzzugriff und ohne Dateisystem prüfbar
-/// bleiben – der echte Ablauf lädt ein Paket herunter und startet einen Prozess.
+/// bleiben, denn der echte Ablauf lädt ein Paket herunter und startet einen Prozess.
 /// </summary>
 internal interface IUpdateCoordinator
 {
@@ -49,7 +49,7 @@ internal interface IUpdateCoordinator
     /// Lädt die neue Fassung, prüft ihre Signatur und startet das Einspielen.
     /// </summary>
     /// <param name="progress">
-    /// Nimmt die Zwischenstände entgegen. Das Paket ist rund hundert Megabyte groß –
+    /// Nimmt die Zwischenstände entgegen. Das Paket ist rund hundert Megabyte groß;
     /// ohne diese Meldungen steht die Anwendung minutenlang scheinbar untätig da, und
     /// der Knopf wirkt, als hätte er gar nichts bewirkt.
     /// </param>

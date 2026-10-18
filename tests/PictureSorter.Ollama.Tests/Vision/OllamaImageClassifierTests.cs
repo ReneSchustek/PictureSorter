@@ -11,7 +11,7 @@ namespace PictureSorter.Ollama.Tests.Vision;
 /// <summary>
 /// Tests der Auswertung des Vision-Urteils. Hier ist ein Fehler besonders teuer:
 /// Ein missverstandenes Urteil ist kein Absturz, sondern ein falsch einsortiertes
-/// oder stillschweigend übergangenes Foto – dem Nutzer fällt es nie auf. Sprachmodelle
+/// oder stillschweigend übergangenes Foto. Dem Nutzer fällt es nie auf. Sprachmodelle
 /// halten sich zudem nur ungefähr an das geforderte Format, weshalb die Auswertung
 /// die üblichen Abweichungen aushalten muss.
 /// </summary>
@@ -59,7 +59,7 @@ public sealed class OllamaImageClassifierTests : IDisposable
     public async Task ClassifyAsync_WithBooleanAsString_IsUnderstoodAsMatch(string answer)
     {
         // Ein häufiger Modell-Ausrutscher: der Wahrheitswert kommt als Zeichenkette.
-        // Wird das nicht verstanden, gilt das Foto als „passt nicht" – und der Nutzer
+        // Wird das nicht verstanden, gilt das Foto als „passt nicht", und der Nutzer
         // sieht nie, dass die KI in Wahrheit zugestimmt hat.
         VisionVerdict verdict = await ClassifyAsync(answer);
 
@@ -106,7 +106,7 @@ public sealed class OllamaImageClassifierTests : IDisposable
     [Fact]
     public async Task ClassifyAsync_WhenAiIsUnavailable_PropagatesTheError()
     {
-        // Ein Ausfall der KI darf nicht als „passt nicht" durchgehen – sonst merkt
+        // Ein Ausfall der KI darf nicht als „passt nicht" durchgehen, sonst merkt
         // sich die Anwendung eine Ablehnung, die nie ein Modell getroffen hat.
         OllamaImageClassifier sut = CreateSut(new FakeOllamaClient(new AiUnavailableException("aus")));
 

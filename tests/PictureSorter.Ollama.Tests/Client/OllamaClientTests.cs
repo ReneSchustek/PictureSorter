@@ -10,7 +10,7 @@ namespace PictureSorter.Ollama.Tests.Client;
 /// <summary>
 /// Tests des HTTP-Clients zur lokalen KI. Er ist die Grenze zu einem fremden,
 /// jederzeit abwesenden Dienst: Alles, was er nicht sauber übersetzt, schlägt als
-/// unverständlicher Absturz oder – schlimmer – als stilles Fehlurteil bis in die
+/// unverständlicher Absturz oder, schlimmer, als stilles Fehlurteil bis in die
 /// Sortierung durch. Geprüft wird deshalb vor allem das Verhalten im Fehlerfall.
 /// </summary>
 public sealed class OllamaClientTests : IDisposable
@@ -35,8 +35,8 @@ public sealed class OllamaClientTests : IDisposable
     [Fact]
     public async Task EmbedAsync_WithEmptyEmbedding_ReportsAiUnavailable()
     {
-        // Ein leerer Vektor wäre downstream ein Ähnlichkeitsmaß von 0 für jedes Bild –
-        // die Sortierung darf damit gar nicht erst weiterrechnen.
+        // Ein leerer Vektor wäre downstream ein Ähnlichkeitsmaß von 0 für jedes Bild.
+        // Die Sortierung darf damit gar nicht erst weiterrechnen.
         OllamaClient sut = CreateSut(StubHttpMessageHandler.Json("""{"embedding":[]}"""));
 
         _ = await Assert.ThrowsAsync<AiUnavailableException>(
@@ -59,7 +59,7 @@ public sealed class OllamaClientTests : IDisposable
     {
         // Ollama meldet Fehler auch mit Statuscode 200 und einem „error"-Feld. Ein
         // leerer Antworttext wäre für den Vision-Klassifikator nicht auswertbar und
-        // würde dort still zu „passt nicht" – ein Fehlurteil ohne jede Spur.
+        // würde dort still zu „passt nicht", ein Fehlurteil ohne jede Spur.
         OllamaClient sut = CreateSut(StubHttpMessageHandler.Json("""{"error":"model not found"}"""));
 
         _ = await Assert.ThrowsAsync<AiUnavailableException>(
@@ -90,7 +90,7 @@ public sealed class OllamaClientTests : IDisposable
     {
         // Läuft ein fremder Dienst auf Port 11434, kommt zwar eine 200er-Antwort,
         // aber kein Ollama-JSON. Der Client muss das in eine AiUnavailableException
-        // übersetzen – eine rohe JsonException bräche seinen dokumentierten Vertrag
+        // übersetzen: Eine rohe JsonException bräche seinen dokumentierten Vertrag
         // und stürzte die Anwendung ab.
         OllamaClient sut = CreateSut(StubHttpMessageHandler.Json("<html>Kein Ollama hier</html>"));
 
@@ -172,7 +172,7 @@ public sealed class OllamaClientTests : IDisposable
     public async Task GenerateAsync_LimitsTheAnswerLength()
     {
         // Die Dauer eines Bild-Modell-Aufrufs hängt fast unmittelbar an der Zahl der
-        // erzeugten Token. Für den Vergleichsvektor genügen ein bis zwei Sätze – ohne
+        // erzeugten Token. Für den Vergleichsvektor genügen ein bis zwei Sätze. Ohne
         // Obergrenze schreibt das Modell regelmäßig mehr, und jedes Beispiel beim
         // Anlernen dauert entsprechend länger.
         OllamaClient sut = CreateSut(StubHttpMessageHandler.Json("""{"response":"ein Foto am Strand"}"""));
@@ -191,7 +191,7 @@ public sealed class OllamaClientTests : IDisposable
         // Ohne feste Temperatur würfelt Ollama (Voreinstellung 0,8) zu jedem Aufruf
         // einen anderen Text. Gemessen an zwei byteweise identischen Dateien kam
         // einmal „Sonnenuntergang" heraus und einmal „Abstraktion mit graublauem
-        // Himmel" – aus verschiedenen Beschreibungen werden verschiedene
+        // Himmel". Aus verschiedenen Beschreibungen werden verschiedene
         // Vergleichsvektoren und am Ende verschiedene Zielordner. Dasselbe Foto
         // landete beim zweiten Lauf woanders, und weil das Sortier-Gedächtnis jedes
         // Urteil dauerhaft hält, blieb das gewürfelte Urteil stehen.

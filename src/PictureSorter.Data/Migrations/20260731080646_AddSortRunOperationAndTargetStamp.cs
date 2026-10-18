@@ -15,7 +15,7 @@ namespace PictureSorter.Data.Migrations
 
             // Größe und Änderungszeit der Zieldatei zum Zeitpunkt des Sortierens. Sie
             // belegen später, dass eine Kopie noch unverändert ist und gefahrlos
-            // entfernt werden darf. Bestandszeilen bleiben leer – für sie unterbleibt
+            // entfernt werden darf. Bestandszeilen bleiben leer. Für sie unterbleibt
             // das Entfernen, und das ist die sichere Richtung.
             _ = migrationBuilder.AddColumn<DateTime>(
                 name: "TargetLastWriteUtc",

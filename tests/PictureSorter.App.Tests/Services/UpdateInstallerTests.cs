@@ -4,8 +4,8 @@ using PictureSorter.App.Services;
 namespace PictureSorter.App.Tests.Services;
 
 /// <summary>
-/// Tests des Einspielens. Hier schreibt die Anwendung in ihren eigenen Programmordner –
-/// alles, was schiefgeht, trifft die Installation selbst. Geprüft wird deshalb beides:
+/// Tests des Einspielens. Hier schreibt die Anwendung in ihren eigenen Programmordner.
+/// Alles, was schiefgeht, trifft die Installation selbst. Geprüft wird deshalb beides:
 /// dass ein bösartiges Paket nicht ausbrechen kann, und dass eine misslungene
 /// Ersetzung nicht als halb aktualisierte Installation zurückbleibt.
 /// </summary>
@@ -35,7 +35,7 @@ public sealed class UpdateInstallerTests : IDisposable
     public void Extract_WithEntryEscapingTheTargetFolder_IsRejected()
     {
         // „Zip-Slip": Ein Eintrag mit ../ im Namen würde außerhalb des Zielordners
-        // landen – im Extremfall direkt im Autostart. Ein Paket darf nicht bestimmen,
+        // landen, im Extremfall direkt im Autostart. Ein Paket darf nicht bestimmen,
         // wohin es schreibt.
         string package = Path.Combine(_root, "tampered.zip");
         using (FileStream file = File.Create(package))
@@ -137,7 +137,7 @@ public sealed class UpdateInstallerTests : IDisposable
         string source = CreateDirectory("staging", ("a.txt", "neu-a"), ("b.txt", "neu-b"));
         string target = CreateDirectory("programm", ("a.txt", "alt-a"), ("b.txt", "alt-b"));
 
-        // b.txt im Ziel offen halten – das Ersetzen muss daran scheitern.
+        // b.txt im Ziel offen halten: Das Ersetzen muss daran scheitern.
         using (FileStream _ = File.Open(Path.Combine(target, "b.txt"), FileMode.Open, FileAccess.Read, FileShare.None))
         {
             Assert.False(UpdateInstaller.ApplyStagedFiles(source, target).Success);
@@ -151,7 +151,7 @@ public sealed class UpdateInstallerTests : IDisposable
     [Fact]
     public void ApplyStagedFiles_WhenReplacingFailsAfterTheBackup_RollsBackTheFailedFileToo()
     {
-        // Der Test oben sperrt die Zieldatei vollständig – dann scheitert bereits das
+        // Der Test oben sperrt die Zieldatei vollständig. Dann scheitert bereits das
         // Sichern, und die Datei bleibt unangetastet. Der gefährlichere Fall liegt einen
         // Schritt später: Das Sichern gelingt, das Ersetzen scheitert mittendrin. Dann ist
         // genau diese Datei halb geschrieben, und sie muss zurückkommen wie alle anderen.

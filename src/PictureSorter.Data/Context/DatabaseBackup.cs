@@ -5,7 +5,7 @@ namespace PictureSorter.Data.Context;
 
 /// <summary>
 /// Sichert die Datenbank, bevor eine Migration sie verändert. In der Datei stecken
-/// das Sortier-Gedächtnis und das Protokoll der Sortierläufe – also genau das, was
+/// das Sortier-Gedächtnis und das Protokoll der Sortierläufe, also genau das, was
 /// ein Rückgängigmachen möglich macht. Bricht eine Migration auf halber Strecke ab,
 /// wäre beides ohne Sicherung verloren.
 /// </summary>
@@ -33,7 +33,7 @@ public sealed class DatabaseBackup
     /// </summary>
     /// <param name="databasePath">Die Datenbankdatei.</param>
     /// <param name="schemaVersion">
-    /// Kennung des Schemastands, auf den migriert wird – sie benennt die Sicherung.
+    /// Kennung des Schemastands, auf den migriert wird. Sie benennt die Sicherung.
     /// </param>
     /// <returns>
     /// <see langword="true"/>, wenn eine verwendbare Sicherung vorliegt (neu erstellt
@@ -67,7 +67,7 @@ public sealed class DatabaseBackup
         }
         catch (Exception ex) when (ex is SqliteException or IOException or UnauthorizedAccessException)
         {
-            // Eine halb geschriebene Sicherung ist schlimmer als keine – sie sähe
+            // Eine halb geschriebene Sicherung ist schlimmer als keine, denn sie sähe
             // brauchbar aus.
             TryDelete(backupPath);
             BackupLog.Failed(_logger, ex);
@@ -93,7 +93,7 @@ public sealed class DatabaseBackup
 
     // Die Online-Backup-Schnittstelle von SQLite statt File.Copy: Sie zieht den
     // Inhalt des Write-Ahead-Logs mit. Eine bloße Dateikopie ließe alles zurück,
-    // was nach dem letzten Checkpoint geschrieben wurde – ausgerechnet die jüngsten
+    // was nach dem letzten Checkpoint geschrieben wurde, ausgerechnet die jüngsten
     // Sortierläufe.
     private static void CopyDatabase(string databasePath, string backupPath)
     {
@@ -118,7 +118,7 @@ public sealed class DatabaseBackup
             // weiter offen. Auf der Quelle verhindert das den Wechsel in den
             // WAL-Modus bei der folgenden Migration, auf der Sicherung das Aufräumen
             // einer misslungenen Kopie. Nur die beiden hier verwendeten Pools werden
-            // geleert – fremde Verbindungen der Anwendung bleiben unberührt.
+            // geleert. Fremde Verbindungen der Anwendung bleiben unberührt.
             ClearPool(sourceConnectionString);
             ClearPool(destinationConnectionString);
         }

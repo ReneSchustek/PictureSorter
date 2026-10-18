@@ -8,7 +8,7 @@ using PictureSorter.Core.ValueObjects;
 namespace PictureSorter.Infrastructure.FileSystem;
 
 /// <summary>
-/// Bringt Bilddateien sicher in ihren Zielordner – wahlweise verschiebend oder
+/// Bringt Bilddateien sicher in ihren Zielordner, wahlweise verschiebend oder
 /// kopierend. Im Dry-Run wird nichts verändert, sondern nur der kollisionsfreie
 /// Zielpfad ermittelt. Bestehende Dateien werden nie überschrieben (Safe-Write).
 /// Das Erstelldatum wird in beiden Betriebsarten übernommen.
@@ -48,8 +48,8 @@ public sealed class FileOrganizer : IFileOrganizer
         }
 
         // Liegt das Foto bereits an seinem Zielpfad, ist nichts zu tun. Ohne diese
-        // Prüfung würde File.Move die Datei auf sich selbst verschieben und – da der
-        // Zielname dann als „belegt" gilt – bei jedem Lauf eine weitere „ (n)"-Stufe
+        // Prüfung würde File.Move die Datei auf sich selbst verschieben und (da der
+        // Zielname dann als „belegt" gilt) bei jedem Lauf eine weitere „ (n)"-Stufe
         // anhängen (a.jpg → a (1).jpg → a (1) (1).jpg …). Beim Kopieren wäre es eine
         // Datei, die sich selbst überschreibt.
         if (string.Equals(sourcePath, targetPath, StringComparison.OrdinalIgnoreCase))
@@ -109,7 +109,7 @@ public sealed class FileOrganizer : IFileOrganizer
             {
                 if (!File.Exists(copy))
                 {
-                    // Schon weg – aus Sicht des Rückgängigmachens ist das der Zielzustand,
+                    // Schon weg. Aus Sicht des Rückgängigmachens ist das der Zielzustand,
                     // aber es wurde nichts entfernt.
                     OrganizerLog.CopyDiscardSkipped(_logger, fileName);
                     return false;
@@ -144,7 +144,7 @@ public sealed class FileOrganizer : IFileOrganizer
     }
 
     // Windows setzt das Erstelldatum neu, sobald die Datei tatsächlich neu geschrieben
-    // wird – beim Kopieren immer, beim Verschieben über eine Laufwerksgrenze ebenfalls
+    // wird: beim Kopieren immer, beim Verschieben über eine Laufwerksgrenze ebenfalls
     // (daraus wird intern Kopieren plus Löschen). Innerhalb eines Laufwerks ist das
     // Zurückschreiben wirkungslos, aber harmlos.
     private void PreserveCreationTime(string targetPath, DateTime createdUtc, string fileName)
@@ -156,8 +156,8 @@ public sealed class FileOrganizer : IFileOrganizer
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentOutOfRangeException)
         {
             // Das Foto liegt richtig und ist unversehrt; nur sein Erstelldatum stimmt
-            // nicht. Deswegen den ganzen Lauf scheitern zu lassen wäre unverhältnismäßig
-            // – aber stillschweigend übergehen darf man es auch nicht.
+            // nicht. Deswegen den ganzen Lauf scheitern zu lassen wäre unverhältnismäßig,
+            // aber stillschweigend übergehen darf man es auch nicht.
             OrganizerLog.CreationTimeNotPreserved(_logger, fileName, ex);
         }
     }
@@ -176,8 +176,8 @@ public sealed class FileOrganizer : IFileOrganizer
         return await Task.Run(
             () =>
             {
-                // Die Datei ist nicht mehr da, wo der Sortierlauf sie hingelegt hat –
-                // jemand hat sie inzwischen verschoben, umbenannt oder gelöscht. Ein
+                // Die Datei ist nicht mehr da, wo der Sortierlauf sie hingelegt hat.
+                // Jemand hat sie inzwischen verschoben, umbenannt oder gelöscht. Ein
                 // Rückgängig darf hier nichts erraten.
                 if (!File.Exists(current))
                 {
@@ -230,8 +230,8 @@ public sealed class FileOrganizer : IFileOrganizer
                 }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                 {
-                    // Ein zurückgebliebener leerer Ordner ist unschön, aber harmlos –
-                    // er darf das Rückgängigmachen nicht scheitern lassen.
+                    // Ein zurückgebliebener leerer Ordner ist unschön, aber harmlos.
+                    // Er darf das Rückgängigmachen nicht scheitern lassen.
                     OrganizerLog.FolderRemovalFailed(_logger, redactedFolder, ex);
                 }
             },

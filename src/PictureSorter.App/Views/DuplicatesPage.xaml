@@ -71,14 +71,14 @@
         </StackPanel>
 
         <!-- Eine ListView statt ScrollViewer+ItemsControl: Nur sie virtualisiert. Ohne
-             Virtualisierung entstünde jede gefundene Gruppe sofort – bei einem Ordner mit vielen
+             Virtualisierung entstünde jede gefundene Gruppe sofort, bei einem Ordner mit vielen
              Duplikaten hunderte Gruppen mit tausenden Vorschaubildern auf einen Schlag.
              Die Oberfläche stünde dabei minutenlang, und ab einigen hundert Gruppen bräche
              der Aufbau mit „Layout cycle detected" ab.
 
              Innen ein ItemsRepeater statt einer GridView: Eine GridView bringt einen
              eigenen ScrollViewer mit. In der unbegrenzten Höhe des äußeren ScrollViewers
-             konnte ihre Messung nicht zur Ruhe kommen – genau das war der Layout-Zyklus.
+             konnte ihre Messung nicht zur Ruhe kommen. Genau das war der Layout-Zyklus.
              Der ItemsRepeater legt die Kacheln ohne eigenen Scroller aus. -->
         <controls:EmptyState
             x:Uid="DuplicatesPage_NoMatch"

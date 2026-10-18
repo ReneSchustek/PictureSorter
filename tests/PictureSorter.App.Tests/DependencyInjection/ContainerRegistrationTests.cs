@@ -18,7 +18,7 @@ namespace PictureSorter.App.Tests.DependencyInjection;
 ///
 /// Der Fehler, um den es geht: Ein ViewModel bekommt einen neuen Konstruktor-Parameter,
 /// die Registrierung wird vergessen. Der Build bleibt grün, und die Anwendung stürzt
-/// erst beim Wechsel auf die betroffene Seite ab — also genau dort, wo es der Nutzerin
+/// erst beim Wechsel auf die betroffene Seite ab, also genau dort, wo es der Nutzerin
 /// auffällt und nicht mehr uns.
 ///
 /// Bewusst wird nur die Registrierung geprüft und nichts aufgelöst: Ein Teil der
@@ -101,7 +101,7 @@ public sealed class ContainerRegistrationTests
 
         // Das Protokollziel registriert die Anwendung unmittelbar in ConfigureServices,
         // nicht über eine Schicht-Erweiterung. Die Factory wird hier nur hinterlegt,
-        // nicht ausgeführt – es entsteht also keine Datei.
+        // nicht ausgeführt; es entsteht also keine Datei.
         _ = services.AddSingleton(static provider => new FileLoggerProvider(
             TestLogDirectory,
             provider.GetRequiredService<IClock>()));

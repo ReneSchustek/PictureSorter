@@ -94,7 +94,7 @@ public sealed class OllamaClient : IOllamaClient
 
         // Ollama meldet Fehler auch mit Statuscode 200 und einem „error"-Feld statt
         // eines „response"-Feldes. Ein leerer Text wäre für den Vision-Klassifikator
-        // nicht auswertbar und würde dort still zu „passt nicht" – ein Fehlurteil,
+        // nicht auswertbar und würde dort still zu „passt nicht", ein Fehlurteil,
         // das nirgends als Fehler auffiele.
         return response.Response
             ?? throw new AiUnavailableException("Ollama lieferte keine Antwort auf die Bildprüfung.");
@@ -207,7 +207,7 @@ public sealed class OllamaClient : IOllamaClient
         catch (Exception ex) when (ex is JsonException or NotSupportedException)
         {
             // Wie im GET-Pfad: Antwortet ein fremder Dienst auf dem Port, darf keine
-            // rohe JsonException nach außen dringen – der Vertrag der Schnittstelle
+            // rohe JsonException nach außen dringen, denn der Vertrag der Schnittstelle
             // sagt AiUnavailableException zu.
             throw new AiUnavailableException("Ollama lieferte eine unerwartete Antwort.", ex);
         }
@@ -235,8 +235,8 @@ public sealed class OllamaClient : IOllamaClient
     // „temperature" und „seed" sind kein Feinschliff, sondern der Unterschied zwischen
     // einem Urteil und einem Würfel: Ohne sie schreibt Ollama mit seiner Voreinstellung
     // (0,8) zu jedem Aufruf einen anderen Text. Zwei byteweise identische Dateien
-    // bekamen dadurch gemessen zwei völlig verschiedene Beschreibungen – einmal
-    // „Sonnenuntergang", einmal „Abstraktion mit graublauem Himmel" –, und aus
+    // bekamen dadurch gemessen zwei völlig verschiedene Beschreibungen (einmal
+    // „Sonnenuntergang", einmal „Abstraktion mit graublauem Himmel"), und aus
     // verschiedenen Beschreibungen werden verschiedene Vergleichsvektoren und am Ende
     // verschiedene Zielordner. Dasselbe Foto landete beim zweiten Lauf woanders.
     //

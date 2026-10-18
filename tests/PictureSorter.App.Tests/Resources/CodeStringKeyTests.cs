@@ -5,7 +5,7 @@ namespace PictureSorter.App.Tests.Resources;
 /// <summary>
 /// Prüft die Code-Strings gegen die Ressourcen: Jeder Schlüssel, den der Code über
 /// <c>ILocalizer</c> anfordert, muss in beiden Sprachen hinterlegt sein. Ein Tippfehler
-/// im Schlüssel fiele sonst erst zur Laufzeit auf – und dann nur dem Nutzer, dem statt
+/// im Schlüssel fiele sonst erst zur Laufzeit auf, und dann nur dem Nutzer, dem statt
 /// der Meldung der rohe Schlüssel angezeigt würde.
 /// </summary>
 public sealed partial class CodeStringKeyTests

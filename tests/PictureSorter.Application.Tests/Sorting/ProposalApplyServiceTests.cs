@@ -12,7 +12,7 @@ namespace PictureSorter.Application.Tests.Sorting;
 /// Tests des Anwendens: verschieben oder kopieren, protokollieren, abgewählte Vorschläge
 /// merken.
 ///
-/// Der einzige Teil der Anwendung, der Dateien der Nutzerin bewegt — und deshalb der
+/// Der einzige Teil der Anwendung, der Dateien der Nutzerin bewegt, und deshalb der
 /// Teil, dessen Fehlerfälle am genauesten beschrieben sein müssen: Eine gesperrte Datei
 /// darf den Lauf nicht abbrechen, und was bis zu einem Abbruch bewegt wurde, muss im
 /// Protokoll stehen, sonst gibt es keinen Weg zurück.
@@ -88,7 +88,7 @@ public sealed class ProposalApplyServiceTests
     public async Task ApplyProposalsAsync_RecordsTheOperationOfTheRun()
     {
         // Ohne die Betriebsart wüsste das Rückgängigmachen nicht, ob es die Datei
-        // zurückholen oder eine Kopie entfernen muss – und träfe im Zweifel die
+        // zurückholen oder eine Kopie entfernen muss, und träfe im Zweifel die
         // gefährliche Annahme.
         FakeSortJournal journal = new();
         ProposalApplyService service = CreateService(journal: journal);
@@ -117,15 +117,15 @@ public sealed class ProposalApplyServiceTests
 
         _ = await service.ApplyProposalsAsync([CreateProposal()], FileOperationMode.Move, dryRun: true, CancellationToken.None);
 
-        // Im Probelauf bewegt sich nichts – es gäbe nichts zurückzunehmen.
+        // Im Probelauf bewegt sich nichts: Es gäbe nichts zurückzunehmen.
         Assert.Empty(journal.Runs);
     }
 
     [Fact]
     public async Task ApplyProposalsAsync_WhenOneFileFails_RecordsOnlyTheMovedOnes()
     {
-        // Eine Datei, die gar nicht verschoben wurde, darf nicht im Protokoll landen –
-        // ein Rückgängig würde sonst versuchen, sie von einem Ort zurückzuholen, an
+        // Eine Datei, die gar nicht verschoben wurde, darf nicht im Protokoll landen:
+        // Ein Rückgängig würde sonst versuchen, sie von einem Ort zurückzuholen, an
         // dem sie nie war.
         FakeSortJournal journal = new();
         ProposalApplyService service = CreateService(organizer: new FailingFileOrganizer(failOn: "foto1.jpg"),
@@ -171,7 +171,7 @@ public sealed class ProposalApplyServiceTests
     {
         // Bricht die Nutzerin ab, sind die bis dahin verschobenen Fotos längst im
         // Zielordner und im Gedächtnis als einsortiert vermerkt. Ohne Protokoll gäbe
-        // es für sie keinen Weg zurück – ausgerechnet nach einem Abbruch, wo sie ihn
+        // es für sie keinen Weg zurück, ausgerechnet nach einem Abbruch, wo sie ihn
         // am ehesten sucht.
         using CancellationTokenSource cancellation = new();
         FakeSortJournal journal = new();
@@ -204,7 +204,7 @@ public sealed class ProposalApplyServiceTests
     [Fact]
     public async Task ApplyProposalsAsync_WithMixedFoldersOrCategories_IsRejected()
     {
-        // Der Lauf wird als ein Protokolleintrag festgehalten – mit einem Quellordner
+        // Der Lauf wird als ein Protokolleintrag festgehalten, mit einem Quellordner
         // und einer Kategorie. Käme eine gemischte Liste durch, stünde im Protokoll die
         // Angabe des ersten Vorschlags für alle, und das Zurücknehmen liefe ins Leere.
         ProposalApplyService service = CreateService();

@@ -6,13 +6,13 @@
     PictureSorter prüft die Echtheit eines heruntergeladenen Update-Pakets über eine
     losgelöste Signatur (siehe ReleaseSignatureVerifier) und akzeptiert genau einen
     Unterzeichner: den, dessen öffentlicher Schlüssel in der Anwendung einkompiliert
-    ist. Ein übernommener Release-Kanal nützt einem Angreifer damit nichts – ohne den
+    ist. Ein übernommener Release-Kanal nützt einem Angreifer damit nichts. Ohne den
     privaten Schlüssel entsteht keine gültige Signatur.
 
     Dieses Skript erzeugt das Schlüsselpaar einmalig:
 
       * Der PRIVATE Schlüssel (PKCS#8-PEM) landet unter -KeyPath und MUSS geheim
-        bleiben. Er gehört nicht ins Repository, sondern offline und – für die CI –
+        bleiben. Er gehört nicht ins Repository, sondern offline und (für die CI)
         als Secret (PICTURESORTER_SIGNING_KEY).
       * Der ÖFFENTLICHE Schlüssel (SubjectPublicKeyInfo, Base64) wird ausgegeben und
         muss in ReleaseSignatureVerifier.PublicKeySpkiBase64 eingetragen werden.
@@ -48,7 +48,7 @@ if ($directory -and -not (Test-Path -LiteralPath $directory)) {
     New-Item -ItemType Directory -Force -Path $directory | Out-Null
 }
 
-# ECDSA P-256: kurze Signaturen, vollständig in der .NET-Basisbibliothek – keine
+# ECDSA P-256: kurze Signaturen, vollständig in der .NET-Basisbibliothek, keine
 # Fremdbibliothek, kein Zertifikat, kein Ablaufdatum.
 $ecdsa = [System.Security.Cryptography.ECDsa]::Create(
     [System.Security.Cryptography.ECCurve+NamedCurves]::nistP256)

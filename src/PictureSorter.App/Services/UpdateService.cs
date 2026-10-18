@@ -14,7 +14,7 @@ namespace PictureSorter.App.Services;
 
 /// <summary>
 /// Orchestriert die Aktualisierung: prüft über den <see cref="IUpdateChecker"/> auf
-/// eine neuere Version und lädt – auf Wunsch – das Updater-Programm aus dem
+/// eine neuere Version und lädt auf Wunsch das Updater-Programm aus dem
 /// GitHub-Release herunter und startet es. Der Updater ersetzt anschließend die
 /// Programmdateien; dazu beendet sich die laufende App (siehe Aufrufer).
 /// Alle Schritte sind fehlertolerant: Schlägt etwas fehl, läuft die App normal weiter.
@@ -100,7 +100,7 @@ internal sealed class UpdateService : IUpdateCoordinator
     /// <summary>
     /// Lädt das Update-Paket samt Signatur, prüft dessen Echtheit, entpackt es und
     /// startet die neue Fassung im Helfer-Modus. Nach Erfolg muss der Aufrufer die
-    /// Anwendung beenden – erst dann sind ihre Dateien nicht mehr gesperrt.
+    /// Anwendung beenden. Erst dann sind ihre Dateien nicht mehr gesperrt.
     /// </summary>
     /// <param name="progress">Nimmt die Zwischenstände entgegen (für die Statusanzeige).</param>
     /// <param name="cancellationToken">Token zum Abbrechen des Vorgangs.</param>
@@ -118,7 +118,7 @@ internal sealed class UpdateService : IUpdateCoordinator
 
         // Erst prüfen, ob überhaupt geschrieben werden darf, dann laden. Wurde die
         // Anwendung „für alle Benutzer" nach C:\Programme installiert, scheitert das
-        // Ersetzen ohne Administratorrechte – ohne diese Prüfung erst nach hundert Megabyte
+        // Ersetzen ohne Administratorrechte, ohne diese Prüfung erst nach hundert Megabyte
         // Download und dem Beenden der Anwendung, für den Nutzer völlig lautlos.
         string installationDirectory = AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar);
         if (!UpdateInstaller.CanWriteTo(installationDirectory))
@@ -128,7 +128,7 @@ internal sealed class UpdateService : IUpdateCoordinator
         }
 
         // In einen eigenen, frisch angelegten Ordner laden. Ein fester Pfad im
-        // gemeinsamen Temp-Verzeichnis wäre für andere Prozesse beschreibbar – die
+        // gemeinsamen Temp-Verzeichnis wäre für andere Prozesse beschreibbar, und die
         // Datei könnte zwischen Prüfung und Start ausgetauscht werden.
         string workingDirectory = Path.Combine(
             Path.GetTempPath(),
@@ -157,7 +157,7 @@ internal sealed class UpdateService : IUpdateCoordinator
             }
 
             // Der Vertrauensanker: genau ein zugelassener Unterzeichner. Wer den
-            // Release-Kanal übernimmt, kommt hier nicht vorbei – ohne den privaten
+            // Release-Kanal übernimmt, kommt hier nicht vorbei: Ohne den privaten
             // Schlüssel entsteht keine gültige Signatur. Geprüft wird, bevor
             // irgendetwas entpackt oder gestartet wird.
             progress?.Report(new UpdateProgress(UpdateStage.Verifying, 100));
@@ -180,7 +180,7 @@ internal sealed class UpdateService : IUpdateCoordinator
             }
 
             // Der Vermerk ist die Brücke zum Helfer: Er startet gleich als eigener
-            // Prozess und darf seinen Aufrufparametern nicht glauben – er gleicht sie
+            // Prozess und darf seinen Aufrufparametern nicht glauben. Er gleicht sie
             // gegen diesen Vermerk ab, den nur der geprüfte Hauptprozess schreibt.
             // Vermerkt wird auch der Programmordner, sonst bestimmte der Aufruf allein,
             // wohin die geprüften Dateien geschrieben werden.
@@ -279,7 +279,7 @@ internal sealed class UpdateService : IUpdateCoordinator
 
     // Kopiert höchstens MaxUpdaterBytes, auch wenn kein Content-Length gemeldet wird,
     // und meldet dabei den Fortschritt. Ohne bekannte Gesamtgröße bleibt es beim
-    // Abschnitt ohne Prozentwert – die Oberfläche zeigt dann einen laufenden Balken.
+    // Abschnitt ohne Prozentwert; die Oberfläche zeigt dann einen laufenden Balken.
     private static async Task CopyWithLimitAsync(
         Stream source,
         Stream destination,
@@ -336,7 +336,7 @@ internal sealed class UpdateService : IUpdateCoordinator
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            // Ein zurückgebliebener Temp-Ordner ist unkritisch – aber spurlos
+            // Ein zurückgebliebener Temp-Ordner ist unkritisch, aber spurlos
             // verschwinden darf auch dieser Fehler nicht: Bleiben mehrere Ordner mit
             // je hundert Megabyte liegen, will man später wissen, woher sie kommen.
             // Der Pfad steht bereits in der Ausnahme; ihn zusätzlich unkenntlich zu

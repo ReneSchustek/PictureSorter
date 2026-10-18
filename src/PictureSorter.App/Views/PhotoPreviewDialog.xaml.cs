@@ -17,7 +17,7 @@ namespace PictureSorter.App.Views;
 
 /// <summary>
 /// Die Detailansicht eines Fotos: das Bild in voller Größe, seine Angaben, seine
-/// Zusammenhänge — und die Bearbeitung von hier aus.
+/// Zusammenhänge und die Bearbeitung von hier aus.
 /// </summary>
 /// <remarks>
 /// Bewusst als eigener Dialog und nicht als private Methode einer Seite, damit ihn jede
@@ -55,7 +55,7 @@ internal sealed partial class PhotoPreviewDialog : ContentDialog
     /// <param name="photo">Das anzuzeigende Foto.</param>
     /// <param name="duplicates">
     /// Die Pfade der Doppelgänger ohne dieses Bild. Sie kommen von der aufrufenden Seite,
-    /// weil nur dort bekannt ist, ob gerade eine Fundgruppe im Spiel ist — eine eigene
+    /// weil nur dort bekannt ist, ob gerade eine Fundgruppe im Spiel ist. Eine eigene
     /// Suche für ein einzelnes Bild wäre teuer und meist überflüssig.
     /// </param>
     /// <returns>
@@ -75,7 +75,7 @@ internal sealed partial class PhotoPreviewDialog : ContentDialog
             XamlRoot = owner.XamlRoot,
         };
 
-        // Der Dialog liegt über dem Fenster, nicht darin — das Design muss ihm eigens
+        // Der Dialog liegt über dem Fenster, nicht darin. Das Design muss ihm eigens
         // mitgegeben werden, sonst steht er hell vor der dunklen Anwendung.
         App.Services.GetRequiredService<ThemeService>().ApplyTo(dialog);
 

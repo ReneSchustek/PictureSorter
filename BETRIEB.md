@@ -4,7 +4,7 @@ Was im Betrieb zu tun ist, wenn etwas schiefgeht: wo die Daten liegen, wie man s
 sichert, wie man einen fehlgeschlagenen Sortierlauf oder ein misslungenes Update
 zurücknimmt.
 
-Zielgruppe ist, wer die Anwendung betreut – nicht die Nutzerin selbst. Für den
+Zielgruppe ist, wer die Anwendung betreut, nicht die Nutzerin selbst. Für den
 normalen Gebrauch genügt die [README](README.md).
 
 ---
@@ -46,7 +46,7 @@ Der Aufbau einer Zeile:
 └ Zeitstempel          └ Stufe └ Kategorie        └ Ereignis └ Vorgang
 ```
 
-Die Vorgangskennung („Sortieren 4f2c") verbindet alle Zeilen eines Laufs – danach
+Die Vorgangskennung („Sortieren 4f2c") verbindet alle Zeilen eines Laufs. Danach
 suchen, wenn man einen einzelnen Vorgang nachvollziehen will.
 
 Pfade sind im Protokoll gekürzt (`…\Fotos\Urlaub`), damit keine Benutzernamen in
@@ -57,13 +57,13 @@ weitergegebenen Dateien landen.
 ## 3. Daten sichern
 
 Die Datenbank ist die einzige Datei, deren Verlust weh tut: In ihr stehen das
-Sortier-Gedächtnis und das Protokoll der Sortierläufe – die Grundlage des
+Sortier-Gedächtnis und das Protokoll der Sortierläufe, die Grundlage des
 Rückgängigmachens.
 
 **Vor einer Schemaänderung sichert die Anwendung selbst.** Beim Start prüft sie, ob
 eine Migration ansteht; ist das der Fall, legt sie vorher
 `picturesorter.vor-<Migration>.bak` an. Eine bereits vorhandene Sicherung wird nie
-überschrieben – nach einem Fehlversuch bleibt so die unbeschädigte Fassung erhalten.
+überschrieben. Nach einem Fehlversuch bleibt so die unbeschädigte Fassung erhalten.
 Lässt sich nicht sichern, unterbleibt die Migration: Die Anwendung läuft dann ohne
 Gedächtnis weiter und schreibt den Grund ins Protokoll.
 
@@ -88,7 +88,7 @@ würden sonst auf einen Stand zeigen, den es nicht mehr gibt.
 **Notfall ohne Sicherung:** Die Datenbank löschen. Die Anwendung legt sie beim
 nächsten Start neu an. Verloren gehen dabei das Gedächtnis (bereits einsortierte
 Fotos werden erneut vorgeschlagen) und die Möglichkeit, ältere Läufe
-zurückzunehmen. **Fotos gehen dabei nicht verloren** – sie liegen im Dateisystem.
+zurückzunehmen. **Fotos gehen dabei nicht verloren**: Sie liegen im Dateisystem.
 
 ---
 
@@ -107,7 +107,7 @@ Was dabei gilt:
 * Auch ein **abgebrochener** Lauf ist rücknehmbar: Was bis zum Abbruch verschoben
   wurde, steht im Protokoll.
 
-Ein Lauf gilt nach dem Rückgängigmachen als erledigt – auch wenn einzelne Dateien
+Ein Lauf gilt nach dem Rückgängigmachen als erledigt, auch wenn einzelne Dateien
 nicht zurückkonnten. Ein zweiter Versuch würde an denselben Hindernissen scheitern.
 
 **Wenn das Rückgängigmachen nicht angeboten wird**, obwohl sortiert wurde: Im
@@ -129,7 +129,7 @@ wird weggeschrieben; der Rechner darf danach heruntergefahren werden.
 Analyse* mit dem Stand („bei 3.472 von 4.130 Fotos stehengeblieben, zuletzt …").
 **Fortsetzen** nimmt Ordner, Gruppe und Zeitraum aus dem Protokoll und legt der KI
 nur noch das vor, worüber kein Urteil vorliegt. Ist die Gruppe zwischenzeitlich
-gelöscht worden, sagt die Anwendung das und setzt nicht fort — ohne die
+gelöscht worden, sagt die Anwendung das und setzt nicht fort. Ohne die
 Beispielbilder wäre jedes Urteil geraten.
 
 **Zurückholen:** Bei einem abgeschlossenen Lauf heißt derselbe Knopf **Ergebnis
@@ -139,11 +139,11 @@ eingelesen.
 **Verwerfen:** Der Knopf daneben entfernt den Lauf samt seiner Ergebnisse, nach
 Rückfrage. Eine neue Analyse fängt danach wieder von vorn an.
 
-**Ein Lauf ohne Protokoll** — etwa aus einer Fassung vor 1.7.0 oder nach einem
-Absturz — lässt sich trotzdem retten: Ordner und Gruppenname eingeben, dann im
+**Ein Lauf ohne Protokoll** (etwa aus einer Fassung vor 1.7.0 oder nach einem
+Absturz) lässt sich trotzdem retten: Ordner und Gruppenname eingeben, dann im
 Analyse-Schritt **Vorschläge einer früheren Analyse zurückholen**. Die Urteile
 stammen dann aus dem Sortier-Gedächtnis. Voraussetzung: Die Fotos liegen unverändert
-an ihrem Platz — Pfad, Größe und Aufnahmezeit bilden ihre Kennung.
+an ihrem Platz, denn Pfad, Größe und Aufnahmezeit bilden ihre Kennung.
 
 **Wenn kein Lauf angeboten wird**, obwohl analysiert wurde: Im Protokoll nach
 Ereignis `5200` suchen („Das Protokoll des Analyselaufs konnte nicht geschrieben
@@ -159,18 +159,18 @@ Signatur, entpackt es und startet sich mit `--apply-update` neu, um die
 Programmdateien zu tauschen.
 
 * **Während des Tauschs** wird jede Datei vorher gesichert (`*.bak-update`).
-  Scheitert eine, rollt der Vorgang alles Bisherige zurück – eine halb ersetzte
+  Scheitert eine, rollt der Vorgang alles Bisherige zurück. Eine halb ersetzte
   Installation entsteht nicht.
 * **Bleiben `.bak-update`-Dateien im Programmordner liegen**, wurde der Tausch
   unterbrochen. Sie enthalten den vorherigen Stand: Datei ohne die Endung
   wiederherstellen, dann die Sicherung löschen.
 * **`.alt-update`-Dateien sind dagegen unbedenklich.** Eine Datei, die ein anderer
-  Prozess – in aller Regel ein Virenscanner – im Speicher abgebildet hält, lässt
+  Prozess (in aller Regel ein Virenscanner) im Speicher abgebildet hält, lässt
   Windows nicht überschreiben, auch nach beliebigem Warten nicht. Der Tausch legt
   sie deshalb unter diesem Namen beiseite und schreibt die neue an ihre Stelle.
   Löschen lässt sie sich erst, wenn die Abbildung endet; das nächste Update räumt
   sie weg. Sie von Hand zu entfernen ist gefahrlos.
-* **Der Arbeitsordner unter `%TEMP%` bleibt nach dem Tausch stehen** – der Helfer,
+* **Der Arbeitsordner unter `%TEMP%` bleibt nach dem Tausch stehen**: Der Helfer,
   der die Dateien ersetzt, läuft aus eben diesem Ordner und kann ihn nicht selbst
   entfernen. Er umfasst das entpackte Paket, also mehrere hundert Megabyte. Der
   nächste Start der Anwendung räumt alle `PictureSorter-Update-*`-Ordner weg.
@@ -178,13 +178,13 @@ Programmdateien zu tauschen.
   ausführen. Die Daten im Benutzerprofil bleiben unangetastet.
 
 Ein Paket ohne gültige Signatur wird abgelehnt (fail-closed). Das gilt auch für
-unsignierte ältere Releases – sie lassen sich nicht über die Update-Funktion
+unsignierte ältere Releases. Sie lassen sich nicht über die Update-Funktion
 einspielen, sondern nur über ihr Setup.
 
 **Schlüsselwechsel:** Der öffentliche Schlüssel ist in die Anwendung einkompiliert.
 Eine Installation kennt nur die Schlüssel, die zum Zeitpunkt ihrer Auslieferung
 einkompiliert waren. Wird der Schlüssel einfach ausgetauscht, lehnt jede vorhandene
-Installation jedes weitere Update ab – und kann sich damit auch nicht mehr auf die
+Installation jedes weitere Update ab und kann sich damit auch nicht mehr auf die
 Fassung mit dem neuen Schlüssel bringen. Der private Schlüssel liegt außerhalb des
 Repositories; in der CI als Secret `PICTURESORTER_SIGNING_KEY`.
 
@@ -203,23 +203,23 @@ dafür eine Liste von Schlüsseln (`ReleaseSignatureVerifier.AcceptedPublicKeys`
 
 Wird ein Schlüssel kompromittiert, entfällt die Schonfrist: Dann wird sofort auf den
 neuen umgestellt und der alte entfernt. Installationen, die den Nachfolger noch nicht
-kennen, müssen über das Setup neu eingerichtet werden – das ist der Preis dafür, dass
+kennen, müssen über das Setup neu eingerichtet werden. Das ist der Preis dafür, dass
 ein fremder Unterzeichner nichts einschleusen kann.
 
 ---
 
 ## 6. Wenn die lokale KI nicht läuft
 
-Ohne Ollama sortiert die Anwendung nicht – sie stürzt aber auch nicht ab, sondern
+Ohne Ollama sortiert die Anwendung nicht. Sie stürzt aber auch nicht ab, sondern
 meldet den Zustand auf der Startseite und unter *Einstellungen → Lokale KI*.
 
 | Meldung | Bedeutung | Abhilfe |
 |---|---|---|
 | „nicht eingerichtet" | Ollama antwortet nicht auf `127.0.0.1:11434` | Ollama installieren/starten, dann *Status prüfen* |
-| „Modelle fehlen" | Ollama läuft, die benannten Modelle fehlen | *Jetzt einrichten* – lädt sie nach (dauert beim ersten Mal) |
+| „Modelle fehlen" | Ollama läuft, die benannten Modelle fehlen | *Jetzt einrichten* lädt sie nach (dauert beim ersten Mal) |
 
 Fällt die KI **mitten im Lauf** aus, wird das betroffene Foto übersprungen und der
-Lauf fortgesetzt. Das Foto wird dabei bewusst nicht als „passt nicht" gemerkt – der
+Lauf fortgesetzt. Das Foto wird dabei bewusst nicht als „passt nicht" gemerkt; der
 Ausfall ist kein Urteil über das Bild, und der nächste Lauf versucht es erneut.
 
 ---

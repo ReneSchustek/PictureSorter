@@ -190,11 +190,11 @@ internal sealed class SortMemoryRepository : ISortMemory
         {
             // Nur „vorgeschlagen": Einsortiertes liegt längst im Zielordner, Abgelehntes und
             // Abgewähltes sind Entscheidungen, die zu achten sind. Dieselbe Auswahl trifft
-            // die Wiederherstellung — sonst verspräche die Zahl mehr, als zurückkommt.
+            // die Wiederherstellung, sonst verspräche die Zahl mehr, als zurückkommt.
             //
             // Der Gruppenname wird ohne Rücksicht auf Groß- und Kleinschreibung verglichen,
             // ebenfalls wie dort. Ein exakter Vergleich meldete „nichts da", sobald die
-            // Nutzerin den Namen anders schreibt als beim ersten Lauf — und das Angebot
+            // Nutzerin den Namen anders schreibt als beim ersten Lauf, und das Angebot
             // erschiene nie, obwohl die Urteile bereitliegen.
             return await context.SortMemory
                 .AsNoTracking()

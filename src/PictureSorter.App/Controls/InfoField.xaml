@@ -1,7 +1,7 @@
 ﻿<!--
     Beschriftete Angabe: kleine, gedämpfte Beschriftung über dem Wert.
 
-    Ein Steuerelement statt zweier TextBlöcke in jeder Ansicht — und damit auch die
+    Ein Steuerelement statt zweier TextBlöcke in jeder Ansicht, und damit auch die
     Gewähr, dass beide einen Style tragen. Ein Bedienelement ohne Style erbt nicht die
     Textfarbe der Anwendung, sondern Schwarz; im hellen Erscheinungsbild fällt das nie
     auf, im dunklen ist die Stelle weg.

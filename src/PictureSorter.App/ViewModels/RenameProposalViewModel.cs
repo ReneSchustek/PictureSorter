@@ -6,7 +6,7 @@ namespace PictureSorter.App.ViewModels;
 
 /// <summary>
 /// Ein Vorschlag in der Vorschau: alter Name, neuer Name und ein Häkchen. Ohne das
-/// Häkchen bliebe der Nutzerin nur alles oder nichts — und ein einzelner Name, den
+/// Häkchen bliebe der Nutzerin nur alles oder nichts, und ein einzelner Name, den
 /// sie behalten will, kostete sie den ganzen Lauf.
 /// </summary>
 internal sealed partial class RenameProposalViewModel : ObservableObject
@@ -45,7 +45,7 @@ internal sealed partial class RenameProposalViewModel : ObservableObject
     /// <summary>Der vorgeschlagene Name.</summary>
     public string SuggestedName => Proposal.SuggestedName;
 
-    /// <summary>Pfad der Datei — für die Vorschau des Bildes.</summary>
+    /// <summary>Pfad der Datei, für die Vorschau des Bildes.</summary>
     public string FilePath => Proposal.FilePath;
 
     /// <summary>Woher der Name stammt, in einem Wort.</summary>
@@ -56,7 +56,7 @@ internal sealed partial class RenameProposalViewModel : ObservableObject
 
     /// <summary>
     /// Beschriftung für die Sprachausgabe. Der alte Name besteht aus Zeichen, die
-    /// keine Sprachausgabe vorlesen kann — deshalb steht hier, was zählt: der neue.
+    /// keine Sprachausgabe vorlesen kann. Deshalb steht hier, was zählt: der neue.
     /// </summary>
     public string AutomationName => _localizer.Format("NameRepair_ItemAutomationName", SuggestedName);
 

@@ -12,7 +12,7 @@ namespace PictureSorter.Imaging;
 /// Bild-Modell.
 ///
 /// Zwei Gründe für den Umweg. Erstens das Format: Handyfotos liegen als HEIC vor, und
-/// die Bild-KI liest nur verbreitete Formate – die rohe Datei weiterzureichen hieße,
+/// die Bild-KI liest nur verbreitete Formate. Die rohe Datei weiterzureichen hieße,
 /// ein Urteil über ein Bild einzuholen, das nie angekommen ist. Zweitens die Größe: Ein
 /// Foto aus einer heutigen Handykamera bringt zweistellige Megabyte mit, die als
 /// Base64 noch einmal um ein Drittel wachsen. Das Modell skaliert intern ohnehin
@@ -59,7 +59,7 @@ public sealed class WindowsVisionImageEncoder : IVisionImageEncoder
             // Die Ausrichtung aus den EXIF-Daten wird angewandt: Ein hochkant
             // aufgenommenes Foto liegt sonst quer vor dem Modell, und ein quer
             // liegendes Motiv beurteilt sich schlechter. Die Maße danach kommen aus
-            // dem Ergebnis selbst – bei gedrehten Bildern tauschen sie.
+            // dem Ergebnis selbst, denn bei gedrehten Bildern tauschen sie.
             using SoftwareBitmap bitmap = await decoder.GetSoftwareBitmapAsync(
                 BitmapPixelFormat.Bgra8,
                 BitmapAlphaMode.Ignore,
@@ -70,7 +70,7 @@ public sealed class WindowsVisionImageEncoder : IVisionImageEncoder
             using InMemoryRandomAccessStream target = new();
 
             // Ausdrücklich als JPEG kodieren, nicht umkodieren: Ein Transcoding
-            // behielte das Quellformat bei – aus HEIC würde wieder HEIC, und genau das
+            // behielte das Quellformat bei: Aus HEIC würde wieder HEIC, und genau das
             // kann die Bild-KI nicht lesen.
             BitmapEncoder encoder = await BitmapEncoder
                 .CreateAsync(BitmapEncoder.JpegEncoderId, target)
@@ -101,7 +101,7 @@ public sealed class WindowsVisionImageEncoder : IVisionImageEncoder
     }
 
     // Verkleinert unter Beibehaltung des Seitenverhältnisses. Kleinere Bilder bleiben
-    // unangetastet – hochskalieren bringt dem Modell nichts.
+    // unangetastet. Hochskalieren bringt dem Modell nichts.
     private static (uint Width, uint Height) ScaleToMaxEdge(uint width, uint height)
     {
         uint longest = Math.Max(width, height);

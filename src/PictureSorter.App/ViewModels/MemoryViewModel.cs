@@ -47,7 +47,7 @@ internal sealed partial class MemoryViewModel : ObservableObject
     public partial string SelectedCategory { get; set; }
 
     /// <summary>
-    /// Der Suchtext. Er greift über Dateiname, Ordner und Gruppe zugleich — wer sucht,
+    /// Der Suchtext. Er greift über Dateiname, Ordner und Gruppe zugleich, denn wer sucht,
     /// weiß meist nur eines davon.
     /// </summary>
     [ObservableProperty]
@@ -110,13 +110,13 @@ internal sealed partial class MemoryViewModel : ObservableObject
 
     /// <summary>
     /// <see langword="true"/>, wenn überhaupt noch nichts gemerkt wurde. Das ist die
-    /// Lage „hier ist noch nichts" — sie sagt der Nutzerin, dass sie etwas tun muss.
+    /// Lage „hier ist noch nichts". Sie sagt der Nutzerin, dass sie etwas tun muss.
     /// </summary>
     public bool ShowsNothingYet => IsEmpty && !IsSearching;
 
     /// <summary>
     /// <see langword="true"/>, wenn es Einträge gibt, die Suche aber keinen trifft. Das
-    /// ist die andere Lage — sie sagt, dass der Suchtext daneben liegt, nicht die Daten.
+    /// ist die andere Lage: Sie sagt, dass der Suchtext daneben liegt, nicht die Daten.
     /// </summary>
     public bool ShowsNoMatch => !IsEmpty && Items.Count == 0;
 
@@ -311,8 +311,8 @@ internal sealed partial class MemoryViewModel : ObservableObject
 
     /// <summary>
     /// <see langword="true"/>, wenn gerade eine Suche wirkt. Der Leerzustand
-    /// unterscheidet daran „nichts vorhanden" von „nichts gefunden" — zwei Lagen, die
-    /// zwei verschiedene Sätze brauchen.
+    /// unterscheidet daran „nichts vorhanden" von „nichts gefunden" (zwei Lagen, die
+    /// zwei verschiedene Sätze brauchen).
     /// </summary>
     public bool IsSearching => !string.IsNullOrWhiteSpace(SearchText);
 

@@ -54,7 +54,7 @@ public sealed class CalendarSortViewModelTests
     public void UncheckingAnOption_DoesNotChangeAnything()
     {
         // Ein Optionsfeld meldet auch das Abwählen. Würde das durchschlagen, bliebe die
-        // Ansicht ohne jede gewählte Stufe zurück — ein Zustand, den es nicht gibt.
+        // Ansicht ohne jede gewählte Stufe zurück, ein Zustand, den es nicht gibt.
         using CalendarSortViewModel viewModel = CreateViewModel([]);
 
         viewModel.IsMonth = false;

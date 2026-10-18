@@ -9,7 +9,7 @@ namespace PictureSorter.App.Controls;
 /// Eine Reihe Filter-Chips, von denen genau einer gilt.
 ///
 /// Chips statt Aufklappliste: Was gewählt ist, sieht man ohne zu klicken. Genau eine
-/// Wahl, weil die Filter dieser Anwendung sich gegenseitig ausschließen — „alle",
+/// Wahl, weil die Filter dieser Anwendung sich gegenseitig ausschließen: „alle",
 /// „ausgewählte", „abgewählte" sind drei Sichten auf denselben Bestand, keine Häkchenliste.
 /// </summary>
 internal sealed partial class FilterChips : UserControl

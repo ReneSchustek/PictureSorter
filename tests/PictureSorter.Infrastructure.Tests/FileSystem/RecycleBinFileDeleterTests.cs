@@ -5,7 +5,7 @@ namespace PictureSorter.Infrastructure.Tests.FileSystem;
 
 /// <summary>
 /// Tests des Löschers. Er ist die einzige Stelle, an der die Anwendung Fotos der
-/// Nutzerin entfernt – und die Zusage lautet, dass nichts unwiederbringlich
+/// Nutzerin entfernt, und die Zusage lautet, dass nichts unwiederbringlich
 /// verschwindet: gelöscht wird in den Papierkorb, nicht endgültig. Die Tests löschen
 /// deshalb echte Dateien; ein Attrappen-Test würde genau die Eigenschaft nicht
 /// prüfen, auf die es ankommt.

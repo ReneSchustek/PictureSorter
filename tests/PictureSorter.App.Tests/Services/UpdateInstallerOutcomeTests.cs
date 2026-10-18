@@ -54,7 +54,7 @@ public sealed class UpdateInstallerOutcomeTests : IDisposable
     [Fact]
     public void Outcome_ThatIsUnreadable_IsDiscardedInsteadOfCrashing()
     {
-        // Ein beschädigter Vermerk darf den Start nicht verhindern — und er darf auch
+        // Ein beschädigter Vermerk darf den Start nicht verhindern, und er darf auch
         // nicht liegen bleiben, sonst scheitert jeder folgende Start an derselben Datei.
         string data = CreateFolder("daten");
         UpdateInstaller.WriteOutcome(data, new UpdateInstaller.ApplyResult(true, null, null));
@@ -186,7 +186,7 @@ public sealed class UpdateInstallerOutcomeTests : IDisposable
         Assert.Equal("b.txt", result.FailedFile);
         Assert.Equal("Datei ist gesperrt", result.Reason);
 
-        // Beide Dateien stehen wieder auf dem alten Stand – keine halbe Installation.
+        // Beide Dateien stehen wieder auf dem alten Stand, keine halbe Installation.
         Assert.Equal("alt-a", File.ReadAllText(Path.Combine(target, "a.txt")));
         Assert.Equal("alt-b", File.ReadAllText(Path.Combine(target, "b.txt")));
         Assert.Empty(Directory.EnumerateFiles(target, "*.bak-update", SearchOption.AllDirectories));
@@ -218,8 +218,8 @@ public sealed class UpdateInstallerOutcomeTests : IDisposable
     public void Apply_WhenTheTargetIsMemoryMapped_ReplacesItByRenamingInstead()
     {
         // Der Zustand, an dem in der ausgelieferten Fassung jede Aktualisierung
-        // scheiterte: Die Zieldatei ist im Speicher abgebildet — bei uns clrjit.dll,
-        // gehalten von einem Virenscanner. Windows verweigert das Überschreiben dann
+        // scheiterte: Die Zieldatei ist im Speicher abgebildet (bei uns clrjit.dll,
+        // gehalten von einem Virenscanner). Windows verweigert das Überschreiben dann
         // dauerhaft, kein Abwarten hilft; Umbenennen erlaubt es dagegen.
         string staging = CreateFolder("neu");
         string target = CreateFolder("programm");
@@ -228,7 +228,7 @@ public sealed class UpdateInstallerOutcomeTests : IDisposable
         File.WriteAllText(destination, "alt");
 
         // Freigabe wie ein Virenscanner sie hält: lesen, schreiben und löschen bleiben
-        // erlaubt. Nur das Überschreiben verbietet die Abbildung selbst — genau daran
+        // erlaubt. Nur das Überschreiben verbietet die Abbildung selbst. Genau daran
         // scheiterte es. Ohne FileShare.Delete prüfte der Test einen anderen Zustand
         // (eine schlicht gesperrte Datei) und ginge am Befund vorbei.
         UpdateInstaller.ApplyResult result;
@@ -246,7 +246,7 @@ public sealed class UpdateInstallerOutcomeTests : IDisposable
         Assert.Equal("neu", File.ReadAllText(destination));
 
         // Die beiseitegelegte Vorgängerdatei bleibt liegen, solange die Abbildung
-        // besteht — löschen ließe sie sich ebenso wenig wie überschreiben. Die
+        // besteht; löschen ließe sie sich ebenso wenig wie überschreiben. Die
         // nächste Aktualisierung räumt sie weg, bevor sie erneut umbenennt.
     }
 
@@ -255,7 +255,7 @@ public sealed class UpdateInstallerOutcomeTests : IDisposable
     {
         // Die Grenze des Umbenennungs-Wegs: Hält jemand die Datei ohne Lösch-Freigabe
         // offen, ist auch das Umbenennen versperrt. Dann muss die Aktualisierung sauber
-        // scheitern — mit unversehrter alter Fassung, nicht mit einer halben.
+        // scheitern, mit unversehrter alter Fassung, nicht mit einer halben.
         string staging = CreateFolder("neu");
         string target = CreateFolder("programm");
         File.WriteAllText(Path.Combine(staging, "fest.dll"), "neu");
@@ -276,8 +276,8 @@ public sealed class UpdateInstallerOutcomeTests : IDisposable
     [Fact]
     public void Apply_WhenTheNewFileCannotBeRead_PutsTheOldFileBack()
     {
-        // Nach dem Beiseitelegen scheitert das Schreiben der neuen Datei — etwa, weil
-        // ein Virenscanner sie gerade prüft. Eine fehlende Datei wäre schlimmer als
+        // Nach dem Beiseitelegen scheitert das Schreiben der neuen Datei (etwa, weil
+        // ein Virenscanner sie gerade prüft). Eine fehlende Datei wäre schlimmer als
         // eine veraltete: Ohne sie startet die Anwendung überhaupt nicht mehr.
         string staging = CreateFolder("neu");
         string target = CreateFolder("programm");
@@ -304,7 +304,7 @@ public sealed class UpdateInstallerOutcomeTests : IDisposable
     {
         // Der Helfer läuft aus seinem Arbeitsordner heraus und kann ihn deshalb nicht
         // selbst löschen. Ohne dieses Aufräumen blieben je Aktualisierung rund 325 MB
-        // im Temp-Verzeichnis liegen — auch bei einer gelungenen.
+        // im Temp-Verzeichnis liegen, auch bei einer gelungenen.
         string leftover = Path.Combine(Path.GetTempPath(), "PictureSorter-Update-" + Guid.NewGuid().ToString("N"));
         _ = Directory.CreateDirectory(Path.Combine(leftover, "neu"));
         File.WriteAllText(Path.Combine(leftover, "package.zip"), "inhalt");
@@ -319,7 +319,7 @@ public sealed class UpdateInstallerOutcomeTests : IDisposable
     public void WorkingDirectories_StillInUse_AreLeftForTheNextStart()
     {
         // Beim Start läuft der Helfer unter Umständen noch aus seinem Ordner. Ihn
-        // nicht löschen zu können ist dann kein Fehler — der nächste Start holt ihn.
+        // nicht löschen zu können ist dann kein Fehler: Der nächste Start holt ihn.
         string inUse = Path.Combine(Path.GetTempPath(), "PictureSorter-Update-" + Guid.NewGuid().ToString("N"));
         _ = Directory.CreateDirectory(inUse);
         string running = Path.Combine(inUse, "PictureSorter.exe");

@@ -5,7 +5,7 @@ namespace PictureSorter.App.Tests.Fakes;
 
 /// <summary>
 /// Ersetzt die echte Update-Kette: Diese lädt ein Paket aus dem Netz, prüft dessen
-/// Signatur und startet einen zweiten Prozess – nichts davon gehört in einen Test des
+/// Signatur und startet einen zweiten Prozess. Nichts davon gehört in einen Test des
 /// ViewModels.
 /// </summary>
 /// <param name="info">Was die Prüfung liefern soll; <see langword="null"/> steht für „nicht prüfbar".</param>

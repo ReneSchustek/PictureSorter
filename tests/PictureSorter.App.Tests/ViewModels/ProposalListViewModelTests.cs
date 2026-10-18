@@ -8,12 +8,12 @@ namespace PictureSorter.App.Tests.ViewModels;
 
 /// <summary>
 /// Tests der Vorschau: Suche, Filter und vor allem die Zusicherung, dass beides nur
-/// bestimmt, was man sieht — nie, was sortiert wird.
+/// bestimmt, was man sieht; nie, was sortiert wird.
 /// </summary>
 /// <remarks>
 /// Die heikelste Stelle der ganzen Anwendung: Abgewählte Vorschläge werden dauerhaft als
 /// „nicht gewünscht" gemerkt. Würde ein Filter Einträge aus dem Bestand nehmen, gälten
-/// die Ausgeblendeten beim Sortieren als abgewählt — und wären damit für immer weg, ohne
+/// die Ausgeblendeten beim Sortieren als abgewählt und wären damit für immer weg, ohne
 /// dass jemand es bemerkt.
 /// </remarks>
 public sealed class ProposalListViewModelTests
@@ -26,7 +26,7 @@ public sealed class ProposalListViewModelTests
 
         sut.Search("urlaub");
 
-        // Zwei sichtbar — aber alle drei werden sortiert, denn keiner wurde abgewählt.
+        // Zwei sichtbar, aber alle drei werden sortiert, denn keiner wurde abgewählt.
         Assert.Equal(2, sut.Items.Count);
         Assert.Equal(3, sut.Count);
         Assert.Equal(3, sut.Selected.Count);
@@ -49,7 +49,7 @@ public sealed class ProposalListViewModelTests
     [Fact]
     public void Search_AlsoFindsTheTargetFolder()
     {
-        // Wer sucht, weiß oft nur den Zielordner — nicht den Dateinamen.
+        // Wer sucht, weiß oft nur den Zielordner, nicht den Dateinamen.
         ProposalListViewModel sut = CreateSut();
         sut.Replace([Proposal("a.jpg", "Urlaub"), Proposal("b.jpg", "Garten")]);
 

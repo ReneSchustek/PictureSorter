@@ -43,8 +43,8 @@ public sealed class OllamaModelAvailabilityChecker : IModelAvailabilityChecker
         IReadOnlyList<string> required = [_options.VisionModel, _options.EmbeddingModel];
 
         // Eigenes, kurzes Zeitlimit statt des Limits einer Bildbeschreibung: Ein Ollama,
-        // das die Verbindung annimmt, aber nicht antwortet – etwa während seiner eigenen
-        // Aktualisierung – hielte die Oberfläche sonst über Minuten bei „Zustand der KI
+        // das die Verbindung annimmt, aber nicht antwortet (etwa während seiner eigenen
+        // Aktualisierung), hielte die Oberfläche sonst über Minuten bei „Zustand der KI
         // wird geprüft" fest, weil das lange Limit noch dreimal wiederholt wird.
         using CancellationTokenSource deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         deadline.CancelAfter(TimeSpan.FromSeconds(_options.AvailabilityTimeoutSeconds));
@@ -71,7 +71,7 @@ public sealed class OllamaModelAvailabilityChecker : IModelAvailabilityChecker
         catch (Exception ex) when (ex is AiUnavailableException or HttpRequestException or InvalidOperationException)
         {
             // Der Prüfer gibt immer eine Antwort. Käme hier eine Ausnahme heraus, bliebe
-            // in der Oberfläche der Text „wird geprüft" stehen – ohne dass die Nutzerin
+            // in der Oberfläche der Text „wird geprüft" stehen, ohne dass die Nutzerin
             // je erführe, dass die Prüfung längst gescheitert ist.
             ModelLog.Unreachable(_logger, ex);
             return Unreachable(required);

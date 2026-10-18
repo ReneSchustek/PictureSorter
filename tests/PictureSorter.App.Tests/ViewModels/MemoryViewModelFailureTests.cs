@@ -9,7 +9,7 @@ namespace PictureSorter.App.Tests.ViewModels;
 
 /// <summary>
 /// Tests der Ausnahmefälle der Gedächtnis-Ansicht. Ein Eintrag, der sich nicht
-/// vergessen ließ, muss stehen bleiben — die Anzeige darf nichts behaupten, was in
+/// vergessen ließ, muss stehen bleiben, denn die Anzeige darf nichts behaupten, was in
 /// der Datenbank nicht passiert ist.
 /// </summary>
 public sealed class MemoryViewModelFailureTests
@@ -142,7 +142,7 @@ public sealed class MemoryViewModelFailureTests
     // ── Testhilfen ─────────────────────────────────────────────────────────────
 
     /// <summary>
-    /// Liefert wahlweise Einträge und scheitert dann bei jedem Schreibzugriff — oder
+    /// Liefert wahlweise Einträge und scheitert dann bei jedem Schreibzugriff, oder
     /// scheitert bereits beim Lesen.
     /// </summary>
     private sealed class FailingSortMemory(Exception failure, IReadOnlyList<SortMemoryRecord>? records = null)

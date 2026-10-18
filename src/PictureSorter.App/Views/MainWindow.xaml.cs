@@ -70,14 +70,14 @@ internal sealed partial class MainWindow : Window
     {
         // async void ist bei Ereignishandlern unvermeidbar; eine Ausnahme, die hier
         // entkommt, beendet den Prozess. Der UpdateService fängt die erwarteten Fälle
-        // bereits ab – dieser Block deckt den Rest.
+        // bereits ab; dieser Block deckt den Rest.
         using CancellationTokenSource cancellation = new();
         try
         {
             _update.ReportPreparing();
 
             // Das Paket ist rund hundert Megabyte groß. Ohne Balken und Prozentzahl
-            // sah der Knopf aus, als bewirke er nichts – der Abbruch über „Stopp" der
+            // sah der Knopf aus, als bewirke er nichts. Der Abbruch über „Stopp" der
             // Statusleiste gehört dazu, sonst bliebe nur das Schließen des Fensters.
             Status.Begin(_localizer.Get("Update_Downloading"), cancellation.Cancel);
             Progress<UpdateProgress> progress = new(ReportUpdateProgress);
@@ -94,7 +94,7 @@ internal sealed partial class MainWindow : Window
             }
 
             // Der häufigste Grund für ein „geht nicht" ist ein Programmordner, in dem
-            // nicht geschrieben werden darf. Das kann die Nutzerin selbst beheben – aber
+            // nicht geschrieben werden darf. Das kann die Nutzerin selbst beheben, aber
             // nur, wenn es dasteht.
             string reason = UpdateInstaller.CanWriteTo(AppContext.BaseDirectory)
                 ? "Update_Failed"

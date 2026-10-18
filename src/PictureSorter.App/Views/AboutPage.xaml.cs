@@ -19,7 +19,7 @@ namespace PictureSorter.App.Views;
 internal sealed partial class AboutPage : Page
 {
     // Ereignishandler sind zwangsläufig `async void`. Was aus ihnen entkommt, landet
-    // nicht beim Aufrufer, sondern beendet den Prozess – ein letzter Fangblock ist hier
+    // nicht beim Aufrufer, sondern beendet den Prozess. Ein letzter Fangblock ist hier
     // also kein Verschlucken, sondern das Gegenteil: Er hält die Anwendung am Leben und
     // schreibt den Grund ins Protokoll.
     private const string LastResortJustification =
@@ -54,13 +54,13 @@ internal sealed partial class AboutPage : Page
             "Common_Version",
             Assembly.GetEntryAssembly()?.GetName().Version?.ToString(3) ?? "1.0.0");
 
-        // Spenden-Einstieg nur zeigen, wenn ein echter PayPal-Handle hinterlegt ist –
+        // Spenden-Einstieg nur zeigen, wenn ein echter PayPal-Handle hinterlegt ist,
         // sonst bliebe ein toter Platzhalter-Link stehen.
         SupportPanel.Visibility = SupportDonation.IsConfigured ? Visibility.Visible : Visibility.Collapsed;
     }
 
     // Öffnet das fest verdrahtete Spendenziel im Standardbrowser. Die Adresse ist eine
-    // Compile-Zeit-Konstante auf HTTPS – es gibt keinen Laufzeit-Pfad, über den hier
+    // Compile-Zeit-Konstante auf HTTPS. Es gibt keinen Laufzeit-Pfad, über den hier
     // eine fremde URL ankommen könnte.
     private void OnSupportClick(object sender, RoutedEventArgs e)
     {
@@ -74,7 +74,7 @@ internal sealed partial class AboutPage : Page
         }
         catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException)
         {
-            // Kein Standardbrowser oder Start verweigert – die Seite bleibt stehen, der
+            // Kein Standardbrowser oder Start verweigert: Die Seite bleibt stehen, der
             // Nutzer kann die Adresse manuell aufrufen. Bewusst nicht-fatal.
         }
     }
@@ -98,7 +98,7 @@ internal sealed partial class AboutPage : Page
     private void OnLogSearchChanged(object sender, TextChangedEventArgs e)
     {
         // Während InitializeComponent stehen die weiter unten deklarierten Felder
-        // (LogView, LogSummaryText) noch nicht – ein hier durchgereichtes Ereignis
+        // (LogView, LogSummaryText) noch nicht, und ein hier durchgereichtes Ereignis
         // liefe in eine NullReferenceException.
         if (_isInitializing)
         {
@@ -183,7 +183,7 @@ internal sealed partial class AboutPage : Page
     [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = LastResortJustification)]
     private async void OnCheckUpdatesClick(object sender, RoutedEventArgs e)
     {
-        // async void ist bei Ereignishandlern unvermeidbar – eine Ausnahme, die hier
+        // async void ist bei Ereignishandlern unvermeidbar, denn eine Ausnahme, die hier
         // entkommt, beendet den Prozess. Deshalb bleibt keine ohne Fangblock.
         try
         {

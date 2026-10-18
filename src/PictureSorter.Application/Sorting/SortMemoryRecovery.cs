@@ -9,7 +9,7 @@ namespace PictureSorter.Application.Sorting;
 /// <summary>
 /// Holt die Vorschläge einer früheren Analyse aus dem Sortier-Gedächtnis zurück.
 ///
-/// Das Gedächtnis wird nach jedem einzelnen Foto beschrieben — es hält also auch von
+/// Das Gedächtnis wird nach jedem einzelnen Foto beschrieben. Es hält also auch von
 /// einem Lauf, der abgestürzt ist oder stehenblieb, jedes gefällte Urteil fest. Die
 /// Analyse überspringt daraus nur, was entschieden ist: Ein Vorschlag, der nie
 /// angewendet wurde, soll bewusst erneut erscheinen und wird dafür neu berechnet.
@@ -51,7 +51,7 @@ public sealed class SortMemoryRecovery
     ///
     /// Die Oberfläche fragt danach, um das Angebot zum Zurückholen überhaupt anzuzeigen.
     /// Sie zählt bewusst hier und nicht selbst: Was zurückkommt, entscheidet
-    /// <see cref="RecoverAsync"/> — beide müssen dieselbe Auswahl treffen, sonst nennt das
+    /// <see cref="RecoverAsync"/>: Beide müssen dieselbe Auswahl treffen, sonst nennt das
     /// Angebot eine Zahl, die der Klick nicht einlöst.
     /// </summary>
     /// <param name="sourceFolder">Der durchsuchte Ordner.</param>
@@ -78,8 +78,8 @@ public sealed class SortMemoryRecovery
     /// <param name="sourceFolder">Der durchsuchte Ordner.</param>
     /// <param name="categoryName">Die Kategorie beziehungsweise der Zielordnername.</param>
     /// <param name="kind">
-    /// Art der Kategorie. Bei einem Ereignis trägt der Zielordner das Aufnahmedatum —
-    /// derselbe Name muss dabei herauskommen wie beim ursprünglichen Lauf.
+    /// Art der Kategorie. Bei einem Ereignis trägt der Zielordner das Aufnahmedatum.
+    /// Derselbe Name muss dabei herauskommen wie beim ursprünglichen Lauf.
     /// </param>
     /// <param name="cancellationToken">Token zum Abbrechen des Vorgangs.</param>
     /// <returns>
@@ -107,7 +107,7 @@ public sealed class SortMemoryRecovery
 
             // Nur der offene Vorschlag kommt zurück. „Einsortiert" liegt längst im
             // Zielordner, „abgelehnt" und „abgewählt" sind Entscheidungen, die zu achten
-            // sind — sie erneut vorzuschlagen wäre das Gegenteil eines Gedächtnisses.
+            // sind. Sie erneut vorzuschlagen wäre das Gegenteil eines Gedächtnisses.
             if (record.Status is not SortMemoryStatus.Proposed
                 || !string.Equals(record.CategoryName, categoryName, StringComparison.OrdinalIgnoreCase))
             {
@@ -187,7 +187,7 @@ public sealed class SortMemoryRecovery
         }
     }
 
-    // Muss denselben Namen ergeben wie der ursprüngliche Lauf — sonst landeten die Fotos
+    // Muss denselben Namen ergeben wie der ursprüngliche Lauf, sonst landeten die Fotos
     // in einem zweiten Ordner neben dem, den es schon gibt.
     private static string BuildTargetFolder(
         string sourceFolder,

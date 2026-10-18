@@ -81,7 +81,7 @@
 
             <!--
                 Frühere Urteile aus dem Sortier-Gedächtnis. Sie erreichen den Weg über das
-                Protokoll nicht, weil es zu Läufen aus älteren Fassungen keines gibt — und
+                Protokoll nicht, weil es zu Läufen aus älteren Fassungen keines gibt, und
                 weil ein abgestürzter Lauf trotzdem jedes gefällte Urteil hinterlassen hat.
 
                 Die Leiste erscheint nur, wenn wirklich etwas bereitliegt, und nennt die
@@ -271,7 +271,7 @@
                             <!-- UpdateSourceTrigger wie beim Gruppennamen: Ohne die
                                  Angabe schreibt WinUI den Text erst beim Verlassen des
                                  Feldes ins Anzeige-Modell. „Weiter" hängt aber am
-                                 Ordner — es bliebe grau, solange die Nutzerin im Feld
+                                 Ordner. Es bliebe grau, solange die Nutzerin im Feld
                                  steht, und niemand käme auf die Idee, erst woanders
                                  hinzuklicken. -->
                             <TextBox
@@ -315,7 +315,7 @@
                             Visibility="{x:Bind ViewModel.Wizard.ShowExampleSteps, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                         <!-- UpdateSourceTrigger: Ohne die Angabe schreibt WinUI den Text
                              erst beim Verlassen des Feldes ins Anzeige-Modell. Das Angebot,
-                             frühere Urteile zurückzuholen, hängt am Gruppennamen — es
+                             frühere Urteile zurückzuholen, hängt am Gruppennamen; es
                              erschiene sonst erst, wenn die Nutzerin woanders hinklickt,
                              und bis dahin sieht sie es nicht. -->
                         <TextBox
@@ -554,7 +554,7 @@
                             Visibility="{x:Bind ViewModel.Wizard.ShowStandardDateAction, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
 
                         <!-- Während des Laufs: anhalten. Bewusst hier und nicht nur als
-                             Stopp in der Statusleiste — bei einem Lauf über Stunden ist
+                             Stopp in der Statusleiste, denn bei einem Lauf über Stunden ist
                              das die Frage, die sich stellt, und die Nutzerin muss sehen,
                              dass dabei nichts verlorengeht. -->
                         <StackPanel
@@ -618,7 +618,7 @@
                             Visibility="{x:Bind ViewModel.Wizard.ShowStandardActions, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
 
                         <!-- Suche und Filter über der Vorschau. Bei einem Ordner mit
-                             tausenden Fotos ist eine Liste ohne sie nicht durchzusehen —
+                             tausenden Fotos ist eine Liste ohne sie nicht durchzusehen,
                              und genau dort entsteht sie. -->
                         <Grid ColumnSpacing="12">
                             <Grid.ColumnDefinitions>
@@ -688,7 +688,7 @@
                                         <!-- Die Lupe neben dem Bildchen: In 56 Bildpunkten
                                              erkennt man, was darauf ist, aber nicht, ob es
                                              etwas taugt. Sie zeigt es in einem eigenen,
-                                             frei skalierbaren Fenster — der Klick auf das
+                                             frei skalierbaren Fenster. Der Klick auf das
                                              Bild führt weiterhin zu seinen Angaben. -->
                                         <Button
                                             Grid.Column="2"

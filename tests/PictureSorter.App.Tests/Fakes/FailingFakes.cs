@@ -98,7 +98,7 @@ internal sealed class FailingPhotoSorter(Exception failure, bool failOnApply = f
 }
 
 /// <summary>
-/// Liefert erst die Vorschläge und scheitert dann beim Anwenden — der Ablauf muss bis
+/// Liefert erst die Vorschläge und scheitert dann beim Anwenden. Der Ablauf muss bis
 /// zur Vorschau kommen, damit der Fehlerzweig des Sortierens überhaupt erreichbar ist.
 /// </summary>
 internal sealed class FailingApplySorter(IReadOnlyList<SortProposal> proposals, Exception failure) : ITestSorter

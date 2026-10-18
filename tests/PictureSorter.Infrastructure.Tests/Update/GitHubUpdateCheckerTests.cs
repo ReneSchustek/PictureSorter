@@ -10,7 +10,7 @@ namespace PictureSorter.Infrastructure.Tests.Update;
 /// Tests der Update-Prüfung. Sie steht am Anfang der Kette, an deren Ende eine
 /// heruntergeladene Datei ausgeführt wird: Was sie als Adresse des Updaters
 /// zurückgibt, lädt die Anwendung später herunter. Zugleich darf sie den Start nie
-/// stören – ein fehlendes Netz oder eine unerwartete Antwort muss lautlos in „kein
+/// stören: Ein fehlendes Netz oder eine unerwartete Antwort muss lautlos in „kein
 /// Update" münden, nicht in einer Ausnahme.
 /// </summary>
 public sealed class GitHubUpdateCheckerTests : IDisposable

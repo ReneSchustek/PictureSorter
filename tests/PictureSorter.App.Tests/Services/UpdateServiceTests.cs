@@ -38,7 +38,7 @@ public sealed class UpdateServiceTests : IDisposable
     public async Task DownloadToAsync_RedirectToUntrustedHost_IsRejected()
     {
         // Ein 302 von einem erlaubten Host auf einen Fremdhost darf NICHT verfolgt
-        // werden – genau die Umgehung, die der benannte No-Redirect-Client verhindert.
+        // werden: genau die Umgehung, die der benannte No-Redirect-Client verhindert.
         (UpdateService service, HttpClient client) = Setup(request =>
             request.RequestUri!.Host == "github.com"
                 ? Redirect("https://evil.example/updater.exe")
@@ -148,7 +148,7 @@ public sealed class UpdateServiceTests : IDisposable
     public async Task DownloadToAsync_OversizedBodyWithoutContentLength_IsStoppedWhileReading()
     {
         // Der gefährlichere Fall: Der Server verschweigt die Größe. Dann greift das
-        // Limit erst beim Lesen – aber es greift.
+        // Limit erst beim Lesen, aber es greift.
         (UpdateService service, HttpClient client) = Setup(_ =>
         {
             HttpResponseMessage response = new(HttpStatusCode.OK)
@@ -180,7 +180,7 @@ public sealed class UpdateServiceTests : IDisposable
     {
         // Der Ernstfall der ganzen Kette: Jemand hat den Release-Kanal übernommen und
         // ein eigenes Paket samt eigener Signatur hinterlegt. Ohne den privaten
-        // Schlüssel des Herausgebers darf nichts entpackt und nichts gestartet werden –
+        // Schlüssel des Herausgebers darf nichts entpackt und nichts gestartet werden,
         // und der Arbeitsordner muss danach wieder verschwunden sein.
         string[] before = TempUpdateDirectories();
         (UpdateService service, _) = SetupWithUpdate(_ => Content("ein untergeschobenes Paket"));
@@ -248,7 +248,7 @@ public sealed class UpdateServiceTests : IDisposable
     public async Task DownloadAndLaunchUpdaterAsync_WithAWrongSignature_StopsBeforeUnpacking()
     {
         // Der Vertrauensanker. Ein Paket ohne gültige Unterschrift wird nicht einmal
-        // ausgepackt — wer den Release-Kanal übernimmt, kommt hier nicht vorbei.
+        // ausgepackt. Wer den Release-Kanal übernimmt, kommt hier nicht vorbei.
         string[] vorher = TempUpdateDirectories();
         UpdateService service = await SetupCheckedAsync(request =>
             request.RequestUri!.AbsolutePath.EndsWith(".sig", StringComparison.Ordinal)
@@ -324,7 +324,7 @@ public sealed class UpdateServiceTests : IDisposable
     }
 
     // Wie oben, aber mit vorangegangener Prüfung: Ohne sie kennt der Dienst keine
-    // Fassung und bricht sofort ab — ein Test, der danach nur „false" erwartet, misst
+    // Fassung und bricht sofort ab; ein Test, der danach nur „false" erwartet, misst
     // dann gar nichts.
     private async Task<UpdateService> SetupCheckedAsync(
         Func<HttpRequestMessage, HttpResponseMessage> responder)

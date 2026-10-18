@@ -18,7 +18,7 @@ public sealed class WindowShutdownTests
     public void Request_BeforeTheWindowExists_DoesNothing()
     {
         // Vor dem Start steht im Kontext kein Fenster. Ein Beenden-Wunsch aus dieser
-        // Lage — etwa aus einer Startprüfung heraus — darf nicht in eine
+        // Lage (etwa aus einer Startprüfung heraus) darf nicht in eine
         // NullReferenceException laufen, sondern schlicht folgenlos bleiben.
         WindowShutdown sut = new(new WindowContext());
 

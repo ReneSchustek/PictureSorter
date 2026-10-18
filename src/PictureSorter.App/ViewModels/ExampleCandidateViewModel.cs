@@ -6,7 +6,7 @@ namespace PictureSorter.App.ViewModels;
 /// <summary>
 /// Ein Beispielfoto zum Anlernen einer Kategorie. Ob es dazugehört oder ausdrücklich
 /// nicht, ergibt sich allein daraus, auf welcher Seite der Auswahl es liegt (siehe
-/// <see cref="ExampleSetViewModel"/>) – das Foto selbst trägt keine Markierung.
+/// <see cref="ExampleSetViewModel"/>). Das Foto selbst trägt keine Markierung.
 /// Damit gibt es keinen Zustand „ausgewählt, aber unbewertet".
 /// </summary>
 internal sealed class ExampleCandidateViewModel

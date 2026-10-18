@@ -135,20 +135,20 @@ public sealed class PhotoAnalysisService : IPhotoAnalyzer
             return [];
         }
 
-        // Die Gegenbeispiele fließen in die Bewertung ein – ohne sie bliebe jede Markierung
+        // Die Gegenbeispiele fließen in die Bewertung ein. Ohne sie bliebe jede Markierung
         // „passt nicht" ohne Wirkung.
         IReadOnlyList<ImageEmbedding> negatives =
             [.. category.Examples.Where(example => !example.IsPositive).Select(example => example.Embedding)];
 
         // Eine Kette statt zweier Abschnitte nacheinander: Die Quelle reicht jedes Bild
         // weiter, sobald es eingelesen ist, und die Bewertung greift es sofort auf.
-        // Nacheinander finge die Bewertung erst an, wenn der ganze Ordner geladen ist — bei
+        // Nacheinander finge die Bewertung erst an, wenn der ganze Ordner geladen ist, bei
         // tausend Bildern aus der Cloud nach Minuten. Nebeneinander bewegt sich der Zählstand
         // der Bewertung nach Sekunden statt nach Minuten.
         //
         // Mehrere Fotos gleichzeitig bewerten: Jede Bewertung ist ein Aufruf des
         // Bild-Modells und dauert Sekunden, in denen die Anwendung nur wartet. Der Grad
-        // der Gleichzeitigkeit ist eingestellt, nicht geraten — Ollama arbeitet nur eine
+        // der Gleichzeitigkeit ist eingestellt, nicht geraten: Ollama arbeitet nur eine
         // begrenzte Zahl von Anfragen wirklich gleichzeitig ab, alles darüber wartet dort
         // in der Schlange und läuft irgendwann ins Zeitlimit.
         IProgress<PhotoScanProgress>? gathering =
@@ -201,7 +201,7 @@ public sealed class PhotoAnalysisService : IPhotoAnalyzer
     }
 
     // Bewertet ein einzelnes Foto. Eigene Methode, weil sie die ganze fachliche
-    // Entscheidung trägt — im Schleifenkörper stand sie zwischen Zählern und Meldungen
+    // Entscheidung trägt. Im Schleifenkörper stand sie zwischen Zählern und Meldungen
     // und war dort kaum noch zu erkennen.
     private async ValueTask EvaluateScannedAsync(
         ScannedPhoto scanned,
@@ -213,7 +213,7 @@ public sealed class PhotoAnalysisService : IPhotoAnalyzer
         AnalysisTally tally = pass.Tally;
 
         // Liegt aus diesem Lauf bereits ein Urteil vor, wird es übernommen. Die Signatur
-        // schließt Pfad, Größe und Aufnahmezeit ein — eine veränderte Datei trägt eine
+        // schließt Pfad, Größe und Aufnahmezeit ein. Eine veränderte Datei trägt eine
         // andere und wird deshalb zu Recht neu bewertet.
         if (pass.Decided.TryGetValue(signature, out AnalysisRunItem? earlier))
         {
@@ -234,7 +234,7 @@ public sealed class PhotoAnalysisService : IPhotoAnalyzer
         // statt über tausend Bilder laufen.
         //
         // „Von–bis" gilt streng: Drin ist nur, was nachweislich in den Zeitraum fällt. Ein
-        // Foto ohne Aufnahmedatum bleibt also draußen — es lässt sich nicht zuordnen, und
+        // Foto ohne Aufnahmedatum bleibt also draußen, denn es lässt sich nicht zuordnen, und
         // ein Zeitraum, der stillschweigend Unbestimmtes durchlässt, wäre keine
         // verlässliche Angabe. In der Praxis tritt der Fall kaum auf: Die Foto-Quelle
         // greift ersatzweise auf die Änderungszeit der Datei zurück.
@@ -333,7 +333,7 @@ public sealed class PhotoAnalysisService : IPhotoAnalyzer
 
     /// <summary>
     /// Alles, was während eines Laufs gleich bleibt. Bündelt die sieben Angaben, die die
-    /// Bewertung eines einzelnen Fotos braucht — sonst hätte die Methode eine Parameter-
+    /// Bewertung eines einzelnen Fotos braucht, sonst hätte die Methode eine Parameter-
     /// liste, die niemand mehr liest.
     /// </summary>
     private sealed record AnalysisPass(
@@ -402,7 +402,7 @@ public sealed class PhotoAnalysisService : IPhotoAnalyzer
             if (photo.CapturedAt is not { } captured)
             {
                 // Kein Datum, kein Vorschlag. Das Datum aus dem Dateinamen oder der
-                // Änderungszeit zu erraten wäre eine Vermutung — und die würde hier
+                // Änderungszeit zu erraten wäre eine Vermutung, und die würde hier
                 // Dateien verschieben.
                 withoutDate++;
             }
@@ -423,7 +423,7 @@ public sealed class PhotoAnalysisService : IPhotoAnalyzer
                     {
                         Photo = photo,
 
-                        // Ein Lauf, ein Name — obwohl viele Zielordner entstehen. Der Name
+                        // Ein Lauf, ein Name, obwohl viele Zielordner entstehen. Der Name
                         // steht im Rückgängig-Protokoll und im Gedächtnis, und beides
                         // gehört zum Lauf, nicht zum einzelnen Ordner. Welcher Ordner
                         // gemeint ist, steht ohnehin im Zielpfad; die Vorschau liest ihn
@@ -481,8 +481,8 @@ public sealed class PhotoAnalysisService : IPhotoAnalyzer
         string targetFolderName = run.CategoryName;
         DateRange dateRange = run.Range;
 
-        // Ohne Grenze wäre jedes Foto des Ordners ein Vorschlag — der teuerste denkbare
-        // Fehlgriff, wenn die Nutzerin danach auf „Verschieben" klickt. Ein verdrehter
+        // Ohne Grenze wäre jedes Foto des Ordners ein Vorschlag (der teuerste denkbare
+        // Fehlgriff, wenn die Nutzerin danach auf „Verschieben" klickt). Ein verdrehter
         // Zeitraum enthält ohnehin nichts. Beides wird hier abgewiesen und protokolliert,
         // statt stillschweigend alles oder nichts zu liefern.
         if (dateRange.IsUnbounded || dateRange.IsReversed)
@@ -599,7 +599,7 @@ public sealed class PhotoAnalysisService : IPhotoAnalyzer
         };
 
     // Die Zählstände eines Datums-Laufs. Als eigener Typ, damit die Schleife nicht
-    // lose Zähler mitschleppt — sequenziell durchlaufen, deshalb ohne Interlocked.
+    // lose Zähler mitschleppt. Sequenziell durchlaufen, deshalb ohne Interlocked.
     private sealed class DateSortTally
     {
         public int Processed { get; set; }

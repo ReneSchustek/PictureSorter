@@ -119,7 +119,7 @@ public sealed class OllamaImageClassifier : IImageClassifier
 
     // Sprachmodelle halten sich nur ungefähr an das geforderte Format: Der
     // Wahrheitswert kommt mal als true, mal als "true" oder "yes". Wird das nicht
-    // verstanden, gilt das Foto still als „passt nicht" – ein Fehlurteil, das dem
+    // verstanden, gilt das Foto still als „passt nicht", ein Fehlurteil, das dem
     // Nutzer nie auffiele. Alles, was nicht als Zustimmung lesbar ist, bleibt eine
     // Ablehnung (die sichere Seite: das Foto bleibt liegen).
     private static bool ReadBoolean(JsonElement root, string name)
@@ -141,7 +141,7 @@ public sealed class OllamaImageClassifier : IImageClassifier
     }
 
     // Ebenso die Konfidenz: „0.9" als Zeichenkette ist häufig. Manche Modelle
-    // antworten auch in Prozent (95) – das Clamping des Aufrufers fängt das auf.
+    // antworten auch in Prozent (95). Das Clamping des Aufrufers fängt das auf.
     private static double ReadNumber(JsonElement root, string name)
     {
         if (!root.TryGetProperty(name, out JsonElement element))
@@ -162,7 +162,7 @@ public sealed class OllamaImageClassifier : IImageClassifier
     }
 
     // Modelle umrahmen das JSON gelegentlich mit Fließtext. Gesucht wird das erste
-    // Objekt mit ausgeglichenen Klammern – nicht bis zur letzten Klammer im Text:
+    // Objekt mit ausgeglichenen Klammern, nicht bis zur letzten Klammer im Text:
     // Folgt dem Urteil noch ein zweites Objekt oder ein Satz mit Klammer, klebte
     // sonst beides zu einem unlesbaren Bereich zusammen.
     private static string? ExtractJsonObject(string text)

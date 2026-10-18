@@ -25,7 +25,7 @@ public interface IPhotoAnalyzer
     /// <see langword="true"/>, um Unterordner einzubeziehen.
     /// </param>
     /// <param name="dateRange">
-    /// Beschränkt die Bewertung auf Fotos, deren Aufnahmedatum in diesen Zeitraum fällt —
+    /// Beschränkt die Bewertung auf Fotos, deren Aufnahmedatum in diesen Zeitraum fällt,
     /// etwa auf die zwei Wochen eines Urlaubs. Die übrigen Fotos werden gar nicht erst der
     /// KI vorgelegt, was den Lauf um ein Vielfaches verkürzt.
     /// <see cref="DateRange.Unbounded"/> für „alle Fotos".
@@ -44,7 +44,7 @@ public interface IPhotoAnalyzer
         CancellationToken cancellationToken);
 
     /// <summary>
-    /// Erzeugt Vorschläge allein aus dem Aufnahmedatum — ohne Kategorie, ohne angelernte
+    /// Erzeugt Vorschläge allein aus dem Aufnahmedatum, ohne Kategorie, ohne angelernte
     /// Beispiele und ohne einen einzigen KI-Aufruf.
     ///
     /// Der Weg für den häufigsten Fall überhaupt: „Alles aus diesem Urlaub in einen
@@ -82,7 +82,7 @@ public interface IPhotoAnalyzer
 
     /// <summary>
     /// Erzeugt Vorschläge, die jedes Foto nach seinem Aufnahmedatum einem Kalender-Ordner
-    /// zuordnen — <c>2021</c>, <c>2021-07</c> oder <c>2021-07-15</c>.
+    /// zuordnen: <c>2021</c>, <c>2021-07</c> oder <c>2021-07-15</c>.
     ///
     /// Anders als beim Sortieren nach Zeitraum gibt es hier keinen einzelnen Zielordner,
     /// sondern so viele, wie der Bestand Jahre, Monate oder Tage umfasst. Gelesen werden
@@ -103,7 +103,7 @@ public interface IPhotoAnalyzer
     /// <param name="cancellationToken">Token zum Abbrechen des Vorgangs.</param>
     /// <returns>
     /// Die Vorschläge für alle Fotos mit nachweisbarem Aufnahmedatum. Fotos ohne Datum
-    /// bleiben liegen — geraten wird nicht.
+    /// bleiben liegen. Geraten wird nicht.
     /// </returns>
     Task<IReadOnlyList<SortProposal>> CreateCalendarProposalsAsync(
         string sourceFolder,
@@ -118,7 +118,7 @@ public interface IPhotoAnalyzer
     ///
     /// Für beides gibt es nur diesen einen Weg, weil es derselbe Vorgang ist: Was im
     /// Protokoll steht, wird übernommen; nur der Rest kommt der KI überhaupt vor. Bei
-    /// einem abgeschlossenen Lauf ist der Rest leer — dann entsteht die Vorschau ohne
+    /// einem abgeschlossenen Lauf ist der Rest leer. Dann entsteht die Vorschau ohne
     /// einen einzigen KI-Aufruf, statt tagelang neu zu rechnen.
     ///
     /// Die Angaben des Laufs (Ordner, Unterordner, Zeitraum) kommen aus dem Protokoll
@@ -133,7 +133,7 @@ public interface IPhotoAnalyzer
     /// </param>
     /// <param name="progress">Optionaler Empfänger des Fortschritts.</param>
     /// <param name="cancellationToken">Token zum Abbrechen des Vorgangs.</param>
-    /// <returns>Die Vorschläge des Laufs — die übernommenen und die neu ermittelten.</returns>
+    /// <returns>Die Vorschläge des Laufs (die übernommenen und die neu ermittelten).</returns>
     Task<IReadOnlyList<SortProposal>> ResumeAsync(
         AnalysisRun run,
         Category? category,

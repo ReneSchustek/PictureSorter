@@ -74,7 +74,7 @@ public sealed class PhotoDetailViewModelTests
     [Fact]
     public async Task Rename_WhenTheNameIsTaken_ExplainsWhatToDo()
     {
-        // „Fehlgeschlagen" allein hilft niemandem — der Satz muss sagen, was zu tun ist.
+        // „Fehlgeschlagen" allein hilft niemandem. Der Satz muss sagen, was zu tun ist.
         FakePhotoFileEditor editor = new() { Outcome = FileEditOutcome.NameTaken };
         PhotoDetailViewModel viewModel = CreateViewModel(editor: editor);
 

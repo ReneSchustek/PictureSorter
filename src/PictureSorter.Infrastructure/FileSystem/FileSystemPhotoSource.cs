@@ -92,13 +92,13 @@ public sealed class FileSystemPhotoSource : IPhotoSource
 
         List<string> paths = EnumerateImagePaths(fullFolderPath, includeSubfolders, skip, maxCount, cancellationToken);
 
-        // Die Gesamtzahl steht jetzt fest und wird sofort gemeldet – noch bevor die erste
+        // Die Gesamtzahl steht jetzt fest und wird sofort gemeldet, noch bevor die erste
         // Datei geöffnet ist. Damit steht die Zahl, um die es geht („von 1100"), von
         // Anfang an in der Statusleiste statt erst nach dem letzten Bild.
         progress?.Report(new PhotoScanProgress(0, paths.Count));
 
-        // Ohne Grenze läuft das Laden durch und die Bewertung nimmt sich, was fertig ist –
-        // die beiden Abschnitte sind dann wirklich entkoppelt. Mit Grenze wartet das Laden,
+        // Ohne Grenze läuft das Laden durch und die Bewertung nimmt sich, was fertig ist.
+        // Die beiden Abschnitte sind dann wirklich entkoppelt. Mit Grenze wartet das Laden,
         // sobald der Vorrat voll ist; das schont die Leitung bei einem frühen Abbruch,
         // koppelt seine Geschwindigkeit aber an die der KI (siehe PhotoSourceOptions).
         //
@@ -128,7 +128,7 @@ public sealed class FileSystemPhotoSource : IPhotoSource
 
         try
         {
-            // Die Fehler der Leser kommen über den Abschluss des Kanals hier an – deshalb
+            // Die Fehler der Leser kommen über den Abschluss des Kanals hier an. Deshalb
             // muss der Erzeuger nicht eigens abgewartet werden.
             await foreach (ScannedPhoto scanned in channel.Reader
                 .ReadAllAsync(cancellationToken)
@@ -147,7 +147,7 @@ public sealed class FileSystemPhotoSource : IPhotoSource
         PhotoSourceLog.Scanned(_logger, paths.Count, redactedFolder);
     }
 
-    // Liest alle Dateien – mehrere gleichzeitig – und legt jedes fertige Bild in den
+    // Liest alle Dateien (mehrere gleichzeitig) und legt jedes fertige Bild in den
     // Kanal. Der Schritt wartet fast nur: auf die Platte, bei einem Cloud-Ordner auf den
     // Download der Datei. Genau hier lag die Wartezeit vor der Analyse; jede Datei wird
     // einmal geöffnet, und bei iCloud-Fotos oder OneDrive zieht das je Datei einen
@@ -179,7 +179,7 @@ public sealed class FileSystemPhotoSource : IPhotoSource
                 {
                     Photo? photo = await TryReadPhotoAsync(paths[index], token).ConfigureAwait(false);
 
-                    // Erst zählen, dann weiterreichen — diese Reihenfolge ist der Grund für
+                    // Erst zählen, dann weiterreichen: Diese Reihenfolge ist der Grund für
                     // beide Balken: Ein Bild gilt als geladen, bevor es überhaupt bewertet
                     // werden kann. Andersherum könnte die Bewertung es aufgreifen und melden,
                     // ehe der Ladebalken davon weiß; der Analysebalken stünde dann vor dem
@@ -188,7 +188,7 @@ public sealed class FileSystemPhotoSource : IPhotoSource
                     //
                     // Zählen und Melden unter einem Schloss: Sonst überholten sich die
                     // Meldungen gegenseitig und der Zählstand spränge sichtbar zurück. Das
-                    // Schloss ist billig – gemeldet wird nur eine Zahl.
+                    // Schloss ist billig, denn gemeldet wird nur eine Zahl.
                     lock (progressGate)
                     {
                         processed++;
@@ -202,7 +202,7 @@ public sealed class FileSystemPhotoSource : IPhotoSource
                     if (photo is not null)
                     {
                         // Blockiert, wenn der Vorlauf voll ist. Die Datei ist dann bereits
-                        // geladen und wartet nur darauf, abgeholt zu werden – der Ladebalken
+                        // geladen und wartet nur darauf, abgeholt zu werden. Der Ladebalken
                         // darf sie deshalb schon zählen.
                         await writer.WriteAsync(new ScannedPhoto(photo, index, paths.Count), token)
                             .ConfigureAwait(false);
@@ -214,7 +214,7 @@ public sealed class FileSystemPhotoSource : IPhotoSource
             // Bewusst jede Ausnahme: Sie wird nicht geschluckt, sondern an den Abschluss
             // des Kanals gehängt und dort dem Verbraucher erneut ausgelöst. Bliebe sie
             // hier liegen, wartete der Verbraucher auf einen Kanal, der nie mehr etwas
-            // liefert – ein Stillstand statt einer Fehlermeldung.
+            // liefert, ein Stillstand statt einer Fehlermeldung.
             failure = ex;
         }
         finally
@@ -224,7 +224,7 @@ public sealed class FileSystemPhotoSource : IPhotoSource
     }
 
     // Das Aufzählen selbst liest nur die Verzeichniseinträge und ist auch bei einem
-    // Cloud-Ordner billig – teuer wird erst das Öffnen jeder Datei im Anschluss.
+    // Cloud-Ordner billig; teuer wird erst das Öffnen jeder Datei im Anschluss.
     // Deshalb hört schon das Aufzählen bei der Höchstzahl auf.
     private static List<string> EnumerateImagePaths(
         string folderPath,
@@ -265,7 +265,7 @@ public sealed class FileSystemPhotoSource : IPhotoSource
     // Zwischen dem Auflisten und dem Lesen kann die Datei verschwinden: Ein
     // Virenscanner schiebt sie in Quarantäne, ein Cloud-Ordner räumt sie weg, jemand
     // löscht sie im Explorer. Bis hierher riss der Zugriff auf die Dateigröße dann den
-    // gesamten Lauf mit – für alle Funktionen, die Fotos einlesen.
+    // gesamten Lauf mit (für alle Funktionen, die Fotos einlesen).
     private async Task<Photo?> TryReadPhotoAsync(string path, CancellationToken cancellationToken)
     {
         try

@@ -8,7 +8,7 @@ namespace PictureSorter.Core.Interfaces;
 /// protokolliert den Lauf für das Rückgängigmachen und merkt sich abgewählte Vorschläge.
 ///
 /// Der einzige Teil der Anwendung, der Dateien der Nutzerin bewegt. Deshalb steht er für
-/// sich — wer Vorschläge nur erzeugt, soll ihn gar nicht in der Hand haben.
+/// sich: Wer Vorschläge nur erzeugt, soll ihn gar nicht in der Hand haben.
 /// </summary>
 public interface IProposalApplier
 {

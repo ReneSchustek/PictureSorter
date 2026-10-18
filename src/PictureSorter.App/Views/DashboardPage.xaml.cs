@@ -9,7 +9,7 @@ namespace PictureSorter.App.Views;
 /// <summary>
 /// Startseite: zeigt den Zustand der lokalen KI und führt über Kacheln in die drei
 /// Bereiche der Anwendung. Wohin eine Kachel führt, entscheidet das ViewModel über
-/// den Navigationsdienst – die Seite selbst weiß davon nichts mehr.
+/// den Navigationsdienst. Die Seite selbst weiß davon nichts mehr.
 ///
 /// Das ViewModel wird hier aus dem Container geholt, weil WinUI die Seite über
 /// <c>Frame.Navigate(typeof(…))</c> parameterlos erzeugt und ihr nichts übergeben

@@ -4,7 +4,7 @@ using Microsoft.UI.Xaml.Controls;
 namespace PictureSorter.App.Controls;
 
 /// <summary>
-/// Der Kopf einer Listen-Seite: Titel, Kurzerklärung, Primäraktion, Suche und Filter —
+/// Der Kopf einer Listen-Seite: Titel, Kurzerklärung, Primäraktion, Suche und Filter,
 /// in dieser Reihenfolge, auf jeder Seite gleich.
 ///
 /// Wer den Kopf fertig vorfindet, baut ihn nicht nach. Genau daraus entsteht
@@ -91,7 +91,7 @@ internal sealed partial class ListPageHeader : UserControl
     }
 
     /// <summary>
-    /// Leert das Suchfeld — für den Weg zurück aus einem leeren Suchergebnis.
+    /// Leert das Suchfeld (für den Weg zurück aus einem leeren Suchergebnis).
     /// </summary>
     public void ClearSearch()
     {

@@ -17,7 +17,7 @@ namespace PictureSorter.Core.ValueObjects;
 ///
 /// Sie muss ausdrücklich als solche gemeldet werden und darf nicht daraus erschlossen
 /// werden, dass der Zählstand die Gesamtzahl erreicht: Fällt beim Einlesen auch nur eine
-/// Datei aus – Virenscanner, Cloud-Ordner, fehlender Codec –, kommen weniger Fotos zur
+/// Datei aus (Virenscanner, Cloud-Ordner, fehlender Codec), kommen weniger Fotos zur
 /// Bewertung als der Ordner Dateien hat. Der Zählstand erreicht die Gesamtzahl dann nie,
 /// die Anzeige bliebe kurz vor dem Ende stehen, und von einem Stillstand wäre das nicht zu
 /// unterscheiden.

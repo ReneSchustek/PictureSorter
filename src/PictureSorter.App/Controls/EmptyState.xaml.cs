@@ -21,7 +21,7 @@ internal sealed partial class EmptyState : UserControl
 
     /// <summary>
     /// Beschriftung des Knopfs, der die Suche zurücksetzt. Leer, wenn keine Suche im
-    /// Spiel ist — dann gibt es auch nichts zurückzusetzen.
+    /// Spiel ist; dann gibt es auch nichts zurückzusetzen.
     /// </summary>
     public static readonly DependencyProperty ResetLabelProperty = DependencyProperty.Register(
         nameof(ResetLabel), typeof(string), typeof(EmptyState), new PropertyMetadata(string.Empty));

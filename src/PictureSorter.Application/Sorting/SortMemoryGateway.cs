@@ -13,7 +13,7 @@ namespace PictureSorter.Application.Sorting;
 /// Zwei Gründe für diese Klasse: Sie hält den <see cref="PhotoAnalysisService"/>
 /// frei von Persistenz-Details (Signaturbildung, Zeitstempel), und sie macht jeden
 /// Zugriff fehlertolerant. Das Gedächtnis ist eine Beschleunigung, kein
-/// Kernbestandteil — ist die Datenbank nicht verfügbar, sortiert die Anwendung
+/// Kernbestandteil: Ist die Datenbank nicht verfügbar, sortiert die Anwendung
 /// weiter, nur eben ohne Überspringen (Graceful Degradation).
 /// </summary>
 public sealed class SortMemoryGateway
@@ -64,7 +64,7 @@ public sealed class SortMemoryGateway
             categoryName,
             cancellationToken).ConfigureAwait(false);
 
-        // „Proposed" ist keine endgültige Entscheidung – ein Vorschlag, der nie
+        // „Proposed" ist keine endgültige Entscheidung: Ein Vorschlag, der nie
         // angewendet wurde, soll erneut erscheinen.
         return remembered?.Status is SortMemoryStatus.Sorted
             or SortMemoryStatus.Ignored
@@ -73,7 +73,7 @@ public sealed class SortMemoryGateway
 
     /// <summary>
     /// Merkt das Ergebnis einer KI-Bewertung: entweder den Vorschlag oder die
-    /// Ablehnung. Nur ausgewertete Fotos werden gemerkt — bei einem KI-Ausfall darf
+    /// Ablehnung. Nur ausgewertete Fotos werden gemerkt. Bei einem KI-Ausfall darf
     /// nichts gespeichert werden, sonst gilt der Ausfall künftig als „gehört nicht
     /// dazu".
     /// </summary>
@@ -141,7 +141,7 @@ public sealed class SortMemoryGateway
     /// <summary>
     /// Lässt eine gemerkte Entscheidung vergessen. Wird beim Rückgängigmachen eines
     /// Sortierlaufs gebraucht: Liegt das Foto wieder im Quellordner, darf es nicht
-    /// weiter als „einsortiert" gelten – sonst würde es nie wieder vorgeschlagen.
+    /// weiter als „einsortiert" gelten, sonst würde es nie wieder vorgeschlagen.
     /// </summary>
     /// <param name="sourceFolder">Der Quellordner.</param>
     /// <param name="fileSignature">Die Signatur des Fotos.</param>
@@ -216,13 +216,13 @@ public sealed class SortMemoryGateway
     //
     // Die DbException ist der entscheidende Eintrag: SQLite meldet eine gesperrte oder
     // beschädigte Datei als SqliteException, und die erbt über DbException von
-    // ExternalException – nicht von IOException. Ohne sie lief die zugesagte
+    // ExternalException, nicht von IOException. Ohne sie lief die zugesagte
     // Fehlertoleranz genau an der häufigsten Störung vorbei.
     //
     // Die Prüfung der inneren Ausnahme fängt den Schreibfall ab: Der Datenzugriff
     // verpackt die Anbieter-Ausnahme in einen eigenen Typ, der nicht von DbException
     // erbt. Ihn beim Namen zu nennen hieße, die Persistenz-Technologie in diese Schicht
-    // zu holen – deshalb wird stattdessen hineingesehen.
+    // zu holen, deshalb wird stattdessen hineingesehen.
     private static bool IsRecoverable(Exception exception) =>
         exception is not OperationCanceledException
         && (exception is IOException or InvalidOperationException or TimeoutException or DbException

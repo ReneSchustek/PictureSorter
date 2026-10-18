@@ -62,7 +62,7 @@ internal sealed class DuplicateGroupViewModel
     /// <summary>
     /// Sperrt die Lösch-Auswahl, sobald nur noch ein Foto der Gruppe übrig wäre.
     /// Ohne diese Sperre könnte die Nutzerin alle Kopien vormerken und stünde
-    /// nach dem Löschen ohne das Motiv da — der Schaden, den die Duplikat-Suche
+    /// nach dem Löschen ohne das Motiv da. Das ist der Schaden, den die Duplikat-Suche
     /// gerade verhindern soll.
     /// </summary>
     private void RefreshDeletionLock()

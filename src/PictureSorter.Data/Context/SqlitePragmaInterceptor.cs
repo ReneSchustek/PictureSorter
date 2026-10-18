@@ -49,7 +49,7 @@ public sealed class SqlitePragmaInterceptor : DbConnectionInterceptor
         // Temporäre Sortier-/Gruppierungsstrukturen im RAM statt auf Platte.
         ExecutePragma(command, "PRAGMA temp_store = MEMORY;");
 
-        // SQLite ignoriert Fremdschlüssel per Default – hier ausdrücklich erzwingen.
+        // SQLite ignoriert Fremdschlüssel per Default. Hier ausdrücklich erzwingen.
         ExecutePragma(command, "PRAGMA foreign_keys = ON;");
     }
 

@@ -2,12 +2,12 @@
 <!--
     Das Fenster der Lupe: nichts als das Bild.
 
-    Es ist bewusst ein eigenes Fenster und kein Flyout und kein Dialog — beide lassen
+    Es ist bewusst ein eigenes Fenster und kein Flyout und kein Dialog, denn beide lassen
     sich nicht in der Größe verändern. Hier soll die Nutzerin ziehen können, bis das
     Bild so groß ist, wie sie es braucht.
 
     „Uniform" ist der ganze Trick der Anpassung: Das Bild füllt den Fensterinhalt, ohne
-    sein Seitenverhältnis zu verlieren — beim Vergrößern wie beim Verkleinern.
+    sein Seitenverhältnis zu verlieren, beim Vergrößern wie beim Verkleinern.
 -->
 <Window
     x:Class="PictureSorter.App.Views.PhotoZoomWindow"

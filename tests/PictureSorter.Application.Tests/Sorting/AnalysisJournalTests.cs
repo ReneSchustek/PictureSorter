@@ -16,7 +16,7 @@ namespace PictureSorter.Application.Tests.Sorting;
 ///
 /// Ein Lauf über tausende Fotos dauert Stunden bis Tage; bleibt er stehen, muss etwas
 /// übrig sein, woran sich wieder ansetzen lässt. Die Zusage dieser Tests lautet: Jedes
-/// Ergebnis steht auf der Platte, bevor der Lauf endet — und ein zweiter Anlauf legt kein
+/// Ergebnis steht auf der Platte, bevor der Lauf endet, und ein zweiter Anlauf legt kein
 /// bereits beurteiltes Foto noch einmal der Bilderkennung vor.
 /// </summary>
 public sealed class AnalysisJournalTests
@@ -44,7 +44,7 @@ public sealed class AnalysisJournalTests
         FakeAnalysisJournal journal = new();
         using CancellationTokenSource cancellation = new();
 
-        // Bricht ab, sobald das erste Foto bewertet ist — genau der Fall „Nutzerin hält
+        // Bricht ab, sobald das erste Foto bewertet ist: genau der Fall „Nutzerin hält
         // an, weil der Rechner nicht drei Tage laufen soll".
         CancelingEmbeddingProvider provider = new([1.0f, 0.0f, 0.0f], cancellation);
         PhotoAnalysisService service = CreateService(
@@ -68,7 +68,7 @@ public sealed class AnalysisJournalTests
     {
         // Der härteste Test dieser Zusage: Der Embedding-Anbieter wirft bei jedem
         // einzelnen Aufruf. Kommen die Vorschläge trotzdem zurück, wurde die KI kein
-        // einziges Mal befragt — anders lässt sich das nicht beweisen.
+        // einziges Mal befragt. Anders lässt sich das nicht beweisen.
         FakeAnalysisJournal journal = new();
         IReadOnlyList<Photo> photos = [Foto("a.jpg"), Foto("b.jpg")];
         PhotoAnalysisService first = CreateService(journal, photos);
@@ -122,7 +122,7 @@ public sealed class AnalysisJournalTests
     public async Task CreateProposalsAsync_WhenAPhotoIsUnreadable_StillReportsTheEnd()
     {
         // Die Quelle findet drei Dateien, liefert aber nur zwei Fotos: Die dritte ließ
-        // sich nicht lesen. Der Zählstand erreicht die Gesamtzahl damit nie — die
+        // sich nicht lesen. Der Zählstand erreicht die Gesamtzahl damit nie: Die
         // Abschlussmeldung muss trotzdem kommen, sonst bliebe die Anzeige kurz vor dem
         // Ende stehen und wäre von einem Stillstand nicht zu unterscheiden.
         FakeAnalysisJournal journal = new();
@@ -278,7 +278,7 @@ public sealed class AnalysisJournalTests
     public async Task ResumeAsync_TriesAgainWhatWasNotEvaluated()
     {
         // Ein Ausfall der Bilderkennung ist kein Urteil über das Bild. Steht im Protokoll
-        // „nicht bewertet", muss der zweite Anlauf es erneut versuchen — sonst schriebe ein
+        // „nicht bewertet", muss der zweite Anlauf es erneut versuchen, sonst schriebe ein
         // einmaliger Aussetzer das Ergebnis dauerhaft fest.
         FakeAnalysisJournal journal = new();
         Photo photo = Foto("a.jpg");
@@ -433,7 +433,7 @@ public sealed class AnalysisJournalTests
         }
     }
 
-    /// <summary>Wirft bei jedem Aufruf — jeder KI-Zugriff fliegt damit auf.</summary>
+    /// <summary>Wirft bei jedem Aufruf; jeder KI-Zugriff fliegt damit auf.</summary>
     private sealed class ThrowingEmbeddingProvider : IEmbeddingProvider
     {
         public Task<ImageEmbedding> CreateEmbeddingAsync(Photo photo, CancellationToken cancellationToken) =>
@@ -451,7 +451,7 @@ public sealed class AnalysisJournalTests
         }
     }
 
-    /// <summary>Scheitert bei jedem Zugriff — wie eine gesperrte Datenbank.</summary>
+    /// <summary>Scheitert bei jedem Zugriff, wie eine gesperrte Datenbank.</summary>
     private sealed class BrokenAnalysisJournal : IAnalysisJournal
     {
         public Task StartAsync(AnalysisRun run, CancellationToken cancellationToken) =>

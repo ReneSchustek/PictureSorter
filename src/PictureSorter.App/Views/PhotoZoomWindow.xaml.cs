@@ -15,7 +15,7 @@ namespace PictureSorter.App.Views;
 ///
 /// Ein eigenes Fenster, weil weder Flyout noch Dialog sich in der Größe verändern
 /// lassen: Wie groß ein Bild sein muss, damit man es beurteilen kann, weiß nur die
-/// Nutzerin. Die Startgröße folgt dem Seitenverhältnis des Bildes — ein Hochformat in
+/// Nutzerin. Die Startgröße folgt dem Seitenverhältnis des Bildes: Ein Hochformat in
 /// einem breiten Fenster wäre zwei Drittel leere Fläche.
 ///
 /// Es gibt immer nur eines: Wer sich durch eine Liste klickt, will das Bild wechseln,
@@ -74,7 +74,7 @@ internal sealed partial class PhotoZoomWindow : Window
         LargeImage.Source = new BitmapImage(new Uri(imagePath));
     }
 
-    // Erst wenn das Bild geladen ist, stehen seine Maße fest — vorher wäre jede
+    // Erst wenn das Bild geladen ist, stehen seine Maße fest. Vorher wäre jede
     // Fenstergröße geraten.
     private void OnImageOpened(object sender, RoutedEventArgs e)
     {
@@ -93,7 +93,7 @@ internal sealed partial class PhotoZoomWindow : Window
             area.WorkArea.Height);
 
         // ResizeClient statt Resize: Gemeint ist die Fläche für das Bild, nicht das
-        // Fenster samt Titelleiste — sonst fehlte dem Bild genau deren Höhe.
+        // Fenster samt Titelleiste, sonst fehlte dem Bild genau deren Höhe.
         AppWindow.ResizeClient(new SizeInt32(width, height));
         Center(area);
     }

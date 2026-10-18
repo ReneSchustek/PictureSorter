@@ -4,8 +4,8 @@ namespace PictureSorter.App.Tests.Resources;
 
 /// <summary>
 /// Prüft die Oberflächen-Texte gegen die Ressourcen: Jedes <c>x:Uid</c> in einer
-/// XAML-Datei braucht einen Eintrag in beiden Sprachen. Fehlt er, meldet WinUI nichts –
-/// es bleibt still der im XAML hinterlegte deutsche Text stehen, auch in der englischen
+/// XAML-Datei braucht einen Eintrag in beiden Sprachen. Fehlt er, meldet WinUI nichts:
+/// Es bleibt still der im XAML hinterlegte deutsche Text stehen, auch in der englischen
 /// Fassung. Genau so blieb die Beschreibung des letzten Assistenten-Schritts unübersetzt,
 /// ohne dass Build, Tests oder die bestehenden Ressourcen-Prüfungen etwas gemerkt hätten:
 /// <see cref="CodeStringKeyTests"/> sieht nur die Schlüssel aus dem C#-Code,

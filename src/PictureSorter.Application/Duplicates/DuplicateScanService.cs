@@ -85,7 +85,7 @@ public sealed class DuplicateScanService : IDuplicateScanner
         CancellationToken cancellationToken)
     {
         // An seinen Platz statt ans Ende einer Liste: Die Reihenfolge des Ordners
-        // bestimmt, welches Bild innerhalb einer Gruppe zuerst steht – sie darf nicht
+        // bestimmt, welches Bild innerhalb einer Gruppe zuerst steht. Sie darf nicht
         // davon abhängen, welcher Fingerabdruck zufällig zuerst fertig wird.
         ConcurrentDictionary<int, FingerprintedPhoto> buffer = new();
         int processed = 0;
@@ -177,7 +177,7 @@ public sealed class DuplicateScanService : IDuplicateScanner
     /// <summary>
     /// Sammelt alle Bilder, die dem Startbild ähneln.
     ///
-    /// Vergleicht jedes Bild mit jedem – der Aufwand wächst also im Quadrat zur Anzahl.
+    /// Vergleicht jedes Bild mit jedem, der Aufwand wächst also im Quadrat zur Anzahl.
     /// Das ist hier vertretbar: Verglichen werden nur die Wahrnehmungs-Hashes im
     /// Arbeitsspeicher, und bereits zugeordnete Bilder fallen heraus. Teuer ist das
     /// Einlesen der Bilder davor, nicht dieser Vergleich. Bei Ordnern jenseits einiger

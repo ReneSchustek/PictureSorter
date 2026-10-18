@@ -40,7 +40,7 @@ internal sealed class FakeFileDeleter : IFileDeleter
     /// </summary>
     public Action<int>? AfterDelete { get; set; }
 
-    /// <summary>Wird geworfen statt zu löschen — für den Weg, auf dem es misslingt.</summary>
+    /// <summary>Wird geworfen statt zu löschen (für den Weg, auf dem es misslingt).</summary>
     public Exception? Failure { get; set; }
 
     public Task DeleteAsync(string filePath, CancellationToken cancellationToken)
@@ -119,7 +119,7 @@ internal sealed class FakeFileNameRepairService(
         CancellationToken cancellationToken)
     {
         // Ein Suchlauf meldet unterwegs seinen Stand. Ohne diese Meldungen bliebe der
-        // Balken der Seite ungeprüft — und ein stehender Balken ist genau das, was
+        // Balken der Seite ungeprüft, und ein stehender Balken ist genau das, was
         // Nutzer als „hängt" melden.
         foreach (PhotoScanProgress report in progressReports ?? [])
         {
@@ -345,8 +345,8 @@ internal sealed class FakeSortUndoService : ISortUndoService
 }
 
 /// <summary>
-/// Liefert eine feste Fotoliste und hält die zuletzt erfragte Höchstzahl fest –
-/// daran hängt, ob die Beispielauswahl den ganzen Ordner einliest oder nur so viel,
+/// Liefert eine feste Fotoliste und hält die zuletzt erfragte Höchstzahl fest.
+/// Daran hängt, ob die Beispielauswahl den ganzen Ordner einliest oder nur so viel,
 /// wie sie anzeigt.
 /// </summary>
 internal sealed class FakePhotoSource(IReadOnlyList<Photo> photos) : IPhotoSource
@@ -370,7 +370,7 @@ internal sealed class FakePhotoSource(IReadOnlyList<Photo> photos) : IPhotoSourc
 
         // Bewusst ohne Fortschrittsmeldung: Das ViewModel reicht hier ein
         // <see cref="Progress{T}"/> herein, das ohne Synchronisationskontext über den
-        // Thread-Pool meldet – die Meldung träfe also womöglich erst nach der
+        // Thread-Pool meldet. Die Meldung träfe also womöglich erst nach der
         // Abschlussmeldung ein und überschriebe sie. Der Zählstand des Einlesens wird
         // deshalb dort geprüft, wo er deterministisch ist: an der Dateisystem-Quelle.
         return Task.FromResult<IReadOnlyList<Photo>>(
@@ -494,8 +494,8 @@ internal sealed class FakeSortMemory : ISortMemory
 }
 
 /// <summary>
-/// Ein Gedächtnis, das bei jedem Zugriff scheitert — für die Zusage, dass eine gesperrte
-/// oder beschädigte Datenbank die Sortierseite nicht mitreißt.
+/// Ein Gedächtnis, das bei jedem Zugriff scheitert (für die Zusage, dass eine gesperrte
+/// oder beschädigte Datenbank die Sortierseite nicht mitreißt).
 /// </summary>
 internal sealed class ThrowingSortMemory : ISortMemory
 {

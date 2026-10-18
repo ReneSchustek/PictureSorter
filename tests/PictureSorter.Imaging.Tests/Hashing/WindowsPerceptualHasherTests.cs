@@ -8,7 +8,7 @@ namespace PictureSorter.Imaging.Tests.Hashing;
 /// <summary>
 /// Tests der Fingerabdrücke, auf denen die Duplikat-Erkennung beruht. Ein Fehler
 /// hier führt dazu, dass die Nutzerin Fotos in den Papierkorb legt, die keine
-/// Duplikate sind – der Weg zum Datenverlust. Geprüft wird deshalb beides: dass
+/// Duplikate sind: der Weg zum Datenverlust. Geprüft wird deshalb beides: dass
 /// gleiche Bilder gleich erkannt werden und dass verschiedene deutlich auseinander
 /// liegen.
 /// </summary>
@@ -83,7 +83,7 @@ public sealed class WindowsPerceptualHasherTests : IDisposable
     public async Task ComputeAsync_ForMirroredMotif_ProducesDistantPerceptualHashes()
     {
         // Der Verlauf läuft andersherum: Für das Auge ein anderes Bild, und der Hash
-        // muss das auch so sehen – sonst würden verschiedene Fotos als Duplikate
+        // muss das auch so sehen, sonst würden verschiedene Fotos als Duplikate
         // vorgeschlagen und landeten im Papierkorb.
         string rising = Path.Combine(_root, "hell-rechts.png");
         await TestImage.WriteGradientPngAsync(rising, 32, 32);
@@ -103,13 +103,13 @@ public sealed class WindowsPerceptualHasherTests : IDisposable
     {
         // In Fotogröße wird aus Millionen Bildpunkten ein Raster von 72. Wird dabei
         // nur abgetastet statt gemittelt, kommen ganze Rasterzeilen konstant heraus,
-        // der Fingerabdruck besteht fast nur aus Nullen – und zwei völlig verschiedene
+        // der Fingerabdruck besteht fast nur aus Nullen, und zwei völlig verschiedene
         // Fotos liegen wenige Bit auseinander. Gemessen an einem Bestand aus zwölf
         // Motiven sind das siebzehn falsche Paare; jedes davon hätte die Nutzerin
         // gefragt, ob sie eines der beiden Bilder in den Papierkorb legen will.
         //
         // Die übrigen Tests hier arbeiten mit 32×32 Punkten. In der Größe tritt der
-        // Unterschied nicht auf – Tests allein in dieser Größe übersähen ihn.
+        // Unterschied nicht auf. Tests allein in dieser Größe übersähen ihn.
         const int width = 1600;
         const int height = 1067;
         string left = Path.Combine(_root, "berge-links.png");

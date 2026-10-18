@@ -15,7 +15,7 @@ namespace PictureSorter.Integration.Tests.Sorting;
 
 /// <summary>
 /// Das Rückgängigmachen von Anfang bis Ende: echte Dateien auf der Platte, echte
-/// SQLite-Datenbank, echter Datei-Organizer – nur die Oberfläche fehlt. Die
+/// SQLite-Datenbank, echter Datei-Organizer. Nur die Oberfläche fehlt. Die
 /// Einzelteile sind je für sich getestet; dieser Test prüft, dass sie zusammen
 /// tatsächlich das tun, was der Nutzerin versprochen wird: Die Fotos liegen danach
 /// wieder da, wo sie waren, und die Anwendung hat vergessen, dass sie einsortiert
@@ -92,7 +92,7 @@ public sealed class SortUndoIntegrationTests : IAsyncLifetime
         // Der leere Kategorie-Ordner ist verschwunden.
         Assert.False(Directory.Exists(_categoryFolder));
 
-        // Und die Anwendung merkt sich nicht länger, dass sie einsortiert waren –
+        // Und die Anwendung merkt sich nicht länger, dass sie einsortiert waren,
         // sonst würden sie nie wieder vorgeschlagen.
         Assert.Empty(await _rawMemory.GetAllAsync(CancellationToken.None));
 
@@ -104,7 +104,7 @@ public sealed class SortUndoIntegrationTests : IAsyncLifetime
     public async Task Undo_WhenTheOriginalPlaceIsTakenAgain_KeepsBothFiles()
     {
         // Der Ernstfall: Nach dem Sortieren landet unter demselben Namen wieder ein
-        // Foto im Quellordner – etwa vom Handy nachgeladen. Das Zurückholen darf es
+        // Foto im Quellordner, etwa vom Handy nachgeladen. Das Zurückholen darf es
         // nicht überschreiben.
         SortRunItem[] moved = await SortAsync("a.jpg");
         await File.WriteAllTextAsync(moved[0].SourcePath, "ein anderes Foto", TestContext.Current.CancellationToken);
@@ -116,7 +116,7 @@ public sealed class SortUndoIntegrationTests : IAsyncLifetime
         Assert.Equal("ein anderes Foto", await File.ReadAllTextAsync(moved[0].SourcePath, TestContext.Current.CancellationToken));
         Assert.True(File.Exists(moved[0].TargetPath));
 
-        // Das sortierte Foto liegt weiter im Kategorie-Ordner – also gilt es auch
+        // Das sortierte Foto liegt weiter im Kategorie-Ordner, also gilt es auch
         // weiterhin als einsortiert.
         _ = Assert.Single(await _rawMemory.GetAllAsync(CancellationToken.None));
     }
@@ -128,7 +128,7 @@ public sealed class SortUndoIntegrationTests : IAsyncLifetime
         // gestern muss sich heute noch zurücknehmen lassen.
         SortRunItem[] moved = await SortAsync("a.jpg");
 
-        // Neue Dienste auf derselben Datenbank – wie nach einem Neustart der Anwendung.
+        // Neue Dienste auf derselben Datenbank, wie nach einem Neustart der Anwendung.
         SortUndoService afterRestart = new(
             new SortJournalGateway(
                 _provider.GetRequiredService<ISortJournal>(),

@@ -9,7 +9,7 @@ namespace PictureSorter.App.Tests.ViewModels;
 
 /// <summary>
 /// Tests der Vorschlags-Kachel. Sie ist die Stelle, an der die Nutzerin entscheidet,
-/// was mit ihren Fotos geschieht — was hier steht, muss stimmen und vollständig
+/// was mit ihren Fotos geschieht. Was hier steht, muss stimmen und vollständig
 /// übersetzt sein. Der Sprach-Fake wirft bei einem unbekannten Schlüssel, damit eine
 /// vergessene Übersetzung hier auffällt und nicht erst in der englischen Fassung.
 /// </summary>
@@ -40,7 +40,7 @@ public sealed class ProposalViewModelTests
     public void TargetFolderName_ShowsOnlyTheFolderNotTheWholePath()
     {
         // Auf der Kachel ist kein Platz für einen vollen Pfad, und er hilft dort auch
-        // niemandem — die Frage ist „in welchen Ordner?", nicht „wohin genau?".
+        // niemandem: Die Frage ist „in welchen Ordner?", nicht „wohin genau?".
         ProposalViewModel sut = Create();
 
         Assert.Equal("Urlaub", sut.TargetFolderName);
@@ -61,7 +61,7 @@ public sealed class ProposalViewModelTests
     public void MethodText_IsTranslatedForEveryMethod(ClassificationMethod method)
     {
         // Jede Zuordnungsart braucht einen eigenen Text. Fehlt einer, wirft der
-        // Sprach-Fake — genau dafür ist er da.
+        // Sprach-Fake. Genau dafür ist er da.
         ProposalViewModel sut = Create(method: method);
 
         Assert.False(string.IsNullOrWhiteSpace(sut.MethodText));
@@ -70,7 +70,7 @@ public sealed class ProposalViewModelTests
     [Fact]
     public void AutomationName_NamesFileTargetAndConfidence()
     {
-        // Was die Kachel zeigt, muss auch der Screenreader sagen — sonst hört die
+        // Was die Kachel zeigt, muss auch der Screenreader sagen, sonst hört die
         // Nutzerin nur „Element".
         ProposalViewModel sut = Create(confidence: 0.87);
 

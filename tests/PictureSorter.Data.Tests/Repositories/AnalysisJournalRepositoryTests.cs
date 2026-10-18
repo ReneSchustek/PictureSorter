@@ -13,7 +13,7 @@ namespace PictureSorter.Data.Tests.Repositories;
 ///
 /// Das Protokoll ist die einzige Stelle, an der nach einem angehaltenen oder
 /// abgestürzten Lauf noch steht, wie weit er gekommen ist. Kommt es unvollständig
-/// zurück, ist ein Lauf über tausende Bilder nicht fortsetzbar — und das sind Tage.
+/// zurück, ist ein Lauf über tausende Bilder nicht fortsetzbar, und das sind Tage.
 /// </summary>
 public sealed class AnalysisJournalRepositoryTests : IAsyncLifetime
 {
@@ -133,7 +133,7 @@ public sealed class AnalysisJournalRepositoryTests : IAsyncLifetime
     public async Task FinishAsync_WithAnOverlongReason_StillStoresTheRun()
     {
         // Der Grund geht in eine Spalte begrenzter Länge. Ein zu langer Text darf das
-        // Speichern nicht scheitern lassen — ausgerechnet beim Festhalten eines Fehlers.
+        // Speichern nicht scheitern lassen, ausgerechnet beim Festhalten eines Fehlers.
         await _sut.StartAsync(NewRun(), TestContext.Current.CancellationToken);
 
         await _sut.FinishAsync(

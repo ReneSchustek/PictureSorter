@@ -133,7 +133,7 @@ public sealed class JsonlEmbeddingCacheTests : IDisposable
     public async Task Load_WhenCompactionFails_KeepsWorkingAndLeavesNoTempFile()
     {
         // Ein belegter Name für die temporäre Datei lässt die Kompaktierung scheitern.
-        // Sie ist eine Optimierung – der Cache muss trotzdem antworten.
+        // Sie ist eine Optimierung. Der Cache muss trotzdem antworten.
         string path = await WriteDeadLinesAsync().ConfigureAwait(true);
         _ = Directory.CreateDirectory(path + ".tmp");
 
@@ -160,7 +160,7 @@ public sealed class JsonlEmbeddingCacheTests : IDisposable
         Assert.Null(await cache.GetAsync("unbekannt", TestContext.Current.CancellationToken));
     }
 
-    // Schreibt 150 Fassungen desselben Schlüssels — genau das, was im Betrieb entsteht
+    // Schreibt 150 Fassungen desselben Schlüssels, genau das, was im Betrieb entsteht
     // und was die Kompaktierung auslöst. Bewusst über den Cache selbst geschrieben:
     // Das Dateiformat ist intern und kein Vertrag gegenüber dem Test.
     private async Task<string> WriteDeadLinesAsync()

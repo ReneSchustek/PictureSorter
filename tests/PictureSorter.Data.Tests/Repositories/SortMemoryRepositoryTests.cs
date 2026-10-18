@@ -31,7 +31,7 @@ public sealed class SortMemoryRepositoryTests : IAsyncLifetime
         _ = services.AddPictureSorterData(_dataDirectory);
         _provider = services.BuildServiceProvider();
 
-        // Schema anlegen – wie beim App-Start.
+        // Schema anlegen, wie beim App-Start.
         bool ready = await _provider.GetRequiredService<DatabaseInitializer>()
             .InitializeAsync(CancellationToken.None)
             .ConfigureAwait(false);
@@ -187,7 +187,7 @@ public sealed class SortMemoryRepositoryTests : IAsyncLifetime
     {
         // Gezählt wird, was die Wiederherstellung auch zurückholt: allein die offenen
         // Vorschläge. Einsortiertes liegt längst im Zielordner, Abgelehntes ist eine
-        // Entscheidung — beides erneut anzubieten wäre das Gegenteil eines Gedächtnisses.
+        // Entscheidung. Beides erneut anzubieten wäre das Gegenteil eines Gedächtnisses.
         await _sut.UpsertAsync(CreateRecord("sig-1", SortMemoryStatus.Proposed), CancellationToken.None);
         await _sut.UpsertAsync(CreateRecord("sig-2", SortMemoryStatus.Proposed), CancellationToken.None);
         await _sut.UpsertAsync(CreateRecord("sig-3", SortMemoryStatus.Sorted), CancellationToken.None);
@@ -203,7 +203,7 @@ public sealed class SortMemoryRepositoryTests : IAsyncLifetime
     public async Task CountProposals_IgnoresTheCaseOfTheGroupName()
     {
         // Wer die Gruppe beim zweiten Mal klein schreibt, soll sein Ergebnis trotzdem
-        // wiederfinden — die Wiederherstellung vergleicht ebenso.
+        // wiederfinden: Die Wiederherstellung vergleicht ebenso.
         await _sut.UpsertAsync(CreateRecord("sig-1", SortMemoryStatus.Proposed), CancellationToken.None);
 
         int count = await _sut.CountProposalsAsync(Folder, "urlaub", CancellationToken.None);

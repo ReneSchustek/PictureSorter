@@ -3,7 +3,7 @@ using PictureSorter.Core.ValueObjects;
 namespace PictureSorter.Core.Tests.ValueObjects;
 
 /// <summary>
-/// Tests der Namensfindung. Sie entscheidet, wie eine Datei künftig heißt — und ein
+/// Tests der Namensfindung. Sie entscheidet, wie eine Datei künftig heißt, und ein
 /// Name ist alles, was die Nutzerin im Explorer von einem Foto sieht. Ein Fehler hier
 /// tauscht einen unlesbaren Namen gegen einen falschen, und das ist keine
 /// Verbesserung.
@@ -49,7 +49,7 @@ public sealed class FileNameRepairTests
     {
         // Ein Emoji besteht aus einem Paar von Surrogaten und ist ein gültiges
         // Zeichen. Wer nur auf „Surrogat" prüft, bietet jeden Namen mit Emoji zum
-        // Umbenennen an — und benennt der Nutzerin ihre Urlaubsbilder um.
+        // Umbenennen an, und benennt der Nutzerin ihre Urlaubsbilder um.
         Assert.False(FileNameRepair.NeedsRepair("Strand \U0001F334.jpg"));
     }
 
@@ -63,7 +63,7 @@ public sealed class FileNameRepairTests
     [Fact]
     public void HasUnreadableExtension_ForABrokenExtensionIsTrue()
     {
-        // Aus einer kaputten Endung ließe sich das Bildformat nur raten — und eine
+        // Aus einer kaputten Endung ließe sich das Bildformat nur raten, und eine
         // geratene Endung macht die Datei mit einem Klick unbrauchbar.
         Assert.True(FileNameRepair.HasUnreadableExtension("bild.j\uFFFDg"));
     }
@@ -146,7 +146,7 @@ public sealed class FileNameRepairTests
     [Fact]
     public void Suggest_WithAnUnusableFolderNameStillFindsAName()
     {
-        // Bliebe vom Ordnernamen nichts übrig, hieße die Datei „ 001.jpg" — ein Name,
+        // Bliebe vom Ordnernamen nichts übrig, hieße die Datei „ 001.jpg", ein Name,
         // der mit einem Leerzeichen beginnt und unter Windows Ärger macht.
         Assert.Equal("Bild 001.jpg", FileNameRepair.Suggest("\uFFFD.jpg", capturedAt: null, "\uFFFD\uFFFD", 1));
     }

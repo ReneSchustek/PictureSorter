@@ -18,7 +18,7 @@ public sealed class PhotoSourceOptions
     ///
     /// Das Einlesen wartet fast nur: auf die Festplatte, und bei einem Ordner aus der
     /// Cloud (iCloud-Fotos unter Windows, OneDrive) auf den Download der Datei. Wartezeit
-    /// lässt sich übereinanderlegen, ohne dass es etwas kostet – deshalb wird der
+    /// lässt sich übereinanderlegen, ohne dass es etwas kostet. Deshalb wird der
     /// langsamste Abschnitt eines Laufs hier um ein Vielfaches kürzer.
     ///
     /// Acht ist bewusst kein hoher Wert: Eine mechanische Festplatte wird durch zu viele
@@ -30,17 +30,17 @@ public sealed class PhotoSourceOptions
 
     /// <summary>
     /// Wie viele fertig eingelesene Bilder höchstens auf Vorrat bereitliegen, bevor das
-    /// Laden wartet. <c>0</c> bedeutet: ohne Grenze – das Laden wartet nie auf die
+    /// Laden wartet. <c>0</c> bedeutet: ohne Grenze; das Laden wartet nie auf die
     /// Bewertung.
     ///
     /// Voreingestellt ist die Entkopplung (<c>0</c>), und zwar aus zwei Gründen. Erstens
     /// kostet der Vorrat kaum Speicher: Gepuffert wird nur ein <c>Photo</c> mit seinen
-    /// Metadaten, nie der Bildinhalt — selbst zehntausend Einträge bleiben im
+    /// Metadaten, nie der Bildinhalt. Selbst zehntausend Einträge bleiben im
     /// zweistelligen Megabyte-Bereich. Zweitens sparte die alte Grenze von fünfzig
     /// Bildern keine einzige Übertragung: Das Laden muss ohnehin JEDE Datei öffnen, um an
     /// das Aufnahmedatum zu kommen, also wird bei einem vollständigen Lauf am Ende alles
     /// heruntergeladen. Die Grenze verschob den Download nur nach hinten und machte dabei
-    /// das Laden von der Geschwindigkeit der KI abhängig — genau das, was die getrennten
+    /// das Laden von der Geschwindigkeit der KI abhängig, genau das, was die getrennten
     /// Balken sichtbar machen sollten.
     ///
     /// Der Preis: Wird ein Lauf früh abgebrochen, wurden bereits Dateien geladen, die

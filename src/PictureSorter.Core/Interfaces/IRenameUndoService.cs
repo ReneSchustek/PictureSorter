@@ -7,7 +7,7 @@ namespace PictureSorter.Core.Interfaces;
 /// </summary>
 /// <remarks>
 /// Eigener Vertrag und nicht Teil des Umbenennens: Er wird zu einer anderen Zeit
-/// ausgelöst — oft Tage später und nach einem Neustart — und arbeitet allein aus dem
+/// ausgelöst (oft Tage später und nach einem Neustart) und arbeitet allein aus dem
 /// Protokoll. Er braucht weder Ordner noch Vorschau.
 /// </remarks>
 public interface IRenameUndoService

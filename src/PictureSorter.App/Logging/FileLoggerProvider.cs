@@ -14,14 +14,14 @@ namespace PictureSorter.App.Logging;
 /// <summary>
 /// <see cref="ILoggerProvider"/>, der Logeinträge in eine täglich rollierende
 /// Textdatei unter <c>%LocalAppData%\PictureSorter\logs\</c> schreibt. So bleibt
-/// auch nach einem Absturz nachvollziehbar, was passiert ist – unabhängig von der
+/// auch nach einem Absturz nachvollziehbar, was passiert ist, unabhängig von der
 /// laufenden Anwendung lesbar. Bewusst ohne Fremdbibliothek umgesetzt
 /// (Library-Gate: wenige Zeilen eigener Code statt zusätzlicher Abhängigkeit).
 /// Schreibfehler (Datei gesperrt, Rechte, Platte voll) dürfen die App nie abbrechen.
 ///
 /// Logging-Scopes (z. B. Korrelations-IDs eines Vorgangs) werden über einen
-/// <see cref="AsyncLocal{T}"/>-Stack verwaltet, der – da der Provider ein Singleton
-/// ist – über alle Logger hinweg und mit dem async-Kontext fließt. Dadurch tragen
+/// <see cref="AsyncLocal{T}"/>-Stack verwaltet, der (da der Provider ein Singleton
+/// ist) über alle Logger hinweg und mit dem async-Kontext fließt. Dadurch tragen
 /// auch verschachtelte Logeinträge (z. B. der Ollama-Aufrufe) dieselbe
 /// Korrelations-ID. <see cref="ReadRecent"/> liefert die jüngsten Zeilen für den
 /// integrierten Log-Viewer.
@@ -94,7 +94,7 @@ internal sealed class FileLoggerProvider : ILoggerProvider
                 using FileStream stream = new(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
                 // Nur das Ende der Datei lesen. Die Tagesdatei darf bis zu 100 MB groß
-                // werden – sie komplett in den Speicher zu laden, nur um die letzten
+                // werden. Sie komplett in den Speicher zu laden, nur um die letzten
                 // Zeilen zu zeigen, wäre eine unnötige Speicherspitze.
                 long tailBytes = Math.Min(stream.Length, TailReadBytes);
                 _ = stream.Seek(-tailBytes, SeekOrigin.End);
@@ -130,7 +130,7 @@ internal sealed class FileLoggerProvider : ILoggerProvider
         return scope;
     }
 
-    // Der Zeitstempel einer Logzeile — aus derselben Quelle wie der Dateiname. Griffe der
+    // Der Zeitstempel einer Logzeile kommt aus derselben Quelle wie der Dateiname. Griffe der
     // Logger direkt auf die Systemuhr zu, gäbe es zwei Zeitquellen in einer Klasse, und
     // der Zeitstempel ließe sich nicht prüfen. Ortszeit wie beim Dateinamen.
     internal DateTimeOffset Now => _clock.UtcNow.ToLocalTime();
@@ -218,7 +218,7 @@ internal sealed class FileLoggerProvider : ILoggerProvider
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            // Ohne schreibbares Verzeichnis bleibt nur der Debug-Sink – kein Abbruch.
+            // Ohne schreibbares Verzeichnis bleibt nur der Debug-Sink, kein Abbruch.
         }
     }
 

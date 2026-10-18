@@ -6,7 +6,7 @@ namespace PictureSorter.App.Tests.ViewModels;
 
 /// <summary>
 /// Tests der Zeile in der Umbenennungs-Vorschau. Sie zeigt der Nutzerin, was mit einem
-/// Dateinamen geschehen soll — und woher der neue Name stammt. Beides muss stimmen,
+/// Dateinamen geschehen soll, und woher der neue Name stammt. Beides muss stimmen,
 /// bevor sie zustimmt.
 /// </summary>
 public sealed class RenameProposalViewModelTests
@@ -72,8 +72,8 @@ public sealed class RenameProposalViewModelTests
         // bliebe der Zählstand stehen und der Knopf falsch.
         //
         // Gezählt wird ab dem Erzeugen: Schon das Setzen des Häkchens im Konstruktor
-        // meldet einmal nach oben. Das ist gewollt — die Seite erfährt so von jeder
-        // neuen Zeile — und der Zähler startet deshalb erst danach bei null.
+        // meldet einmal nach oben. Das ist gewollt: Die Seite erfährt so von jeder
+        // neuen Zeile, und der Zähler startet deshalb erst danach bei null.
         int meldungen = 0;
         RenameProposalViewModel sut = Create(onSelectionChanged: () => meldungen++);
         meldungen = 0;

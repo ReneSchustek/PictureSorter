@@ -7,8 +7,8 @@ using PictureSorter.Core.ValueObjects;
 namespace PictureSorter.Application.Tests.Sorting;
 
 /// <summary>
-/// Tests des Rückgängigmachens. Ein Sortierlauf verschiebt die Fotos der Nutzerin –
-/// es ist der einzige Schritt der Anwendung, der ihre Dateien wirklich bewegt, und
+/// Tests des Rückgängigmachens. Ein Sortierlauf verschiebt die Fotos der Nutzerin.
+/// Es ist der einzige Schritt der Anwendung, der ihre Dateien wirklich bewegt, und
 /// er muss umkehrbar sein. Genauso wichtig ist die Gegenprobe: Beim Zurückholen darf
 /// nichts überschrieben werden, sonst wäre ausgerechnet das Rückgängig die Stelle,
 /// an der Daten verloren gehen.
@@ -42,7 +42,7 @@ public sealed class SortUndoServiceTests
     public async Task UndoLastRunAsync_ForgetsThatThePhotosWereSorted()
     {
         // Bliebe der Eintrag „einsortiert" stehen, würde das Foto nie wieder
-        // vorgeschlagen – die Anwendung hätte ein Gedächtnis an eine Sortierung, die
+        // vorgeschlagen. Die Anwendung hätte ein Gedächtnis an eine Sortierung, die
         // es gar nicht mehr gibt.
         FakeSortMemory memory = new();
         memory.Records.Add(CreateRecord("sig-a"));
@@ -58,7 +58,7 @@ public sealed class SortUndoServiceTests
     public async Task UndoLastRunAsync_WhenAFileCannotBeRestored_KeepsItRememberedAndCountsIt()
     {
         // Die Datei liegt nicht mehr am Zielort oder ihr Ursprungsort ist wieder
-        // belegt. Sie bleibt, wo sie ist – und weil sie dort bleibt, bleibt sie auch
+        // belegt. Sie bleibt, wo sie ist, und weil sie dort bleibt, bleibt sie auch
         // als einsortiert gemerkt. Die Nutzerin erfährt über die Zahl, dass nicht
         // alles zurückkam.
         FakeSortMemory memory = new();
@@ -149,7 +149,7 @@ public sealed class SortUndoServiceTests
     public async Task UndoLastRunAsync_AfterACopyRun_RemovesTheCopiesInsteadOfMovingThemBack()
     {
         // Nach einem Kopierlauf liegt das Original noch im Quellordner. „Zurückholen"
-        // hieße dort, es ein zweites Mal hinzulegen – rückgängig ist hier das
+        // hieße dort, es ein zweites Mal hinzulegen. Rückgängig ist hier das
         // Entfernen der Kopie.
         FakeFileOrganizer organizer = new();
         FakeSortJournal journal = SeededCopyRun("a.jpg", "b.jpg");

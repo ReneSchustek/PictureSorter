@@ -14,7 +14,7 @@ namespace PictureSorter.Infrastructure.Update;
 /// Prüft über die GitHub-Release-API, ob eine neuere Version veröffentlicht wurde.
 /// Die Prüfung ist in sich fehlertolerant: Bei fehlender Konfiguration, fehlender
 /// Netzwerkverbindung oder unerwarteter Antwort wird <see langword="null"/>
-/// geliefert, statt eine Ausnahme zu werfen – ein Update-Check darf den Start nie
+/// geliefert, statt eine Ausnahme zu werfen, denn ein Update-Check darf den Start nie
 /// stören.
 /// </summary>
 public sealed class GitHubUpdateChecker : IUpdateChecker
@@ -55,7 +55,7 @@ public sealed class GitHubUpdateChecker : IUpdateChecker
 
         if (string.IsNullOrWhiteSpace(_options.GitHubOwner) || string.IsNullOrWhiteSpace(_options.GitHubRepo))
         {
-            // Ohne Repository-Angabe ist keine Prüfung möglich – bewusst kein Fehler.
+            // Ohne Repository-Angabe ist keine Prüfung möglich (bewusst kein Fehler).
             return null;
         }
 
@@ -105,7 +105,7 @@ public sealed class GitHubUpdateChecker : IUpdateChecker
 
     // Sucht das Paket für die laufende Architektur und die zugehörige Signatur. Ein
     // Release trägt je eine Datei für x64, x86 und ARM64; ein Paket der falschen
-    // Architektur wäre unbrauchbar. Fehlt die Signatur, bleibt das Paket ungenannt –
+    // Architektur wäre unbrauchbar. Fehlt die Signatur, bleibt das Paket ungenannt,
     // ohne sie würde es ohnehin abgelehnt, und die Anwendung soll gar nicht erst
     // anfangen, es herunterzuladen.
     private (Uri? Package, Uri? Signature) FindPackage(GitHubRelease release)
@@ -175,7 +175,7 @@ internal static partial class UpdateCheckerLog
     public static partial void Checked(ILogger logger, string current, string latest, bool available);
 
     // Warnung, nicht Information: „Prüfung nicht möglich" ist etwas anderes als „kein
-    // Update". Stand es auf Information, ging der Unterschied im Protokoll unter – und
+    // Update". Stand es auf Information, ging der Unterschied im Protokoll unter, und
     // eine dauerhaft erfolglose Prüfung sah aus wie eine erfolgreiche ohne Fund.
     [LoggerMessage(EventId = 5001, Level = LogLevel.Warning, Message = "Update-Prüfung nicht möglich (offline, Quelle nicht erreichbar oder Repository nicht öffentlich).")]
     public static partial void CheckFailed(ILogger logger, Exception exception);

@@ -24,7 +24,7 @@ internal static class ZoomWindowSize
     /// Berechnet die Größe des Fensterinhalts aus dem Bild und der freien Fläche.
     ///
     /// Drei Regeln: Das Seitenverhältnis bleibt, die Arbeitsfläche wird nicht
-    /// ausgefüllt, und ein kleines Bild wird nicht aufgeblasen — hochskaliert sieht es
+    /// ausgefüllt, und ein kleines Bild wird nicht aufgeblasen. Hochskaliert sieht es
     /// nur schlechter aus, gewonnen ist nichts.
     /// </summary>
     /// <param name="pixelWidth">Breite des Bildes in Bildpunkten.</param>

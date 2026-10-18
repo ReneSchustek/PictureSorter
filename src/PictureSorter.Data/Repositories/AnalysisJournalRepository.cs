@@ -155,7 +155,7 @@ internal sealed class AnalysisJournalRepository : IAnalysisJournal
 
             // Gezählt statt geladen: Die Zahl der Ergebnisse steht im Angebot zum
             // Fortsetzen („bei 3.472 von 4.130"), die Ergebnisse selbst werden dort noch
-            // nicht gebraucht — und es können hunderttausende sein.
+            // nicht gebraucht, und es können hunderttausende sein.
             int decided = await context.AnalysisRunItems
                 .AsNoTracking()
                 .CountAsync(item => item.AnalysisRunId == entity.Id, cancellationToken)
@@ -249,7 +249,7 @@ internal sealed class AnalysisJournalRepository : IAnalysisJournal
             : null;
 
     // Der Grund des Scheiterns geht in eine Spalte begrenzter Länge. Ein zu langer Text
-    // ließe das Speichern scheitern — ausgerechnet beim Festhalten eines Fehlers.
+    // ließe das Speichern scheitern, ausgerechnet beim Festhalten eines Fehlers.
     private static string? Shorten(string? reason)
     {
         const int maxLength = 512;

@@ -32,7 +32,7 @@ public sealed class ZoomWindowSizeTests
     [Fact]
     public void Compute_StaysInsideTheWorkArea()
     {
-        // Das Bild ist größer als der Bildschirm — das Fenster darf es nicht sein.
+        // Das Bild ist größer als der Bildschirm, das Fenster darf es nicht sein.
         (int width, int height) = ZoomWindowSize.Compute(9000, 6000, WorkWidth, WorkHeight);
 
         Assert.True(width <= WorkWidth, $"Breite {width} überschreitet die Arbeitsfläche.");
@@ -43,7 +43,7 @@ public sealed class ZoomWindowSizeTests
     public void Compute_DoesNotBlowUpASmallPhoto()
     {
         // Hochskaliert sieht ein kleines Bild nur schlechter aus; gewonnen ist nichts.
-        // Die Mindestgröße bleibt davon unberührt — sie hält das Fenster greifbar.
+        // Die Mindestgröße bleibt davon unberührt, denn sie hält das Fenster greifbar.
         (int width, int height) = ZoomWindowSize.Compute(800, 600, WorkWidth, WorkHeight);
 
         Assert.Equal(800, width);
@@ -66,7 +66,7 @@ public sealed class ZoomWindowSizeTests
     public void Compute_WithoutUsableDimensions_FallsBackToTheMinimum(int pixelWidth, int pixelHeight)
     {
         // Ein Bild, dessen Maße nicht zu lesen waren, darf kein Fenster der Größe null
-        // ergeben — dann wäre nichts zu sehen und nichts zu greifen.
+        // ergeben. Dann wäre nichts zu sehen und nichts zu greifen.
         (int width, int height) = ZoomWindowSize.Compute(pixelWidth, pixelHeight, WorkWidth, WorkHeight);
 
         Assert.Equal(ZoomWindowSize.MinimumWidth, width);

@@ -42,7 +42,7 @@ public sealed class DuplicateGroupViewModelTests
 
         group.Photos[1].IsMarkedForDeletion = false;
 
-        // Zwei Bilder bleiben erhalten – keines ist mehr die letzte Kopie.
+        // Zwei Bilder bleiben erhalten, keines ist mehr die letzte Kopie.
         Assert.False(group.Photos[0].IsLastRemainingCopy);
         Assert.True(group.Photos[0].CanToggleDeletion);
         Assert.False(group.Photos[1].IsLastRemainingCopy);
@@ -58,7 +58,7 @@ public sealed class DuplicateGroupViewModelTests
         group.Photos[0].IsMarkedForDeletion = true;
         group.Photos[1].IsMarkedForDeletion = true;
 
-        // Übrig bleibt nur noch das dritte Bild – es wird gesperrt.
+        // Übrig bleibt nur noch das dritte Bild. Es wird gesperrt.
         Assert.True(group.Photos[2].IsLastRemainingCopy);
         Assert.False(group.Photos[2].CanToggleDeletion);
     }
@@ -93,7 +93,7 @@ public sealed class DuplicateGroupViewModelTests
         DuplicateGroupViewModel group = CreateGroup(photoCount: 3);
         group.Photos[1].IsMarkedForDeletion = false;
 
-        // Die gelöschten Fotos verlassen die Gruppe – so räumt das ViewModel nach
+        // Die gelöschten Fotos verlassen die Gruppe: So räumt das ViewModel nach
         // dem Papierkorb-Lauf auf.
         group.Photos.RemoveAt(2);
         group.Photos.RemoveAt(1);

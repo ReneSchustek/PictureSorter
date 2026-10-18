@@ -49,8 +49,8 @@ public sealed class SortViewModelTests
     [Fact]
     public async Task Apply_ByDefault_MovesInsteadOfCopying()
     {
-        // Die Voreinstellung darf sich durch die neue Wahlmöglichkeit nicht ändern –
-        // wer nichts umstellt, bekommt weiterhin das gewohnte Verschieben.
+        // Die Voreinstellung darf sich durch die neue Wahlmöglichkeit nicht ändern:
+        // Wer nichts umstellt, bekommt weiterhin das gewohnte Verschieben.
         FakePhotoSorter sorter = new(CreateProposals(1));
         using SortViewModel sut = CreateSut(sorter);
         await AnalyzeAsync(sut);
@@ -174,8 +174,8 @@ public sealed class SortViewModelTests
     [Fact]
     public async Task RefreshUndoState_WithARecordedRun_OffersUndoAndNamesTheCategory()
     {
-        // Der Lauf steht dauerhaft im Protokoll: Auch nach einem Neustart – wenn also
-        // keine Vorschläge mehr in der Ansicht liegen – muss der Hinweis erscheinen.
+        // Der Lauf steht dauerhaft im Protokoll: Auch nach einem Neustart (wenn also
+        // keine Vorschläge mehr in der Ansicht liegen) muss der Hinweis erscheinen.
         FakeSortUndoService undo = new();
         undo.SetUndoableRun(fileCount: 3);
         using SortViewModel sut = CreateSut(new FakePhotoSorter(CreateProposals(1)), undo);
@@ -253,7 +253,7 @@ public sealed class SortViewModelTests
     public async Task Examples_StartEmptyOnBothSides()
     {
         // Lüden die Seiten zufällige Bilder des Ordners vor, passte zu einem bestimmten
-        // Thema oft kaum eines – der Platz wäre trotzdem belegt.
+        // Thema oft kaum eines. Der Platz wäre trotzdem belegt.
         using SortViewModel sut = CreateSut(new FakePhotoSorter(CreateProposals(1)));
         sut.SourceFolder = SourceFolder;
 
@@ -268,7 +268,7 @@ public sealed class SortViewModelTests
     public async Task SuggestNegatives_DoesNotOfferImagesAlreadyChosenAsMatching()
     {
         // Dasselbe Foto darf nicht gleichzeitig als passend und als Gegenbeispiel
-        // dastehen – das Profil widerspräche sich selbst.
+        // dastehen: Das Profil widerspräche sich selbst.
         FakePhotoSource source = new([.. Enumerable.Range(0, 3).Select(index => new Photo
         {
             FullPath = Path.Combine(SourceFolder, $"bild-{index}.jpg"),
@@ -335,7 +335,7 @@ public sealed class SortViewModelTests
     public void AddDroppedImages_RespectsTheCapacityOfTheSide()
     {
         // Ohne diese Grenze erfährt der Nutzer erst beim Anlernen, dass es zu viele
-        // Bilder waren – dort läuft je Bild ein vollständiger Aufruf der Bilderkennung.
+        // Bilder waren. Dort läuft je Bild ein vollständiger Aufruf der Bilderkennung.
         using SortViewModel sut = CreateSut(new FakePhotoSorter(CreateProposals(1)));
         string folder = Path.Combine(Path.GetTempPath(), "PictureSorterTests", Guid.NewGuid().ToString("N"));
         _ = Directory.CreateDirectory(folder);
@@ -479,7 +479,7 @@ public sealed class SortViewModelTests
     [Fact]
     public void CanLearn_NeedsANameAndAtLeastOnePositiveExample()
     {
-        // Ein Profil ohne Beispiel wäre eine Beschreibung ohne Beleg — die Erkennung
+        // Ein Profil ohne Beispiel wäre eine Beschreibung ohne Beleg. Die Erkennung
         // hätte nichts, woran sie sich ausrichten könnte.
         using SortViewModel sut = CreateSut(new FakePhotoSorter([]));
 

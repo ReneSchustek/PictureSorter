@@ -8,7 +8,7 @@ namespace PictureSorter.App.Tests.ViewModels;
 
 /// <summary>
 /// Tests der Gedächtnis-Zeile. Sie beantwortet der Nutzerin eine einzige Frage: Was
-/// wurde für dieses Foto wann entschieden — und wie sicher war sich das Programm
+/// wurde für dieses Foto wann entschieden, und wie sicher war sich das Programm
 /// dabei? Zahl und Zeitpunkt gehören in ihre Schreibweise, nicht in die des Rechners.
 /// </summary>
 public sealed class SortMemoryItemViewModelTests

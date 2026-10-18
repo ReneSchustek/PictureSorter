@@ -16,14 +16,14 @@ namespace PictureSorter.App.Tests.ViewModels;
 /// <summary>
 /// Tests des Ablaufs rund um die Sortier-Ansicht: Schritte des Assistenten, Neustart,
 /// Ordnerwahl, Beispielbeschaffung und vor allem die Abbruch- und Fehlerzweige. Sie
-/// sind der eigentliche Zweck des expliziten <see cref="SortState"/> — geht etwas
+/// sind der eigentliche Zweck des expliziten <see cref="SortState"/>: Geht etwas
 /// schief, muss die Ansicht wieder bedienbar sein und die Statusleiste den Grund nennen.
 /// </summary>
 public sealed class SortViewModelFlowTests : IDisposable
 {
     private const string SourceFolder = @"C:\fotos";
 
-    // Die Beispielauswahl nimmt nur Dateien an, die es wirklich gibt – sie liest Größe
+    // Die Beispielauswahl nimmt nur Dateien an, die es wirklich gibt. Sie liest Größe
     // und Datum aus dem Dateisystem. Für diese Tests braucht es also echte Dateien.
     private readonly string _imageFolder =
         Path.Combine(Path.GetTempPath(), "PictureSorterTests", Guid.NewGuid().ToString("N"));
@@ -65,7 +65,7 @@ public sealed class SortViewModelFlowTests : IDisposable
         await sut.Wizard.PrimaryActionCommand.ExecuteAsync(parameter: null);
         Assert.True(sut.Wizard.IsStep4);
 
-        // Lernen, Analysieren, Sortieren — die drei Schritte mit eigener Verarbeitung.
+        // Lernen, Analysieren, Sortieren: die drei Schritte mit eigener Verarbeitung.
         await sut.Wizard.PrimaryActionCommand.ExecuteAsync(parameter: null);
         Assert.True(sut.Wizard.IsStep5);
 
@@ -78,7 +78,7 @@ public sealed class SortViewModelFlowTests : IDisposable
         Assert.Equal(SortState.Completed, sut.State);
         Assert.Equal(2, sorter.Applied.Count);
 
-        // Der letzte Schritt blättert bewusst nicht weiter — es gibt keinen siebten.
+        // Der letzte Schritt blättert bewusst nicht weiter. Es gibt keinen siebten.
         Assert.True(sut.Wizard.IsStep6);
     }
 
@@ -211,7 +211,7 @@ public sealed class SortViewModelFlowTests : IDisposable
     public async Task SuggestNegatives_SkipsPhotosAlreadyOnTheOtherSide()
     {
         // Dasselbe Foto darf nicht gleichzeitig als passend und als Gegenbeispiel
-        // dastehen — sonst lernt die Kategorie sich selbst weg.
+        // dastehen, sonst lernt die Kategorie sich selbst weg.
         Photo photo = new() { FullPath = Path.Combine(SourceFolder, "beispiel.jpg"), FileName = "beispiel.jpg" };
         using SortViewModel sut = CreateSut(photoSource: new FakePhotoSource([photo]));
         sut.SourceFolder = SourceFolder;
@@ -370,7 +370,7 @@ public sealed class SortViewModelFlowTests : IDisposable
     [Fact]
     public async Task Analyze_WithoutMatchingPhotos_ShowsThePreviewAllTheSame()
     {
-        // Die Vorschau muss auch leer erscheinen — sonst bliebe unklar, ob die Analyse
+        // Die Vorschau muss auch leer erscheinen, sonst bliebe unklar, ob die Analyse
         // überhaupt gelaufen ist.
         using SortViewModel sut = CreateSut(new FakePhotoSorter([]));
         await PrepareLearnedCategoryAsync(sut);
@@ -456,8 +456,8 @@ public sealed class SortViewModelFlowTests : IDisposable
         await sut.RefreshUndoStateCommand.ExecuteAsync(parameter: null);
         Assert.True(sut.HasUndoableRun);
 
-        // Der Lauf verschwindet zwischen Anzeige und Klick — etwa, weil ihn ein
-        // zweites Fenster bereits zurückgenommen hat.
+        // Der Lauf verschwindet zwischen Anzeige und Klick (etwa, weil ihn ein
+        // zweites Fenster bereits zurückgenommen hat).
         _ = await undo.UndoLastRunAsync(TestContext.Current.CancellationToken);
 
         await sut.UndoCommand.ExecuteAsync(parameter: null);
@@ -535,7 +535,7 @@ public sealed class SortViewModelFlowTests : IDisposable
         sut.SourceFolder = SourceFolder;
         sut.CategoryName = "Urlaub";
 
-        // Ohne Zeitraum gäbe es kein Kriterium — jedes Foto des Ordners stünde zum
+        // Ohne Zeitraum gäbe es kein Kriterium: Jedes Foto des Ordners stünde zum
         // Verschieben bereit. Genau deshalb bleibt der Knopf gesperrt.
         Assert.False(sut.CanSortByDate);
 
@@ -585,7 +585,7 @@ public sealed class SortViewModelFlowTests : IDisposable
         Assert.Equal(SortState.Preview, sut.State);
         _ = Assert.Single(sut.Proposals.Items);
 
-        // Der eingetippte Name wird beschnitten weitergereicht — sonst entstünde ein
+        // Der eingetippte Name wird beschnitten weitergereicht, sonst entstünde ein
         // Ordner mit führendem Leerzeichen.
         Assert.Equal("Urlaub Norwegen", sorter.LastDateTargetFolder);
     }
@@ -753,7 +753,7 @@ public sealed class SortViewModelFlowTests : IDisposable
         FakePhotoSorter sorter = new(CreateProposals(3));
         using SortViewModel sut = CreateSut(sorter, journal: journal);
 
-        // Die Gruppe ist angelernt und gespeichert — so wie sie es beim ursprünglichen
+        // Die Gruppe ist angelernt und gespeichert, so wie sie es beim ursprünglichen
         // Lauf war. Ohne sie ließe sich nicht fortsetzen, das prüft der nächste Test.
         await PrepareLearnedCategoryAsync(sut);
         await sut.Resume.RefreshCommand.ExecuteAsync(parameter: null);
@@ -768,7 +768,7 @@ public sealed class SortViewModelFlowTests : IDisposable
         Assert.Equal(SortState.Preview, sut.State);
         Assert.Equal(3, sut.Proposals.Items.Count);
 
-        // Und die Nutzerin landet direkt bei der Vorschau — sie hat um das Ergebnis
+        // Und die Nutzerin landet direkt bei der Vorschau. Sie hat um das Ergebnis
         // gebeten, nicht um den Weg dorthin.
         Assert.True(sut.Wizard.IsStep6);
     }
@@ -846,7 +846,7 @@ public sealed class SortViewModelFlowTests : IDisposable
     {
         // Das Angebot steht über den Karten, nicht in der Analyse-Karte: Im geführten
         // Modus liegt die hinter dem Anlernen, und wer nur nachschlagen will, müsste erst
-        // Beispiele wählen und lernen lassen — beides trägt zum Nachschlagen nichts bei
+        // Beispiele wählen und lernen lassen: Beides trägt zum Nachschlagen nichts bei
         // und überschriebe obendrein die vorhandene Gruppe.
         FakeSortMemory memory = new();
         memory.Records.Add(RememberedProposal(CreateImage("gerettet.jpg")));
@@ -883,7 +883,7 @@ public sealed class SortViewModelFlowTests : IDisposable
     [Fact]
     public async Task RecoverOffer_NamesTheGroupAndTheNumberOfDecisions()
     {
-        // Vor dem Klick soll dastehen, worum es geht — sonst muss die Nutzerin ihn drücken,
+        // Vor dem Klick soll dastehen, worum es geht, sonst muss die Nutzerin ihn drücken,
         // um zu erfahren, ob sich das Drücken lohnt.
         FakeSortMemory memory = new();
         memory.Records.Add(RememberedProposal(CreateImage("eins.jpg")));
@@ -933,7 +933,7 @@ public sealed class SortViewModelFlowTests : IDisposable
     [Fact]
     public async Task RecoverFromMemory_BringsBackTheProposalsOfAnEarlierRun()
     {
-        // Der Weg für Läufe, zu denen es kein Protokoll gibt — etwa aus einer älteren
+        // Der Weg für Läufe, zu denen es kein Protokoll gibt, etwa aus einer älteren
         // Fassung oder nach einem Absturz. Die Urteile stehen im Gedächtnis, und von dort
         // kommen die Vorschläge zurück, ohne dass ein Bild erneut bewertet wird.
         string imagePath = CreateImage("gerettet.jpg");
@@ -955,7 +955,7 @@ public sealed class SortViewModelFlowTests : IDisposable
     public async Task Analyze_WhenTheAiIsUnavailable_SaysSoInsteadOfBlamingTheFolder()
     {
         // Bekannte Störungen bekommen den Text, der die Nutzerin weiterbringt. Stünde bei
-        // jedem Fehler dasselbe da – „Analyse fehlgeschlagen" –, wüsste sie nicht, was zu tun ist.
+        // jedem Fehler dasselbe da („Analyse fehlgeschlagen"), wüsste sie nicht, was zu tun ist.
         StatusBarViewModel status = new(new ReswLocalizer());
         using SortViewModel sut = CreateSut(
             new FailingPhotoSorter(new AiUnavailableException("Ollama antwortet nicht")),
@@ -986,7 +986,7 @@ public sealed class SortViewModelFlowTests : IDisposable
     [Fact]
     public async Task Cancel_DuringAnalysis_SaysPausingInsteadOfCanceling()
     {
-        // Seit jedes Ergebnis im Protokoll steht, geht beim Anhalten nichts verloren —
+        // Seit jedes Ergebnis im Protokoll steht, geht beim Anhalten nichts verloren,
         // und die Meldung muss das sagen, sonst traut sich niemand.
         StatusBarViewModel status = new(new ReswLocalizer());
         BlockingPhotoSorter sorter = new();
@@ -1006,7 +1006,7 @@ public sealed class SortViewModelFlowTests : IDisposable
     [Fact]
     public async Task SuggestTrips_WithClusteredPhotos_OffersThePeriod()
     {
-        // Die Urlaubssuche liest die Aufnahmedaten aller Bilder — dieselbe Arbeit wie der
+        // Die Urlaubssuche liest die Aufnahmedaten aller Bilder, dieselbe Arbeit wie der
         // Ladeteil einer Analyse. Danach steht ein Zeitraum zur Auswahl, und ein Klick
         // übernimmt ihn.
         IReadOnlyList<Photo> photos = [.. Enumerable.Range(0, 10).Select(index => new Photo

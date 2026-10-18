@@ -15,7 +15,7 @@ internal sealed class SortRunEntity
 
     /// <summary>
     /// Zeitpunkt des Laufs in UTC. Wie beim Gedächtnis bewusst <see cref="DateTime"/>:
-    /// SQLite kann <see cref="DateTimeOffset"/> nicht in ORDER BY verwenden – und
+    /// SQLite kann <see cref="DateTimeOffset"/> nicht in ORDER BY verwenden, und
     /// genau danach wird hier sortiert, um den jüngsten Lauf zu finden.
     /// </summary>
     public DateTime StartedAtUtc { get; set; }
@@ -31,7 +31,7 @@ internal sealed class SortRunEntity
 
     /// <summary>
     /// Ob der Lauf verschoben (0) oder kopiert (1) hat. Bestehende Zeilen bekommen
-    /// bei der Migration die 0 – vor dieser Wahlmöglichkeit wurde ausnahmslos
+    /// bei der Migration die 0: Vor dieser Wahlmöglichkeit wurde ausnahmslos
     /// verschoben, der Vorgabewert ist hier also kein Notbehelf, sondern zutreffend.
     /// </summary>
     public int Operation { get; set; }

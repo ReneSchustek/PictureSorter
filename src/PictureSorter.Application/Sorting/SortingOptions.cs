@@ -42,7 +42,7 @@ public sealed class SortingOptions
     /// Höchstzahl der Beispiele je Seite (passend bzw. nicht passend). Entschieden wird
     /// über die höchste Ähnlichkeit zu einem einzelnen Beispiel: Ein halbpassendes
     /// Beispiel zieht deshalb eine ganze Nachbarschaft falscher Fotos mit herein. Wenige,
-    /// eindeutige Beispiele wirken besser als viele mittelmäßige — und jedes zusätzliche
+    /// eindeutige Beispiele wirken besser als viele mittelmäßige, und jedes zusätzliche
     /// kostet beim Anlernen einen vollständigen Aufruf des Bild-Modells.
     /// </summary>
     [Range(1, 100)]
@@ -59,7 +59,7 @@ public sealed class SortingOptions
     /// wirklich gleichzeitig ab (Voreinstellung <c>OLLAMA_NUM_PARALLEL</c>), der Rest
     /// wartet dort in einer Schlange. Zu viele gleichzeitige Anfragen werden deshalb
     /// nicht schneller, sondern laufen einzeln ins Zeitlimit
-    /// (<c>Ollama:RequestTimeoutSeconds</c>) — und ein Zeitlimit lässt das Bild
+    /// (<c>Ollama:RequestTimeoutSeconds</c>), und ein Zeitlimit lässt das Bild
     /// unbewertet. Wer Ollama höher eingestellt hat, darf hier mitziehen.
     /// </summary>
     [Range(1, 32)]

@@ -7,7 +7,7 @@ namespace PictureSorter.App.Tests.Logging;
 
 /// <summary>
 /// Tests der Zeilenform des Dateiprotokolls. Das Protokoll ist die einzige Quelle,
-/// aus der sich ein Fehler beim Nutzer nachvollziehen lässt — Stufe, Ereignisnummer,
+/// aus der sich ein Fehler beim Nutzer nachvollziehen lässt: Stufe, Ereignisnummer,
 /// offene Vorgänge und der vollständige Ausnahmetext müssen darin stehen.
 /// </summary>
 public sealed class FileLoggerFormatTests : IDisposable
@@ -39,7 +39,7 @@ public sealed class FileLoggerFormatTests : IDisposable
     [Fact]
     public void TheTimestamp_ComesFromTheSameClockAsTheFileName()
     {
-        // Sonst stünde in einer Zeile ein Datum, das nicht zu ihrer Datei passt – und
+        // Sonst stünde in einer Zeile ein Datum, das nicht zu ihrer Datei passt, und
         // der Zeitstempel wäre überhaupt nicht prüfbar.
         using FileLoggerProvider provider = CreateProvider();
         provider.CreateLogger("Test")
@@ -54,7 +54,7 @@ public sealed class FileLoggerFormatTests : IDisposable
     [Fact]
     public void LevelNone_IsNotWrittenAtAll()
     {
-        // LogLevel.None heißt „nichts protokollieren" – eine Zeile mit der Beschriftung
+        // LogLevel.None heißt „nichts protokollieren". Eine Zeile mit der Beschriftung
         // NONE wäre genau das Gegenteil.
         using FileLoggerProvider provider = CreateProvider();
         ILogger logger = provider.CreateLogger("Test");

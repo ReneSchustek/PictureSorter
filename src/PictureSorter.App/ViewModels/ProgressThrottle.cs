@@ -3,12 +3,12 @@ namespace PictureSorter.App.ViewModels;
 /// <summary>
 /// Begrenzt, wie oft die Statusleiste neu gezeichnet wird.
 ///
-/// Die Dienste melden jedes einzelne Bild — das ist richtig so, denn nur sie wissen, wie
+/// Die Dienste melden jedes einzelne Bild. Das ist richtig so, denn nur sie wissen, wie
 /// weit sie sind. Ungefiltert kommen bei einem Ordner mit tausend Bildern aber zweitausend
 /// Meldungen an, und weil Laden und Bewerten gleichzeitig laufen, kommen sie auch noch
 /// gleichzeitig. Jede setzt Eigenschaften, löst Bindungen aus und stößt einen Layout-Lauf
 /// an. Der Oberflächen-Faden kommt dann nicht mehr nach: Die Anwendung gilt Windows als
-/// „reagiert nicht", und die Statusleiste steht still — ausgerechnet die Anzeige, die den
+/// „reagiert nicht", und die Statusleiste steht still, ausgerechnet die Anzeige, die den
 /// Fortschritt zeigen soll.
 ///
 /// Zehn Aktualisierungen je Sekunde sind mehr, als ein Mensch ablesen kann. Der letzte

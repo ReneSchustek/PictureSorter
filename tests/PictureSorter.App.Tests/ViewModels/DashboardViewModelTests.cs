@@ -7,7 +7,7 @@ namespace PictureSorter.App.Tests.ViewModels;
 /// <summary>
 /// Tests der Startseite. Sie ist für die Zielnutzerin der Einstieg: Die drei Kacheln
 /// müssen dorthin führen, wo sie draufsteht, und der KI-Zustand muss ehrlich
-/// gemeldet werden – „einsatzbereit" bei fehlendem Modell würde sie in einen
+/// gemeldet werden: „einsatzbereit" bei fehlendem Modell würde sie in einen
 /// Sortierlauf schicken, der scheitern muss.
 ///
 /// Prüfbar ist das, weil die Kacheln über den Navigationsdienst gehen. Griffe die

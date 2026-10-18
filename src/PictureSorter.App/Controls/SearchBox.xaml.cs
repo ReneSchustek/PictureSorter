@@ -5,7 +5,7 @@ using Microsoft.UI.Xaml.Controls;
 namespace PictureSorter.App.Controls;
 
 /// <summary>
-/// Suchfeld der Gestaltungslinie. Es filtert beim Tippen — eine Suche, die erst auf
+/// Suchfeld der Gestaltungslinie. Es filtert beim Tippen: Eine Suche, die erst auf
 /// einen Klick reagiert, fühlt sich langsam an, auch wenn sie schnell ist.
 ///
 /// Gemeldet wird mit kurzer Verzögerung: Bei einem Bestand aus tausenden Fotos liefe
@@ -14,7 +14,7 @@ namespace PictureSorter.App.Controls;
 internal sealed partial class SearchBox : UserControl
 {
     // Lang genug, dass ein Wort zu Ende getippt wird, kurz genug, dass es sich sofort
-    // anfühlt. Beides zusammen geht nicht — 250 Millisekunden sind der übliche Kompromiss.
+    // anfühlt. Beides zusammen geht nicht; 250 Millisekunden sind der übliche Kompromiss.
     private static readonly TimeSpan Delay = TimeSpan.FromMilliseconds(250);
 
     private readonly DispatcherQueueTimer _timer;
@@ -66,8 +66,8 @@ internal sealed partial class SearchBox : UserControl
 
     private void OnTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
     {
-        // Nur die Eingabe der Nutzerin zählt. Setzt die Anwendung den Text selbst — etwa
-        // beim Zurücksetzen —, wäre eine Meldung darüber ein Widerhall ihrer eigenen
+        // Nur die Eingabe der Nutzerin zählt. Setzt die Anwendung den Text selbst (etwa
+        // beim Zurücksetzen), wäre eine Meldung darüber ein Widerhall ihrer eigenen
         // Handlung.
         if (args.Reason != AutoSuggestionBoxTextChangeReason.UserInput)
         {

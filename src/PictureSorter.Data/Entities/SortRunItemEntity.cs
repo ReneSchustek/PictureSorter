@@ -20,7 +20,7 @@ internal sealed class SortRunItemEntity
     /// <summary>Pfad, an dem das Foto nach dem Sortieren liegt.</summary>
     public required string TargetPath { get; set; }
 
-    /// <summary>Signatur des Fotos – der Schlüssel seines Eintrags im Gedächtnis.</summary>
+    /// <summary>Signatur des Fotos, der Schlüssel seines Eintrags im Gedächtnis.</summary>
     public required string FileSignature { get; set; }
 
     /// <summary>
@@ -32,7 +32,7 @@ internal sealed class SortRunItemEntity
 
     /// <summary>
     /// Änderungszeitpunkt der Zieldatei nach dem Sortieren (UTC). Wie beim Lauf
-    /// bewusst <see cref="DateTime"/> statt <see cref="DateTimeOffset"/> – SQLite
+    /// bewusst <see cref="DateTime"/> statt <see cref="DateTimeOffset"/>, denn SQLite
     /// kommt mit letzterem in Abfragen nicht zurecht.
     /// </summary>
     public DateTime? TargetLastWriteUtc { get; set; }

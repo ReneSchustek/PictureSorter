@@ -6,7 +6,7 @@ namespace PictureSorter.App.Tests.Logging;
 
 /// <summary>
 /// Tests des Datei-Protokolls. Es ist das Einzige, was nach einem Absturz noch
-/// erzählt, was passiert ist – und es darf die Anwendung niemals selbst zu Fall
+/// erzählt, was passiert ist, und es darf die Anwendung niemals selbst zu Fall
 /// bringen: weder durch einen Schreibfehler noch dadurch, dass ein Dauerfehler die
 /// Platte vollschreibt.
 /// </summary>
@@ -36,7 +36,7 @@ public sealed class FileLoggerProviderTests : IDisposable
     public void Log_WithinAScope_CarriesTheCorrelationIntoEveryEntry()
     {
         // Die Korrelations-ID eines Sortierlaufs muss auch an den Zeilen der
-        // nachgelagerten Aufrufe hängen – sonst lässt sich ein Lauf im Protokoll
+        // nachgelagerten Aufrufe hängen, sonst lässt sich ein Lauf im Protokoll
         // nicht zusammensetzen.
         using FileLoggerProvider provider = new(_directory, TestClock.Fixed);
         ILogger logger = provider.CreateLogger("Test");

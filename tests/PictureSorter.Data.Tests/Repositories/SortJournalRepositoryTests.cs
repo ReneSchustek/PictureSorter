@@ -10,7 +10,7 @@ namespace PictureSorter.Data.Tests.Repositories;
 /// <summary>
 /// Integrationstests des Lauf-Protokolls gegen eine echte SQLite-Datei. Das Protokoll
 /// ist die einzige Stelle, an der nach einem Sortierlauf noch steht, wo eine Datei
-/// vorher lag – geht es verloren oder kommt es unvollständig zurück, ist der Lauf
+/// vorher lag. Geht es verloren oder kommt es unvollständig zurück, ist der Lauf
 /// nicht mehr umkehrbar.
 /// </summary>
 public sealed class SortJournalRepositoryTests : IAsyncLifetime
@@ -31,7 +31,7 @@ public sealed class SortJournalRepositoryTests : IAsyncLifetime
         _ = services.AddPictureSorterData(_dataDirectory);
         _provider = services.BuildServiceProvider();
 
-        // Schema anlegen – wie beim App-Start. Damit läuft auch die neue Migration.
+        // Schema anlegen, wie beim App-Start. Damit läuft auch die neue Migration.
         bool ready = await _provider.GetRequiredService<DatabaseInitializer>()
             .InitializeAsync(CancellationToken.None)
             .ConfigureAwait(false);
@@ -85,7 +85,7 @@ public sealed class SortJournalRepositoryTests : IAsyncLifetime
     [Fact]
     public async Task GetLastUndoable_AfterMarkUndone_FallsBackToThePreviousRun()
     {
-        // Ein zurückgenommener Lauf darf nicht erneut angeboten werden – sonst
+        // Ein zurückgenommener Lauf darf nicht erneut angeboten werden, sonst
         // versuchte die Anwendung, dieselben Dateien ein zweites Mal zurückzuholen.
         SortRun older = CreateRun("alt.jpg") with { StartedAt = Stamp(hour: 8) };
         SortRun newer = CreateRun("neu.jpg") with { StartedAt = Stamp(hour: 10) };
@@ -113,7 +113,7 @@ public sealed class SortJournalRepositoryTests : IAsyncLifetime
     public async Task Record_WithoutAnyMove_StoresNothing()
     {
         // Ein Lauf, in dem sich keine Datei bewegt hat, ist nichts, was man
-        // zurücknehmen könnte – er darf den Hinweis nicht auslösen.
+        // zurücknehmen könnte: Er darf den Hinweis nicht auslösen.
         await _sut.RecordAsync(CreateRun(), CancellationToken.None);
 
         Assert.Null(await _sut.GetLastUndoableAsync(CancellationToken.None));

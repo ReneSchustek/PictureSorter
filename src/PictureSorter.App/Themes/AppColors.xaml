@@ -7,12 +7,12 @@
         diesem Projekt; maßgeblich ist die gemeinsame Gestaltungslinie aller Programme.
 
         Beide Belegungen führen denselben Satz Schlüssel. Fehlt einer in einer
-        Belegung, bricht die Bindung genau dort — und das fällt erst beim Nutzer
+        Belegung, bricht die Bindung genau dort, und das fällt erst beim Nutzer
         auf, nicht beim Entwickeln. Ein Test hält das fest.
 
         Die Primärfläche ist immer der Gegensatz zum Hintergrund: im Hellen dunkles
         Petrol mit weißer Schrift, im Dunklen helles Stahlgrau mit dunkler Schrift.
-        Deshalb kippt der Text auf ihr mit — dafür gibt es eigene Schlüssel.
+        Deshalb kippt der Text auf ihr mit, und dafür gibt es eigene Schlüssel.
         Umgeschaltet wird über RequestedTheme am Wurzelelement (siehe ThemeService).
     -->
     <ResourceDictionary.ThemeDictionaries>
@@ -21,7 +21,7 @@
         <ResourceDictionary x:Key="Light">
             <!--
                 Die Akzentfarbe des Systems wird überschrieben, nicht nur ergänzt: WinUI
-                leitet aus SystemAccentColor eine ganze Reihe Farben ab — für Verweise,
+                leitet aus SystemAccentColor eine ganze Reihe Farben ab: für Verweise,
                 für den angehakten Umschalter, für die Auswahl. Wer nur die Pinsel setzt,
                 bekommt an genau diesen Stellen die Farbe, die die Nutzerin in Windows
                 eingestellt hat: In der Anwendung stand dann Orange neben Petrol.
@@ -107,7 +107,7 @@
 
             <!-- Im Dunklen ist die Primärfläche hell und trägt dunkle Schrift.
                  Ein gemeinsamer „Invers"-Wert für beide Belegungen ergäbe hier
-                 Weiß auf Hellgrau — unlesbar. Kontrast #0F1923 auf #C5D0D6: 11,6:1. -->
+                 Weiß auf Hellgrau, also unlesbar. Kontrast #0F1923 auf #C5D0D6: 11,6:1. -->
             <SolidColorBrush x:Key="TextOnAccentFillColorPrimaryBrush" Color="#0F1923" />
             <SolidColorBrush x:Key="TextOnAccentFillColorSecondaryBrush" Color="#2A343D" />
 

@@ -11,8 +11,8 @@ namespace PictureSorter.Application.Sorting;
 ///
 /// Drei Aufgaben, die zusammengehören und deshalb hier zusammenliegen: Ergebnisse
 /// gebündelt wegschreiben (eine Schreiboperation je Foto wäre bei tausenden Bildern
-/// spürbar), den Herzschlag des Laufs fortschreiben, und all das fehlertolerant —
-/// eine gesperrte Datenbank darf einen Lauf, der Tage dauert, nicht abbrechen.
+/// spürbar), den Herzschlag des Laufs fortschreiben, und all das fehlertolerant,
+/// denn eine gesperrte Datenbank darf einen Lauf, der Tage dauert, nicht abbrechen.
 ///
 /// Der Recorder gehört zu genau einem Lauf und wird von den nebenläufigen Bewertungen
 /// gleichzeitig gerufen; sein Zustand steht deshalb unter einem Schloss.
@@ -50,7 +50,7 @@ public sealed class AnalysisRunRecorder : IDisposable
 
     /// <summary>
     /// <see langword="true"/>, solange in das Protokoll geschrieben wird. Schlägt ein
-    /// Zugriff fehl, schaltet sich der Recorder ab — sonst stünde dieselbe Meldung
+    /// Zugriff fehl, schaltet sich der Recorder ab, sonst stünde dieselbe Meldung
     /// tausendfach im Protokoll und die Ursache ginge darin unter.
     /// </summary>
     public bool IsActive
@@ -147,7 +147,7 @@ public sealed class AnalysisRunRecorder : IDisposable
     public async Task FlushAsync(DateTimeOffset at, CancellationToken cancellationToken)
     {
         // Der Abbruch-Token wird bewusst nicht ans Schreiben durchgereicht: Gerade der
-        // abgebrochene Lauf muss festhalten, wie weit er gekommen ist — sonst fehlt
+        // abgebrochene Lauf muss festhalten, wie weit er gekommen ist. Sonst fehlt
         // ausgerechnet dort der Anknüpfungspunkt, wo man ihn sucht.
         await _writeGate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
@@ -235,7 +235,7 @@ public sealed class AnalysisRunRecorder : IDisposable
 
     // Wie beim Sortier-Gedächtnis: Datenbankprobleme dürfen einen laufenden Vorgang nicht
     // abbrechen, ein Abbruch durch die Nutzerin schon. SQLite meldet eine gesperrte oder
-    // beschädigte Datei als Ausnahme, die über DbException von ExternalException erbt —
+    // beschädigte Datei als Ausnahme, die über DbException von ExternalException erbt,
     // nicht von IOException.
     private static bool IsRecoverable(Exception exception) =>
         exception is not OperationCanceledException

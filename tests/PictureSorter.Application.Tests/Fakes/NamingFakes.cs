@@ -7,7 +7,7 @@ namespace PictureSorter.Application.Tests.Fakes;
 
 /// <summary>
 /// Benennt im Speicher um und legt jede Umbenennung offen. Kein Dateisystem: Die
-/// Tests handeln davon, welcher Name gewählt und was protokolliert wird — nicht
+/// Tests handeln davon, welcher Name gewählt und was protokolliert wird, nicht
 /// davon, ob Windows eine Datei verschieben kann.
 /// </summary>
 internal sealed class FakePhotoFileEditor : IPhotoFileEditor
@@ -69,7 +69,7 @@ internal sealed class FakeRenameJournal : IRenameJournal
 /// <summary>
 /// Liefert das Aufnahmedatum, das am Foto steht. Bewusst ein eigenes Doppel und nicht
 /// der Wert aus der Foto-Quelle: Die echte Quelle setzt ersatzweise die Änderungszeit
-/// der Datei ein, wenn der Dateikopf kein Datum trägt — für einen Namen wäre das eine
+/// der Datei ein, wenn der Dateikopf kein Datum trägt. Für einen Namen wäre das eine
 /// Behauptung, und genau diese Unterscheidung sollen die Tests treffen können.
 /// </summary>
 internal sealed class FakeMetadataReader(IReadOnlyList<Photo> photos) : IImageMetadataReader

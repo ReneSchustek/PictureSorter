@@ -64,7 +64,7 @@ public sealed class DatabaseBackupTests : IDisposable
     [Fact]
     public void TryCreate_WhenTheCopyFails_ReportsItAndLeavesNoHalfBackup()
     {
-        // Eine halb geschriebene Sicherung ist schlimmer als keine – sie sähe brauchbar
+        // Eine halb geschriebene Sicherung ist schlimmer als keine: Sie sähe brauchbar
         // aus. Hier ist der Zielname durch einen Ordner belegt, das Kopieren scheitert.
         string databasePath = CreateDatabaseWithOneRow();
         string backupPath = DatabaseBackup.BuildBackupPath(databasePath, "20260303000000_Dritte");
@@ -98,7 +98,7 @@ public sealed class DatabaseBackupTests : IDisposable
     {
         // Der Weg, den der Anwendungsstart nach einem Programm-Update nimmt: Die
         // Datenbank steht auf einem älteren Schemastand, eine Migration ist fällig.
-        // Genau davor – und nur davor – muss eine Sicherung entstehen.
+        // Genau davor, und nur davor, muss eine Sicherung entstehen.
         ServiceCollection services = new();
         _ = services.AddLogging();
         _ = services.AddPictureSorterData(_dataDirectory);
@@ -113,8 +113,8 @@ public sealed class DatabaseBackupTests : IDisposable
         {
             allMigrations = [.. context.Database.GetMigrations()];
 
-            // Nur bis zur ersten Migration hochziehen – der Stand einer älteren
-            // Programmfassung.
+            // Nur bis zur ersten Migration hochziehen (der Stand einer älteren
+            // Programmfassung).
             await context.GetService<IMigrator>().MigrateAsync(allMigrations[0], TestContext.Current.CancellationToken);
         }
 

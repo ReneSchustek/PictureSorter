@@ -28,7 +28,7 @@ public sealed class DuplicateScanOptions
 
     /// <summary>
     /// Wie viele Bilder gleichzeitig ihren Fingerabdruck bekommen. Dabei wird jedes Bild
-    /// geladen, verkleinert und durchgerechnet — das wartet teils auf die Platte, teils
+    /// geladen, verkleinert und durchgerechnet. Das wartet teils auf die Platte, teils
     /// auf den Prozessor, und beides lässt sich übereinanderlegen.
     /// </summary>
     [Range(1, 32)]

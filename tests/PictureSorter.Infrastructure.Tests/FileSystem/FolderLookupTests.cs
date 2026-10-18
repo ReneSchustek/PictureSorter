@@ -48,7 +48,7 @@ public sealed class FolderLookupTests : IDisposable
     public void FindLookalike_ForAnExistingFolderReturnsNothing()
     {
         // Gibt es den Ordner, ist nichts zu erklären. Ein Vorschlag wäre hier nur
-        // Lärm — und im schlimmsten Fall ein zweiter, gleich aussehender Ordner.
+        // Lärm, und im schlimmsten Fall ein zweiter, gleich aussehender Ordner.
         string vorhanden = Path.Combine(_root, "Urlaub");
         _ = Directory.CreateDirectory(vorhanden);
 

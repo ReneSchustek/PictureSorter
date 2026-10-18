@@ -53,7 +53,7 @@ public sealed class FolderNameSanitizationTests
     public void SanitizeFolderName_WindowsDeviceNames_AreMadeUsable(string name, string expected)
     {
         // Windows hält diese Namen für Geräte, unabhängig von Groß-/Kleinschreibung und
-        // Endung. Ein Ordner dieses Namens lässt sich nicht anlegen – die Nutzerin sähe
+        // Endung. Ein Ordner dieses Namens lässt sich nicht anlegen. Die Nutzerin sähe
         // eine Fehlermeldung, die ihr nichts sagt.
         string result = TargetFolderNaming.SanitizeFolderName(name);
 
@@ -66,7 +66,7 @@ public sealed class FolderNameSanitizationTests
     public void SanitizeFolderName_TrailingDots_AreRemoved(string name, string expected)
     {
         // Windows schneidet Punkte am Ende beim Anlegen still ab. Bliebe der Punkt im
-        // Namen stehen, wiche der protokollierte Pfad vom tatsächlichen ab – und genau
+        // Namen stehen, wiche der protokollierte Pfad vom tatsächlichen ab, und genau
         // der Pfad ist die Grundlage des Rückgängigmachens.
         string result = TargetFolderNaming.SanitizeFolderName(name);
 

@@ -7,7 +7,7 @@ namespace PictureSorter.App.Tests.Services;
 
 /// <summary>
 /// Tests der Anzeigetexte eines Fotos. Sie stehen im Mouse-Over und in der
-/// Großansicht – und sie sind der Grund, warum diese Texte aus der Domäne in die
+/// Großansicht, und sie sind der Grund, warum diese Texte aus der Domäne in die
 /// App-Schicht gewandert sind: Sie sind übersetzt und in der Kultur der Nutzerin
 /// formatiert.
 /// </summary>
@@ -84,7 +84,7 @@ public sealed class PhotoTextFormatterTests
     }
 
     // Die Zahl folgt der Kultur des Nutzers (2,5 MB in Deutschland, 2.5 MB auf einem
-    // englischen System). Der Test darf deshalb kein Dezimaltrennzeichen festschreiben –
+    // englischen System). Der Test darf deshalb kein Dezimaltrennzeichen festschreiben,
     // sonst prüft er die Kultur des Rechners, nicht die Formatierung.
     [Theory]
     [InlineData(512L, 512.0, "B")]

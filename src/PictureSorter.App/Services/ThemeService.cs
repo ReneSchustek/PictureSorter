@@ -154,7 +154,7 @@ internal sealed class ThemeService
     /// Die Titelleiste des Systems richtet sich nach dem Erscheinungsbild von Windows,
     /// nicht nach dem der Anwendung. Bei hellem Windows stand deshalb ein weißer Balken
     /// über dem dunklen Bildfenster. Wer den Inhalt in die Titelleiste zieht und sie
-    /// selbst zeichnet — das Hauptfenster tut das —, braucht die Farben nicht und
+    /// selbst zeichnet (das Hauptfenster tut das), braucht die Farben nicht und
     /// bekommt sie hier auch nicht gesetzt.
     /// </remarks>
     /// <param name="window">Das Fenster; <see langword="null"/> wird übergangen.</param>
@@ -174,7 +174,7 @@ internal sealed class ThemeService
 
         // Dieselben Grundfarben, die auch hinter dem Inhalt liegen. Fest eingetragen und
         // nicht aus den Design-Mitteln gelesen: Die werden je Element aufgelöst, und ein
-        // Fenster ist keines — es käme die Farbe des Windows-Designs heraus, also genau
+        // Fenster ist keines. Es käme die Farbe des Windows-Designs heraus, also genau
         // die, von der wir hier wegwollen.
         bool dark = _current == AppTheme.Dark;
         Color background = dark ? Color.FromArgb(255, 32, 32, 32) : Color.FromArgb(255, 243, 243, 243);
@@ -244,7 +244,7 @@ internal sealed class ThemeService
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            // Persistenz darf die Bedienung nicht blockieren – Fehler ignorieren.
+            // Persistenz darf die Bedienung nicht blockieren, also Fehler ignorieren.
         }
     }
 

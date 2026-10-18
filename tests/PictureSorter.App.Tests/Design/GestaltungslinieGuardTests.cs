@@ -18,13 +18,13 @@ namespace PictureSorter.App.Tests.Design;
 public sealed class GestaltungslinieGuardTests
 {
     // Farbwerte gehören in die Palette, nicht in eine Ansicht. „Transparent" ist keine
-    // Farbe der Marke, sondern eine Aussage über die Fläche — deshalb erlaubt.
+    // Farbe der Marke, sondern eine Aussage über die Fläche, deshalb erlaubt.
     private static readonly Regex ColorAttribute = new(
         "(Background|Foreground|BorderBrush|Fill|Stroke|CaretBrush|Color)\\s*=\\s*"
         + "\"(#[0-9A-Fa-f]{3,8}|White|Black|Gray|LightGray|DarkGray|Silver|Red|Green|Blue|Yellow|Orange|Navy|Teal)\"",
         RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
-    // Ecken bleiben klein: 4 bis 6. Die Marke ist Industrie, nicht Spielzeug — und ein
+    // Ecken bleiben klein: 4 bis 6. Die Marke ist Industrie, nicht Spielzeug, und ein
     // Radius, der einmal aus der Reihe fällt, zieht die nächsten hinter sich her.
     // Erfasst beide Schreibweisen: das Attribut an einem Element (CornerRadius="8") und
     // den Setter in einem gemeinsamen Style (Property="CornerRadius" Value="8").
@@ -58,7 +58,7 @@ public sealed class GestaltungslinieGuardTests
     }
 
     /// <remarks>
-    /// Fehlt ein Schlüssel in einer Belegung, bricht die Bindung genau in dieser Belegung —
+    /// Fehlt ein Schlüssel in einer Belegung, bricht die Bindung genau in dieser Belegung,
     /// und das fällt erst beim Nutzer auf, nicht beim Entwickeln. Das ist die wichtigere
     /// der beiden Prüfungen.
     /// </remarks>
@@ -122,8 +122,8 @@ public sealed class GestaltungslinieGuardTests
     [Fact]
     public void PaletteAndViewsAreNotEmpty()
     {
-        // Fängt den Fall ab, dass die Prüfungen oben mangels gefundener Dateien grün wären
-        // — eine Prüfung, die nichts findet, meldet sonst dasselbe wie eine bestandene.
+        // Fängt den Fall ab, dass die Prüfungen oben mangels gefundener Dateien grün wären.
+        // Eine Prüfung, die nichts findet, meldet sonst dasselbe wie eine bestandene.
         Assert.NotEmpty(PaletteKeys("Light"));
         Assert.NotEmpty(ViewFiles());
     }
@@ -134,7 +134,7 @@ public sealed class GestaltungslinieGuardTests
         // Ein Token vom falschen Typ bringt die Anwendung zum Absturz: „CharacterSpacing"
         // mit einem x:Double statt einer Ganzzahl, „Padding" mit einem x:Double statt einer
         // Kante. Beides übersetzt sauber durch, beides lässt die Seite zur Laufzeit weiß
-        // bleiben oder mit einer XamlParseException abbrechen — und kein Test mit Fakes kann
+        // bleiben oder mit einer XamlParseException abbrechen, und kein Test mit Fakes kann
         // das sehen, weil keiner einen XAML-Host hat.
         Dictionary<string, string> tokenTypes = TokenTypes();
         List<string> findings = [];
@@ -216,7 +216,7 @@ public sealed class GestaltungslinieGuardTests
 
     // Die Ansichten und die gemeinsamen Styles. App.xaml gehört ausdrücklich dazu: Dort
     // standen drei Radien, die eine Prüfung allein über den Ordner „Views" nicht gesehen
-    // hätte — und gerade die gemeinsamen Styles wirken auf jede Seite.
+    // hätte, und gerade die gemeinsamen Styles wirken auf jede Seite.
     private static IReadOnlyList<string> ViewFiles() =>
         [
             .. Directory.EnumerateFiles(

@@ -16,7 +16,7 @@ namespace PictureSorter.App.ViewModels;
 ///
 /// Eigene Ansicht statt eines dritten Weges im Sortier-Assistenten: Von dessen sechs
 /// Schritten entfallen hier vier. Es gibt keine Kategorie, keine Beispiele, nichts
-/// anzulernen und keinen Zeitraum — nur das Datum im Dateikopf entscheidet.
+/// anzulernen und keinen Zeitraum. Nur das Datum im Dateikopf entscheidet.
 /// </summary>
 internal sealed partial class CalendarSortViewModel : ObservableObject, IDisposable
 {
@@ -46,7 +46,7 @@ internal sealed partial class CalendarSortViewModel : ObservableObject, IDisposa
 
     /// <summary>
     /// Der Ort, unter dem die Kalender-Ordner entstehen. Er darf außerhalb des
-    /// Quellordners liegen — etwa auf einer zweiten Platte.
+    /// Quellordners liegen, etwa auf einer zweiten Platte.
     /// </summary>
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(AnalyzeCommand))]
@@ -197,7 +197,7 @@ internal sealed partial class CalendarSortViewModel : ObservableObject, IDisposa
 
             // Der Zielort ist meist derselbe Ordner: Die Kalender-Ordner entstehen
             // darin, die Bilder rutschen eine Ebene tiefer. Vorgeschlagen, nicht
-            // erzwungen — wer anderswohin will, ändert es.
+            // erzwungen: Wer anderswohin will, ändert es.
             if (string.IsNullOrWhiteSpace(TargetRoot))
             {
                 TargetRoot = folder;
@@ -232,7 +232,7 @@ internal sealed partial class CalendarSortViewModel : ObservableObject, IDisposa
 
         // Die Werte werden hier gelesen, nicht im Hintergrund: Dort dürfen keine
         // Oberflächen-Eigenschaften mehr angefasst werden. Und Task.Run ist Pflicht,
-        // weil das Durchsuchen des Ordners sonst den Oberflächen-Strang festhält —
+        // weil das Durchsuchen des Ordners sonst den Oberflächen-Strang festhält,
         // samt Stopp-Knopf.
         string folder = SourceFolder;
         string root = TargetRoot;
@@ -314,7 +314,7 @@ internal sealed partial class CalendarSortViewModel : ObservableObject, IDisposa
     }
 
     // Eine Hülle für beide langen Vorgänge. Ohne sie stünde derselbe Block aus
-    // Abbruch-Behandlung, Fehlermeldung und Zustandsrückgabe zweimal da — und beim
+    // Abbruch-Behandlung, Fehlermeldung und Zustandsrückgabe zweimal da, und beim
     // zweiten Mal irgendwann anders.
     [SuppressMessage(
         "Design",

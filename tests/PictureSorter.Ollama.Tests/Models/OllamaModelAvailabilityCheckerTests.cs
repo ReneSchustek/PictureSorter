@@ -46,7 +46,7 @@ public sealed class OllamaModelAvailabilityCheckerTests
     [Fact]
     public async Task CheckAsync_WithSimilarlyNamedModel_DoesNotCountAsInstalled()
     {
-        // „llava-phi3" ist ein anderes Modell als „llava" – ein Präfix-Vergleich
+        // „llava-phi3" ist ein anderes Modell als „llava". Ein Präfix-Vergleich
         // meldete hier fälschlich einsatzbereit und der Sortierlauf liefe ins Leere.
         ModelAvailability availability = await CheckAsync("llava-phi3:latest", "nomic-embed-text:latest");
 
@@ -87,7 +87,7 @@ public sealed class OllamaModelAvailabilityCheckerTests
     [Fact]
     public async Task CheckAsync_WhenCallerCancels_PassesTheCancellationOn()
     {
-        // Der Abbruch durch den Aufrufer darf nicht als „Ollama fehlt" durchgehen –
+        // Der Abbruch durch den Aufrufer darf nicht als „Ollama fehlt" durchgehen,
         // sonst meldete ein Seitenwechsel der Nutzerin eine kaputte Einrichtung.
         OllamaModelAvailabilityChecker sut = CreateSut(new HangingOllamaClient(), new OllamaOptions());
         using CancellationTokenSource cancelled = new();

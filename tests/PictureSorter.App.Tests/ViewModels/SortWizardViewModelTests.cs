@@ -122,7 +122,7 @@ public sealed class SortWizardViewModelTests
     public async Task EveryStep_HasATitleAndAnActionLabel(int step)
     {
         // Alle sechs Schritte müssen beschriftet und übersetzt sein. Der Sprach-Fake
-        // wirft bei einem fehlenden Schlüssel — genau so blieb der letzte Schritt
+        // wirft bei einem fehlenden Schlüssel. Genau so blieb der letzte Schritt
         // schon einmal mit der Überschrift des vorletzten stehen.
         SortWizardViewModel wizard = Create(run: _ => Task.FromResult(true));
         for (int i = 0; i < step; i++)
@@ -215,7 +215,7 @@ public sealed class SortWizardViewModelTests
     public async Task DuringARun_NeitherBackNorTheStepBarIsAvailable()
     {
         // Während gelernt, analysiert oder sortiert wird, darf niemand den Schritt
-        // wechseln — sonst liefe der Vorgang auf einem Stand, den es nicht mehr gibt.
+        // wechseln, sonst liefe der Vorgang auf einem Stand, den es nicht mehr gibt.
         bool isRunning = false;
         SortWizardViewModel wizard = Create(
             isInteractive: () => !isRunning,

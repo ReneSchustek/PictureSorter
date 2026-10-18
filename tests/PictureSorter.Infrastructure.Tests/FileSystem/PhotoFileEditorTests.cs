@@ -39,7 +39,7 @@ public sealed class PhotoFileEditorTests : IDisposable
     [Fact]
     public async Task Rename_WithoutExtension_KeepsTheOldOne()
     {
-        // Ohne Endung öffnet ein Doppelklick das Bild nicht mehr — und niemand denkt
+        // Ohne Endung öffnet ein Doppelklick das Bild nicht mehr, und niemand denkt
         // beim Umbenennen daran, „.jpg" mitzutippen.
         string file = CreateFile("alt.jpg");
 

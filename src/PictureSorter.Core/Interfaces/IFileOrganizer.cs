@@ -4,7 +4,7 @@ using PictureSorter.Core.ValueObjects;
 namespace PictureSorter.Core.Interfaces;
 
 /// <summary>
-/// Bringt Dateien sicher in ihren Zielordner – verschiebend oder kopierend.
+/// Bringt Dateien sicher in ihren Zielordner, verschiebend oder kopierend.
 /// Unterstützt einen Probelauf (Dry-Run), in dem nichts verändert, sondern nur der
 /// Zielpfad ermittelt wird (Safe-Write).
 /// </summary>
@@ -35,7 +35,7 @@ public interface IFileOrganizer
     /// <param name="copyPath">Der Pfad der angelegten Kopie.</param>
     /// <param name="expectedLength">
     /// Dateigröße unmittelbar nach dem Kopieren. <see langword="null"/> bei Läufen aus
-    /// der Zeit vor dieser Prüfung – dann wird nichts entfernt.
+    /// der Zeit vor dieser Prüfung. Dann wird nichts entfernt.
     /// </param>
     /// <param name="expectedLastWriteUtc">
     /// Änderungszeitpunkt unmittelbar nach dem Kopieren (UTC). Siehe

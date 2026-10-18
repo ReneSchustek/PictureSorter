@@ -11,7 +11,7 @@ namespace PictureSorter.Imaging.Tests.Vision;
 /// Tests der Bildaufbereitung für das Bild-Modell. Sie ist die Stelle, an der aus
 /// einem Handyfoto überhaupt erst etwas wird, das die Bilderkennung öffnen kann.
 /// Kommt hier das falsche Format oder ein zu großes Bild heraus, urteilt das Modell
-/// über nichts – und das fällt niemandem auf, weil eine Antwort trotzdem zurückkommt.
+/// über nichts, und das fällt niemandem auf, weil eine Antwort trotzdem zurückkommt.
 /// </summary>
 public sealed class WindowsVisionImageEncoderTests : IDisposable
 {

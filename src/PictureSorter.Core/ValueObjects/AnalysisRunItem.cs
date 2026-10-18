@@ -7,7 +7,7 @@ namespace PictureSorter.Core.ValueObjects;
 ///
 /// Der Schlüssel ist die Signatur, nicht der Pfad: Wird eine Datei umbenannt oder
 /// verändert, ändert sich ihre Signatur, und sie wird beim Fortsetzen zu Recht neu
-/// bewertet. Der Pfad steht trotzdem dabei — ein Protokoll, das man nicht lesen kann,
+/// bewertet. Der Pfad steht trotzdem dabei: Ein Protokoll, das man nicht lesen kann,
 /// ist keines.
 /// </summary>
 public sealed record AnalysisRunItem

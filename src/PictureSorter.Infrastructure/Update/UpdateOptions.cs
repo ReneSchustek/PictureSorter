@@ -5,7 +5,7 @@ namespace PictureSorter.Infrastructure.Update;
 /// <summary>
 /// Konfiguration der Update-Prüfung (Abschnitt <c>Update</c> in der
 /// <c>appsettings.json</c>). Ist kein GitHub-Repository hinterlegt, bleibt die
-/// Prüfung wirkungslos – die Anwendung läuft unverändert.
+/// Prüfung wirkungslos: Die Anwendung läuft unverändert.
 /// </summary>
 public sealed class UpdateOptions
 {

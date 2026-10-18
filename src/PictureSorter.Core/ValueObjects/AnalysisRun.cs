@@ -19,8 +19,8 @@ public sealed record AnalysisRun
     public required string SourceFolder { get; init; }
 
     /// <summary>
-    /// Die Kategorie, nach der bewertet wurde — beim Sortieren nach Datum der Name des
-    /// Zielordners.
+    /// Die Kategorie, nach der bewertet wurde (beim Sortieren nach Datum der Name des
+    /// Zielordners).
     /// </summary>
     public required string CategoryName { get; init; }
 
@@ -48,7 +48,7 @@ public sealed record AnalysisRun
     public required DateTimeOffset StartedAt { get; init; }
 
     /// <summary>
-    /// Zeitpunkt der letzten Bewegung (UTC) — der Herzschlag des Laufs. Er beantwortet
+    /// Zeitpunkt der letzten Bewegung (UTC), der Herzschlag des Laufs. Er beantwortet
     /// die Frage, die eine reine Stückzahl offenlässt: ob seit dem letzten Foto Sekunden
     /// oder Stunden vergangen sind.
     /// </summary>
@@ -68,7 +68,7 @@ public sealed record AnalysisRun
 
     /// <summary>
     /// <see langword="true"/>, wenn der Lauf offene Fotos haben kann und deshalb zum
-    /// Fortsetzen taugt. Ein abgeschlossener Lauf hat keine offenen Fotos mehr — sein
+    /// Fortsetzen taugt. Ein abgeschlossener Lauf hat keine offenen Fotos mehr, sein
     /// Ergebnis lässt sich aber trotzdem zurückholen, ohne die KI erneut zu befragen.
     /// </summary>
     public bool IsResumable => State is AnalysisRunState.Running

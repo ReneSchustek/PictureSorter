@@ -5,7 +5,7 @@ namespace PictureSorter.App.Services;
 
 /// <summary>
 /// Die Aufrufparameter des Helfer-Modus. Nach einem geprüften Download startet sich
-/// die neue, entpackte Anwendung selbst noch einmal – mit diesen Angaben – und
+/// die neue, entpackte Anwendung selbst noch einmal (mit diesen Angaben) und
 /// ersetzt dann die alte Installation. Ein eigenes Updater-Programm braucht es dafür
 /// nicht; die neue Fassung ist ihr eigener Installateur.
 /// </summary>

@@ -54,11 +54,11 @@ internal sealed partial class PhotoTile : UserControl
 
         // Erst wenn eine Vorschau wirklich geladen ist, gibt es etwas zu vergrößern. Ohne
         // diese Vorgabe böte eine Kachel ohne Bild eine Lupe an, die ein leeres Fenster
-        // öffnet — die Eigenschaft meldet keine Änderung, wenn nie ein Pfad gesetzt wird.
+        // öffnet: Die Eigenschaft meldet keine Änderung, wenn nie ein Pfad gesetzt wird.
         ZoomButton.IsEnabled = false;
     }
 
-    /// <summary>Meldet den Klick auf das Bild — der Weg in die Detailansicht.</summary>
+    /// <summary>Meldet den Klick auf das Bild, den Weg in die Detailansicht.</summary>
     public event EventHandler? Opened;
 
     /// <summary>Beschriftung des Bildbereichs für die Sprachausgabe.</summary>
@@ -124,7 +124,7 @@ internal sealed partial class PhotoTile : UserControl
     /// <param name="fileName">Der Dateiname.</param>
     /// <returns>Das Kürzel; „?“ wenn sich keines bilden lässt.</returns>
     /// <remarks>
-    /// Öffentlich, weil es die einzige Stelle mit Regeln ist — und die gehört geprüft. Die
+    /// Öffentlich, weil es die einzige Stelle mit Regeln ist, und die gehört geprüft. Die
     /// Zahl im Namen zählt mit („IMG_2043" wird zu „I2"): Sie ist bei Kameradateien oft das
     /// Einzige, was zwei Bilder unterscheidet.
     /// </remarks>
@@ -197,7 +197,7 @@ internal sealed partial class PhotoTile : UserControl
     }
 
     // Erst wenn das Bild wirklich da ist, tritt es an die Stelle des Kürzels. Andersherum
-    // — Bild sichtbar, Quelle noch leer — blitzte für einen Moment eine leere Fläche auf.
+    // (Bild sichtbar, Quelle noch leer) blitzte für einen Moment eine leere Fläche auf.
     //
     // Das Kürzel wird dabei ausgeblendet, nicht nur überdeckt: Ein verdeckter Text steht
     // weiter im Baum der Bedienhilfen und würde von der Sprachausgabe zusätzlich zum
@@ -246,7 +246,7 @@ internal sealed partial class PhotoTile : UserControl
         ZoomButton.Opacity = visible && ZoomButton.IsEnabled ? 1.0 : 0.0;
 
     // Die Kachel öffnet das Fenster selbst, statt die Bitte nach außen zu melden: Sie
-    // bringt die Lupe mit, also soll sie auch wirken — sonst hinge an jeder Seite, die
+    // bringt die Lupe mit, also soll sie auch wirken. Sonst hinge an jeder Seite, die
     // eine Kachel einsetzt, derselbe Dreizeiler, und die nächste vergäße ihn.
     private void OnZoomClick(object sender, RoutedEventArgs e) =>
         PhotoZoomWindow.Show(ImagePath, FileName);

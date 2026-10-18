@@ -15,7 +15,7 @@ internal sealed class RenameRunEntity
 
     /// <summary>
     /// Zeitpunkt des Laufs in UTC. Wie beim Sortierlauf bewusst <see cref="DateTime"/>:
-    /// SQLite kann <see cref="DateTimeOffset"/> nicht in ORDER BY verwenden – und genau
+    /// SQLite kann <see cref="DateTimeOffset"/> nicht in ORDER BY verwenden, und genau
     /// danach wird hier sortiert, um den jüngsten Lauf zu finden.
     /// </summary>
     public DateTime StartedAtUtc { get; set; }

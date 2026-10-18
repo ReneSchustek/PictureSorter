@@ -3,8 +3,8 @@ namespace PictureSorter.Core.ValueObjects;
 /// <summary>
 /// Ergebnis eines Rückgängig-Vorgangs. Übersprungene Dateien werden ausgewiesen
 /// statt verschwiegen: Wurde eine Datei nach dem Sortieren umbenannt oder liegt am
-/// Ursprungsort inzwischen wieder etwas, holt die Anwendung sie bewusst nicht zurück –
-/// überschrieben wird nie. Die Nutzerin muss erfahren, dass nicht alles zurückkam.
+/// Ursprungsort inzwischen wieder etwas, holt die Anwendung sie bewusst nicht zurück:
+/// Überschrieben wird nie. Die Nutzerin muss erfahren, dass nicht alles zurückkam.
 /// </summary>
 public sealed record UndoResult
 {

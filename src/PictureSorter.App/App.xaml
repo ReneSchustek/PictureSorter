@@ -19,7 +19,7 @@
                  48 Punkt hohen Leiste geht es damit unter.
                  Genau 32 und keine Zwischengröße: Die Symboldatei enthält feste Größen
                  (16, 24, 32, 48 …). Bei einem Zwischenwert nimmt WinUI ein kleineres Bild
-                 und rechnet es hoch — das Symbol wird unscharf. Bei 32 trifft die
+                 und rechnet es hoch. Das Symbol wird unscharf. Bei 32 trifft die
                  Anzeigegröße ein vorhandenes Bild Punkt für Punkt. -->
             <x:Double x:Key="TitleBarIconMaxWidth">32</x:Double>
             <x:Double x:Key="TitleBarIconMaxHeight">32</x:Double>
@@ -56,7 +56,7 @@
                 <Setter Property="FontWeight" Value="SemiBold" />
             </Style>
             <!-- Volle Deckkraft: Bei 85 % mischte sich der Text mit dem Verlauf und kam
-                 am hellen Anfang (#2E6DA4) nur auf 4,45:1 – knapp unter dem geforderten
+                 am hellen Anfang (#2E6DA4) nur auf 4,45:1, knapp unter dem geforderten
                  Wert. Deckend sind es 5,5:1. Die Abstufung zum Titel trägt die
                  Schriftgröße, nicht die Durchsichtigkeit. -->
             <Style x:Key="HeroSubtitleStyle" TargetType="TextBlock">

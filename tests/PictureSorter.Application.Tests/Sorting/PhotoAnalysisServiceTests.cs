@@ -98,7 +98,7 @@ public sealed class PhotoAnalysisServiceTests
         IReadOnlyList<SortProposal> proposals = await service.CreateProposalsAsync(
             SourceFolder, CreateCategory(), includeSubfolders: false, DateRange.Unbounded, progress: null, CancellationToken.None);
 
-        // Der teure KI-Aufruf muss ausbleiben – genau dafür gibt es das Gedächtnis.
+        // Der teure KI-Aufruf muss ausbleiben. Genau dafür gibt es das Gedächtnis.
         Assert.Empty(proposals);
         Assert.Equal(0, provider.CallCount);
     }
@@ -160,7 +160,7 @@ public sealed class PhotoAnalysisServiceTests
     [Fact]
     public async Task CreateProposalsAsync_ForAnEventCategory_PutsTheCaptureDateIntoTheFolderName()
     {
-        // Bei einem Ereignis ist das Datum der eigentliche Ordnername – „Geburtstag"
+        // Bei einem Ereignis ist das Datum der eigentliche Ordnername: „Geburtstag"
         // allein hilft nicht, wenn es davon mehrere gibt.
         Photo captured = new()
         {
@@ -193,7 +193,7 @@ public sealed class PhotoAnalysisServiceTests
     [Fact]
     public async Task CreateProposalsAsync_ReportsProgressAlsoForSettledPhotos()
     {
-        // Ein bereits abgehaktes Foto wird übersprungen – der Zählstand muss trotzdem
+        // Ein bereits abgehaktes Foto wird übersprungen. Der Zählstand muss trotzdem
         // weiterlaufen, sonst bliebe der Fortschrittsbalken bei einem Ordner voller
         // bekannter Bilder scheinbar stehen.
         FakeSortMemory memory = new();
@@ -204,7 +204,7 @@ public sealed class PhotoAnalysisServiceTests
             memory: memory);
 
         // Bewusst kein Progress<T>: Das meldet über den Synchronisationskontext und
-        // damit nicht zwingend vor der Rückkehr – der Test wäre zeitabhängig.
+        // damit nicht zwingend vor der Rückkehr; der Test wäre zeitabhängig.
         CollectingProgress reported = new();
         IReadOnlyList<SortProposal> proposals = await service.CreateProposalsAsync(
             SourceFolder, CreateCategory(), includeSubfolders: false, DateRange.Unbounded, reported,
@@ -218,7 +218,7 @@ public sealed class PhotoAnalysisServiceTests
     public async Task CreateProposalsAsync_ReportsTheGatheringOfTheFilesFirst()
     {
         // Vor dem Bewerten wird jede Datei einmal geöffnet, um ihre Metadaten zu lesen.
-        // Bei einem großen Ordner ist das der längste Teil des Laufs – und er lief bis
+        // Bei einem großen Ordner ist das der längste Teil des Laufs, und er lief bis
         // hierher ohne jede Meldung ab. In der Oberfläche stand deshalb minutenlang nur
         // „es arbeitet", und der Zählstand erschien erst, als dieser Teil vorbei war.
         PhotoAnalysisService service = CreateService(
@@ -244,7 +244,7 @@ public sealed class PhotoAnalysisServiceTests
     {
         // Der eigentliche Zweck des Zeitraums: Er greift vor dem teuren Schritt. Wer einen
         // Urlaub sucht, lässt die KI über hundert statt über tausend Bilder laufen. Geprüft
-        // wird deshalb die Zahl der KI-Aufrufe, nicht bloß das Ergebnis — bei einem
+        // wird deshalb die Zahl der KI-Aufrufe, nicht bloß das Ergebnis: Bei einem
         // nachträglichen Filter wäre das Ergebnis dasselbe, die Wartezeit aber nicht.
         IReadOnlyList<Photo> photos =
         [
@@ -328,7 +328,7 @@ public sealed class PhotoAnalysisServiceTests
     public async Task CreateProposalsAsync_WithDateRange_LeavesOutPhotosWithoutACaptureDate()
     {
         // „Von–bis" gilt streng: Drin ist nur, was nachweislich in den Zeitraum fällt.
-        // Ein Foto ohne Aufnahmedatum lässt sich nicht zuordnen und bleibt draußen —
+        // Ein Foto ohne Aufnahmedatum lässt sich nicht zuordnen und bleibt draußen,
         // sonst wäre die Angabe keine verlässliche Grenze, sondern eine ungefähre.
         IReadOnlyList<Photo> photos =
         [
@@ -359,8 +359,8 @@ public sealed class PhotoAnalysisServiceTests
     [Fact]
     public async Task CreateProposalsAsync_WithoutDateRange_StillEvaluatesPhotosWithoutACaptureDate()
     {
-        // Ohne Zeitraum gibt es keine Grenze, an der ein fehlendes Datum scheitern könnte —
-        // solche Fotos werden ganz normal bewertet.
+        // Ohne Zeitraum gibt es keine Grenze, an der ein fehlendes Datum scheitern könnte.
+        // Solche Fotos werden ganz normal bewertet.
         IReadOnlyList<Photo> photos =
         [
             new Photo { FullPath = @"C:\fotos\ohne.jpg", FileName = "ohne.jpg", CapturedAt = null },
@@ -392,7 +392,7 @@ public sealed class PhotoAnalysisServiceTests
         // Der Kern der Beschleunigung: Jede Bewertung ist ein Aufruf des Bild-Modells und
         // dauert Sekunden, die die Anwendung nur wartet. Nacheinander summiert sich das
         // bei tausend Fotos auf Stunden. Der Test belegt, dass tatsächlich mehrere
-        // Aufrufe gleichzeitig offen sind – eine Zusicherung über die Laufzeit allein
+        // Aufrufe gleichzeitig offen sind. Eine Zusicherung über die Laufzeit allein
         // wäre auf der Baumaschine nicht verlässlich zu messen.
         IReadOnlyList<Photo> photos = [.. Enumerable.Range(0, 8).Select(index => new Photo
         {
@@ -420,7 +420,7 @@ public sealed class PhotoAnalysisServiceTests
     {
         // Die Vorschau zeigt die Vorschläge in der Reihenfolge des Ordners. Würden sie in
         // der Reihenfolge angehängt, in der die Bewertungen fertig werden, stünden sie
-        // nach jedem Lauf anders – und bei zwei Läufen über denselben Ordner käme eine
+        // nach jedem Lauf anders, und bei zwei Läufen über denselben Ordner käme eine
         // andere Liste heraus, ohne dass sich etwas geändert hätte.
         IReadOnlyList<Photo> photos = [.. Enumerable.Range(0, 6).Select(index => new Photo
         {
@@ -453,7 +453,7 @@ public sealed class PhotoAnalysisServiceTests
     public async Task CreateProposalsAsync_CountsEveryPhotoExactlyOnceDespiteParallelEvaluation()
     {
         // Mehrere Bewertungen werden gleichzeitig fertig. Ein gewöhnliches ++ verlöre
-        // dabei Zählschritte, und der Balken käme nie ganz an – die Anzeige stünde am
+        // dabei Zählschritte, und der Balken käme nie ganz an: Die Anzeige stünde am
         // Ende bei „Bild 994 von 1000", obwohl der Lauf durch ist.
         IReadOnlyList<Photo> photos = [.. Enumerable.Range(0, 12).Select(index => new Photo
         {
@@ -507,7 +507,7 @@ public sealed class PhotoAnalysisServiceTests
     [Fact]
     public async Task CreateProposalsAsync_NeverReportsMoreEvaluatedThanLoaded()
     {
-        // Die Bewertung muss dem Laden immer mindestens ein Bild hinterherlaufen — anders
+        // Die Bewertung muss dem Laden immer mindestens ein Bild hinterherlaufen. Anders
         // geht es gar nicht, denn bewertet werden kann nur, was schon da ist. Sichtbar ist
         // das an der Reihenfolge der Meldungen: Ein Bild wird als geladen gezählt, bevor es
         // weitergereicht wird. Andersherum stünde der Analysebalken vor dem Ladebalken, und
@@ -545,8 +545,8 @@ public sealed class PhotoAnalysisServiceTests
     }
 
     /// <summary>
-    /// Reicht die Bilder einzeln und mit spürbarer Wartezeit weiter — wie ein Ordner, der
-    /// erst aus der Cloud geholt werden muss — und zählt mit, wie viele schon draußen sind.
+    /// Reicht die Bilder einzeln und mit spürbarer Wartezeit weiter (wie ein Ordner, der
+    /// erst aus der Cloud geholt werden muss) und zählt mit, wie viele schon draußen sind.
     /// </summary>
     private sealed class SlowStreamingPhotoSource(IReadOnlyList<Photo> photos) : IPhotoSource
     {
@@ -736,7 +736,7 @@ public sealed class PhotoAnalysisServiceTests
     public async Task CreateProposalsAsync_WithExamplesFromAnotherModel_MakesNoProposals()
     {
         // Die gespeicherten Beispiele stammen aus dem Modell „fake", die frisch
-        // erzeugten Vektoren aus einem anderen. Sie sind nicht vergleichbar – jedes
+        // erzeugten Vektoren aus einem anderen. Sie sind nicht vergleichbar: Jedes
         // Urteil daraus wäre geraten. Eine Prüfung allein auf die Vektorlänge ließe trotzdem
         // rechnen, sobald die Länge zufällig übereinstimmt.
         FakeImageClassifier classifier = new(new VisionVerdict { Matches = true, Confidence = 1.0 });
@@ -758,7 +758,7 @@ public sealed class PhotoAnalysisServiceTests
     {
         // Der eigentliche Schaden lag im Gedächtnis: Ein nicht vergleichbares Beispiel
         // führte zu „passt nicht", und das wurde dauerhaft gemerkt. Der ganze Ordner
-        // wäre danach als erledigt abgehakt gewesen – auch nachdem das Modell wieder
+        // wäre danach als erledigt abgehakt gewesen. Auch nachdem das Modell wieder
         // zurückgestellt ist, käme kein Foto je erneut zur Prüfung.
         FakeSortMemory memory = new();
         FakeImageClassifier classifier = new(new VisionVerdict { Matches = false, Confidence = 0.0 });
@@ -811,7 +811,7 @@ public sealed class PhotoAnalysisServiceTests
 
     // Ein Provider, der bei jedem Aufruf scheitert. Er ist der eigentliche Beweis dieses
     // Abschnitts: Wenn der Datums-Lauf durchläuft, wurde die KI kein einziges Mal
-    // befragt — genau das ist der Sinn dieses Weges.
+    // befragt; genau das ist der Sinn dieses Weges.
     private static PhotoAnalysisService CreateDateOnlyService(
         IReadOnlyList<Photo> photos,
         FakeSortMemory? memory = null) =>
@@ -1009,7 +1009,7 @@ public sealed class PhotoAnalysisServiceTests
     public async Task CreateCalendarProposalsAsync_AllProposalsShareOneRunName()
     {
         // Das Anwenden protokolliert den Lauf und besteht auf einem Namen. Trügen die
-        // Vorschläge die Namen ihrer Zielordner, bräche das Ablegen genau am Ende ab —
+        // Vorschläge die Namen ihrer Zielordner, bräche das Ablegen genau am Ende ab,
         // nachdem die Dateien bereits verschoben sind.
         PhotoAnalysisService service = CreateDateOnlyService(
         [

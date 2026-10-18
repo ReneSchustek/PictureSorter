@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <!-- Reine HTTP-Anbindung an Ollama (kein WinRT) – daher plattformneutrales net10.0. -->
+    <!-- Reine HTTP-Anbindung an Ollama (kein WinRT), daher plattformneutrales net10.0. -->
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>

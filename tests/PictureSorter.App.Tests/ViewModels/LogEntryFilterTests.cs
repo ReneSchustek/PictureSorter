@@ -3,7 +3,7 @@ using PictureSorter.App.ViewModels;
 namespace PictureSorter.App.Tests.ViewModels;
 
 /// <summary>
-/// Tests der Protokoll-Auswahl. Ein Eintrag kann mehrzeilig sein – eine
+/// Tests der Protokoll-Auswahl. Ein Eintrag kann mehrzeilig sein: Eine
 /// Stapelüberwachung gehört zu ihrer Fehlermeldung und darf weder ohne sie
 /// erscheinen noch mit ihr verschwinden.
 /// </summary>
@@ -42,7 +42,7 @@ public sealed class LogEntryFilterTests
     public void Apply_ProblemsOnly_KeepsTheStackTraceWithItsError()
     {
         // Eine Fehlermeldung ohne ihre Stapelüberwachung wäre für die Ursachensuche
-        // wertlos – und eine Stapelüberwachung ohne Fehlermeldung unverständlich.
+        // wertlos, und eine Stapelüberwachung ohne Fehlermeldung unverständlich.
         IReadOnlyList<string> result = LogEntryFilter.Apply(Protokoll, LogFilter.ProblemsOnly, search: null);
 
         Assert.Contains(result, line => line.StartsWith("System.IO.IOException", StringComparison.Ordinal));

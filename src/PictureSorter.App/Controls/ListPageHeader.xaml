@@ -3,7 +3,7 @@
     Primäraktion rechts, darunter Suche und Filter.
 
     Ein Steuerelement statt derselben zwanzig Zeilen in jeder Ansicht. Die Reihenfolge
-    liegt damit an einer Stelle fest und kann nicht von Seite zu Seite abweichen — genau
+    liegt damit an einer Stelle fest und kann nicht von Seite zu Seite abweichen. Genau
     darum geht es bei Wiedererkennung. Was eine Seite nicht mitgibt, blendet sich aus.
 -->
 <UserControl

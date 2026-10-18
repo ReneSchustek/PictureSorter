@@ -4,7 +4,7 @@ using PictureSorter.Core.ValueObjects;
 namespace PictureSorter.Core.Interfaces;
 
 /// <summary>
-/// Findet zusammenhängende Aufnahmezeiträume — im Alltag also Urlaube, Feiern, Ausflüge.
+/// Findet zusammenhängende Aufnahmezeiträume, im Alltag also Urlaube, Feiern, Ausflüge.
 ///
 /// Die Annahme dahinter ist einfach und trägt erstaunlich weit: An gewöhnlichen Tagen
 /// entstehen einzelne Fotos, auf einer Reise dutzende an mehreren Tagen hintereinander.

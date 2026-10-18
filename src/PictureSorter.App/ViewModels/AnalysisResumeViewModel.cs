@@ -14,8 +14,8 @@ namespace PictureSorter.App.ViewModels;
 /// zurückzuholen oder ihn zu verwerfen.
 ///
 /// Eigenes Anzeige-Modell wie der Assistent und die Vorschlagsliste: Es kennt das
-/// Protokoll und die Beschriftung, aber nicht den Ablauf. Was danach geschieht —
-/// Zustandswechsel, Statusleiste, Vorschau — erfährt es nur über Delegaten. So bleibt
+/// Protokoll und die Beschriftung, aber nicht den Ablauf. Was danach geschieht
+/// (Zustandswechsel, Statusleiste, Vorschau), erfährt es nur über Delegaten. So bleibt
 /// die Zuständigkeit an einer Stelle, ohne dass zwei Anzeige-Modelle sich kennen müssen.
 /// </summary>
 internal sealed partial class AnalysisResumeViewModel : ObservableObject
@@ -171,7 +171,7 @@ internal sealed partial class AnalysisResumeViewModel : ObservableObject
     private Task RecoverFromMemoryAsync() => _onRecoverFromMemory();
 
     /// <summary>
-    /// Aus dem Gedächtnis lässt sich auch ohne protokollierten Lauf etwas holen — das ist
+    /// Aus dem Gedächtnis lässt sich auch ohne protokollierten Lauf etwas holen. Das ist
     /// gerade der Weg für Läufe aus älteren Fassungen. Ob Ordner und Gruppe feststehen,
     /// weiß das übergeordnete Anzeige-Modell.
     /// </summary>
@@ -179,7 +179,7 @@ internal sealed partial class AnalysisResumeViewModel : ObservableObject
 
     // Das Protokoll ist eine Zugabe, kein Kernbestandteil: Ist die Datenbank gesperrt oder
     // beschädigt, wird eben kein Lauf angeboten. Ein Fehler beim Nachsehen darf nicht die
-    // ganze Sortierseite mitreißen — sie wird beim Anzeigen der Seite aufgerufen.
+    // ganze Sortierseite mitreißen, denn sie wird beim Anzeigen der Seite aufgerufen.
     [SuppressMessage(
         "Design",
         "CA1031:Keine allgemeinen Ausnahmetypen abfangen",

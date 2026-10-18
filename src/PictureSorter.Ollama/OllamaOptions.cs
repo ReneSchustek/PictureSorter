@@ -18,7 +18,7 @@ public sealed class OllamaOptions
     /// „localhost": Unter Windows löst „localhost" zuerst nach der IPv6-Adresse „::1"
     /// auf, Ollama lauscht aber nur auf 127.0.0.1. Blockt eine Sicherheitssoftware den
     /// IPv6-Versuch stillschweigend, statt ihn abzulehnen, wartet die Verbindung ins
-    /// Leere – ein laufendes Ollama gälte dann als nicht vorhanden.
+    /// Leere. Ein laufendes Ollama gälte dann als nicht vorhanden.
     /// </summary>
     [Required]
     public Uri BaseUrl { get; set; } = new("http://127.0.0.1:11434");
@@ -34,7 +34,7 @@ public sealed class OllamaOptions
     ///
     /// An 40 eigenen Aufnahmen gegen das vorherige llava gemessen: Es beschreibt
     /// nicht nur genauer, sondern auch schneller (5,0 statt 8,7 Sekunden je Foto),
-    /// und es liest Text im Bild — aus „ein bedrucktes Blatt, offenbar auf Deutsch"
+    /// und es liest Text im Bild: Aus „ein bedrucktes Blatt, offenbar auf Deutsch"
     /// wurde „eine Rezeptseite: Fisch-Kebabs mit Auberginenpüree". Genau davon lebt
     /// das Wiederfinden. Der Abstand zwischen zusammengehörigen und fremden Fotos
     /// stieg von 0,159 auf 0,180.
@@ -60,7 +60,7 @@ public sealed class OllamaOptions
     /// Obergrenze für die Länge einer Modellantwort in Token. Die Dauer eines
     /// Bild-Modell-Aufrufs hängt fast unmittelbar an der Zahl der erzeugten Token, und
     /// für den Vergleichsvektor genügen ein bis zwei Sätze. Ohne Grenze schreibt das
-    /// Modell regelmäßig deutlich mehr — und jedes Beispiel beim Anlernen dauert
+    /// Modell regelmäßig deutlich mehr, und jedes Beispiel beim Anlernen dauert
     /// entsprechend länger.
     /// </summary>
     [Range(16, 4096)]

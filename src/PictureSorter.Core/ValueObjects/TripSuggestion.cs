@@ -1,7 +1,7 @@
 namespace PictureSorter.Core.ValueObjects;
 
 /// <summary>
-/// Ein vorgeschlagener Zeitraum, in dem sich Aufnahmen ballen — also vermutlich ein
+/// Ein vorgeschlagener Zeitraum, in dem sich Aufnahmen ballen, also vermutlich ein
 /// Urlaub, eine Feier oder ein Ausflug.
 /// </summary>
 /// <param name="Range">Der Zeitraum, erster und letzter Tag eingeschlossen.</param>

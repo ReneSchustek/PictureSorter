@@ -112,7 +112,7 @@ public sealed class DuplicateScanServiceTests
             progress: reported,
             CancellationToken.None);
 
-        // Zwei Meldungen mit Zählstand im Abschnitt „Auswerten" – eine je Datei, die
+        // Zwei Meldungen mit Zählstand im Abschnitt „Auswerten": eine je Datei, die
         // gesperrte eingeschlossen. Der Balken erreicht also das Ende.
         Assert.Equal(
             [new DuplicateScanProgress(1, 2, ScanPhase.Analyzing), new DuplicateScanProgress(2, 2, ScanPhase.Analyzing)],
@@ -145,7 +145,7 @@ public sealed class DuplicateScanServiceTests
     [Fact]
     public async Task ScanAsync_ReportsTheTotalBeforeTheFirstFileIsRead()
     {
-        // Die Gesamtzahl muss von Anfang an feststehen – „Bild 1 von 1100" ist die
+        // Die Gesamtzahl muss von Anfang an feststehen: „Bild 1 von 1100" ist die
         // Auskunft, auf die es wartet, nicht ein Balken ohne Bezugsgröße.
         Dictionary<string, ImageFingerprint> fingerprints = new(StringComparer.Ordinal)
         {

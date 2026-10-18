@@ -145,7 +145,7 @@ public sealed class FileOrganizerTests : IDisposable
             dryRun: false,
             CancellationToken.None);
 
-        // Inzwischen liegt am Ursprungsort wieder eine – andere – Datei gleichen Namens.
+        // Inzwischen liegt am Ursprungsort wieder eine (andere) Datei gleichen Namens.
         _ = CreateFile(_root, "urlaub.jpg", "ein neues Foto");
 
         bool restored = await _organizer.RestoreAsync(target, source, CancellationToken.None);
@@ -198,7 +198,7 @@ public sealed class FileOrganizerTests : IDisposable
     public async Task ApplyAsync_WithCopy_KeepsTheCreationDate()
     {
         // File.Copy übernimmt zwar das Änderungsdatum, setzt das Erstelldatum aber auf
-        // „jetzt". Für eine Fotosammlung ist genau dieses Datum die Ordnung – ohne das
+        // „jetzt". Für eine Fotosammlung ist genau dieses Datum die Ordnung. Ohne das
         // Zurückschreiben trüge nach dem Sortieren jedes Bild denselben Tag.
         string source = CreateFile(_root, "urlaub.jpg", "inhalt");
         DateTime capture = new(2019, 3, 5, 8, 15, 0, DateTimeKind.Utc);
@@ -214,7 +214,7 @@ public sealed class FileOrganizerTests : IDisposable
     public async Task ApplyAsync_WithMove_KeepsTheCreationDate()
     {
         // Innerhalb eines Laufwerks bleibt das Datum ohnehin erhalten. Der Test hält
-        // fest, dass das Zurückschreiben es nicht kaputtmacht – über eine
+        // fest, dass das Zurückschreiben es nicht kaputtmacht: Über eine
         // Laufwerksgrenze hinweg ist es die einzige Rettung, dort wird aus dem
         // Verschieben intern Kopieren plus Löschen.
         string source = CreateFile(_root, "urlaub.jpg", "inhalt");

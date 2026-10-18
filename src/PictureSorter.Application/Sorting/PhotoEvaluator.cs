@@ -14,7 +14,7 @@ namespace PictureSorter.Application.Sorting;
 ///
 /// Eigene Klasse, weil das die eigentliche fachliche Entscheidung ist. Der Analysedienst
 /// daneben orchestriert nur: Er läuft über den Ordner, führt Buch und schreibt das
-/// Protokoll — urteilen tut er nicht.
+/// Protokoll. Urteilen tut er nicht.
 /// </summary>
 public sealed class PhotoEvaluator
 {
@@ -33,7 +33,7 @@ public sealed class PhotoEvaluator
     /// <param name="logger">Der Logger des Analysedienstes.</param>
     /// <param name="createProposal">
     /// Baut aus einem Urteil den Vorschlag. Der Zielordner hängt an der Kategorie und beim
-    /// Ereignis am Aufnahmedatum — das gehört zur Benennung, nicht zur Bewertung.
+    /// Ereignis am Aufnahmedatum (das gehört zur Benennung, nicht zur Bewertung).
     /// </param>
     public PhotoEvaluator(
         IEmbeddingProvider embeddingProvider,
@@ -88,7 +88,7 @@ public sealed class PhotoEvaluator
 
             // Die gespeicherten Beispiele stammen aus einem anderen Modell als das
             // gerade eingestellte. Ihre Vektoren sind mit dem aktuellen nicht
-            // vergleichbar – jedes Urteil daraus wäre geraten. Deshalb wird das Foto
+            // vergleichbar, jedes Urteil daraus wäre geraten. Deshalb wird das Foto
             // ausdrücklich NICHT bewertet und damit auch nicht gemerkt: Andernfalls
             // stünde nach einem Modellwechsel der ganze Ordner dauerhaft als
             // „passt nicht" im Gedächtnis, und selbst nach dem Zurückstellen des
@@ -99,7 +99,7 @@ public sealed class PhotoEvaluator
             }
 
             // Ähnelt das Foto einem Gegenbeispiel mehr als jedem Beispiel, gehört es
-            // nicht dazu – unabhängig von den Schwellen. Das ist der eigentliche Zweck
+            // nicht dazu, unabhängig von den Schwellen. Das ist der eigentliche Zweck
             // der Gegenbeispiele: Genau die Bilder auszuschließen, die dem Motiv nahe
             // kommen, aber nicht gemeint sind (Urlaubsstrand gegen Strandhochzeit).
             if (negatives.Count > 0 && BestSimilarity(embedding, negatives).Best >= similarity)
@@ -124,14 +124,14 @@ public sealed class PhotoEvaluator
         catch (AiUnavailableException ex)
         {
             // Fallback-Regel: Bild überspringen, Lauf nicht abbrechen. Bewusst NICHT
-            // als Ablehnung gemerkt – der Ausfall ist kein Urteil über das Bild.
+            // als Ablehnung gemerkt, denn der Ausfall ist kein Urteil über das Bild.
             EvaluatorLog.PhotoSkipped(_logger, photo.FileName, ex);
             return Evaluation.NotEvaluated();
         }
         catch (ImageUnreadableException ex)
         {
             // Dieselbe Behandlung, anderer Grund: Nicht die KI fehlt, sondern die Datei
-            // ließ sich nicht lesen – meist ein fehlender Codec. Auch das ist kein
+            // ließ sich nicht lesen, meist ein fehlender Codec. Auch das ist kein
             // Urteil über das Bild, es darf also nicht gemerkt werden.
             EvaluatorLog.PhotoUnreadable(_logger, photo.FileName, ex);
             return Evaluation.NotEvaluated();
@@ -157,7 +157,7 @@ public sealed class PhotoEvaluator
     // Liefert die höchste Ähnlichkeit zu einem der Vergleichsvektoren und ob überhaupt
     // einer vergleichbar war. Vergleichbar heißt: gleiches Modell und gleiche Länge.
     // Das Modell allein genügt nicht (eine spätere Fassung kann die Länge ändern), die
-    // Länge allein erst recht nicht – zwei verschiedene Modelle können dieselbe Länge
+    // Länge allein erst recht nicht: Zwei verschiedene Modelle können dieselbe Länge
     // liefern, und dann käme statt einer Ähnlichkeit eine Zufallszahl heraus.
     private static (double Best, bool AnyComparable) BestSimilarity(
         ImageEmbedding embedding,
@@ -214,7 +214,7 @@ public readonly record struct Evaluation(
         new(Proposal: null, WasEvaluated: false, ExamplesIncompatible: false);
 
     /// <summary>
-    /// Die Beispiele der Kategorie stammen aus einem anderen Modell. Kein Urteil –
+    /// Die Beispiele der Kategorie stammen aus einem anderen Modell. Kein Urteil,
     /// und deshalb ausdrücklich nichts, was gemerkt werden dürfte.
     /// </summary>
     /// <returns>Das Ergebnis.</returns>

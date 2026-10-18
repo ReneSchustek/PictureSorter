@@ -95,7 +95,7 @@ public sealed class FileSystemPhotoSourceTests : IDisposable
         // Der teure Teil ist das Öffnen jeder Datei für die Metadaten. Liegt der Ordner
         // in einem Cloud-Speicher (iCloud-Fotos unter Windows), zieht jedes Öffnen einen
         // vollständigen Download nach sich. Die Höchstzahl muss deshalb schon vor dem
-        // Einlesen greifen – ein nachträgliches Abschneiden hätte längst alles geholt.
+        // Einlesen greifen. Ein nachträgliches Abschneiden hätte längst alles geholt.
         Write("a.jpg");
         Write("b.jpg");
         Write("c.jpg");
@@ -133,7 +133,7 @@ public sealed class FileSystemPhotoSourceTests : IDisposable
     {
         // Genau so passiert es im Betrieb: Zwischen dem Auflisten und dem Lesen zieht
         // ein Virenscanner die Datei weg. Bis hierher riss der Zugriff auf die
-        // Dateigröße den gesamten Lauf mit – für jede Funktion, die Fotos einliest.
+        // Dateigröße den gesamten Lauf mit, für jede Funktion, die Fotos einliest.
         Write("a.jpg");
         Write("verschwindet.jpg");
         Write("b.jpg");
@@ -155,7 +155,7 @@ public sealed class FileSystemPhotoSourceTests : IDisposable
         // Das Einlesen öffnet jede Datei einzeln und ist bei einem großen Ordner der
         // längste Teil eines Laufs. Er lief bis hierher ohne jede Rückmeldung ab: Die
         // Oberfläche zeigte nur einen unbestimmten Balken, und der Zählstand erschien
-        // erst danach – zeitlich also viel zu spät.
+        // erst danach, zeitlich also viel zu spät.
         Write("a.jpg");
         Write("b.jpg");
         Write("c.jpg");
@@ -164,7 +164,7 @@ public sealed class FileSystemPhotoSourceTests : IDisposable
         _ = await _source.GetPhotosAsync(
             _root, includeSubfolders: false, skip: 0, maxCount: null, reported, CancellationToken.None);
 
-        // Zuerst die Gesamtzahl – ohne sie stünde in der Statusleiste ein Zählstand
+        // Zuerst die Gesamtzahl. Ohne sie stünde in der Statusleiste ein Zählstand
         // ohne Bezugsgröße. Danach je Datei ein Schritt bis ans Ende.
         Assert.Equal(
             [
@@ -200,8 +200,8 @@ public sealed class FileSystemPhotoSourceTests : IDisposable
     [Fact]
     public async Task GetPhotosAsync_ReadsSeveralFilesAtOnce()
     {
-        // Der Kern der Beschleunigung: Das Einlesen wartet fast nur — auf die Platte, bei
-        // einem Cloud-Ordner auf den Download der Datei. Nacheinander summiert sich diese
+        // Der Kern der Beschleunigung: Das Einlesen wartet fast nur (auf die Platte, bei
+        // einem Cloud-Ordner auf den Download der Datei). Nacheinander summiert sich diese
         // Wartezeit zum längsten Abschnitt eines Laufs, obwohl sie sich übereinanderlegen
         // lässt. Eine Zusicherung über die Laufzeit wäre auf einer beliebigen Maschine
         // nicht verlässlich; deshalb wird gezählt, wie viele Zugriffe gleichzeitig
@@ -285,7 +285,7 @@ public sealed class FileSystemPhotoSourceTests : IDisposable
     {
         // Damit die Bewertung dem Laden immer hinterherläuft, muss ein Bild als geladen
         // gezählt sein, bevor es überhaupt weitergereicht wird. Andersherum griffe die
-        // Bewertung es auf und meldete es, ehe der Ladebalken davon weiß — der
+        // Bewertung es auf und meldete es, ehe der Ladebalken davon weiß. Der
         // Analysebalken stünde dann vor dem Ladebalken.
         //
         // Der Empfänger meldet bewusst langsam. Ohne das liefe die vertauschte Reihenfolge
@@ -318,7 +318,7 @@ public sealed class FileSystemPhotoSourceTests : IDisposable
     {
         // Der Kern des begrenzten Vorlaufs: Ohne ihn zöge die Anwendung bei einem
         // Cloud-Ordner alle Dateien herunter, während die Bewertung noch beim ersten Bild
-        // steht — Bandbreite und Plattenplatz für etwas, das noch lange niemand braucht,
+        // steht: Bandbreite und Plattenplatz für etwas, das noch lange niemand braucht,
         // und bei einem Abbruch vollständig umsonst.
         foreach (int index in Enumerable.Range(0, 40))
         {
@@ -335,7 +335,7 @@ public sealed class FileSystemPhotoSourceTests : IDisposable
             _root, includeSubfolders: false, skip: 0, maxCount: null, progress: null, CancellationToken.None))
         {
             // Nach dem ersten Bild aussteigen, dem Erzeuger aber Gelegenheit geben, den
-            // Vorlauf zu füllen — mehr als den Vorlauf darf er nicht laden.
+            // Vorlauf zu füllen. Mehr als den Vorlauf darf er nicht laden.
             await Task.Delay(TimeSpan.FromMilliseconds(150), TestContext.Current.CancellationToken);
             break;
         }
@@ -363,8 +363,8 @@ public sealed class FileSystemPhotoSourceTests : IDisposable
     }
 
     // Nimmt die Meldungen unmittelbar entgegen. Bewusst kein Progress<T>: Das meldet über
-    // den Synchronisationskontext und damit nicht zwingend vor der Rückkehr – der Test
-    // wäre zeitabhängig.
+    // den Synchronisationskontext und damit nicht zwingend vor der Rückkehr (der Test
+    // wäre zeitabhängig).
     private sealed class RecordingProgress(TimeSpan delay = default) : IProgress<PhotoScanProgress>
     {
         private readonly Lock _gate = new();
@@ -397,7 +397,7 @@ public sealed class FileSystemPhotoSourceTests : IDisposable
         {
             // Die Wartezeit liegt vor dem Eintragen: Nur so entsteht ein Zeitfenster, in
             // dem die Meldung noch nicht sichtbar ist. Reicht die Quelle das Bild vor dem
-            // Melden weiter, sieht der Verbraucher es genau in diesem Fenster — und der
+            // Melden weiter, sieht der Verbraucher es genau in diesem Fenster, und der
             // Test schlägt fehl, wie er soll.
             if (delay > TimeSpan.Zero)
             {
@@ -412,7 +412,7 @@ public sealed class FileSystemPhotoSourceTests : IDisposable
     }
 
     // Wartet kurz und hält fest, wie viele Zugriffe dabei gleichzeitig offen waren. Nur
-    // so lässt sich belegen, dass wirklich parallel gelesen wird – die Zahl der
+    // so lässt sich belegen, dass wirklich parallel gelesen wird. Die Zahl der
     // zurückgegebenen Fotos sähe auch bei sequentiellem Einlesen richtig aus.
     private sealed class ConcurrencyTrackingMetadataReader(Func<string, TimeSpan>? delay = null)
         : IImageMetadataReader
@@ -468,7 +468,7 @@ public sealed class FileSystemPhotoSourceTests : IDisposable
     }
 
     // Zählt die Zugriffe auf die Metadaten. Nur so lässt sich belegen, dass wirklich
-    // weniger Dateien geöffnet werden – die Zahl der zurückgegebenen Fotos allein
+    // weniger Dateien geöffnet werden: Die Zahl der zurückgegebenen Fotos allein
     // sähe auch dann richtig aus, wenn erst hinterher abgeschnitten würde.
     private sealed class CountingMetadataReader : IImageMetadataReader
     {

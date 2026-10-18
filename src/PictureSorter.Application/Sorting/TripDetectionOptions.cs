@@ -16,13 +16,13 @@ public sealed class TripDetectionOptions
     /// <summary>
     /// Wie viele Tage ohne ein einziges Foto ein Zeitraum überbrücken darf, bevor er endet.
     ///
-    /// Zwei heißt: Ein einzelner Tag ohne Bilder — Regentag, langer Anfahrtstag —
+    /// Zwei heißt: Ein einzelner Tag ohne Bilder (Regentag, langer Anfahrtstag)
     /// überbrückt der Vorschlag, statt die Reise in zwei Teile zu zerlegen. Genau das ist
     /// im Alltag der häufigere Fall.
     ///
     /// Der Preis: Ein Alltagsfoto, das genau zwei Tage vor der Abreise entstanden ist,
     /// wird mit hineingezogen und lässt den Vorschlag zwei Tage zu früh beginnen. Das ist
-    /// die harmlosere Seite — der Vorschlag ist ein Angebot, und die beiden Datumsfelder
+    /// die harmlosere Seite: Der Vorschlag ist ein Angebot, und die beiden Datumsfelder
     /// lassen sich von Hand nachziehen. Ein zerrissener Urlaub dagegen sieht nach einem
     /// Fehler aus.
     /// </summary>

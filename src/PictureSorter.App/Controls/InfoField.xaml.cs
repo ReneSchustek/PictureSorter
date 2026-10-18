@@ -5,7 +5,7 @@ namespace PictureSorter.App.Controls;
 
 /// <summary>
 /// Eine beschriftete Angabe: kleine, gesperrte Beschriftung über dem Wert. Der Baustein
-/// für Detailansichten — Aufnahmedatum, Ordner, Kamera.
+/// für Detailansichten: Aufnahmedatum, Ordner, Kamera.
 /// </summary>
 internal sealed partial class InfoField : UserControl
 {

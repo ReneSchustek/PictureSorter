@@ -1,10 +1,10 @@
-﻿# analyse-auswerten.ps1 — sagt, wo die Zeit eines Analyselaufs hingeht.
+﻿# analyse-auswerten.ps1: sagt, wo die Zeit eines Analyselaufs hingeht.
 #
 # Warum es dieses Werkzeug gibt
 # -----------------------------
 # Die Anwendung hält je Foto fest, auf welchem Weg entschieden wurde (Embedding oder
 # Bild-Modell) und wann. Damit steckt die Antwort auf die Frage, wohin die Zeit geht,
-# bereits in der Datenbank — nur kommt ohne dieses Werkzeug niemand an sie heran, der
+# bereits in der Datenbank, nur kommt ohne dieses Werkzeug niemand an sie heran, der
 # nicht SQL schreiben will.
 #
 # Gemessen wird nichts hinzu: Das Werkzeug liest nur, was ein Lauf ohnehin geschrieben
@@ -29,7 +29,7 @@ if (-not (Test-Path -LiteralPath $Datenbank)) {
 }
 
 # Die Anwendung hält die Datei offen, solange sie läuft. Gelesen wird deshalb aus einer
-# Kopie — sonst scheitert der Zugriff oder, schlimmer, er stört den laufenden Lauf.
+# Kopie, sonst scheitert der Zugriff oder, schlimmer, er stört den laufenden Lauf.
 $kopie = Join-Path ([System.IO.Path]::GetTempPath()) ("picturesorter-messung-" + [Guid]::NewGuid().ToString('N') + ".db")
 Copy-Item -LiteralPath $Datenbank -Destination $kopie -Force
 
@@ -90,7 +90,7 @@ try {
         Write-Output ("  Methode {0}: {1} ({2:N1} %)" -f $v.Method, $v.Anzahl, $anteil)
     }
 
-    # Wo geht die Zeit hin? Die Abstände zwischen den Entscheidungen sagen es —
+    # Wo geht die Zeit hin? Die Abstände zwischen den Entscheidungen sagen es,
     # getrennt nach Verfahren, sonst mittelt sich der teure Fall unter den billigen weg.
     $zeiten = Frage @"
 SELECT Method,

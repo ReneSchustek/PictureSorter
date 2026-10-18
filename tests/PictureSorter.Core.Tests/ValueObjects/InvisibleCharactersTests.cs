@@ -5,7 +5,7 @@ namespace PictureSorter.Core.Tests.ValueObjects;
 /// <summary>
 /// Tests der Zeichen, die man sieht, aber nicht unterscheiden kann. Der Anlass ist
 /// ein Bestand aus iCloud: Sein Ordner trug ein geschütztes Leerzeichen zwischen zwei
-/// Wörtern. Wer den Pfad abtippte, traf ihn nicht — und bekam eine Meldung zu lesen,
+/// Wörtern. Wer den Pfad abtippte, traf ihn nicht, und bekam eine Meldung zu lesen,
 /// die zwar stimmte, aber niemanden weiterbrachte.
 /// </summary>
 public sealed class InvisibleCharactersTests
@@ -26,7 +26,7 @@ public sealed class InvisibleCharactersTests
     public void Normalize_DropsCharactersWithoutWidth()
     {
         // Ein Zeichen ohne Breite hinterlässt keine Spur auf dem Bildschirm. Beim
-        // Vergleich muss es deshalb entfallen und nicht zu einem Leerzeichen werden —
+        // Vergleich muss es deshalb entfallen und nicht zu einem Leerzeichen werden,
         // sonst gälte „iCloudFotos" plötzlich als „iCloud Fotos".
         string mit = $"iCloud{ZeroWidthSpace}Fotos";
 

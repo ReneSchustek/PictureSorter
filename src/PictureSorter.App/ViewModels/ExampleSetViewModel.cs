@@ -12,13 +12,13 @@ using PictureSorter.Core.Entities;
 namespace PictureSorter.App.ViewModels;
 
 /// <summary>
-/// Eine Seite der Beispielauswahl – entweder die passenden oder die nicht passenden
+/// Eine Seite der Beispielauswahl: entweder die passenden oder die nicht passenden
 /// Bilder. Beide Seiten verhalten sich gleich (füllen, begrenzen, einzeln entfernen)
 /// und teilen sich deshalb diese Klasse.
 ///
 /// Die Obergrenze wird beim Hinzufügen durchgesetzt und ist ständig ablesbar. Ohne sie
 /// nimmt die Auswahl beliebig viele Bilder an, und der Nutzer erfährt erst beim
-/// Anlernen, dass es zu viele waren – dort läuft je Bild ein vollständiger Aufruf der
+/// Anlernen, dass es zu viele waren. Dort läuft je Bild ein vollständiger Aufruf der
 /// Bilderkennung.
 /// </summary>
 internal sealed partial class ExampleSetViewModel : ObservableObject
@@ -108,7 +108,7 @@ internal sealed partial class ExampleSetViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Nimmt Bilddateien anhand ihrer Pfade auf – für die eigene Auswahl und für
+    /// Nimmt Bilddateien anhand ihrer Pfade auf, für die eigene Auswahl und für
     /// Dateien, die aus dem Explorer hereingezogen werden.
     /// </summary>
     /// <param name="paths">Die Pfade.</param>
@@ -138,7 +138,7 @@ internal sealed partial class ExampleSetViewModel : ObservableObject
 
     // Liest die Eckdaten einer Bilddatei. Bewusst ohne Auswertung der Aufnahmedaten:
     // Die Datei müsste dafür geöffnet werden, und für die Auswahl zählt allein das
-    // Bild – Aufnahmedatum und Ort holt der Sortierlauf ohnehin selbst.
+    // Bild. Aufnahmedatum und Ort holt der Sortierlauf ohnehin selbst.
     private static bool TryDescribe(string path, [NotNullWhen(true)] out Photo? photo)
     {
         photo = null;

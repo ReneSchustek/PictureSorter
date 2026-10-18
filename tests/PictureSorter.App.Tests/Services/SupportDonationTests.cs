@@ -7,8 +7,8 @@ namespace PictureSorter.App.Tests.Services;
 /// </summary>
 /// <remarks>
 /// Ein Spenden-Einstieg ist die eine Stelle, an der ein Programm den Nutzer zu einer
-/// Zahlung führt. Wandert die Adresse — durch einen Tippfehler, eine unbedachte Änderung
-/// oder einen fremden Beitrag —, merkt es niemand: Der Knopf sieht genauso aus, und das
+/// Zahlung führt. Wandert die Adresse (durch einen Tippfehler, eine unbedachte Änderung
+/// oder einen fremden Beitrag), merkt es niemand: Der Knopf sieht genauso aus, und das
 /// Geld geht woanders hin. Diese Prüfungen machen daraus einen roten Build.
 /// </remarks>
 public sealed class SupportDonationTests

@@ -11,8 +11,8 @@ namespace PictureSorter.Application.Naming;
 /// einen lesbaren.
 ///
 /// Gemessen an einem aus iCloud geladenen Bestand: 159 von 1507 Dateien trugen Namen
-/// aus Ersatzzeichen. Die Dateien selbst waren in Ordnung — gültige Bilder, die sich
-/// öffnen ließen. Unbrauchbar war nur ihr Name, und damit jede Möglichkeit, das Bild
+/// aus Ersatzzeichen. Die Dateien selbst waren in Ordnung (gültige Bilder, die sich
+/// öffnen ließen). Unbrauchbar war nur ihr Name, und damit jede Möglichkeit, das Bild
 /// zu suchen, zu nennen oder weiterzugeben.
 /// </summary>
 public sealed class FileNameRepairService : IFileNameRepairService
@@ -66,7 +66,7 @@ public sealed class FileNameRepairService : IFileNameRepairService
         ArgumentException.ThrowIfNullOrWhiteSpace(folder);
 
         // Der Umweg über die gewöhnliche Foto-Quelle liest zu jeder Datei auch die
-        // Angaben aus dem Dateikopf — für die allermeisten umsonst, weil ihr Name in
+        // Angaben aus dem Dateikopf, für die allermeisten umsonst, weil ihr Name in
         // Ordnung ist. Der eigene Weg hätte dafür die Regeln, welche Dateien überhaupt
         // Bilder sind und wie tief gesucht wird, ein zweites Mal aufgeschrieben. Zwei
         // Antworten auf dieselbe Frage sind teurer als ein paar gelesene Dateiköpfe.
@@ -118,7 +118,7 @@ public sealed class FileNameRepairService : IFileNameRepairService
             // übernommen: Fehlt das EXIF-Feld, setzt jene ersatzweise die Änderungszeit
             // der Datei ein. Fürs Sortieren ist das eine brauchbare Näherung, für einen
             // Namen wäre es eine Behauptung. Ein aus iCloud geladener Bestand hieße
-            // sonst durchweg nach dem Tag des Herunterladens — ein Datum, das mit der
+            // sonst durchweg nach dem Tag des Herunterladens, einem Datum, das mit der
             // Aufnahme nichts zu tun hat.
             PhotoMetadata? metadata = await _metadataReader
                 .ReadAsync(photo.FullPath, cancellationToken)

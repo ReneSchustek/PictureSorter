@@ -58,7 +58,7 @@ internal sealed class FakeAnalysisJournal : IAnalysisJournal
 }
 
 /// <summary>
-/// Scheitert bei jedem Zugriff — wie eine gesperrte oder beschädigte Datenbank.
+/// Scheitert bei jedem Zugriff, wie eine gesperrte oder beschädigte Datenbank.
 /// </summary>
 internal sealed class BrokenAnalysisJournal : IAnalysisJournal
 {
@@ -90,7 +90,7 @@ internal sealed class BrokenAnalysisJournal : IAnalysisJournal
 }
 
 /// <summary>
-/// Meldet für jede Datei, dass keine Metadaten vorliegen — für die Ansichts-Tests
+/// Meldet für jede Datei, dass keine Metadaten vorliegen. Für die Ansichts-Tests
 /// genügt das: Dort wird nur geprüft, ob der Weg über die Wiederherstellung genommen
 /// wird, nicht was die Bilder enthalten.
 /// </summary>

@@ -5,7 +5,7 @@ namespace PictureSorter.App.Tests.Services;
 
 /// <summary>
 /// Tests des Vertrauensankers der Update-Kette. Er entscheidet, ob ein
-/// heruntergeladenes Paket ausgeführt wird – die schärfste Frage, die die Anwendung
+/// heruntergeladenes Paket ausgeführt wird, die schärfste Frage, die die Anwendung
 /// sich stellt. Zugelassen sind nur die einkompilierten Unterzeichner: Selbst wer den
 /// Release-Kanal übernimmt, bekommt hier ohne deren privaten Schlüssel kein Paket durch.
 /// Mehrere Schlüssel sind erlaubt, weil ein Wechsel sonst jede ausgelieferte Fassung
@@ -146,7 +146,7 @@ public sealed class ReleaseSignatureVerifierTests : IDisposable
     [Fact]
     public void PublicKey_IsAUsableEcdsaKey()
     {
-        // Der einkompilierte Schlüssel muss sich laden lassen – ein Tippfehler darin
+        // Der einkompilierte Schlüssel muss sich laden lassen. Ein Tippfehler darin
         // legte die gesamte Update-Kette lahm, und zwar erst beim Nutzer.
         using ECDsa ecdsa = ECDsa.Create();
         ecdsa.ImportSubjectPublicKeyInfo(

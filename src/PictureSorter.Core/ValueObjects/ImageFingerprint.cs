@@ -2,8 +2,8 @@ namespace PictureSorter.Core.ValueObjects;
 
 /// <summary>
 /// Erkennungsmerkmale einer Bilddatei für die Duplikat-Suche: ein
-/// kryptografischer Inhalts-Hash (für bit-identische Duplikate) und – sofern das
-/// Bild dekodiert werden konnte – ein Wahrnehmungs-Hash (für ähnliche Duplikate).
+/// kryptografischer Inhalts-Hash (für bit-identische Duplikate) und (sofern das
+/// Bild dekodiert werden konnte) ein Wahrnehmungs-Hash (für ähnliche Duplikate).
 /// </summary>
 public sealed record ImageFingerprint
 {

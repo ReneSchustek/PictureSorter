@@ -4,7 +4,7 @@ namespace PictureSorter.Infrastructure.Tests.Time;
 
 /// <summary>
 /// Test der Systemuhr. Sie liefert den Zeitstempel, unter dem sich die Anwendung
-/// ihre Entscheidungen merkt – und muss dafür UTC liefern: Eine Ortszeit ließe die
+/// ihre Entscheidungen merkt und muss dafür UTC liefern: Eine Ortszeit ließe die
 /// Einträge bei der Zeitumstellung springen.
 /// </summary>
 public sealed class SystemClockTests

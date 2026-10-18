@@ -22,7 +22,7 @@ internal static partial class ShellIconRefresher
     private const int AssociationChanged = 0x0800_0000;
 
     // SHCNF_IDLIST: Die beiden Element-Parameter sind Item-ID-Listen. Hier wird keine
-    // übergeben – die Meldung gilt dem ganzen System, nicht einem einzelnen Pfad.
+    // übergeben, denn die Meldung gilt dem ganzen System, nicht einem einzelnen Pfad.
     private const uint IdList = 0x0000_0000;
 
     /// <summary>
@@ -30,7 +30,7 @@ internal static partial class ShellIconRefresher
     /// </summary>
     /// <returns>
     /// <see langword="true"/>, wenn die Meldung abgesetzt wurde. Andernfalls
-    /// <see langword="false"/> – der Aufrufer entscheidet, ob er das protokolliert.
+    /// <see langword="false"/>; der Aufrufer entscheidet, ob er das protokolliert.
     /// Ein Fehlschlag ist kein Grund, die Aktualisierung als gescheitert zu behandeln:
     /// Die Dateien sind dann bereits ersetzt, nur das Symbol bleibt vorerst das alte.
     /// </returns>

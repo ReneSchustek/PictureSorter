@@ -37,7 +37,7 @@ internal sealed partial class DuplicatesPage : Page
 
     private void OnFilterChanged(object? sender, FilterChoiceEventArgs e) => ViewModel.Filter(e.Key);
 
-    // Klick auf ein Bild öffnet seine Detailansicht — samt der Doppelgänger, die auf
+    // Klick auf ein Bild öffnet seine Detailansicht samt der Doppelgänger, die auf
     // dieser Seite ohnehin schon bekannt sind. Eine eigene Suche dafür wäre teuer und
     // hier vollkommen überflüssig.
     private async void OnPhotoOpened(object? sender, EventArgs e)

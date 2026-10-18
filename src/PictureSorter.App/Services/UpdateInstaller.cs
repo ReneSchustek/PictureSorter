@@ -12,7 +12,7 @@ namespace PictureSorter.App.Services;
 
 /// <summary>
 /// Das Einspielen eines Updates: Paket entpacken, Vertrauensvermerk führen, die
-/// Programmdateien ersetzen. Bewusst ohne Oberfläche und ohne WinUI-Typen – so läuft
+/// Programmdateien ersetzen. Bewusst ohne Oberfläche und ohne WinUI-Typen, so läuft
 /// derselbe Code im Helfer-Prozess und im Test.
 /// </summary>
 internal static class UpdateInstaller
@@ -40,7 +40,7 @@ internal static class UpdateInstaller
     /// Präfix der Arbeitsordner, die der Download anlegt. Sie tragen je Lauf rund
     /// 325 MB und bleiben nach dem Einspielen zwangsläufig liegen: Der Helfer läuft
     /// aus dem Ordner, den er löschen müsste. Wer den Ordner anlegt, muss dasselbe
-    /// Präfix verwenden – sonst findet <see cref="RemoveWorkingDirectories"/> ihn nicht.
+    /// Präfix verwenden, sonst findet <see cref="RemoveWorkingDirectories"/> ihn nicht.
     /// </summary>
     internal const string WorkingDirectoryPrefix = "PictureSorter-Update-";
 
@@ -48,7 +48,7 @@ internal static class UpdateInstaller
 
     /// <summary>
     /// Entpackt ein Paket in einen Zielordner. Einträge, die aus dem Zielordner
-    /// ausbrechen würden („Zip-Slip"), werden abgewiesen – ein Paket darf nicht
+    /// ausbrechen würden („Zip-Slip"), werden abgewiesen. Ein Paket darf nicht
     /// bestimmen, wohin es schreibt.
     /// </summary>
     /// <param name="packagePath">Das Paket.</param>
@@ -105,8 +105,8 @@ internal static class UpdateInstaller
 
     /// <summary>
     /// Hinterlegt den Vermerk, dass ein geprüftes Update bereitliegt. Der Helfer-Prozess
-    /// traut seinen Aufrufparametern nicht: Er spielt nur ein, was hier – vom bereits
-    /// geprüften Hauptprozess – vermerkt wurde.
+    /// traut seinen Aufrufparametern nicht: Er spielt nur ein, was hier (vom bereits
+    /// geprüften Hauptprozess) vermerkt wurde.
     /// </summary>
     /// <param name="dataDirectory">Das Datenverzeichnis der Anwendung.</param>
     /// <param name="stagingDirectory">Der Ordner mit der entpackten neuen Fassung.</param>
@@ -153,7 +153,7 @@ internal static class UpdateInstaller
 
                 // Auch das Ziel muss aus dem Vermerk stammen. Sonst genügte ein Aufruf
                 // mit eigenem --target, um die geprüften Dateien an einen frei gewählten
-                // Ort zu schreiben – etwa in den Autostart-Ordner.
+                // Ort zu schreiben, etwa in den Autostart-Ordner.
                 && string.Equals(
                     note.TargetDirectory,
                     Path.GetFullPath(targetDirectory),
@@ -190,8 +190,8 @@ internal static class UpdateInstaller
     /// Prüft, ob sich im Programmordner überhaupt schreiben lässt. Wurde die Anwendung
     /// „für alle Benutzer" nach <c>C:\Programme</c> installiert, darf der Updater ohne
     /// Administratorrechte nichts ersetzen. Ohne diese Vorabprüfung lädt er erst
-    /// hundert Megabyte herunter, beendet die Anwendung und scheitert dann lautlos –
-    /// aus Sicht des Nutzers startet das Programm einfach unverändert neu.
+    /// hundert Megabyte herunter, beendet die Anwendung und scheitert dann lautlos.
+    /// Aus Sicht des Nutzers startet das Programm einfach unverändert neu.
     /// </summary>
     /// <param name="directory">Der Programmordner.</param>
     /// <returns><see langword="true"/>, wenn dort geschrieben werden darf.</returns>
@@ -258,7 +258,7 @@ internal static class UpdateInstaller
                 }
 
                 // Vor dem Kopieren vormerken, nicht danach: Scheitert CopyWithRetry,
-                // ist genau diese Datei die einzige, die halb geschrieben sein kann –
+                // ist genau diese Datei die einzige, die halb geschrieben sein kann, und
                 // sie gehört als Erste in den Rollback. Stand der Eintrag hinter dem
                 // Kopieren, holte die Rücknahme alle anderen Dateien zurück und ließ
                 // ausgerechnet die beschädigte liegen.
@@ -287,7 +287,7 @@ internal static class UpdateInstaller
     /// <summary>
     /// Hält den Ausgang der Aktualisierung fest. Der Helfer hat keine Oberfläche und
     /// beendet sich sofort; ohne diesen Vermerk erführe die Nutzerin nie, ob die
-    /// Aktualisierung gelungen ist – das Programm startet in beiden Fällen einfach neu.
+    /// Aktualisierung gelungen ist, denn das Programm startet in beiden Fällen einfach neu.
     /// </summary>
     /// <param name="dataDirectory">Das Datenverzeichnis der Anwendung.</param>
     /// <param name="result">Das Ergebnis des Ersetzens.</param>
@@ -361,7 +361,7 @@ internal static class UpdateInstaller
         }
         catch (ArgumentException)
         {
-            // Der Prozess ist bereits weg – genau das, worauf gewartet wurde.
+            // Der Prozess ist bereits weg, genau das, worauf gewartet wurde.
             return true;
         }
         catch (OperationCanceledException)
@@ -419,7 +419,7 @@ internal static class UpdateInstaller
         }
     }
 
-    // Eine Datei, die im Speicher abgebildet ist, lässt sich nicht überschreiben –
+    // Eine Datei, die im Speicher abgebildet ist, lässt sich nicht überschreiben.
     // Windows meldet „Der Vorgang ist bei einer Datei mit einem geöffneten Bereich …
     // nicht anwendbar", und zwar nicht nur für einen Moment, sondern so lange die
     // Abbildung besteht. Genau daran scheiterte jede Aktualisierung an der
@@ -449,7 +449,7 @@ internal static class UpdateInstaller
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             // Die alte Datei zurückholen: Eine fehlende Datei wäre schlimmer als eine
-            // veraltete – ohne sie startet die Anwendung überhaupt nicht mehr.
+            // veraltete: Ohne sie startet die Anwendung überhaupt nicht mehr.
             TryRestore(aside, destination);
             return false;
         }
@@ -492,8 +492,8 @@ internal static class UpdateInstaller
 
     /// <summary>
     /// Entfernt die Arbeitsordner früherer Aktualisierungen. Aufzurufen beim Start:
-    /// Der Helfer kann seinen eigenen Ordner nicht löschen, weil er daraus läuft –
-    /// ohne dieses Aufräumen bleiben je Aktualisierung rund 325 MB im
+    /// Der Helfer kann seinen eigenen Ordner nicht löschen, weil er daraus läuft.
+    /// Ohne dieses Aufräumen bleiben je Aktualisierung rund 325 MB im
     /// Temp-Verzeichnis liegen, auch wenn sie gelungen ist.
     /// </summary>
     /// <returns>Die Zahl der entfernten Ordner.</returns>
@@ -543,7 +543,7 @@ internal static class UpdateInstaller
     }
 
     /// <summary>
-    /// Ergebnis des Ersetzens: ob es gelang und – wenn nicht – an welcher Datei und
+    /// Ergebnis des Ersetzens: ob es gelang und (wenn nicht) an welcher Datei und
     /// woran es scheiterte.
     /// </summary>
     /// <param name="Success">Ob alle Dateien ersetzt wurden.</param>

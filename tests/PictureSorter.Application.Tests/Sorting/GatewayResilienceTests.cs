@@ -10,7 +10,7 @@ namespace PictureSorter.Application.Tests.Sorting;
 /// <summary>
 /// Tests der zugesagten Fehlertoleranz beider Gateways. Sie versprechen in ihrer
 /// eigenen Dokumentation, dass eine nicht erreichbare Datenbank den Sortiervorgang
-/// nicht abbricht — und genau das prüfen diese Tests, und zwar mit der Ausnahme, die
+/// nicht abbricht, und genau das prüfen diese Tests, und zwar mit der Ausnahme, die
 /// ein Datenbank-Anbieter tatsächlich wirft. Wer nur <see cref="IOException"/> und
 /// Verwandte fängt, übersieht sie: Eine <c>SqliteException</c> erbt über
 /// <see cref="System.Data.Common.DbException"/> von <c>ExternalException</c> und liefe
@@ -28,7 +28,7 @@ public sealed class GatewayResilienceTests
     [Fact]
     public async Task IsSettledAsync_WhenTheDatabaseFails_ReportsNotSettledInsteadOfThrowing()
     {
-        // Ohne Gedächtnis wird eben nichts übersprungen — der Lauf geht weiter.
+        // Ohne Gedächtnis wird eben nichts übersprungen, der Lauf geht weiter.
         SortMemoryGateway sut = MemoryGatewayWith(new FakeDbException("database is locked"));
 
         bool settled = await sut.IsSettledAsync(
@@ -65,7 +65,7 @@ public sealed class GatewayResilienceTests
     public async Task IsSettledAsync_WhenTheUserCancels_PassesTheCancellationOn()
     {
         // Der Abbruch durch die Nutzerin ist kein Datenbankproblem und darf nicht
-        // verschluckt werden — sonst liefe der Vorgang nach dem Abbruch weiter.
+        // verschluckt werden, sonst liefe der Vorgang nach dem Abbruch weiter.
         SortMemoryGateway sut = MemoryGatewayWith(new OperationCanceledException());
 
         _ = await Assert.ThrowsAsync<OperationCanceledException>(
@@ -77,7 +77,7 @@ public sealed class GatewayResilienceTests
     {
         // Der schwerste Fall: Das Protokollieren läuft im finally-Block eines bereits
         // ausgeführten Sortierlaufs. Eine Ausnahme von hier ersetzt jede ursprüngliche
-        // und macht aus einem erfolgreichen Lauf einen Absturz — nachdem die Fotos
+        // und macht aus einem erfolgreichen Lauf einen Absturz, nachdem die Fotos
         // schon verschoben sind.
         SortJournalGateway sut = JournalGatewayWith(new FakeDbException("database is locked"));
 

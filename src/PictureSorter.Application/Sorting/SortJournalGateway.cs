@@ -6,12 +6,12 @@ using PictureSorter.Core.ValueObjects;
 namespace PictureSorter.Application.Sorting;
 
 /// <summary>
-/// Kapselt den Zugriff auf das Protokoll der Sortierläufe und macht ihn fehlertolerant –
+/// Kapselt den Zugriff auf das Protokoll der Sortierläufe und macht ihn fehlertolerant,
 /// aus demselben Grund wie beim <see cref="SortMemoryGateway"/>: Eine nicht erreichbare
 /// Datenbank darf einen laufenden Sortiervorgang nicht abbrechen.
 ///
 /// Die Folge ist bewusst asymmetrisch: Lässt sich der Lauf nicht protokollieren, sind
-/// die Dateien trotzdem verschoben – nur eben nicht mehr zurücknehmbar. Das steht dann
+/// die Dateien trotzdem verschoben, nur eben nicht mehr zurücknehmbar. Das steht dann
 /// als Warnung im Protokoll. Der umgekehrte Weg (Sortieren abbrechen, weil das Journal
 /// klemmt) wäre für die Nutzerin die schlechtere Überraschung.
 /// </summary>
@@ -90,7 +90,7 @@ public sealed class SortJournalGateway
 
     // Datenbankprobleme dürfen den Ablauf nicht abbrechen. Ein Abbruch durch die
     // Nutzerin schon. Zur Rolle der DbException und der inneren Ausnahme siehe
-    // <see cref="SortMemoryGateway"/> – hier wiegt es schwerer: Das Protokollieren
+    // <see cref="SortMemoryGateway"/>. Hier wiegt es schwerer: Das Protokollieren
     // läuft im finally-Block eines bereits ausgeführten Sortierlaufs. Eine Ausnahme
     // von hier ersetzt jede ursprüngliche und macht aus einem erfolgreichen Lauf einen
     // Absturz, nachdem die Fotos bereits verschoben sind.

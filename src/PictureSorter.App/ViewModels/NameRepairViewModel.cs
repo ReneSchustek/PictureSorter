@@ -12,12 +12,12 @@ using PictureSorter.Core.ValueObjects;
 namespace PictureSorter.App.ViewModels;
 
 /// <summary>
-/// ViewModel der Namensreparatur: Ordner wählen, Vorschau durchsehen, umbenennen —
+/// ViewModel der Namensreparatur: Ordner wählen, Vorschau durchsehen, umbenennen
 /// und im Zweifel zurücknehmen.
 ///
 /// Der Anlass steht in einem gemessenen Bestand: 159 von 1507 aus iCloud geladenen
 /// Dateien trugen Namen aus Ersatzzeichen. Die Bilder waren in Ordnung, nur ihre
-/// Namen nicht — und damit war weder zu suchen noch zu sortieren noch weiterzugeben.
+/// Namen nicht, und damit war weder zu suchen noch zu sortieren noch weiterzugeben.
 ///
 /// Die Vorschau ist hier kein Beiwerk, sondern der Kern: Ein Name ist alles, was die
 /// Nutzerin im Explorer von einem Foto sieht. Ungefragt geändert nähme er ihr die
@@ -185,7 +185,7 @@ internal sealed partial class NameRepairViewModel : ObservableObject, IDisposabl
 
         // Die Werte werden hier gelesen, nicht im Hintergrund: Dort dürfen keine
         // Oberflächen-Eigenschaften mehr angefasst werden. Und Task.Run ist Pflicht,
-        // weil das Durchsehen des Ordners sonst den Oberflächen-Strang festhielte —
+        // weil das Durchsehen des Ordners sonst den Oberflächen-Strang festhielte,
         // samt Stopp-Knopf.
         string folder = SourceFolder;
         bool withSubfolders = IncludeSubfolders;
@@ -319,7 +319,7 @@ internal sealed partial class NameRepairViewModel : ObservableObject, IDisposabl
     }
 
     // Eine Hülle für alle drei langen Vorgänge. Ohne sie stünde derselbe Block aus
-    // Abbruch-Behandlung, Fehlermeldung und Zustandsrückgabe dreimal da — und beim
+    // Abbruch-Behandlung, Fehlermeldung und Zustandsrückgabe dreimal da, und beim
     // dritten Mal irgendwann anders.
     [SuppressMessage(
         "Design",

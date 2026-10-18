@@ -4,7 +4,7 @@ namespace PictureSorter.Data.Tests.Context;
 
 /// <summary>
 /// Tests der Pfadermittlung. Sie entscheidet, wo Sortier-Gedächtnis und Protokoll
-/// liegen — im Benutzerprofil und nicht im Programmverzeichnis, damit auch eine
+/// liegen: im Benutzerprofil und nicht im Programmverzeichnis, damit auch eine
 /// installierte Anwendung ohne Administratorrechte schreiben kann.
 /// </summary>
 public sealed class DatabasePathProviderTests

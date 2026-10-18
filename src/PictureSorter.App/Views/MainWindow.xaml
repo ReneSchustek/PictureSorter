@@ -27,7 +27,7 @@
             IsPaneToggleButtonVisible="True"
             PaneToggleRequested="TitleBar_PaneToggleRequested">
             <!-- Ein eigenes Bild in genau der Anzeigegröße statt der Symboldatei: Aus
-                 der .ico traf WinUI die Größe um rund 8 % daneben und rechnete um – das
+                 der .ico traf WinUI die Größe um rund 8 % daneben und rechnete um, und das
                  Symbol wurde dadurch sichtbar unscharf. Die scale-100/scale-200-Paare
                  wählt Windows nach der Bildschirmskalierung selbst aus, sodass es auch
                  bei 200 % Punkt für Punkt sitzt. -->
@@ -137,7 +137,7 @@
                 Orientation="Horizontal"
                 Spacing="12">
                 <!-- Zwei Balken, sobald Laden und Auswerten gleichzeitig laufen: Sonst
-                     wäre nicht zu erkennen, wer bremst – die Leitung oder die KI. Die
+                     wäre nicht zu erkennen, wer bremst (die Leitung oder die KI). Die
                      Farbe unterscheidet sie zusätzlich zur Beschriftung, nicht statt
                      ihrer: Wer Grün und Blau nicht auseinanderhält, liest den Text. -->
                 <TextBlock

@@ -14,7 +14,7 @@ internal sealed class AnalysisRunItemEntity
     /// <summary>Der Lauf, zu dem das Ergebnis gehört.</summary>
     public AnalysisRunEntity? AnalysisRun { get; set; }
 
-    /// <summary>Signatur des Fotos — der Schlüssel des Wiedererkennens.</summary>
+    /// <summary>Signatur des Fotos, der Schlüssel des Wiedererkennens.</summary>
     public required string FileSignature { get; set; }
 
     /// <summary>Pfad des Fotos zum Zeitpunkt der Bewertung.</summary>

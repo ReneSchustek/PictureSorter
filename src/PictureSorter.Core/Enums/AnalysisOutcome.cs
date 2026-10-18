@@ -6,7 +6,7 @@ namespace PictureSorter.Core.Enums;
 /// Die Unterscheidung ist keine Buchhaltung, sondern entscheidet über das Fortsetzen: Ein
 /// Foto, über das ein Urteil vorliegt, darf beim zweiten Anlauf nicht erneut der KI
 /// vorgelegt werden. Ein Foto, das nur wegen eines Ausfalls unbeurteilt blieb, dagegen
-/// schon — sonst würde ein einmaliger Aussetzer dauerhaft festgeschrieben.
+/// schon, sonst würde ein einmaliger Aussetzer dauerhaft festgeschrieben.
 /// </summary>
 /// <remarks>
 /// Die Werte sind ausdrücklich vergeben, weil dieses Ergebnis als Zahl in der Datenbank
@@ -27,7 +27,7 @@ public enum AnalysisOutcome
     SkippedByMemory = 3,
 
     /// <summary>
-    /// Es kam kein Urteil zustande — die KI war nicht erreichbar oder die Datei nicht
+    /// Es kam kein Urteil zustande: Die KI war nicht erreichbar oder die Datei nicht
     /// lesbar. Beim Fortsetzen wird das Foto deshalb erneut versucht.
     /// </summary>
     NotEvaluated = 4,

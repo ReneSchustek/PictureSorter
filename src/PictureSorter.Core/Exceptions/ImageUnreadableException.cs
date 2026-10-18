@@ -2,7 +2,7 @@ namespace PictureSorter.Core.Exceptions;
 
 /// <summary>
 /// Ein Bild ließ sich nicht dekodieren. Häufigster Grund unter Windows: Für das Format
-/// fehlt der Codec – iPhone-Fotos (HEIC) brauchen die HEIF- und HEVC-Erweiterungen.
+/// fehlt der Codec: iPhone-Fotos (HEIC) brauchen die HEIF- und HEVC-Erweiterungen.
 ///
 /// Bewusst von einem Ausfall der KI unterschieden: Hier ist nicht die Bild-KI das
 /// Problem, sondern die Datei. Beides führt dazu, dass das Foto übersprungen und

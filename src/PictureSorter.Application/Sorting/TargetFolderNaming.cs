@@ -9,7 +9,7 @@ namespace PictureSorter.Application.Sorting;
 /// Benennt den Zielordner und baut daraus den Vorschlag.
 ///
 /// Für sich, weil es zwei verschiedene Nutzer gibt: die laufende Analyse und die
-/// Wiederherstellung aus dem Gedächtnis. Beide müssen denselben Namen erzeugen — sonst
+/// Wiederherstellung aus dem Gedächtnis. Beide müssen denselben Namen erzeugen, sonst
 /// landen dieselben Fotos in zwei Ordnern nebeneinander. Läge die Benennung im
 /// Analysedienst, müsste die Wiederherstellung in ihn hineingreifen.
 /// </summary>
@@ -79,7 +79,7 @@ public static class TargetFolderNaming
     /// Der Name trägt immer den vollen Zeitpunkt bis zur gewählten Stufe („2021-07", nicht
     /// „07" unterhalb von „2021"). Flach statt verschachtelt: Wer die Stufe wechselt,
     /// bekommt eine zweite Reihe Ordner nebeneinander statt einen halb gefüllten Baum, und
-    /// jeder Ordnername ist für sich sprechend — auch wenn er später allein umzieht.
+    /// jeder Ordnername ist für sich sprechend, auch wenn er später allein umzieht.
     ///
     /// Die feste Kultur ist Absicht: Ein Ordner soll „2021-07" heißen, gleich in welchem
     /// Land der Rechner steht. Sonst hieße derselbe Monat je nach Einstellung anders, und
@@ -101,7 +101,7 @@ public static class TargetFolderNaming
     }
 
     // Namen, die Windows für Geräte reserviert. Ein Ordner dieses Namens lässt sich
-    // nicht anlegen – unabhängig von der Endung und ohne Rücksicht auf Groß- und
+    // nicht anlegen, unabhängig von der Endung und ohne Rücksicht auf Groß- und
     // Kleinschreibung. Ohne Prüfung scheiterte eine Kategorie „Nul" mit einer
     // Fehlermeldung, die der Nutzerin nichts sagt.
     private static readonly string[] ReservedDeviceNames =

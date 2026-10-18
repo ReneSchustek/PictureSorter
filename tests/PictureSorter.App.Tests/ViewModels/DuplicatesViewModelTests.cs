@@ -158,7 +158,7 @@ public sealed class DuplicatesViewModelTests
         viewModel.SourceFolder = @"C:\fotos";
         await viewModel.ScanCommand.ExecuteAsync(parameter: null);
 
-        // Gelöscht wird nur, was man sieht — der Zählstand muss dem folgen, sonst
+        // Gelöscht wird nur, was man sieht. Der Zählstand muss dem folgen, sonst
         // verschwinden ausgeblendete Bilder ungefragt im Papierkorb.
         viewModel.Filter("exact");
 
@@ -198,7 +198,7 @@ public sealed class DuplicatesViewModelTests
     public async Task Forget_TakesAPictureOutOfItsGroup()
     {
         // Nach einem Umbenennen aus der Detailansicht heraus gilt der Fund für dieses
-        // Bild nicht mehr — es stehen zu lassen hieße, einen Pfad anzuzeigen, den es
+        // Bild nicht mehr; es stehen zu lassen hieße, einen Pfad anzuzeigen, den es
         // nicht mehr gibt.
         using DuplicatesViewModel viewModel = CreateViewModel([ThreePhotoGroup()], new FakeFileDeleter());
         viewModel.SourceFolder = @"C:otos";

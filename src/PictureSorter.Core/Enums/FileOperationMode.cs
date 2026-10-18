@@ -2,7 +2,7 @@ namespace PictureSorter.Core.Enums;
 
 /// <summary>
 /// Auf welchem Weg ein Foto in seinen Zielordner gelangt. Die Wahl gilt für einen
-/// ganzen Sortierlauf und wird mitprotokolliert – ohne sie wüsste das
+/// ganzen Sortierlauf und wird mitprotokolliert. Ohne sie wüsste das
 /// Rückgängigmachen nicht, ob es die Datei zurückholen oder eine Kopie entfernen muss.
 /// </summary>
 public enum FileOperationMode

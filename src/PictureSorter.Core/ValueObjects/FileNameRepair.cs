@@ -7,10 +7,10 @@ namespace PictureSorter.Core.ValueObjects;
 /// Erkennt Dateinamen, die sich nicht lesen lassen, und schlägt einen lesbaren vor.
 ///
 /// Der Anlass ist ein aus iCloud geladener Bestand: 159 von 1507 Dateien trugen Namen
-/// wie <c>?4?ӝ___.JPEG</c> — die Fragezeichen stehen für U+FFFD, das Zeichen, mit dem
+/// wie <c>?4?ӝ___.JPEG</c>. Die Fragezeichen stehen für U+FFFD, das Zeichen, mit dem
 /// Windows meldet „hier stand etwas, das sich nicht abbilden ließ". Die Dateien selbst
 /// waren in Ordnung: Sie ließen sich öffnen, es waren gültige Bilder. Kaputt war
-/// ausschließlich der Name — und mit ihm die Möglichkeit, das Bild zu suchen, zu nennen
+/// ausschließlich der Name, und mit ihm die Möglichkeit, das Bild zu suchen, zu nennen
 /// oder jemandem zu schicken.
 ///
 /// Hier steht nur die Namensfindung, ohne jeden Zugriff auf das Dateisystem. Das ist
@@ -86,7 +86,7 @@ public static class FileNameRepair
     }
 
     /// <summary>
-    /// Schlägt einen lesbaren Namen vor. Die Endung bleibt unangetastet — sie ist die
+    /// Schlägt einen lesbaren Namen vor. Die Endung bleibt unangetastet, denn sie ist die
     /// einzige verlässliche Auskunft darüber, was in der Datei steht.
     /// </summary>
     /// <param name="fileName">Der bisherige Dateiname (ohne Pfad).</param>
@@ -96,7 +96,7 @@ public static class FileNameRepair
     /// </param>
     /// <param name="folderName">
     /// Name des Ordners, in dem die Datei liegt. Grundlage, wenn kein Aufnahmedatum
-    /// vorliegt — dann bleibt nur der Zusammenhang, in dem die Datei steht.
+    /// vorliegt. Dann bleibt nur der Zusammenhang, in dem die Datei steht.
     /// </param>
     /// <param name="runningNumber">Laufende Nummer innerhalb des Laufs (ab 1).</param>
     /// <returns>Der vorgeschlagene Dateiname samt Endung.</returns>

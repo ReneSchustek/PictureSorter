@@ -49,7 +49,7 @@ public sealed class WindowsPerceptualHasher : IPerceptualHasher
 
     // Aus dem Dateistrom lesen statt die Datei am Stück in den Speicher zu holen: Ein
     // Duplikat-Lauf über 5000 Handyfotos ginge sonst dateiweise durch Puffer von je
-    // mehreren Megabyte – die landen auf dem Large Object Heap und treiben den
+    // mehreren Megabyte. Die landen auf dem Large Object Heap und treiben den
     // Speicherbedarf hoch, obwohl der Hash sie nur einmal von vorn nach hinten liest.
     private static async Task<string> ComputeContentHashAsync(string filePath, CancellationToken cancellationToken)
     {
@@ -71,7 +71,7 @@ public sealed class WindowsPerceptualHasher : IPerceptualHasher
 
             // Fant und nicht Linear: Ein Foto schrumpft hier von mehreren Millionen
             // Bildpunkten auf 72. Linear tastet dabei nur einzelne Punkte ab, statt
-            // über die Fläche zu mitteln – ganze Rasterzeilen kommen dann konstant
+            // über die Fläche zu mitteln: Ganze Rasterzeilen kommen dann konstant
             // heraus. Der Difference-Hash setzt ein Bit nur, wenn ein Punkt heller ist
             // als sein rechter Nachbar; bei gleichen Nachbarn bleibt es aus. Aus einem
             // flachen Raster wurde so ein Fingerabdruck aus fast lauter Nullen, und

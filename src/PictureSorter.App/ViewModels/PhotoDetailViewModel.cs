@@ -15,14 +15,14 @@ namespace PictureSorter.App.ViewModels;
 
 /// <summary>
 /// Die Detailansicht eines Bildes: was darüber bekannt ist, wo es hingehört, wer seine
-/// Doppelgänger sind — und die drei Dinge, die man von hier aus mit ihm tun kann.
+/// Doppelgänger sind, und die drei Dinge, die man von hier aus mit ihm tun kann.
 /// </summary>
 /// <remarks>
 /// Umbenennen, Verschieben und Löschen stehen hier, weil hier der Kontext steht. Wer ein
 /// Bild groß vor sich sieht und merkt, dass es „IMG_2043" heißt, will es jetzt umbenennen
 /// und nicht erst den Explorer suchen.
 ///
-/// Jede der drei Aktionen endet in einem Satz — auch und gerade, wenn sie nicht ging.
+/// Jede der drei Aktionen endet in einem Satz, auch und gerade, wenn sie nicht ging.
 /// „Fehlgeschlagen" allein hilft niemandem: Bei einem vergebenen Namen wählt man einen
 /// anderen, bei einer geöffneten Datei schließt man das andere Programm.
 /// </remarks>
@@ -169,7 +169,7 @@ internal sealed partial class PhotoDetailViewModel : ObservableObject
         OnPropertyChanged(nameof(HasDuplicates));
 
         // Über den Ordner statt über die Kategorie: Welche Kategorie im Spiel war, weiß
-        // die Detailansicht nicht — sie fragt nach diesem einen Bild, ganz gleich unter
+        // die Detailansicht nicht. Sie fragt nach diesem einen Bild, ganz gleich unter
         // welchem Namen es einsortiert wurde.
         string signature = Photo.ComputeSignature();
         IReadOnlyList<SortMemoryRecord> ordner = await _memory
@@ -186,7 +186,7 @@ internal sealed partial class PhotoDetailViewModel : ObservableObject
     /// Zeigt das Bild im Datei-Explorer.
     /// </summary>
     /// <remarks>
-    /// Der eine Weg vom Bild zu seinem Ordner, den jede Nutzerin schon kennt — statt
+    /// Der eine Weg vom Bild zu seinem Ordner, den jede Nutzerin schon kennt, statt
     /// eines eigenen Dateibaums in dieser Anwendung.
     /// </remarks>
     [RelayCommand(CanExecute = nameof(IsUsable))]
@@ -256,14 +256,14 @@ internal sealed partial class PhotoDetailViewModel : ObservableObject
     public bool IsAsking => IsConfirmingDelete;
 
     /// <summary>
-    /// Fragt nach, bevor gelöscht wird — und zwar in dieser Ansicht.
+    /// Fragt nach, bevor gelöscht wird, und zwar in dieser Ansicht.
     /// </summary>
     /// <remarks>
     /// Die Rückfrage steht bewusst hier und nicht in einem eigenen Dialog: Die
     /// Detailansicht ist selbst einer, und WinUI lässt immer nur einen davon zu. Der
     /// Versuch endete nicht in einer Meldung, sondern im Abbruch des Programms.
     ///
-    /// Der Text benennt die Folge — Papierkorb, nicht endgültig. Das ist der Unterschied
+    /// Der Text benennt die Folge: Papierkorb, nicht endgültig. Das ist der Unterschied
     /// zwischen einer Warnung, die man liest, und einer, die man wegklickt.
     /// </remarks>
     [RelayCommand(CanExecute = nameof(IsUsable))]

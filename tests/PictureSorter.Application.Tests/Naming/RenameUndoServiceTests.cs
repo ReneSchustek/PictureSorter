@@ -55,7 +55,7 @@ public sealed class RenameUndoServiceTests
     public async Task UndoLastRunAsync_WhenOneNameIsTakenAgainKeepsTheRest()
     {
         // Liegt unter dem alten Namen inzwischen wieder etwas, bleibt die Datei, wie
-        // sie ist. Überschrieben wird nie — auch nicht beim Zurücknehmen.
+        // sie ist. Überschrieben wird nie, auch nicht beim Zurücknehmen.
         RenameUndoService sut = CreateSut(out FakePhotoFileEditor editor, out FakeRenameJournal journal);
         editor.FailFor(Path.Combine(Folder, "neu.jpg"), FileEditOutcome.NameTaken);
         journal.Runs.Add(Run(Guid.NewGuid(), ("kaputt.jpg", "neu.jpg"), ("auch-kaputt.jpg", "neu-2.jpg")));

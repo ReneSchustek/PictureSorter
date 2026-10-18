@@ -3,8 +3,8 @@ using PictureSorter.App.Services;
 namespace PictureSorter.App.Tests.Services;
 
 /// <summary>
-/// Tests der Helfer-Aufrufparameter. Sie entscheiden, welcher Ordner welchen ersetzt –
-/// unvollständige Angaben dürfen deshalb nicht zu Vermutungen führen.
+/// Tests der Helfer-Aufrufparameter. Sie entscheiden, welcher Ordner welchen ersetzt.
+/// Unvollständige Angaben dürfen deshalb nicht zu Vermutungen führen.
 /// </summary>
 public sealed class UpdateApplyArgsTests
 {

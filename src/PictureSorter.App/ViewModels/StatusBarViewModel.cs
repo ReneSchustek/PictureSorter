@@ -89,7 +89,7 @@ internal sealed partial class StatusBarViewModel : ObservableObject
 
     /// <summary>
     /// Die laufende Programmversion, dauerhaft im Fußbereich sichtbar. Ohne sie lässt
-    /// sich von außen nicht feststellen, welche Fassung gerade läuft – bei einer Meldung
+    /// sich von außen nicht feststellen, welche Fassung gerade läuft. Bei einer Meldung
     /// wie „funktioniert nicht" ist das die erste Frage.
     /// </summary>
     public string AppVersion { get; }
@@ -154,7 +154,7 @@ internal sealed partial class StatusBarViewModel : ObservableObject
     /// Meldet einen Lauf, bei dem Laden und Auswerten gleichzeitig laufen: zwei
     /// beschriftete Balken statt eines.
     ///
-    /// Ohne die Trennung wäre nicht zu erkennen, wer gerade bremst — die Leitung oder die
+    /// Ohne die Trennung wäre nicht zu erkennen, wer gerade bremst: die Leitung oder die
     /// KI. Genau das ist bei einem Ordner aus der Cloud die Frage, die zählt.
     /// </summary>
     /// <param name="message">Der Statustext.</param>
@@ -171,7 +171,7 @@ internal sealed partial class StatusBarViewModel : ObservableObject
 
     /// <summary>
     /// Meldet einen Abschnitt ohne bezifferbaren Anteil (durchlaufender Balken). Für
-    /// Schritte, deren Dauer sich nicht vorhersagen lässt – der Balken muss trotzdem
+    /// Schritte, deren Dauer sich nicht vorhersagen lässt; der Balken muss trotzdem
     /// weiterlaufen, sonst wirkt der Vorgang abgebrochen.
     /// </summary>
     /// <param name="message">Der Statustext.</param>

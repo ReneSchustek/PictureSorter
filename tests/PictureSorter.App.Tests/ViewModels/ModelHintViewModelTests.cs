@@ -5,7 +5,7 @@ namespace PictureSorter.App.Tests.ViewModels;
 
 /// <summary>
 /// Tests des KI-Hinweises auf der Sortierseite. Er ist die einzige Stelle, an der die
-/// Zielnutzerin erfährt, warum das Sortieren nicht funktioniert – erscheint er zu
+/// Zielnutzerin erfährt, warum das Sortieren nicht funktioniert. Erscheint er zu
 /// Unrecht, verunsichert er; fehlt er, sucht sie den Fehler bei sich.
 /// </summary>
 public sealed class ModelHintViewModelTests

@@ -6,7 +6,7 @@ namespace PictureSorter.Imaging.Tests.Metadata;
 
 /// <summary>
 /// Tests des EXIF-Lesers. Aufnahmedatum und Ort fließen in die Ordnernamen von
-/// Ereignis-Kategorien und in die Beschreibung, die die KI bewertet – ein falsch
+/// Ereignis-Kategorien und in die Beschreibung, die die KI bewertet. Ein falsch
 /// gelesener Wert landet also sichtbar im Dateisystem. Die Koordinaten sind dabei
 /// der heikelste Teil: EXIF legt sie als drei Brüche plus Himmelsrichtung ab, und
 /// die Bild-API gibt Zähler und Nenner getrennt heraus.
