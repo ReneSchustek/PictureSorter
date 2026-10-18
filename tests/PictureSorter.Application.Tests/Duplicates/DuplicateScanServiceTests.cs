@@ -73,9 +73,9 @@ public sealed class DuplicateScanServiceTests
     [Fact]
     public async Task ScanAsync_WhenOneFileCannotBeRead_ScansTheRestAndStillFindsTheDuplicates()
     {
-        // Der Alltagsfall: Ein Virenscanner zieht eine Datei mitten im Lauf weg. Vorher
-        // riss diese eine Datei den kompletten Lauf mit – nach Minuten Wartezeit stand
-        // statt des Ergebnisses eine Fehlermeldung da.
+        // Der Alltagsfall: Ein Virenscanner zieht eine Datei mitten im Lauf weg. Risse diese
+        // eine Datei den kompletten Lauf mit, stünde nach Minuten Wartezeit statt des
+        // Ergebnisses eine Fehlermeldung da.
         Dictionary<string, ImageFingerprint> fingerprints = new(StringComparer.Ordinal)
         {
             [@"C:\f\a.jpg"] = Fingerprint(@"C:\f\a.jpg", "AAA", null),

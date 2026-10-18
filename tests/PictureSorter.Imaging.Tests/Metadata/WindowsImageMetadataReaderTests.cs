@@ -60,9 +60,9 @@ public sealed class WindowsImageMetadataReaderTests : IDisposable
     [Fact]
     public async Task ReadAsync_ConvertsCoordinatesFromDegreesMinutesSeconds()
     {
-        // 48° 8′ 30″ N = 48,141667°. Die Anwendung fragte diesen Wert lange als
-        // fertige Dezimalzahl ab – die liefert die Bild-API aber nicht, sodass nie
-        // ein Ort ankam. Der Test hält fest, dass er jetzt ankommt.
+        // 48° 8′ 30″ N = 48,141667°. Die Bild-API liefert den Wert nicht als fertige
+        // Dezimalzahl; wer ihn so abfragt, bekommt nie einen Ort. Der Test hält fest, dass
+        // der Ort ankommt.
         string path = await WriteJpegAsync([48, 8, 30], "N", [11, 34, 0], "E");
 
         PhotoMetadata? metadata = await _sut.ReadAsync(path, CancellationToken.None);

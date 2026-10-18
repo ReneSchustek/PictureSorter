@@ -117,8 +117,8 @@ public sealed class FileLoggerProviderTests : IDisposable
     [Fact]
     public void Log_WritesToTheFileOfTheDayTheClockReports()
     {
-        // Der Dateiname kam bisher aus DateTimeOffset.Now und hing damit am Kalender
-        // des Rechners; prüfbar war er nicht. Über die Zeitquelle ist er es.
+        // Käme der Dateiname aus DateTimeOffset.Now, hinge er am Kalender des Rechners
+        // und wäre nicht prüfbar. Über die Zeitquelle ist er es.
         TestClock newYearsEve = new(new DateTimeOffset(2026, 12, 31, 23, 0, 0, TimeSpan.Zero));
         using FileLoggerProvider provider = new(_directory, newYearsEve);
 

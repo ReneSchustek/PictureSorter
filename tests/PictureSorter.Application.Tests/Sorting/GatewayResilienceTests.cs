@@ -11,9 +11,9 @@ namespace PictureSorter.Application.Tests.Sorting;
 /// Tests der zugesagten Fehlertoleranz beider Gateways. Sie versprechen in ihrer
 /// eigenen Dokumentation, dass eine nicht erreichbare Datenbank den Sortiervorgang
 /// nicht abbricht — und genau das prüfen diese Tests, und zwar mit der Ausnahme, die
-/// ein Datenbank-Anbieter tatsächlich wirft. Die frühere Fassung fing nur
-/// <see cref="IOException"/> und Verwandte; eine <c>SqliteException</c> erbt aber über
-/// <see cref="System.Data.Common.DbException"/> von <c>ExternalException</c> und lief
+/// ein Datenbank-Anbieter tatsächlich wirft. Wer nur <see cref="IOException"/> und
+/// Verwandte fängt, übersieht sie: Eine <c>SqliteException</c> erbt über
+/// <see cref="System.Data.Common.DbException"/> von <c>ExternalException</c> und liefe
 /// damit an der Behandlung vorbei.
 /// </summary>
 public sealed class GatewayResilienceTests

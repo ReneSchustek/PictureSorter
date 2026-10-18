@@ -1,7 +1,7 @@
 namespace PictureSorter.App.Services;
 
 /// <summary>
-/// Die Bereiche der Anwendung. Bewusst ein Aufzählungstyp statt der bisherigen
+/// Die Bereiche der Anwendung. Bewusst ein Aufzählungstyp statt
 /// Zeichenketten-Kennungen: Ein Tippfehler im Ziel fällt dann beim Übersetzen auf
 /// und nicht erst, wenn die Nutzerin auf eine Kachel klickt.
 /// </summary>

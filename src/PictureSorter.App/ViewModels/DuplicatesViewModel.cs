@@ -423,9 +423,9 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
             canceled ? StatusSeverity.Warning : StatusSeverity.Success);
     }
 
-    // Bis hierher wurde der Zählstand nur als Text gemeldet; der Balken lief daneben
-    // unbestimmt weiter und zeigte nichts an. Jetzt tragen zwei Balken den tatsächlichen
-    // Anteil – einer je Abschnitt, weil Laden und Prüfen gleichzeitig laufen.
+    // Zwei Balken tragen den tatsächlichen Anteil – einer je Abschnitt, weil Laden und
+    // Prüfen gleichzeitig laufen. Ein Zählstand nur als Text, daneben ein unbestimmt
+    // laufender Balken, zeigte nichts an.
     private ScanProgressPair _scanProgress;
 
     // Siehe ProgressThrottle: Ungefiltert bringen die Meldungen beider Abschnitte den

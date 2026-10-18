@@ -69,8 +69,8 @@ public sealed class UpdateInstallerTests : IDisposable
     [Fact]
     public void ApplyStagedFiles_WhenItFails_NamesTheFileAndTheReason()
     {
-        // Bisher endete jeder Fehlschlag als bloßes „false": Die Nutzerin sah nur, dass
-        // sich nichts geändert hatte, und im Protokoll stand nichts Verwertbares.
+        // Ein bloßes „false" ließe die Nutzerin nur sehen, dass sich nichts geändert hat,
+        // und im Protokoll stünde nichts Verwertbares.
         string source = CreateDirectory("staging", ("a.txt", "neu-a"), ("b.txt", "neu-b"));
         string target = CreateDirectory("programm", ("a.txt", "alt-a"), ("b.txt", "alt-b"));
 

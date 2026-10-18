@@ -146,10 +146,10 @@ public sealed class ProposalApplyService : IProposalApplier
     }
 
     // Alle Vorschläge eines Laufs stammen aus demselben Quellordner und derselben
-    // Kategorie; der erste Vorschlag liefert daher beides für den Lauf. Die Annahme
-    // war bisher nur kommentiert. Träfe sie einmal nicht zu, stünden im Protokoll
+    // Kategorie; der erste Vorschlag liefert daher beides für den Lauf. Die Annahme wird
+    // geprüft, nicht nur vorausgesetzt: Träfe sie einmal nicht zu, stünden im Protokoll
     // Ordner und Kategorie eines beliebigen Vorschlags – und das Rückgängigmachen
-    // arbeitete mit falschen Angaben. Deshalb wird sie jetzt geprüft.
+    // arbeitete mit falschen Angaben.
     private Task RecordRunAsync(
         IReadOnlyList<SortProposal> proposals,
         FileOperationMode operation,

@@ -5,11 +5,11 @@
 # Aufnahmen des Entwicklers: Watt und Marsch an der Nordsee, ohne Personen, ohne
 # fremde Rechte. Sie stehen ohnehin öffentlich im Netz.
 #
-# Vorher waren die Bilder gezeichnet. Für sechs der sieben Ansichten trug das; auf der
-# Sortier-Seite nicht. Das Bild-Modell kann gezeichnete Motive nicht lesen und
-# antwortet mit Erfundenem - auf einem Werbebild wirkt dann ein Vorschlag willkürlich,
-# obwohl die Anwendung nicht der Grund ist. Echte Fotos beheben das an der Wurzel,
-# ohne an der Erkennung selbst zu drehen.
+# Gezeichnete Bilder trügen für sechs der sieben Ansichten, für die Sortier-Seite
+# nicht: Das Bild-Modell kann gezeichnete Motive nicht lesen und antwortet mit
+# Erfundenem - auf einem Werbebild wirkt dann ein Vorschlag willkürlich, obwohl die
+# Anwendung nicht der Grund ist. Echte Fotos beheben das an der Wurzel, ohne an der
+# Erkennung selbst zu drehen.
 #
 # Die Fotos liegen nicht im Repository - sie sind groß und gehören dort nicht hin.
 # Hier steht nur der Weg zu ihnen. Einmal geladen, bleiben sie im Vorrat liegen; ein

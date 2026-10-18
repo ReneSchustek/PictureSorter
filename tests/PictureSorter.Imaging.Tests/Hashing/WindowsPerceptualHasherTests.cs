@@ -105,11 +105,11 @@ public sealed class WindowsPerceptualHasherTests : IDisposable
         // nur abgetastet statt gemittelt, kommen ganze Rasterzeilen konstant heraus,
         // der Fingerabdruck besteht fast nur aus Nullen – und zwei völlig verschiedene
         // Fotos liegen wenige Bit auseinander. Gemessen an einem Bestand aus zwölf
-        // Motiven waren das siebzehn falsche Paare; jedes davon hätte die Nutzerin
+        // Motiven sind das siebzehn falsche Paare; jedes davon hätte die Nutzerin
         // gefragt, ob sie eines der beiden Bilder in den Papierkorb legen will.
         //
-        // Die übrigen Tests hier arbeiten mit 32×32 Punkten. In der Größe fällt der
-        // Unterschied nicht an, und genau deshalb ist er lange nicht aufgefallen.
+        // Die übrigen Tests hier arbeiten mit 32×32 Punkten. In der Größe tritt der
+        // Unterschied nicht auf – Tests allein in dieser Größe übersähen ihn.
         const int width = 1600;
         const int height = 1067;
         string left = Path.Combine(_root, "berge-links.png");

@@ -512,9 +512,9 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         }
     }
 
-    // Bewusst ohne automatisches Laden: Beide Seiten beginnen leer. Vorher standen
-    // dreißig zufällige Bilder des Ordners bereits drin, von denen zu einem bestimmten
-    // Thema oft kaum eines passte – der Platz war trotzdem belegt.
+    // Bewusst ohne automatisches Laden: Beide Seiten beginnen leer. Lüden sie zufällige
+    // Bilder des Ordners vor, passte zu einem bestimmten Thema oft kaum eines – der Platz
+    // wäre trotzdem belegt.
     private void OnWizardStepEntered(int step) => Wizard.NotifyStateChanged();
 
     // Setzt die fachlichen Daten beim Neustart zurück (der Assistent setzt die
@@ -1041,8 +1041,8 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     /// Holt die Vorschläge einer früheren Analyse aus dem Sortier-Gedächtnis zurück —
     /// ohne einen einzigen KI-Aufruf.
     ///
-    /// Der Weg für Läufe, zu denen es kein Protokoll gibt: Das Gedächtnis wurde schon
-    /// immer nach jedem Foto beschrieben, nur genutzt wurde bisher allein die Ablehnung.
+    /// Der Weg für Läufe, zu denen es kein Protokoll gibt: Das Gedächtnis wird nach jedem
+    /// Foto beschrieben und hält damit auch die Urteile eines abgebrochenen Laufs fest.
     /// Bei einem Ordner, dessen Bewertung Tage dauert, ist das der Unterschied zwischen
     /// „nichts verloren" und „alles noch einmal".
     /// </summary>
@@ -1327,9 +1327,9 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     }
 
     // Bekannte Störungen bekommen den Text, der die Nutzerin weiterbringt; alles Übrige
-    // die allgemeine Meldung des Vorgangs. Vorher stand bei einem gelöschten Ordner
-    // dasselbe da wie bei einem Fehler in der KI — „Analyse fehlgeschlagen", und die
-    // Nutzerin wusste weder, was los war, noch, was sie tun könnte.
+    // die allgemeine Meldung des Vorgangs. Stünde bei einem gelöschten Ordner dasselbe da
+    // wie bei einem Fehler in der KI — „Analyse fehlgeschlagen" —, wüsste die Nutzerin
+    // weder, was los ist, noch, was sie tun kann.
     private string DescribeFailure(Exception exception, string fallbackKey) => exception switch
     {
         AiUnavailableException => _localizer.Get("Sort_AiUnavailable"),
@@ -1375,7 +1375,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     private ScanProgressPair _analyzeProgress;
 
     // Nicht jede Meldung wird gezeichnet: Bei tausend Bildern kämen zweitausend an, und
-    // seit beide Abschnitte gleichzeitig laufen, kommen sie auch gleichzeitig. Ungefiltert
+    // weil beide Abschnitte gleichzeitig laufen, kommen sie auch gleichzeitig. Ungefiltert
     // bringt das den Oberflächen-Faden zum Erliegen.
     private readonly ProgressThrottle _analyzeThrottle = new(TimeSpan.FromMilliseconds(100));
 

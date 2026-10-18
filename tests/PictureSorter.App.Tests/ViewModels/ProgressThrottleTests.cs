@@ -3,11 +3,11 @@ using PictureSorter.App.ViewModels;
 namespace PictureSorter.App.Tests.ViewModels;
 
 /// <summary>
-/// Tests der Zeichenbremse für die Statusleiste. Sie ist nötig geworden, weil ein Lauf
-/// über einen großen Ordner zwei Meldungen je Bild erzeugt — und seit Laden und Bewerten
-/// gleichzeitig laufen, kommen sie auch gleichzeitig. Ungefiltert kam der
-/// Oberflächen-Faden nicht mehr nach: Die Anwendung galt Windows als „reagiert nicht",
-/// und die Statusleiste stand still.
+/// Tests der Zeichenbremse für die Statusleiste. Sie ist nötig, weil ein Lauf über
+/// einen großen Ordner zwei Meldungen je Bild erzeugt — und weil Laden und Bewerten
+/// gleichzeitig laufen, kommen sie auch gleichzeitig. Ungefiltert kommt der
+/// Oberflächen-Faden nicht mehr nach: Die Anwendung gilt Windows als „reagiert nicht",
+/// und die Statusleiste steht still.
 /// </summary>
 public sealed class ProgressThrottleTests
 {

@@ -10,8 +10,8 @@ namespace PictureSorter.Application.Sorting;
 ///
 /// Für sich, weil es zwei verschiedene Nutzer gibt: die laufende Analyse und die
 /// Wiederherstellung aus dem Gedächtnis. Beide müssen denselben Namen erzeugen — sonst
-/// landen dieselben Fotos in zwei Ordnern nebeneinander. Vorher griff die
-/// Wiederherstellung dafür in den Analysedienst hinein.
+/// landen dieselben Fotos in zwei Ordnern nebeneinander. Läge die Benennung im
+/// Analysedienst, müsste die Wiederherstellung in ihn hineingreifen.
 /// </summary>
 public static class TargetFolderNaming
 {

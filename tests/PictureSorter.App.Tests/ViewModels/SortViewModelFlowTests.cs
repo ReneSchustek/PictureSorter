@@ -337,10 +337,10 @@ public sealed class SortViewModelFlowTests : IDisposable
     public async Task Analyze_WhenSomethingUnexpectedGoesWrong_LeavesTheViewUsable(Type failureType)
     {
         // Ein Lauf über tausende Bilder darf unter keinen Umständen stumm stehenbleiben.
-        // Gefangen wurden früher nur der Abbruch und zwei Datei-Ausnahmen — jede andere
-        // ließ den Zustand auf „läuft" stehen. Damit war jeder Knopf gesperrt, die
-        // Statusleiste blieb beim letzten Zählstand hängen, und der Stopp-Knopf löste
-        // nichts mehr aus. Es gab keinen Weg zurück außer dem Beenden des Programms.
+        // Fängt der Lauf nur den Abbruch und einzelne Datei-Ausnahmen, lässt jede andere den
+        // Zustand auf „läuft" stehen. Dann ist jeder Knopf gesperrt, die Statusleiste bleibt
+        // beim letzten Zählstand hängen, und der Stopp-Knopf löst nichts mehr aus. Es bliebe
+        // kein Weg zurück außer dem Beenden des Programms.
         Exception failure = (Exception)Activator.CreateInstance(failureType)!;
         StatusBarViewModel status = new(new ReswLocalizer());
         using SortViewModel sut = CreateSut(new FailingPhotoSorter(failure), status: status);
@@ -954,8 +954,8 @@ public sealed class SortViewModelFlowTests : IDisposable
     [Fact]
     public async Task Analyze_WhenTheAiIsUnavailable_SaysSoInsteadOfBlamingTheFolder()
     {
-        // Bekannte Störungen bekommen den Text, der die Nutzerin weiterbringt. Vorher
-        // stand bei jedem Fehler dasselbe da: „Analyse fehlgeschlagen".
+        // Bekannte Störungen bekommen den Text, der die Nutzerin weiterbringt. Stünde bei
+        // jedem Fehler dasselbe da – „Analyse fehlgeschlagen" –, wüsste sie nicht, was zu tun ist.
         StatusBarViewModel status = new(new ReswLocalizer());
         using SortViewModel sut = CreateSut(
             new FailingPhotoSorter(new AiUnavailableException("Ollama antwortet nicht")),

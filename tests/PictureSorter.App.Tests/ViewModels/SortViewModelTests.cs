@@ -252,8 +252,8 @@ public sealed class SortViewModelTests
     [Fact]
     public async Task Examples_StartEmptyOnBothSides()
     {
-        // Vorher standen dreißig zufällige Bilder des Ordners bereits drin, von denen zu
-        // einem bestimmten Thema oft kaum eines passte – der Platz war trotzdem belegt.
+        // Lüden die Seiten zufällige Bilder des Ordners vor, passte zu einem bestimmten
+        // Thema oft kaum eines – der Platz wäre trotzdem belegt.
         using SortViewModel sut = CreateSut(new FakePhotoSorter(CreateProposals(1)));
         sut.SourceFolder = SourceFolder;
 

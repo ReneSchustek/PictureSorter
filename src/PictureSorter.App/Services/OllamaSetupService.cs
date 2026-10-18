@@ -75,8 +75,8 @@ internal sealed class OllamaSetupService
 /// </summary>
 internal static partial class OllamaSetupLog
 {
-    // 1100er-Band: Die Einrichtung gehört zur App-Schicht. Die zuvor vergebenen 4000/4001
-    // liegen im Band der Datenschicht und waren dort bereits belegt.
+    // 1100er-Band: Die Einrichtung gehört zur App-Schicht. Das 4000er-Band gehört der
+    // Datenschicht, dort sind 4000 und 4001 belegt.
     [LoggerMessage(EventId = 1100, Level = LogLevel.Information, Message = "Ollama-Einrichtung gestartet: {Script}.")]
     public static partial void SetupStarted(ILogger logger, string script);
 

@@ -70,10 +70,10 @@
             </StackPanel>
         </StackPanel>
 
-        <!-- Eine ListView statt ScrollViewer+ItemsControl: Nur sie virtualisiert. Vorher
-             wurde jede gefundene Gruppe sofort erzeugt – bei einem Ordner mit vielen
+        <!-- Eine ListView statt ScrollViewer+ItemsControl: Nur sie virtualisiert. Ohne
+             Virtualisierung entstünde jede gefundene Gruppe sofort – bei einem Ordner mit vielen
              Duplikaten hunderte Gruppen mit tausenden Vorschaubildern auf einen Schlag.
-             Die Oberfläche stand dabei minutenlang, und ab einigen hundert Gruppen brach
+             Die Oberfläche stünde dabei minutenlang, und ab einigen hundert Gruppen bräche
              der Aufbau mit „Layout cycle detected" ab.
 
              Innen ein ItemsRepeater statt einer GridView: Eine GridView bringt einen

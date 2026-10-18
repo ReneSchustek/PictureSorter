@@ -9,9 +9,9 @@ namespace PictureSorter.Application.Sorting;
 /// nach außen.
 ///
 /// Als eigener Typ, weil mehrere Fotos gleichzeitig bewertet werden und der Stand
-/// deshalb an genau einer Stelle geführt werden muss. Vorher schleppte die Schleife
-/// sechs lose Zähler und ein Schloss mit sich — die Bewertung eines Fotos war zwischen
-/// Buchhaltung kaum noch zu erkennen.
+/// deshalb an genau einer Stelle geführt werden muss. Schleppte die Schleife lose
+/// Zähler und ein Schloss mit sich, wäre die Bewertung eines Fotos zwischen der
+/// Buchhaltung kaum zu erkennen.
 /// </summary>
 public sealed class AnalysisTally
 {

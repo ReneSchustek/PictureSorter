@@ -477,9 +477,9 @@ public sealed class PhotoAnalysisServiceTests
     [Fact]
     public async Task CreateProposalsAsync_StartsEvaluatingBeforeAllPhotosAreLoaded()
     {
-        // Der eigentliche Zweck der Kette: Die Bewertung wartet nicht mehr, bis der ganze
-        // Ordner geladen ist. Vorher zeigte die Oberfläche bei tausend Bildern aus der
-        // Cloud minutenlang nur das Laden, bevor sich beim Bewerten überhaupt etwas tat.
+        // Der eigentliche Zweck der Kette: Die Bewertung wartet nicht, bis der ganze Ordner
+        // geladen ist. Sonst zeigte die Oberfläche bei tausend Bildern aus der Cloud
+        // minutenlang nur das Laden, bevor sich beim Bewerten überhaupt etwas täte.
         IReadOnlyList<Photo> photos = [.. Enumerable.Range(0, 10).Select(index => new Photo
         {
             FullPath = $@"C:\fotos\bild{index}.jpg",
@@ -737,8 +737,8 @@ public sealed class PhotoAnalysisServiceTests
     {
         // Die gespeicherten Beispiele stammen aus dem Modell „fake", die frisch
         // erzeugten Vektoren aus einem anderen. Sie sind nicht vergleichbar – jedes
-        // Urteil daraus wäre geraten. Vorher wurde trotzdem gerechnet, solange nur die
-        // Vektorlänge zufällig übereinstimmte.
+        // Urteil daraus wäre geraten. Eine Prüfung allein auf die Vektorlänge ließe trotzdem
+        // rechnen, sobald die Länge zufällig übereinstimmt.
         FakeImageClassifier classifier = new(new VisionVerdict { Matches = true, Confidence = 1.0 });
         PhotoAnalysisService service = CreateService(
             embedding: [1.0f, 0.0f, 0.0f],

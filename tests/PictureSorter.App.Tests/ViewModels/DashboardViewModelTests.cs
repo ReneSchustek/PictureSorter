@@ -10,9 +10,9 @@ namespace PictureSorter.App.Tests.ViewModels;
 /// gemeldet werden – „einsatzbereit" bei fehlendem Modell würde sie in einen
 /// Sortierlauf schicken, der scheitern muss.
 ///
-/// Prüfbar ist das erst, seit die Kacheln über den Navigationsdienst gehen. Vorher
-/// griff die Seite über den globalen Service-Provider auf den Fensterkontext und von
-/// dort per Typumwandlung ins Hauptfenster – ohne laufende Oberfläche nicht testbar.
+/// Prüfbar ist das, weil die Kacheln über den Navigationsdienst gehen. Griffe die
+/// Seite über den globalen Service-Provider auf den Fensterkontext und von dort per
+/// Typumwandlung ins Hauptfenster, wäre sie ohne laufende Oberfläche nicht testbar.
 /// </summary>
 public sealed class DashboardViewModelTests
 {

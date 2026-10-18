@@ -118,7 +118,7 @@ internal sealed class UpdateService : IUpdateCoordinator
 
         // Erst prüfen, ob überhaupt geschrieben werden darf, dann laden. Wurde die
         // Anwendung „für alle Benutzer" nach C:\Programme installiert, scheitert das
-        // Ersetzen ohne Administratorrechte – bisher erst nach hundert Megabyte
+        // Ersetzen ohne Administratorrechte – ohne diese Prüfung erst nach hundert Megabyte
         // Download und dem Beenden der Anwendung, für den Nutzer völlig lautlos.
         string installationDirectory = AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar);
         if (!UpdateInstaller.CanWriteTo(installationDirectory))

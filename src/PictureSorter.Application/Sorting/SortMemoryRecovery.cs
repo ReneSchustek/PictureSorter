@@ -9,14 +9,14 @@ namespace PictureSorter.Application.Sorting;
 /// <summary>
 /// Holt die Vorschläge einer früheren Analyse aus dem Sortier-Gedächtnis zurück.
 ///
-/// Das Gedächtnis wurde schon immer nach jedem einzelnen Foto beschrieben — es hält also
-/// auch von einem Lauf, der abgestürzt ist oder stehenblieb, jedes gefällte Urteil fest.
-/// Nur genutzt wurde davon bisher die Ablehnung: Ein Vorschlag, der nie angewendet wurde,
-/// sollte bewusst erneut erscheinen, und dafür wurde er erneut berechnet.
+/// Das Gedächtnis wird nach jedem einzelnen Foto beschrieben — es hält also auch von
+/// einem Lauf, der abgestürzt ist oder stehenblieb, jedes gefällte Urteil fest. Die
+/// Analyse überspringt daraus nur, was entschieden ist: Ein Vorschlag, der nie
+/// angewendet wurde, soll bewusst erneut erscheinen und wird dafür neu berechnet.
 ///
 /// Bei einem Ordner, dessen Bewertung Tage dauert, ist das der Unterschied zwischen
 /// „nichts verloren" und „alles noch einmal". Diese Klasse ist deshalb bewusst auch für
-/// Läufe zuständig, die vor dem Analyse-Protokoll entstanden sind: Für sie gibt es keinen
+/// Läufe zuständig, zu denen es kein Analyse-Protokoll gibt: Für sie gibt es keinen
 /// anderen Weg zurück.
 /// </summary>
 public sealed class SortMemoryRecovery

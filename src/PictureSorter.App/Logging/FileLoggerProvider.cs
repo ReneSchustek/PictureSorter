@@ -130,9 +130,9 @@ internal sealed class FileLoggerProvider : ILoggerProvider
         return scope;
     }
 
-    // Der Zeitstempel einer Logzeile — aus derselben Quelle wie der Dateiname. Vorher
-    // griff der Logger direkt auf die Systemuhr zu: zwei Zeitquellen in einer Klasse,
-    // und der Zeitstempel ließ sich nicht prüfen. Ortszeit wie beim Dateinamen.
+    // Der Zeitstempel einer Logzeile — aus derselben Quelle wie der Dateiname. Griffe der
+    // Logger direkt auf die Systemuhr zu, gäbe es zwei Zeitquellen in einer Klasse, und
+    // der Zeitstempel ließe sich nicht prüfen. Ortszeit wie beim Dateinamen.
     internal DateTimeOffset Now => _clock.UtcNow.ToLocalTime();
 
     // Hängt die offenen Scopes (äußerster zuerst) an die Logzeile an.
@@ -204,7 +204,7 @@ internal sealed class FileLoggerProvider : ILoggerProvider
     }
 
     // Ortszeit, nicht UTC: Die Nutzerin sucht den Tag, an dem sie das Programm benutzt
-    // hat. IClock liefert UTC, die Umrechnung hält den Dateinamen wie bisher.
+    // hat. IClock liefert UTC; erst die Umrechnung ergibt ihren Kalendertag.
     private string CurrentLogPath() => Path.Combine(
         _logDirectory,
         string.Create(CultureInfo.InvariantCulture, $"picturesorter-{_clock.UtcNow.ToLocalTime():yyyy-MM-dd}.log"));

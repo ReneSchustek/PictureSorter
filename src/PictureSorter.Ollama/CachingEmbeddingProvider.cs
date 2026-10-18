@@ -67,12 +67,12 @@ public sealed class CachingEmbeddingProvider : IEmbeddingProvider
     // Erzeugung etwas ändert, das den Vektor beeinflusst - dann rechnet die Anwendung
     // einmal neu, statt weiter mit den alten Werten zu arbeiten.
     //
-    // 2: Das Bild-Modell wird seither mit fester Temperatur befragt. Vorher schrieb es
-    //    zu jedem Aufruf einen anderen Text; die davon abgeleiteten Vektoren tragen
-    //    diesen Zufall in sich und würden sonst unbegrenzt weiterverwendet.
-    // 3: Die Beschreibung wird seither auf Englisch erfragt. Auf Deutsch schrieb das
+    // 2: Das Bild-Modell wird mit fester Temperatur befragt. Ohne sie schreibt es zu
+    //    jedem Aufruf einen anderen Text; Vektoren der Stufe 1 tragen diesen Zufall in
+    //    sich und würden sonst unbegrenzt weiterverwendet.
+    // 3: Die Beschreibung wird auf Englisch erfragt. Auf Deutsch schreibt das
     //    Bild-Modell holprige und teils falsche Sätze, und das Embedding-Modell ist
-    //    auf Englisch trainiert - die alten Vektoren beruhen auf schlechteren
+    //    auf Englisch trainiert - Vektoren der Stufe 2 beruhen auf schlechteren
     //    Beschreibungen.
     private const int EmbeddingRecipe = 3;
 

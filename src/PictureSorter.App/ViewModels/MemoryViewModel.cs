@@ -24,7 +24,7 @@ internal sealed partial class MemoryViewModel : ObservableObject
     private readonly ILogger<MemoryViewModel> _logger;
 
     // Der Eintrag „Alle" ist zugleich Anzeigetext und Filterwert. Er ist übersetzt und
-    // steht deshalb nicht mehr als Konstante fest, sondern wird einmal je Instanz
+    // steht deshalb nicht als Konstante fest, sondern wird einmal je Instanz
     // aufgelöst und überall gegen ihn verglichen.
     private readonly string _allFilter;
 

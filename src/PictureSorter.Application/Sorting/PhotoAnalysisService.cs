@@ -135,17 +135,16 @@ public sealed class PhotoAnalysisService : IPhotoAnalyzer
             return [];
         }
 
-        // Die Gegenbeispiele wurden bisher zwar erfasst und gespeichert, aber nie
-        // ausgewertet – jede Markierung „passt nicht" blieb ohne jede Wirkung.
+        // Die Gegenbeispiele fließen in die Bewertung ein – ohne sie bliebe jede Markierung
+        // „passt nicht" ohne Wirkung.
         IReadOnlyList<ImageEmbedding> negatives =
             [.. category.Examples.Where(example => !example.IsPositive).Select(example => example.Embedding)];
 
         // Eine Kette statt zweier Abschnitte nacheinander: Die Quelle reicht jedes Bild
-        // weiter, sobald es eingelesen ist, und die Bewertung greift es sofort auf. Vorher
-        // wurde erst der ganze Ordner geladen — bei tausend Bildern aus der Cloud
-        // minutenlang —, und erst danach fing die Bewertung überhaupt an. Jetzt läuft
-        // beides nebeneinander, und der Zählstand der Bewertung bewegt sich nach Sekunden
-        // statt nach Minuten.
+        // weiter, sobald es eingelesen ist, und die Bewertung greift es sofort auf.
+        // Nacheinander finge die Bewertung erst an, wenn der ganze Ordner geladen ist — bei
+        // tausend Bildern aus der Cloud nach Minuten. Nebeneinander bewegt sich der Zählstand
+        // der Bewertung nach Sekunden statt nach Minuten.
         //
         // Mehrere Fotos gleichzeitig bewerten: Jede Bewertung ist ein Aufruf des
         // Bild-Modells und dauert Sekunden, in denen die Anwendung nur wartet. Der Grad
