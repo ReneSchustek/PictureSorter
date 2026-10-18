@@ -276,9 +276,9 @@ internal static class UpdateInstaller
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            // Grund und betroffene Datei festhalten: Bisher endete jeder Fehlschlag als
-            // bloßes „false". Der Nutzer sah nur, dass sich nichts geändert hat, und
-            // im Protokoll stand nichts, womit sich die Ursache eingrenzen ließe.
+            // Grund und betroffene Datei festhalten. Ein bloßes „false" zeigte dem Nutzer
+            // nur, dass sich nichts geändert hat, und im Protokoll stünde nichts, womit sich
+            // die Ursache eingrenzen ließe.
             Rollback(replaced);
             return new ApplyResult(false, current, ex.Message);
         }

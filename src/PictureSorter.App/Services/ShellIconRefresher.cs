@@ -9,9 +9,9 @@ namespace PictureSorter.App.Services;
 ///
 /// Die Shell merkt sich das Symbol einer ausführbaren Datei in einem Zwischenspeicher.
 /// Tauscht die Aktualisierung die EXE aus, erfährt sie davon von sich aus nichts: Auf dem
-/// Desktop und in der Taskleiste blieb das alte Symbol stehen – nicht für einen Moment,
-/// sondern oft bis zur nächsten Anmeldung. Ein Setup löst diese Meldung selbst aus; die
-/// Aktualisierung aus dem Programm heraus tat es bis 1.5.2 nicht.
+/// Desktop und in der Taskleiste bliebe das alte Symbol stehen, oft bis zur nächsten
+/// Anmeldung. Ein Setup löst diese Meldung selbst aus, die Aktualisierung aus dem Programm
+/// heraus muss es selbst tun.
 /// </summary>
 internal static partial class ShellIconRefresher
 {

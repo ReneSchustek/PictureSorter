@@ -131,11 +131,11 @@ public sealed class GestaltungslinieGuardTests
     [Fact]
     public void EveryTokenIsUsedInAPropertyOfItsOwnType()
     {
-        // Zwei Abstürze an einem Tag hatten dieselbe Ursache: ein Token vom falschen Typ.
-        // „CharacterSpacing" nahm einen x:Double statt einer Ganzzahl, „Padding" einen
-        // x:Double statt einer Kante. Beides übersetzt sauber durch, beides lässt die
-        // Seite zur Laufzeit weiß bleiben oder mit einer XamlParseException abbrechen —
-        // und kein Test mit Fakes kann das sehen, weil keiner einen XAML-Host hat.
+        // Ein Token vom falschen Typ bringt die Anwendung zum Absturz: „CharacterSpacing"
+        // mit einem x:Double statt einer Ganzzahl, „Padding" mit einem x:Double statt einer
+        // Kante. Beides übersetzt sauber durch, beides lässt die Seite zur Laufzeit weiß
+        // bleiben oder mit einer XamlParseException abbrechen — und kein Test mit Fakes kann
+        // das sehen, weil keiner einen XAML-Host hat.
         Dictionary<string, string> tokenTypes = TokenTypes();
         List<string> findings = [];
 

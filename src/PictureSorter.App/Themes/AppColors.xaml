@@ -77,9 +77,8 @@
             <SolidColorBrush x:Key="NavigationViewItemBackgroundSelected" Color="#2F4858" />
             <SolidColorBrush x:Key="NavigationViewItemBackgroundSelectedPointerOver" Color="#3A5A6E" />
 
-            <!-- Kopfbereich: eine ruhige Fläche in der Primärfarbe. Der frühere
-                 Verlauf ist bewusst entfallen — die Linie kennt keine Effekte,
-                 die Tiefe vortäuschen. -->
+            <!-- Kopfbereich: eine ruhige Fläche in der Primärfarbe, ohne Verlauf.
+                 Die Linie kennt keine Effekte, die Tiefe vortäuschen. -->
             <SolidColorBrush x:Key="AppHeroBrush" Color="#2F4858" />
             <SolidColorBrush x:Key="AppHeroForegroundBrush" Color="#FFFFFF" />
         </ResourceDictionary>

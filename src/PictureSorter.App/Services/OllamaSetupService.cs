@@ -41,9 +41,9 @@ internal sealed class OllamaSetupService
         if (!File.Exists(script))
         {
             // Ohne diese Meldung stünde im Protokoll gar nichts: Die Ausnahme entsteht
-            // vor dem Start des Vorgangs und lief bisher an jedem Logaufruf vorbei. Auf
-            // dem Rechner der Nutzerin war damit nicht zu unterscheiden, ob das Skript
-            // fehlt oder ob PowerShell den Start verweigert hat.
+            // vor dem Start des Vorgangs und damit vor jedem anderen Logaufruf. Ohne sie
+            // ließe sich nicht unterscheiden, ob das Skript fehlt oder ob PowerShell den
+            // Start verweigert hat.
             OllamaSetupLog.ScriptMissing(_logger, script);
             throw new FileNotFoundException("Einrichtungsskript nicht gefunden.", script);
         }

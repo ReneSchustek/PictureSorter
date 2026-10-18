@@ -5,9 +5,8 @@ namespace PictureSorter.App.Services;
 ///
 /// Bewusst frei von WinUI-Typen (kein <c>Frame</c>, kein <c>Page</c>): Die ViewModels
 /// dürfen navigieren, ohne die Oberfläche zu kennen, und bleiben damit im Testhost
-/// ohne XAML-Laufzeit prüfbar. Bisher lief der Weg von der Startseite über
-/// <c>App.Services</c> zum Fensterkontext und von dort per Typumwandlung ins
-/// Hauptfenster – drei Umwege, die keinen Test überlebt hätten.
+/// ohne XAML-Laufzeit prüfbar. Der Weg über <c>App.Services</c> zum Fensterkontext
+/// und per Typumwandlung ins Hauptfenster wären drei Umwege, die keinen Test überleben.
 /// </summary>
 internal interface INavigationService
 {

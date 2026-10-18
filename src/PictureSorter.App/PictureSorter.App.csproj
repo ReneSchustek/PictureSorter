@@ -175,18 +175,17 @@
 
   <!-- Verteidigung in der Tiefe, wie beim Splash-Logo: Fehlt die Ressourcendatei in der
        Ausgabe, soll die Veröffentlichung abbrechen statt ein Paket zu erzeugen, das
-       sich nicht starten lässt. Genau das ist bis 1.4.0 unbemerkt ausgeliefert worden. -->
+       sich nicht starten lässt. Auffallen würde das sonst erst beim Nutzer. -->
   <Target Name="ValidateProjektPriImPublish" AfterTargets="Publish">
     <Error
       Condition="!Exists('$(PublishDir)$(AssemblyName).pri')"
       Text="Ressourcendatei $(AssemblyName).pri fehlt in der Veröffentlichung. Ohne sie startet die Anwendung nicht (XamlParseException im ersten Fenster)." />
   </Target>
 
-  <!-- Dieselbe Falle, dritter Fall: Der Assets-Ordner fehlte in jedem ausgelieferten
-       Paket bis 1.5.2. Das Programm startete zwar, zeigte aber kein Symbol in der
-       Titelleiste, weil AppWindow.SetIcon("Assets/AppIcon.ico") eine Datei sucht,
-       die nur auf dem Entwicklungsrechner lag. Fehlt sie in der Ausgabe, soll die
-       Veröffentlichung abbrechen — auffallen würde es sonst erst beim Nutzer. -->
+  <!-- Dieselbe Falle, dritter Fall: Fehlt der Assets-Ordner im Paket, startet das
+       Programm zwar, zeigt aber kein Symbol in der Titelleiste, weil
+       AppWindow.SetIcon("Assets/AppIcon.ico") eine Datei sucht, die dann nur auf dem
+       Entwicklungsrechner liegt. Deshalb bricht die Veröffentlichung ab. -->
   <Target Name="ValidateAppIconImPublish" AfterTargets="Publish">
     <Error
       Condition="!Exists('$(PublishDir)Assets\AppIcon.ico')"

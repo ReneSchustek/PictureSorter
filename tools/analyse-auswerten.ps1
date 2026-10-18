@@ -2,10 +2,10 @@
 #
 # Warum es dieses Werkzeug gibt
 # -----------------------------
-# Seit Fassung 1.7.0 hält die Anwendung je Foto fest, auf welchem Weg entschieden wurde
-# (Embedding oder Bild-Modell) und wann. Damit steckt die Antwort auf die Frage, wohin die
-# Zeit geht, bereits in der Datenbank — nur konnte sie niemand herausholen, ohne SQL zu
-# schreiben.
+# Die Anwendung hält je Foto fest, auf welchem Weg entschieden wurde (Embedding oder
+# Bild-Modell) und wann. Damit steckt die Antwort auf die Frage, wohin die Zeit geht,
+# bereits in der Datenbank — nur kommt ohne dieses Werkzeug niemand an sie heran, der
+# nicht SQL schreiben will.
 #
 # Gemessen wird nichts hinzu: Das Werkzeug liest nur, was ein Lauf ohnehin geschrieben
 # hat. Es darf deshalb auf jedem Rechner laufen, ohne dass dort etwas installiert oder
