@@ -211,4 +211,4 @@ Update zurücknehmen lässt, steht im [Betriebshandbuch](BETRIEB.md).
 
 ## Lizenz
 
-Proprietär, alle Rechte vorbehalten.
+MIT, siehe [LICENSE](LICENSE).
