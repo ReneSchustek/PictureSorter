@@ -6,6 +6,8 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
+## [1.11.4] - 2026-11-01
+
 ### Behoben
 
 - **Die geführte Einrichtung der lokalen KI brach beim ersten Modell ab.** Das Fenster
