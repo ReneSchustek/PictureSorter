@@ -27,10 +27,13 @@ internal static class UpdateInstaller
     public const string UpdateOutcomeFileName = "update-outcome.json";
 
     // Deckel gegen ein „Zip-Bomben"-Paket: Weder die Zahl der Einträge noch die
-    // tatsächlich geschriebene Menge darf beliebig groß werden.
+    // tatsächlich geschriebene Menge darf beliebig groß werden. Beide liegen deutlich über
+    // einem echten Paket, das entpackt rund 325 MB groß ist.
     private const int MaxEntries = 20_000;
     private const long MaxExtractedBytes = 1L * 1024 * 1024 * 1024;
 
+    // Zusammen mit CopyRetryDelay rund fünf Sekunden: So lange darf das beendete Programm oder ein
+    // Virenscanner eine Datei noch halten, bevor das Einspielen als gescheitert gilt.
     private const int MaxCopyAttempts = 10;
 
     // Endung der beiseitegelegten Vorgängerdatei (siehe TryReplaceByRenaming).

@@ -15,7 +15,7 @@ namespace PictureSorter.Application.Sorting;
 /// angewendet wurde, soll bewusst erneut erscheinen und wird dafür neu berechnet.
 ///
 /// Bei einem Ordner, dessen Bewertung Tage dauert, ist das der Unterschied zwischen
-/// „nichts verloren" und „alles noch einmal". Diese Klasse ist deshalb bewusst auch für
+/// „nichts verloren" und „alles noch einmal". Deshalb ist sie bewusst auch für
 /// Läufe zuständig, zu denen es kein Analyse-Protokoll gibt: Für sie gibt es keinen
 /// anderen Weg zurück.
 /// </summary>

@@ -97,6 +97,7 @@ internal static class TestImage
         uint[] longitude,
         string longitudeRef)
     {
+        // Klein, weil diese Datei nur ihre Metadaten liefern muss.
         const int size = 8;
         byte[] pixels = new byte[size * size * 4];
         Array.Fill(pixels, (byte)128);

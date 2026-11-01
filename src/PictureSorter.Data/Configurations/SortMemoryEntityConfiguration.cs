@@ -12,7 +12,10 @@ internal sealed class SortMemoryEntityConfiguration : IEntityTypeConfiguration<S
     // Pfade können lang werden; die Grenze verhindert unbegrenzte Werte, ohne
     // realistische Windows-Pfade (max. 260 bzw. 32.767 Zeichen) abzuschneiden.
     private const int PathMaxLength = 1024;
+    // Eine Signatur ist ein SHA-256 in Hexadezimalschreibweise, also 64 Zeichen. Der Rest ist Reserve,
+    // weil eine Änderung des Schemas eine Migration braucht.
     private const int SignatureMaxLength = 128;
+    // Ein Kategoriename steht als Ordnername im Dateisystem und ist weit kürzer als diese Grenze.
     private const int CategoryMaxLength = 256;
 
     /// <inheritdoc />

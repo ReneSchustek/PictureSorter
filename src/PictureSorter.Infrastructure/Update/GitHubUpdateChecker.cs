@@ -156,11 +156,13 @@ public sealed class GitHubUpdateChecker : IUpdateChecker
         return Version.TryParse(normalized, out version);
     }
 
+    /// <summary>Der Ausschnitt der GitHub-Antwort zu einem Release, den die Prüfung braucht.</summary>
     private sealed record GitHubRelease(
         [property: JsonPropertyName("tag_name")] string? TagName,
         [property: JsonPropertyName("html_url")] string? HtmlUrl,
         [property: JsonPropertyName("assets")] IReadOnlyList<GitHubAsset>? Assets);
 
+    /// <summary>Eine Datei eines Release. Nullbar, weil das Format nicht in unserer Hand liegt.</summary>
     private sealed record GitHubAsset(
         [property: JsonPropertyName("name")] string? Name,
         [property: JsonPropertyName("browser_download_url")] string? DownloadUrl);

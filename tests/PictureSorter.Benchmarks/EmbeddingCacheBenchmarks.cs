@@ -24,6 +24,7 @@ namespace PictureSorter.Benchmarks;
     Justification = "BenchmarkDotNet erzeugt zu jeder Messklasse eine abgeleitete Klasse in einer eigenen Assembly.")]
 public class EmbeddingCacheBenchmarks : IDisposable
 {
+    // Ein Bestand echter Größe und die 768 Werte von nomic-embed-text.
     private const int EntryCount = 5000;
     private const int Dimensions = 768;
 

@@ -21,6 +21,8 @@ namespace PictureSorter.App.ViewModels;
 /// </summary>
 internal sealed partial class SettingsViewModel : ObservableObject
 {
+    // Das Ende des Protokolls, mehr lässt sich in einer Liste nicht durchsehen. Die vollständige Datei
+    // liegt weiter im Protokollordner.
     private const int ReadLineCount = 500;
 
     private readonly FileLoggerProvider _fileLogger;

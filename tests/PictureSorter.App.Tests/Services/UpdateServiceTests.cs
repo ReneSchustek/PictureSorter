@@ -455,8 +455,8 @@ public sealed class UpdateServiceTests : IDisposable
     }
 
     // Bewusst nicht Progress<T>: Das reicht die Meldungen über den
-    // Synchronisierungskontext weiter und damit erst nach dem Ende des Tests. Hier wird
-    // synchron mitgeschrieben.
+    // Synchronisierungskontext weiter und damit erst nach dem Ende des Tests. Diese Fassung
+    // schreibt synchron mit.
     private sealed class RecordingProgress : IProgress<UpdateProgress>
     {
         public List<UpdateProgress> Reported { get; } = [];

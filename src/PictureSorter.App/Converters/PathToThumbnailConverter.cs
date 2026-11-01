@@ -11,6 +11,8 @@ namespace PictureSorter.App.Converters;
 /// </summary>
 internal sealed partial class PathToThumbnailConverter : IValueConverter
 {
+    // Über der Anzeigegröße der Listen (bis 170 Punkte breit), damit die Vorschau bei hoher Skalierung
+    // des Bildschirms scharf bleibt, und weit unter der Größe eines Fotos, die sonst jede Zeile dekodierte.
     private const int ThumbnailWidth = 320;
 
     /// <inheritdoc />

@@ -20,6 +20,7 @@ namespace PictureSorter.App.Views;
 internal sealed partial class SplashWindow : Window
 {
     private const string LogoResourceName = "PictureSorter.App.Assets.SplashLogo.png";
+    // Das Logo ist 320 × 320 Punkte groß; die Breite lässt ihm links und rechts Luft.
     private const int WindowWidth = 420;
     private const int WindowHeight = 320;
 

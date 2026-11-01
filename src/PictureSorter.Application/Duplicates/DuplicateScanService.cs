@@ -225,6 +225,7 @@ public sealed class DuplicateScanService : IDuplicateScanner
             .ThenBy(item => item.Photo.FileName, StringComparer.OrdinalIgnoreCase)
             .Select(item => item.Photo)];
 
+    /// <summary>Ein Foto mit seinem Fingerabdruck, wie ihn der Vergleich braucht.</summary>
     private sealed record FingerprintedPhoto(Photo Photo, ImageFingerprint Fingerprint);
 
     /// <summary>

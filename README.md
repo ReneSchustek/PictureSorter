@@ -28,6 +28,10 @@ laufen vollständig offline auf dem eigenen Rechner.
   Zeichen stehen. Der neue Name kommt aus dem Aufnahmedatum, sofern eines im Dateikopf
   steht, sonst aus Ordnername und laufender Nummer. Die Endung bleibt unangetastet,
   jede Zeile lässt sich abwählen, und der Lauf ist zurücknehmbar.
+- **Einmal analysieren**: Die App erkennt ein Foto an seinem Inhalt. Einsortierte Bilder und
+  Kopien werden deshalb nicht noch einmal analysiert.
+- **Kopieren oder verschieben, Zielort frei wählbar**: Beides wird direkt vor dem Sortieren
+  festgelegt. Ohne Angabe entstehen die Zielordner im Quellordner.
 - **Sicher**: Vor jeder Aktion gibt es eine Vorschau, bei großen Mengen eine Rückfrage.
   Verschoben wird kollisionssicher, Gelöschtes lässt sich wiederherstellen.
 - **Rückgängig**: Ein Sortierlauf lässt sich vollständig zurücknehmen, auch nach

@@ -69,6 +69,7 @@ public sealed class PerceptualHashTests
 
     private static byte[] BuildUniformRows(bool ascending)
     {
+        // Das Raster des Difference-Hash: 9 × 8 ergibt 64 Vergleiche benachbarter Punkte.
         const int width = 9;
         const int height = 8;
         byte[] grid = new byte[width * height];

@@ -18,6 +18,7 @@ namespace PictureSorter.Infrastructure.Caching;
 /// </remarks>
 public sealed class FileFingerprinter : IFileFingerprinter
 {
+    // Ein EXIF-Block fasst in einem JPEG höchstens 64 KB und steckt damit vollständig im Anfang.
     private const int SampleLength = 64 * 1024;
 
     /// <inheritdoc />

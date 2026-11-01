@@ -8,7 +8,7 @@ namespace PictureSorter.App.Services;
 /// Öffnet den Datei-Explorer.
 /// </summary>
 /// <remarks>
-/// Bewusst dünn: Diese Klasse tut nichts, was sich prüfen ließe, ohne ein Fenster
+/// Bewusst dünn: Sie tut nichts, was sich prüfen ließe, ohne ein Fenster
 /// aufgehen zu lassen. Alles, was eine Entscheidung trifft, steht im Anzeige-Modell.
 /// </remarks>
 internal sealed class ShellLauncher : IShellLauncher

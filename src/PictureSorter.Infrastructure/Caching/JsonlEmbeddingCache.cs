@@ -183,8 +183,10 @@ public sealed class JsonlEmbeddingCache : IEmbeddingCache, IDisposable
     /// </summary>
     public void Dispose() => _gate.Dispose();
 
-    // Serialisierungsformat einer Cache-Zeile. Kurze Eigenschaftsnamen halten die
-    // Datei kompakt.
+    /// <summary>
+    /// Serialisierungsformat einer Cache-Zeile. Kurze Eigenschaftsnamen halten die
+    /// Datei kompakt.
+    /// </summary>
     private sealed record CacheLine(
         [property: System.Text.Json.Serialization.JsonPropertyName("k")] string Key,
         [property: System.Text.Json.Serialization.JsonPropertyName("m")] string Model,

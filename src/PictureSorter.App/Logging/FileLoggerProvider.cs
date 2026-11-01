@@ -245,8 +245,10 @@ internal sealed class FileLoggerProvider : ILoggerProvider
         }
     }
 
-    // Ein Eintrag im Scope-Stack. Beim Dispose wird der vorige Scope wieder aktiv,
-    // sofern dieser noch der aktuelle ist (verschachtelte Dispose-Reihenfolge).
+    /// <summary>
+    /// Ein Eintrag im Scope-Stack. Beim Dispose wird der vorige Scope wieder aktiv,
+    /// sofern dieser noch der aktuelle ist (verschachtelte Dispose-Reihenfolge).
+    /// </summary>
     private sealed class Scope : IDisposable
     {
         private readonly FileLoggerProvider _owner;

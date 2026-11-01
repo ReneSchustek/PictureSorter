@@ -22,6 +22,7 @@ namespace PictureSorter.Benchmarks;
     Justification = "BenchmarkDotNet erzeugt zu jeder Messklasse eine abgeleitete Klasse in einer eigenen Assembly.")]
 public class FingerprintBenchmarks
 {
+    // Mittel eines echten Bestands: 43 GB auf 5.625 Dateien.
     private const int PhotoLength = 8 * 1024 * 1024;
 
     private readonly FileFingerprinter _fingerprinter = new();

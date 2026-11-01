@@ -16,6 +16,8 @@ namespace PictureSorter.Ollama;
 /// </summary>
 public sealed class OllamaClient : IOllamaClient
 {
+    // Überbrückt einen kurzen Aussetzer, etwa während Ollama startet: Die Wartezeit wächst von 0,5 auf
+    // 1 Sekunde. Länger soll ein Lauf nicht je Bild warten, wenn Ollama wirklich fehlt.
     private const int MaxAttempts = 3;
     private static readonly TimeSpan BaseRetryDelay = TimeSpan.FromMilliseconds(500);
 
@@ -223,14 +225,17 @@ public sealed class OllamaClient : IOllamaClient
         }
     }
 
+    /// <summary>Anfrage an <c>/api/embeddings</c>.</summary>
     private sealed record EmbeddingRequest(
         [property: JsonPropertyName("model")] string Model,
         [property: JsonPropertyName("prompt")] string Prompt,
         [property: JsonPropertyName("keep_alive")] string KeepAlive);
 
+    /// <summary>Antwort von <c>/api/embeddings</c>; das Feld fehlt, wenn Ollama einen Fehler meldet.</summary>
     private sealed record EmbeddingResponse(
         [property: JsonPropertyName("embedding")] IReadOnlyList<float>? Embedding);
 
+    /// <summary>Anfrage an <c>/api/generate</c>.</summary>
     private sealed record GenerateRequest(
         [property: JsonPropertyName("model")] string Model,
         [property: JsonPropertyName("prompt")] string Prompt,
@@ -243,30 +248,35 @@ public sealed class OllamaClient : IOllamaClient
         [property: JsonPropertyName("keep_alive")] string KeepAlive,
         [property: JsonPropertyName("options")] GenerateOptions Options);
 
-    // Ollama nimmt Modellparameter unter „options" entgegen; „num_predict" begrenzt die
-    // Zahl der erzeugten Token und damit die Dauer des Aufrufs.
-    //
-    // „temperature" und „seed" sind kein Feinschliff, sondern der Unterschied zwischen
-    // einem Urteil und einem Würfel: Ohne sie schreibt Ollama mit seiner Voreinstellung
-    // (0,8) zu jedem Aufruf einen anderen Text. Zwei byteweise identische Dateien
-    // bekamen dadurch gemessen zwei völlig verschiedene Beschreibungen (einmal
-    // „Sonnenuntergang", einmal „Abstraktion mit graublauem Himmel"), und aus
-    // verschiedenen Beschreibungen werden verschiedene Vergleichsvektoren und am Ende
-    // verschiedene Zielordner. Dasselbe Foto landete beim zweiten Lauf woanders.
-    //
-    // Das wiegt hier doppelt: Das Sortier-Gedächtnis hält jedes Urteil dauerhaft fest.
-    // Ein gewürfeltes Urteil bleibt also stehen und wird nie wieder überprüft.
+    /// <summary>
+    /// Ollama nimmt Modellparameter unter „options" entgegen; „num_predict" begrenzt die
+    /// Zahl der erzeugten Token und damit die Dauer des Aufrufs.
+    /// 
+    /// „temperature" und „seed" sind kein Feinschliff, sondern der Unterschied zwischen
+    /// einem Urteil und einem Würfel: Ohne sie schreibt Ollama mit seiner Voreinstellung
+    /// (0,8) zu jedem Aufruf einen anderen Text. Zwei byteweise identische Dateien
+    /// bekamen dadurch gemessen zwei völlig verschiedene Beschreibungen (einmal
+    /// „Sonnenuntergang", einmal „Abstraktion mit graublauem Himmel"), und aus
+    /// verschiedenen Beschreibungen werden verschiedene Vergleichsvektoren und am Ende
+    /// verschiedene Zielordner. Dasselbe Foto landete beim zweiten Lauf woanders.
+    /// 
+    /// Das wiegt hier doppelt: Das Sortier-Gedächtnis hält jedes Urteil dauerhaft fest.
+    /// Ein gewürfeltes Urteil bleibt also stehen und wird nie wieder überprüft.
+    /// </summary>
     private sealed record GenerateOptions(
         [property: JsonPropertyName("num_predict")] int NumPredict,
         [property: JsonPropertyName("temperature")] double Temperature = 0.0,
         [property: JsonPropertyName("seed")] int Seed = 0);
 
+    /// <summary>Antwort von <c>/api/generate</c>; das Feld fehlt, wenn Ollama einen Fehler meldet.</summary>
     private sealed record GenerateResponse(
         [property: JsonPropertyName("response")] string? Response);
 
+    /// <summary>Antwort von <c>/api/tags</c>: die installierten Modelle.</summary>
     private sealed record TagsResponse(
         [property: JsonPropertyName("models")] IReadOnlyList<TagModel>? Models);
 
+    /// <summary>Ein installiertes Modell.</summary>
     private sealed record TagModel(
         [property: JsonPropertyName("name")] string Name);
 }

@@ -31,6 +31,10 @@ namespace PictureSorter.App;
 /// Logging und die Konfiguration und steuert den Startablauf inklusive
 /// SplashScreen.
 /// </summary>
+/// <summary>
+/// Einstiegspunkt der Anwendung: baut die Dienste auf, zeigt den Startbildschirm und öffnet das
+/// Hauptfenster.
+/// </summary>
 [SuppressMessage(
     "Design",
     "CA1515:Consider making public types internal",
@@ -42,6 +46,7 @@ namespace PictureSorter.App;
 public partial class App : Microsoft.UI.Xaml.Application
 {
     private const string DataFolderName = "PictureSorter";
+    // Auf einem schnellen Rechner bliebe der Startbildschirm sonst nur ein Aufblitzen.
     private static readonly TimeSpan MinimumSplashDuration = TimeSpan.FromSeconds(1.5);
 
     /// <summary>

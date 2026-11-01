@@ -252,6 +252,7 @@ internal sealed class AnalysisJournalRepository : IAnalysisJournal
     // ließe das Speichern scheitern, ausgerechnet beim Festhalten eines Fehlers.
     private static string? Shorten(string? reason)
     {
+        // Die Länge der Spalte aus AnalysisRunEntityConfiguration.
         const int maxLength = 512;
         return reason is null || reason.Length <= maxLength ? reason : reason[..maxLength];
     }

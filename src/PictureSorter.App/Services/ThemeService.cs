@@ -248,6 +248,10 @@ internal sealed class ThemeService
         }
     }
 
+    /// <summary>
+    /// Inhalt der Einstellungsdatei. Die Schalter sind nullbar, damit eine ältere Datei ohne sie die
+    /// Vorgabe bekommt statt eines stillen „aus".
+    /// </summary>
     private sealed record UiSettings
     {
         public bool Dark { get; init; }

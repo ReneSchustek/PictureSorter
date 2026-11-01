@@ -81,6 +81,7 @@ public sealed class GestaltungslinieGuardTests
     [Fact]
     public void CornerRadiiStaySmall()
     {
+        // Der größte Wert aus Themes/Tokens.xaml: 4 an Bedienelementen, 6 an Karten und Abzeichen.
         const int maximum = 6;
         List<string> findings = [];
 

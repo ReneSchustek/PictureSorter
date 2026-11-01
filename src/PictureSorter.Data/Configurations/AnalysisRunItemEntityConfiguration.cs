@@ -9,7 +9,11 @@ namespace PictureSorter.Data.Configurations;
 /// </summary>
 internal sealed class AnalysisRunItemEntityConfiguration : IEntityTypeConfiguration<AnalysisRunItemEntity>
 {
+    // Pfade können lang werden; die Grenze verhindert unbegrenzte Werte, ohne realistische
+    // Windows-Pfade abzuschneiden. Teil des Schemas: Eine Änderung braucht eine Migration.
     private const int PathMaxLength = 1024;
+    // Eine Signatur ist ein SHA-256 in Hexadezimalschreibweise, also 64 Zeichen. Der Rest ist Reserve,
+    // weil eine Änderung des Schemas eine Migration braucht.
     private const int SignatureMaxLength = 128;
 
     /// <inheritdoc />

@@ -9,7 +9,10 @@ namespace PictureSorter.Data.Configurations;
 /// </summary>
 internal sealed class SortRunEntityConfiguration : IEntityTypeConfiguration<SortRunEntity>
 {
+    // Pfade können lang werden; die Grenze verhindert unbegrenzte Werte, ohne realistische
+    // Windows-Pfade abzuschneiden. Teil des Schemas: Eine Änderung braucht eine Migration.
     private const int PathMaxLength = 1024;
+    // Ein Kategoriename steht als Ordnername im Dateisystem und ist weit kürzer als diese Grenze.
     private const int CategoryMaxLength = 256;
 
     /// <inheritdoc />

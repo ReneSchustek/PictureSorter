@@ -32,7 +32,7 @@ public sealed class OllamaOptions
     /// <summary>
     /// Vision-Modell für die Bildbeschreibung/-prüfung.
     ///
-    /// An 40 eigenen Aufnahmen gegen das vorherige llava gemessen: Es beschreibt
+    /// An 40 eigenen Aufnahmen gegen llava gemessen: Es beschreibt
     /// nicht nur genauer, sondern auch schneller (5,0 statt 8,7 Sekunden je Foto),
     /// und es liest Text im Bild: Aus „ein bedrucktes Blatt, offenbar auf Deutsch"
     /// wurde „eine Rezeptseite: Fisch-Kebabs mit Auberginenpüree". Genau davon lebt

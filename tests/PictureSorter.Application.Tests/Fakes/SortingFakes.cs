@@ -468,6 +468,7 @@ internal sealed class FakeFileFingerprinter(string? fingerprint = null) : IFileF
         Task.FromResult(fingerprint);
 }
 
+/// <summary>Gedächtnis im Speicher. Nicht versiegelt, weil Fehlerfälle einzelne Aufrufe überschreiben.</summary>
 internal class FakeSortMemory : ISortMemory
 {
     private readonly Lock _gate = new();

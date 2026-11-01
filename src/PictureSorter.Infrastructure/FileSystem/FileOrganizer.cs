@@ -15,6 +15,8 @@ namespace PictureSorter.Infrastructure.FileSystem;
 /// </summary>
 public sealed class FileOrganizer : IFileOrganizer
 {
+    // So viele gleichnamige Dateien in einem Ordner sind kein Zufall mehr, sondern ein Fehler. Die Grenze
+    // verhindert, dass die Suche nach einem freien Namen endlos läuft.
     private const int MaxCollisionAttempts = 1000;
 
     private readonly ILogger<FileOrganizer> _logger;

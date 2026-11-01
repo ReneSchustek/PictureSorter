@@ -8,6 +8,7 @@ namespace PictureSorter.Infrastructure.Tests.Caching;
 /// </summary>
 public sealed class FileFingerprinterTests : IDisposable
 {
+    // Die Länge des Abschnitts, den der Inhaltsschlüssel an Anfang und Ende liest.
     private const int Sample = 64 * 1024;
 
     private readonly string _root;

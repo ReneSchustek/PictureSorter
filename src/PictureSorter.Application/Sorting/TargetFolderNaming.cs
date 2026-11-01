@@ -154,8 +154,8 @@ public static class TargetFolderNaming
         // Namen, die leer sind oder nur aus Punkten bestehen ("." / ".."), zeigen auf
         // den Quell- bzw. Elternordner. Path.GetInvalidFileNameChars() enthält den
         // Punkt nicht, daher überlebt so ein Name die Bereinigung und würde Fotos aus
-        // dem gewählten Ordner heraus (in den Elternordner) verschieben. Hier wird
-        // deshalb auf einen neutralen Namen ausgewichen.
+        // dem gewählten Ordner heraus (in den Elternordner) verschieben. Deshalb greift
+        // ein neutraler Name.
         if (result.Length == 0)
         {
             return "Sonstige";

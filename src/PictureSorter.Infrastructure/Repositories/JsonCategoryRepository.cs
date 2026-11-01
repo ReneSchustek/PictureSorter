@@ -109,14 +109,20 @@ public sealed class JsonCategoryRepository : ICategoryRepository
             example.IsPositive,
             new EmbeddingDto(example.Embedding.Model, [.. example.Embedding.Values])))]);
 
+    /// <summary>
+    /// Dateiformat einer Kategorie. Eigene Typen statt der Fachobjekte, damit ein Umbau der Domäne das
+    /// Format der gespeicherten Datei nicht still mitändert.
+    /// </summary>
     private sealed record CategoryDto(
         string Name,
         string Description,
         CategoryKind Kind,
         IReadOnlyList<ExampleDto> Examples);
 
+    /// <summary>Dateiformat eines Beispielbilds mit seinem Vektor.</summary>
     private sealed record ExampleDto(string PhotoPath, bool IsPositive, EmbeddingDto Embedding);
 
+    /// <summary>Dateiformat eines Vektors. Der Modellname entscheidet, womit er vergleichbar ist.</summary>
     private sealed record EmbeddingDto(string Model, IReadOnlyList<float> Values);
 }
 

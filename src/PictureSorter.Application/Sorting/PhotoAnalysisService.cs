@@ -20,8 +20,8 @@ namespace PictureSorter.Application.Sorting;
 /// abzubrechen.
 ///
 /// Was mit den Vorschlägen geschieht, entscheidet die Nutzerin; angewendet werden sie
-/// von <see cref="ProposalApplyService"/>. Diese Trennung ist Absicht: Hier wird
-/// gelesen und gefragt, dort werden Dateien bewegt.
+/// von <see cref="ProposalApplyService"/>. Die Trennung ist Absicht: Dieser Dienst liest und
+/// fragt, jener bewegt Dateien.
 /// </summary>
 public sealed class PhotoAnalysisService : IPhotoAnalyzer
 {
@@ -599,8 +599,10 @@ public sealed class PhotoAnalysisService : IPhotoAnalyzer
             Method = ClassificationMethod.CaptureDate,
         };
 
-    // Die Zählstände eines Datums-Laufs. Als eigener Typ, damit die Schleife nicht
-    // lose Zähler mitschleppt. Sequenziell durchlaufen, deshalb ohne Interlocked.
+    /// <summary>
+    /// Die Zählstände eines Datums-Laufs. Als eigener Typ, damit die Schleife nicht
+    /// lose Zähler mitschleppt. Sequenziell durchlaufen, deshalb ohne Interlocked.
+    /// </summary>
     private sealed class DateSortTally
     {
         public int Processed { get; set; }

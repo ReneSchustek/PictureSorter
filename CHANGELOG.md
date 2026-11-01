@@ -6,6 +6,8 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
+## [1.12.0] - 2026-11-01
+
 ### Behoben
 
 - **Eine leere Antwort des Bildmodells gilt nicht mehr als Ergebnis.** Sie führte still zu einem

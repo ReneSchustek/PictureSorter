@@ -21,8 +21,8 @@ internal static partial class ShellIconRefresher
     // dem Desktop und in der Taskleiste nicht, die auf sie zeigen.
     private const int AssociationChanged = 0x0800_0000;
 
-    // SHCNF_IDLIST: Die beiden Element-Parameter sind Item-ID-Listen. Hier wird keine
-    // übergeben, denn die Meldung gilt dem ganzen System, nicht einem einzelnen Pfad.
+    // SHCNF_IDLIST: Die beiden Element-Parameter sind Item-ID-Listen. Übergeben wird keine,
+    // denn die Meldung gilt dem ganzen System, nicht einem einzelnen Pfad.
     private const uint IdList = 0x0000_0000;
 
     /// <summary>

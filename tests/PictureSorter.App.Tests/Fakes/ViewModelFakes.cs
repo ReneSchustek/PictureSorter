@@ -181,11 +181,13 @@ internal sealed class FakeRenameUndoService : IRenameUndoService
     }
 }
 
+/// <summary>Meldet einen fest vorgegebenen ähnlich benannten Ordner.</summary>
 internal sealed class FakeFolderLookup(string? lookalike = null) : IFolderLookup
 {
     public string? FindLookalike(string requestedPath) => lookalike;
 }
 
+/// <summary>Wählt ohne Dialog einen vorgegebenen Ordner und vorgegebene Bilder.</summary>
 internal sealed class FakeFolderPicker(string? folder, IReadOnlyList<string>? images = null) : IFolderPicker
 {
     public Task<string?> PickFolderAsync(CancellationToken cancellationToken) => Task.FromResult(folder);

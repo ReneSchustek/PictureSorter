@@ -27,6 +27,9 @@ internal sealed class UpdateService : IUpdateCoordinator
     /// </summary>
     public const string DownloadClientName = "updater-download";
 
+    // Ein Paket hat rund 100 MB. Fünf Minuten reichen damit ab etwa 3 MBit/s; wer langsamer angebunden
+    // ist, greift zum Setup. Unbegrenzt darf der Download nicht laufen, sonst hinge er bei einem
+    // Verbindungsabbruch ohne Meldung.
     private static readonly TimeSpan DownloadTimeout = TimeSpan.FromMinutes(5);
 
     // Obergrenze der Weiterleitungen. GitHub leitet den Asset-Download i. d. R. einmal
