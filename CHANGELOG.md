@@ -6,6 +6,20 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
+### Behoben
+
+- **Die geführte Einrichtung der lokalen KI brach beim ersten Modell ab.** Das Fenster
+  meldete, die Benennung „kann" sei nicht erkannt worden, und es wurde kein Modell
+  geladen. Die Einrichtung läuft jetzt durch.
+- **Die Umlaute im Fenster der Einrichtung sind wieder lesbar.**
+- **Die Einrichtung meldet keinen Erfolg mehr, wenn etwas schiefging.** Scheitert ein
+  Download, nennt sie das betroffene Modell und versucht das nächste trotzdem. Sie wartet
+  außerdem, bis der Ollama-Dienst wirklich antwortet, statt fest ein paar Sekunden.
+- **Die Einrichtung lädt immer genau die Modelle, die das Programm erwartet.** Die Namen
+  stehen nur noch an einer Stelle.
+- **Das Fenster der Einrichtung schließt nach der Bestätigung tatsächlich.** Bisher blieb
+  danach eine Eingabezeile stehen.
+
 ## [1.11.3] - 2026-08-26
 
 ### Geändert

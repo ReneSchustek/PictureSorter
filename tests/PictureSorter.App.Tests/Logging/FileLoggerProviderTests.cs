@@ -103,7 +103,9 @@ public sealed class FileLoggerProviderTests : IDisposable
         _ = Directory.CreateDirectory(_directory);
         string old = Path.Combine(_directory, "picturesorter-2020-01-01.log");
         File.WriteAllText(old, "uralt");
-        File.SetLastWriteTime(old, DateTime.Now.AddDays(-90));
+        // Die Dateizeit hängt an derselben festen Uhr wie die Prüfung, sonst läge sie
+        // irgendwann nach dem Stichtag der Uhr und der Test fiele nur wegen des Kalenders.
+        File.SetLastWriteTime(old, TestClock.Fixed.UtcNow.LocalDateTime.AddDays(-90));
 
         string recent = Path.Combine(_directory, "picturesorter-2026-07-01.log");
         File.WriteAllText(recent, "frisch");
@@ -184,7 +186,7 @@ public sealed class FileLoggerProviderTests : IDisposable
         _ = Directory.CreateDirectory(_directory);
         string alt = Path.Combine(_directory, "picturesorter-2020-01-02.log");
         File.WriteAllText(alt, "uralt");
-        File.SetLastWriteTime(alt, DateTime.Now.AddDays(-90));
+        File.SetLastWriteTime(alt, TestClock.Fixed.UtcNow.LocalDateTime.AddDays(-90));
 
         using FileStream sperre = new(alt, FileMode.Open, FileAccess.Read, FileShare.None);
         using FileLoggerProvider provider = new(_directory, TestClock.Fixed, retentionDays: 30);

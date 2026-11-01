@@ -218,6 +218,12 @@ meldet den Zustand auf der Startseite und unter *Einstellungen → Lokale KI*.
 | „nicht eingerichtet" | Ollama antwortet nicht auf `127.0.0.1:11434` | Ollama installieren/starten, dann *Status prüfen* |
 | „Modelle fehlen" | Ollama läuft, die benannten Modelle fehlen | *Jetzt einrichten* lädt sie nach (dauert beim ersten Mal) |
 
+*Jetzt einrichten* startet `Tools\install-ollama.ps1` in einem eigenen Fenster. Das Skript
+nimmt die Modellnamen aus der `appsettings.json` und meldet am Ende in Rot, was nicht
+geklappt hat; ein Fehlschlag steht dort auch als Rückgabewert 1. Wer die Datei bearbeitet,
+muss sie als **UTF-8 mit BOM** speichern: Windows PowerShell liest sie sonst als
+Windows-1252, und die Meldungen zerfallen.
+
 Fällt die KI **mitten im Lauf** aus, wird das betroffene Foto übersprungen und der
 Lauf fortgesetzt. Das Foto wird dabei bewusst nicht als „passt nicht" gemerkt; der
 Ausfall ist kein Urteil über das Bild, und der nächste Lauf versucht es erneut.

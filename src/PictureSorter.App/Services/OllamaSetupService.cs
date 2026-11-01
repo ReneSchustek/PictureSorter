@@ -51,9 +51,8 @@ internal sealed class OllamaSetupService
         ProcessStartInfo startInfo = new()
         {
             FileName = "powershell.exe",
-            // -NoExit lässt das Fenster nach Abschluss offen, damit der Nutzer das
-            // Ergebnis lesen kann. UseShellExecute erlaubt UAC-Abfragen im Skript.
-            Arguments = $"-NoExit -ExecutionPolicy Bypass -File \"{script}\"",
+            // UseShellExecute erlaubt UAC-Abfragen im Skript.
+            Arguments = BuildArguments(script),
             UseShellExecute = true,
         };
 
@@ -68,6 +67,18 @@ internal sealed class OllamaSetupService
             throw new InvalidOperationException("Die Einrichtung konnte nicht gestartet werden.", ex);
         }
     }
+
+    /// <summary>
+    /// Baut die Befehlszeile für das Skript. Das Fenster hält das Skript selbst offen, bis
+    /// der Nutzer das Ergebnis gelesen hat. Ein zusätzliches -NoExit ließe danach eine
+    /// Eingabezeile stehen, obwohl die letzte Meldung das Schließen des Fensters ankündigt.
+    /// -NoProfile, weil ein Fehler im PowerShell-Profil des Nutzers die Einrichtung nichts
+    /// angeht.
+    /// </summary>
+    /// <param name="script">Der Pfad zum Skript.</param>
+    /// <returns>Die Argumente für powershell.exe.</returns>
+    internal static string BuildArguments(string script) =>
+        $"-NoProfile -ExecutionPolicy Bypass -File \"{script}\"";
 }
 
 /// <summary>
