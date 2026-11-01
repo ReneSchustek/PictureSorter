@@ -51,7 +51,7 @@ public sealed class FileNameRepairIntegrationTests : IAsyncLifetime
             .ConfigureAwait(false);
 
         FileSystemPhotoSource source = new(
-            new NoMetadataReader(),
+            new NoMetadataReader(), new PictureSorter.Infrastructure.Caching.FileFingerprinter(),
             Options.Create(new PhotoSourceOptions()),
             NullLogger<FileSystemPhotoSource>.Instance);
         PhotoFileEditor editor = new(NullLogger<PhotoFileEditor>.Instance);

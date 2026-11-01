@@ -85,6 +85,7 @@ public sealed class OllamaClient : IOllamaClient
             prompt,
             imagesBase64,
             Stream: false,
+            Think: false,
             _options.KeepAlive,
             new GenerateOptions(_options.MaxResponseTokens));
         GenerateResponse response = await PostAsync<GenerateRequest, GenerateResponse>(
@@ -93,11 +94,13 @@ public sealed class OllamaClient : IOllamaClient
             cancellationToken).ConfigureAwait(false);
 
         // Ollama meldet Fehler auch mit Statuscode 200 und einem „error"-Feld statt
-        // eines „response"-Feldes. Ein leerer Text wäre für den Vision-Klassifikator
-        // nicht auswertbar und würde dort still zu „passt nicht", ein Fehlurteil,
-        // das nirgends als Fehler auffiele.
-        return response.Response
-            ?? throw new AiUnavailableException("Ollama lieferte keine Antwort auf die Bildprüfung.");
+        // eines „response"-Feldes, und kleine Modelle antworten manchmal gar nicht
+        // (moondream bei einem Drittel der Bilder). Ein leerer Text würde beim
+        // Vision-Klassifikator still zu „passt nicht" und beim Vergleich zu einem Vektor,
+        // der nichts über das Bild sagt. Beides fiele nirgends als Fehler auf.
+        return string.IsNullOrWhiteSpace(response.Response)
+            ? throw new AiUnavailableException("Ollama lieferte keine Antwort auf die Bildprüfung.")
+            : response.Response;
     }
 
     /// <inheritdoc />
@@ -135,6 +138,14 @@ public sealed class OllamaClient : IOllamaClient
             {
                 return await send().ConfigureAwait(false);
             }
+            catch (TaskCanceledException ex) when (!cancellationToken.IsCancellationRequested)
+            {
+                // Das Zeitlimit ist abgelaufen. Eine Wiederholung würde dieselbe Rechenzeit
+                // noch einmal kosten und am selben Limit scheitern. Auf einem schwachen
+                // Rechner ging so der größte Teil der Rechenzeit verloren.
+                OllamaLog.RequestFailed(_logger, path, ex);
+                throw new AiUnavailableException("Ollama hat nicht rechtzeitig geantwortet.", ex);
+            }
             catch (Exception ex) when (IsTransient(ex) && !cancellationToken.IsCancellationRequested)
             {
                 if (attempt >= MaxAttempts)
@@ -157,12 +168,11 @@ public sealed class OllamaClient : IOllamaClient
         }
     }
 
-    // Vorübergehend sind Verbindungs- und Zeitfehler sowie Serverfehler (5xx) und
+    // Vorübergehend sind Verbindungsfehler sowie Serverfehler (5xx) und
     // die Drosselung (429). Alle übrigen 4xx sind Fehler der Anfrage selbst und
     // damit dauerhaft.
     private static bool IsTransient(Exception exception) => exception switch
     {
-        TaskCanceledException => true,
         HttpRequestException { StatusCode: null } => true,
         HttpRequestException { StatusCode: HttpStatusCode.TooManyRequests or HttpStatusCode.RequestTimeout } => true,
         HttpRequestException { StatusCode: HttpStatusCode status } => (int)status >= 500,
@@ -226,6 +236,10 @@ public sealed class OllamaClient : IOllamaClient
         [property: JsonPropertyName("prompt")] string Prompt,
         [property: JsonPropertyName("images")] IReadOnlyList<string> Images,
         [property: JsonPropertyName("stream")] bool Stream,
+
+        // Modelle, die vor der Antwort nachdenken, verbrauchen sonst das ganze Token-Limit
+        // dafür und liefern einen leeren Text. Gemessen an gemma4:e2b und qwen3-vl:4b.
+        [property: JsonPropertyName("think")] bool Think,
         [property: JsonPropertyName("keep_alive")] string KeepAlive,
         [property: JsonPropertyName("options")] GenerateOptions Options);
 

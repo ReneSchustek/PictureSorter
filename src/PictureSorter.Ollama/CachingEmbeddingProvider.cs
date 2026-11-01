@@ -11,13 +11,15 @@ namespace PictureSorter.Ollama;
 /// <summary>
 /// Legt sich um einen echten <see cref="IEmbeddingProvider"/> und bedient
 /// gleiche, unveränderte Fotos aus dem <see cref="IEmbeddingCache"/>. Der
-/// Schlüssel umfasst Pfad, Dateigröße, Änderungszeit sowie die verwendeten
-/// Modelle – ändert sich davon etwas, wird neu berechnet.
+/// Schlüssel umfasst den Bildinhalt und die verwendeten Modelle, nicht den Ablageort:
+/// Ein einsortiertes Foto oder eine Kopie wird nicht noch einmal analysiert. Einträge
+/// älterer Fassungen hängen am Pfad und werden beim ersten Treffer übernommen.
 /// </summary>
 public sealed class CachingEmbeddingProvider : IEmbeddingProvider
 {
     private readonly IEmbeddingProvider _inner;
     private readonly IEmbeddingCache _cache;
+    private readonly IFileFingerprinter _fingerprinter;
     private readonly OllamaOptions _options;
     private readonly ILogger<CachingEmbeddingProvider> _logger;
 
@@ -26,21 +28,25 @@ public sealed class CachingEmbeddingProvider : IEmbeddingProvider
     /// </summary>
     /// <param name="inner">Der echte Embedding-Provider.</param>
     /// <param name="cache">Der Embedding-Cache.</param>
+    /// <param name="fingerprinter">Erkennt Fotos, die keinen Inhaltsschlüssel mitbringen.</param>
     /// <param name="options">Ollama-Optionen (Modellnamen für den Schlüssel).</param>
     /// <param name="logger">Der Logger.</param>
     public CachingEmbeddingProvider(
         IEmbeddingProvider inner,
         IEmbeddingCache cache,
+        IFileFingerprinter fingerprinter,
         IOptions<OllamaOptions> options,
         ILogger<CachingEmbeddingProvider> logger)
     {
         ArgumentNullException.ThrowIfNull(inner);
         ArgumentNullException.ThrowIfNull(cache);
+        ArgumentNullException.ThrowIfNull(fingerprinter);
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(logger);
 
         _inner = inner;
         _cache = cache;
+        _fingerprinter = fingerprinter;
         _options = options.Value;
         _logger = logger;
     }
@@ -50,12 +56,30 @@ public sealed class CachingEmbeddingProvider : IEmbeddingProvider
     {
         ArgumentNullException.ThrowIfNull(photo);
 
-        string key = BuildKey(photo);
+        string? fingerprint = photo.ContentFingerprint
+            ?? await _fingerprinter.ComputeAsync(photo.FullPath, cancellationToken).ConfigureAwait(false);
+        string legacyKey = BuildLegacyKey(photo);
+        string key = fingerprint is null ? legacyKey : BuildContentKey(fingerprint);
+
         ImageEmbedding? cached = await _cache.GetAsync(key, cancellationToken).ConfigureAwait(false);
         if (cached is not null)
         {
             CachingEmbeddingLog.CacheHit(_logger, photo.FileName);
             return cached;
+        }
+
+        // Analysen älterer Fassungen sind teuer erkauft und bleiben gültig, solange das
+        // Foto noch dort liegt, wo sie entstanden. Unter dem neuen Schlüssel überstehen sie
+        // danach auch jedes Verschieben.
+        if (fingerprint is not null)
+        {
+            ImageEmbedding? legacy = await _cache.GetAsync(legacyKey, cancellationToken).ConfigureAwait(false);
+            if (legacy is not null)
+            {
+                CachingEmbeddingLog.CacheHit(_logger, photo.FileName);
+                await _cache.SetAsync(key, legacy, cancellationToken).ConfigureAwait(false);
+                return legacy;
+            }
         }
 
         ImageEmbedding embedding = await _inner.CreateEmbeddingAsync(photo, cancellationToken).ConfigureAwait(false);
@@ -76,10 +100,22 @@ public sealed class CachingEmbeddingProvider : IEmbeddingProvider
     //    Beschreibungen.
     private const int EmbeddingRecipe = 3;
 
-    // Schlüssel = Hash über Pfad, Größe, Änderungszeit, Modelle und Erzeugungsart.
-    // Ändert sich die Datei, ein Modell oder die Erzeugung, entsteht ein neuer
-    // Schlüssel und es wird neu berechnet.
-    private string BuildKey(Photo photo)
+    // Schlüssel = Hash über Bildinhalt, Modelle und Erzeugungsart. Ändert sich das Bild,
+    // ein Modell oder die Erzeugung, entsteht ein neuer Schlüssel und es wird neu berechnet.
+    private string BuildContentKey(string fingerprint)
+    {
+        string raw = string.Join(
+            '|',
+            fingerprint,
+            _options.VisionModel,
+            _options.EmbeddingModel,
+            EmbeddingRecipe);
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(raw)));
+    }
+
+    // Schlüssel älterer Fassungen: Hash über Pfad, Größe, Änderungszeit, Modelle und
+    // Erzeugungsart. Darf sich nicht ändern, sonst sind die alten Einträge verloren.
+    private string BuildLegacyKey(Photo photo)
     {
         long lastWriteTicks = 0;
         try

@@ -98,15 +98,28 @@ public sealed record Photo
     }
 
     /// <summary>
-    /// Berechnet eine stabile Signatur des Fotos aus Pfad, Größe und Aufnahmezeit.
-    /// Sie identifiziert das Foto im Sortier-Gedächtnis: Bleibt die Datei
-    /// unverändert, bleibt die Signatur gleich und eine getroffene Entscheidung
-    /// gilt weiter; ändert sich die Datei, entsteht eine neue Signatur und das Foto
-    /// wird erneut bewertet. Bewusst ohne Dateisystem-Zugriff, damit die Domäne
-    /// frei von Ein-/Ausgabe bleibt.
+    /// Der Inhaltsschlüssel der Datei, sofern die Quelle ihn ermitteln konnte. Er macht ein
+    /// Foto unabhängig von seinem Ablageort wiedererkennbar.
+    /// </summary>
+    public string? ContentFingerprint { get; init; }
+
+    /// <summary>
+    /// Liefert die stabile Signatur des Fotos. Sie identifiziert es im Sortier-Gedächtnis
+    /// und im Protokoll eines Laufs: Bleibt der Inhalt gleich, bleibt die Signatur gleich,
+    /// auch wenn das Foto den Ordner wechselt. Ändert sich die Datei, entsteht eine neue
+    /// Signatur und das Foto wird erneut bewertet. Fehlt der Inhaltsschlüssel, gilt die
+    /// Signatur nach <see cref="ComputeLegacySignature"/>.
+    /// </summary>
+    /// <returns>Die hexadezimale Signatur.</returns>
+    public string ComputeSignature() => ContentFingerprint ?? ComputeLegacySignature();
+
+    /// <summary>
+    /// Berechnet die frühere Signatur aus Pfad, Größe und Aufnahmezeit. Unter ihr liegen die
+    /// Urteile älterer Fassungen; sie wird nur noch gebraucht, um diese wiederzufinden.
+    /// Bewusst ohne Dateisystem-Zugriff, damit die Domäne frei von Ein-/Ausgabe bleibt.
     /// </summary>
     /// <returns>Die hexadezimale Signatur (SHA-256).</returns>
-    public string ComputeSignature()
+    public string ComputeLegacySignature()
     {
         string raw = string.Create(
             CultureInfo.InvariantCulture,

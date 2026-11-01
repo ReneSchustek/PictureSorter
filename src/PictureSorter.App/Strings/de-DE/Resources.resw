@@ -310,6 +310,15 @@
   <data name="SortPage_CopyInsteadOfMoveCheck.Content" xml:space="preserve">
     <value>Fotos kopieren statt verschieben (Originale bleiben liegen)</value>
   </data>
+  <data name="SortPage_TargetRootBox.Header" xml:space="preserve">
+    <value>Zielordner anlegen unter (leer: im Quellordner)</value>
+  </data>
+  <data name="SortPage_TargetRootBox.PlaceholderText" xml:space="preserve">
+    <value>z. B. D:\Archiv</value>
+  </data>
+  <data name="SortPage_PickTargetRoot.Content" xml:space="preserve">
+    <value>Durchsuchen</value>
+  </data>
   <data name="SortPage_Step2Heading.Text" xml:space="preserve">
     <value>2. Kategorie beschreiben</value>
   </data>

@@ -8,6 +8,7 @@ namespace PictureSorter.App.Tests.Services;
 /// keine Oberfläche: Ohne diese Vermerke erführe die Nutzerin nie, ob das Update
 /// gelungen ist. Und eine halb ersetzte Installation wäre schlimmer als gar keine.
 /// </summary>
+[Collection(UpdateTestGroups.WorkingDirectory)]
 public sealed class UpdateInstallerOutcomeTests : IDisposable
 {
     private readonly string _root =

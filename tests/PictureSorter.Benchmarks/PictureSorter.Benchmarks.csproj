@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Messprojekt für die Geschwindigkeit. Kein Testprojekt: Es läuft nicht in "dotnet test",
+    weil eine Messung Minuten dauert und eine ruhige Maschine braucht. Gebaut wird es trotzdem
+    mit der Solution, damit es nicht unbemerkt veraltet.
+  -->
+  <PropertyGroup>
+    <!-- Folgt dem Windows-SDK-Ziel der Infrastructure-Schicht. -->
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>false</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" Version="0.15.8" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\PictureSorter.Application\PictureSorter.Application.csproj" />
+    <ProjectReference Include="..\..\src\PictureSorter.Infrastructure\PictureSorter.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

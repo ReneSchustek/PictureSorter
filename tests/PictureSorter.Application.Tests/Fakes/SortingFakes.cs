@@ -459,6 +459,15 @@ internal sealed class FakeAnalysisJournal : IAnalysisJournal
 /// Verhalten, das es nicht gibt: Die Liste geriete unter gleichzeitigem Zugriff
 /// durcheinander, und der Test schlüge dort fehl, wo der Betrieb tadellos läuft.
 /// </summary>
+/// <summary>
+/// Inhaltsschlüssel auf Zuruf: <see langword="null"/> entspricht einer nicht lesbaren Datei.
+/// </summary>
+internal sealed class FakeFileFingerprinter(string? fingerprint = null) : IFileFingerprinter
+{
+    public Task<string?> ComputeAsync(string path, CancellationToken cancellationToken) =>
+        Task.FromResult(fingerprint);
+}
+
 internal class FakeSortMemory : ISortMemory
 {
     private readonly Lock _gate = new();

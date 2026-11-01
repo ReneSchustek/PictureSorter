@@ -1,6 +1,7 @@
 using System.Globalization;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using PictureSorter.Infrastructure.Caching;
 using PictureSorter.Core.Entities;
 using PictureSorter.Core.Interfaces;
 using PictureSorter.Core.ValueObjects;
@@ -21,7 +22,24 @@ public sealed class FileSystemPhotoSourceTests : IDisposable
     {
         _root = Path.Combine(Path.GetTempPath(), "PictureSorterTests", Guid.NewGuid().ToString("N"));
         _ = Directory.CreateDirectory(_root);
-        _source = new FileSystemPhotoSource(new NullMetadataReader(), Options.Create(new PhotoSourceOptions()), NullLogger<FileSystemPhotoSource>.Instance);
+        _source = new FileSystemPhotoSource(new NullMetadataReader(), new PictureSorter.Infrastructure.Caching.FileFingerprinter(), Options.Create(new PhotoSourceOptions()), NullLogger<FileSystemPhotoSource>.Instance);
+    }
+
+    [Fact]
+    public async Task GetPhotosAsync_AfterAMove_RecognisesThePhotoByItsContent()
+    {
+        // Das ist die eigentliche Zusage: Ein einsortiertes Foto bleibt dasselbe Foto. Fehlt
+        // der Inhaltsschlüssel an dieser Stelle, wäre jede Analyse nach dem Verschieben
+        // wieder verloren.
+        Write("a.jpg");
+        Photo before = Assert.Single(await _source.GetPhotosAsync(_root, includeSubfolders: false, skip: 0, maxCount: null, progress: null, CancellationToken.None));
+
+        string folder = Directory.CreateDirectory(Path.Combine(_root, "Urlaub")).FullName;
+        File.Move(before.FullPath, Path.Combine(folder, "a.jpg"));
+        Photo after = Assert.Single(await _source.GetPhotosAsync(folder, includeSubfolders: false, skip: 0, maxCount: null, progress: null, CancellationToken.None));
+
+        Assert.NotNull(before.ContentFingerprint);
+        Assert.Equal(before.ComputeSignature(), after.ComputeSignature());
     }
 
     [Fact]
@@ -100,7 +118,7 @@ public sealed class FileSystemPhotoSourceTests : IDisposable
         Write("b.jpg");
         Write("c.jpg");
         CountingMetadataReader reader = new();
-        FileSystemPhotoSource source = new(reader, Options.Create(new PhotoSourceOptions()), NullLogger<FileSystemPhotoSource>.Instance);
+        FileSystemPhotoSource source = new(reader, new PictureSorter.Infrastructure.Caching.FileFingerprinter(), Options.Create(new PhotoSourceOptions()), NullLogger<FileSystemPhotoSource>.Instance);
 
         IReadOnlyList<Photo> photos = await source.GetPhotosAsync(_root, includeSubfolders: false, skip: 0, maxCount: 2, progress: null, CancellationToken.None);
 
@@ -139,6 +157,7 @@ public sealed class FileSystemPhotoSourceTests : IDisposable
         Write("b.jpg");
         FileSystemPhotoSource source = new(
             new DeletingMetadataReader(Path.Combine(_root, "verschwindet.jpg")),
+            new PictureSorter.Infrastructure.Caching.FileFingerprinter(),
             Options.Create(new PhotoSourceOptions()),
             NullLogger<FileSystemPhotoSource>.Instance);
 
@@ -186,6 +205,7 @@ public sealed class FileSystemPhotoSourceTests : IDisposable
         Write("b.jpg");
         FileSystemPhotoSource source = new(
             new DeletingMetadataReader(Path.Combine(_root, "verschwindet.jpg")),
+            new PictureSorter.Infrastructure.Caching.FileFingerprinter(),
             Options.Create(new PhotoSourceOptions()),
             NullLogger<FileSystemPhotoSource>.Instance);
         RecordingProgress reported = new();
@@ -213,7 +233,7 @@ public sealed class FileSystemPhotoSourceTests : IDisposable
 
         ConcurrencyTrackingMetadataReader reader = new();
         FileSystemPhotoSource source = new(
-            reader,
+            reader, new PictureSorter.Infrastructure.Caching.FileFingerprinter(),
             Options.Create(new PhotoSourceOptions { MaxParallelReads = 4 }),
             NullLogger<FileSystemPhotoSource>.Instance);
 
@@ -241,7 +261,7 @@ public sealed class FileSystemPhotoSourceTests : IDisposable
         ConcurrencyTrackingMetadataReader reader = new(
             path => TimeSpan.FromMilliseconds(80 - (int.Parse(Path.GetFileNameWithoutExtension(path)[4..], CultureInfo.InvariantCulture) * 10)));
         FileSystemPhotoSource source = new(
-            reader,
+            reader, new PictureSorter.Infrastructure.Caching.FileFingerprinter(),
             Options.Create(new PhotoSourceOptions { MaxParallelReads = 8 }),
             NullLogger<FileSystemPhotoSource>.Instance);
 
@@ -327,7 +347,7 @@ public sealed class FileSystemPhotoSourceTests : IDisposable
 
         CountingMetadataReader reader = new();
         FileSystemPhotoSource source = new(
-            reader,
+            reader, new PictureSorter.Infrastructure.Caching.FileFingerprinter(),
             Options.Create(new PhotoSourceOptions { MaxParallelReads = 2, PrefetchBuffer = 4 }),
             NullLogger<FileSystemPhotoSource>.Instance);
 

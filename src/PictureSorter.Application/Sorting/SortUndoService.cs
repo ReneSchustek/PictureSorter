@@ -20,6 +20,7 @@ public sealed class SortUndoService : ISortUndoService
     private readonly SortJournalGateway _journal;
     private readonly SortMemoryGateway _memory;
     private readonly IFileOrganizer _fileOrganizer;
+    private readonly IFileFingerprinter _fingerprinter;
     private readonly ILogger<SortUndoService> _logger;
 
     /// <summary>
@@ -28,21 +29,25 @@ public sealed class SortUndoService : ISortUndoService
     /// <param name="journal">Das Protokoll der Sortierläufe.</param>
     /// <param name="memory">Das Sortier-Gedächtnis.</param>
     /// <param name="fileOrganizer">Das Zurückholen der Dateien.</param>
+    /// <param name="fingerprinter">Erkennt das zurückgeholte Foto am Inhalt.</param>
     /// <param name="logger">Der Logger.</param>
     public SortUndoService(
         SortJournalGateway journal,
         SortMemoryGateway memory,
         IFileOrganizer fileOrganizer,
+        IFileFingerprinter fingerprinter,
         ILogger<SortUndoService> logger)
     {
         ArgumentNullException.ThrowIfNull(journal);
         ArgumentNullException.ThrowIfNull(memory);
         ArgumentNullException.ThrowIfNull(fileOrganizer);
+        ArgumentNullException.ThrowIfNull(fingerprinter);
         ArgumentNullException.ThrowIfNull(logger);
 
         _journal = journal;
         _memory = memory;
         _fileOrganizer = fileOrganizer;
+        _fingerprinter = fingerprinter;
         _logger = logger;
     }
 
@@ -101,6 +106,19 @@ public sealed class SortUndoService : ISortUndoService
             await _memory
                 .ForgetAsync(run.SourceFolder, item.FileSignature, run.CategoryName, cancellationToken)
                 .ConfigureAwait(false);
+
+            // Stammt der Lauf aus einer älteren Fassung, kann sein Urteil inzwischen unter
+            // dem Inhaltsschlüssel liegen.
+            string? fingerprint = await _fingerprinter
+                .ComputeAsync(item.SourcePath, cancellationToken)
+                .ConfigureAwait(false);
+            if (fingerprint is not null && !string.Equals(fingerprint, item.FileSignature, StringComparison.Ordinal))
+            {
+                await _memory
+                    .ForgetAsync(run.SourceFolder, fingerprint, run.CategoryName, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+
             restored++;
         }
 

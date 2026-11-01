@@ -110,6 +110,17 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     public partial bool CopyInsteadOfMove { get; set; }
 
     /// <summary>
+    /// Ort, unter dem die Zielordner entstehen; leer für „im Quellordner". Wie das Kopieren
+    /// gilt die Wahl für den einzelnen Lauf, weil sie am Fall hängt: Vom Handy-Abzug geht es
+    /// ins Archiv, im Archiv bleibt alles an seinem Platz.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanApply))]
+    [NotifyPropertyChangedFor(nameof(HasInvalidTargetRoot))]
+    [NotifyCanExecuteChangedFor(nameof(ApplyCommand))]
+    public partial string TargetRootFolder { get; set; } = string.Empty;
+
+    /// <summary>
     /// Erster Tag des Zeitraums, auf den die Analyse beschränkt wird; leer für „ohne
     /// Anfang". Fotos außerhalb kommen der KI gar nicht erst vor; bei einem Ordner mit
     /// tausend Bildern verkürzt das den Lauf um ein Vielfaches.
@@ -366,7 +377,20 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     /// <summary>
     /// Anwenden ist möglich, wenn mindestens ein Vorschlag ausgewählt ist.
     /// </summary>
-    public bool CanApply => State is SortState.Preview && Proposals.SelectedCount > 0;
+    public bool CanApply => State is SortState.Preview && Proposals.SelectedCount > 0 && !HasInvalidTargetRoot;
+
+    /// <summary>
+    /// <see langword="true"/>, solange die Vorschau offen steht.
+    /// </summary>
+    public bool IsPreview => State is SortState.Preview;
+
+    /// <summary>
+    /// <see langword="true"/>, wenn ein Zielort eingetragen ist, der kein vollständiger Pfad
+    /// ist. Ein relativer Pfad hinge vom Arbeitsverzeichnis des Programms ab, und die Fotos
+    /// landeten an einem Ort, den niemand gewählt hat.
+    /// </summary>
+    public bool HasInvalidTargetRoot =>
+        !string.IsNullOrWhiteSpace(TargetRootFolder) && !Path.IsPathFullyQualified(TargetRootFolder);
 
     /// <summary>
     /// Abbrechen ist möglich, solange ein Vorgang läuft.
@@ -411,6 +435,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     private void OnProposalSelectionChanged()
     {
         ApplyCommand.NotifyCanExecuteChanged();
+        PickTargetRootCommand.NotifyCanExecuteChanged();
         Wizard.NotifyStateChanged();
     }
 
@@ -444,6 +469,10 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         Wizard.NotifyStateChanged();
         ScheduleRecoverOfferRefresh();
     }
+
+    // Der Aktionsknopf des Assistenten wertet CanApply über den Delegaten aus und erfährt von
+    // der Änderung sonst nichts. Bei einem ungültigen Pfad bliebe er aktiv.
+    partial void OnTargetRootFolderChanged(string value) => Wizard.NotifyStateChanged();
 
     partial void OnCategoryNameChanged(string value)
     {
@@ -553,6 +582,18 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         if (!string.IsNullOrWhiteSpace(folder))
         {
             SourceFolder = folder;
+        }
+    }
+
+    // Nicht an CanApply gebunden: Steht ein ungültiger Pfad im Feld, ist dieser Knopf der Weg,
+    // ihn zu ersetzen.
+    [RelayCommand(CanExecute = nameof(IsPreview))]
+    private async Task PickTargetRootAsync()
+    {
+        string? folder = await _folderPicker.PickFolderAsync(CancellationToken.None).ConfigureAwait(true);
+        if (!string.IsNullOrWhiteSpace(folder))
+        {
+            TargetRootFolder = folder;
         }
     }
 
@@ -905,6 +946,12 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     {
         IReadOnlyList<SortProposal> selected = Proposals.Selected;
         IReadOnlyList<SortProposal> rejected = Proposals.Rejected;
+
+        if (!string.IsNullOrWhiteSpace(TargetRootFolder))
+        {
+            string targetRoot = TargetRootFolder.Trim();
+            selected = [.. selected.Select(proposal => TargetFolderNaming.WithTargetRoot(proposal, targetRoot))];
+        }
 
         FileOperationMode operation = CopyInsteadOfMove
             ? FileOperationMode.Copy

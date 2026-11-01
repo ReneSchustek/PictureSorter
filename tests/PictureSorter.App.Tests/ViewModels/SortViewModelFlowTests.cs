@@ -47,6 +47,36 @@ public sealed class SortViewModelFlowTests : IDisposable
     }
 
     [Fact]
+    public async Task Wizard_WithARelativeTargetRoot_BlocksTheSortButton()
+    {
+        // Der große Knopf der geführten Ansicht erfährt nur über eine Benachrichtigung von der
+        // Eingabe. Fehlt sie, bleibt er aktiv, und die Fotos landeten relativ zum Arbeitsordner.
+        FakePhotoSorter sorter = new(CreateProposals(2));
+        using SortViewModel sut = CreateSut(sorter);
+        sut.Wizard.IsGuided = true;
+        sut.SourceFolder = SourceFolder;
+        await sut.Wizard.PrimaryActionCommand.ExecuteAsync(parameter: null);
+        sut.CategoryName = "Familie";
+        await sut.Wizard.PrimaryActionCommand.ExecuteAsync(parameter: null);
+        await sut.SuggestPositivesCommand.ExecuteAsync(parameter: null);
+        await sut.Wizard.PrimaryActionCommand.ExecuteAsync(parameter: null);
+        await sut.Wizard.PrimaryActionCommand.ExecuteAsync(parameter: null);
+        await sut.Wizard.PrimaryActionCommand.ExecuteAsync(parameter: null);
+        Assert.True(sut.Wizard.IsStep6);
+        int notifications = 0;
+        sut.Wizard.PrimaryActionCommand.CanExecuteChanged += (_, _) => notifications++;
+
+        sut.TargetRootFolder = "Archiv";
+
+        Assert.True(notifications > 0);
+        Assert.False(sut.Wizard.PrimaryActionCommand.CanExecute(parameter: null));
+
+        sut.TargetRootFolder = @"D:\Archiv";
+
+        Assert.True(sut.Wizard.PrimaryActionCommand.CanExecute(parameter: null));
+    }
+
+    [Fact]
     public async Task Wizard_RunsAllSixStepsAndSortsAtTheEnd()
     {
         FakePhotoSorter sorter = new(CreateProposals(2));

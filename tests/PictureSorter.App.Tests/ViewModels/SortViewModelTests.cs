@@ -76,6 +76,60 @@ public sealed class SortViewModelTests
     }
 
     [Fact]
+    public async Task Apply_WithoutATargetRoot_KeepsTheFoldersInTheSource()
+    {
+        FakePhotoSorter sorter = new(CreateProposals(1));
+        using SortViewModel sut = CreateSut(sorter);
+        await AnalyzeAsync(sut);
+        string expected = sut.Proposals.Selected[0].TargetFolderPath;
+
+        await sut.ApplyCommand.ExecuteAsync(parameter: null);
+
+        Assert.Equal(expected, Assert.Single(sorter.Applied).TargetFolderPath);
+    }
+
+    [Fact]
+    public async Task Apply_WithATargetRoot_PlacesTheFoldersThere()
+    {
+        FakePhotoSorter sorter = new(CreateProposals(1));
+        using SortViewModel sut = CreateSut(sorter);
+        await AnalyzeAsync(sut);
+        string folderName = Path.GetFileName(sut.Proposals.Selected[0].TargetFolderPath);
+
+        sut.TargetRootFolder = @"D:\Archiv";
+        await sut.ApplyCommand.ExecuteAsync(parameter: null);
+
+        Assert.Equal(Path.Combine(@"D:\Archiv", folderName), Assert.Single(sorter.Applied).TargetFolderPath);
+    }
+
+    [Fact]
+    public async Task Apply_WithARelativeTargetRoot_IsNotPossible()
+    {
+        FakePhotoSorter sorter = new(CreateProposals(1));
+        using SortViewModel sut = CreateSut(sorter);
+        await AnalyzeAsync(sut);
+
+        sut.TargetRootFolder = @"Archiv\Fotos";
+
+        Assert.True(sut.HasInvalidTargetRoot);
+        Assert.False(sut.ApplyCommand.CanExecute(parameter: null));
+    }
+
+    [Fact]
+    public async Task Apply_AfterClearingTheTargetRoot_IsPossibleAgain()
+    {
+        FakePhotoSorter sorter = new(CreateProposals(1));
+        using SortViewModel sut = CreateSut(sorter);
+        await AnalyzeAsync(sut);
+
+        sut.TargetRootFolder = "Archiv";
+        sut.TargetRootFolder = "   ";
+
+        Assert.False(sut.HasInvalidTargetRoot);
+        Assert.True(sut.ApplyCommand.CanExecute(parameter: null));
+    }
+
+    [Fact]
     public async Task Apply_WithDeselectedProposal_RemembersItAsIgnored()
     {
         FakePhotoSorter sorter = new(CreateProposals(3));

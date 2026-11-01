@@ -148,6 +148,9 @@ Anwendungen update-unfähig**, weil sie nur den alten Schlüssel kennen.
 - Tests: zu jedem `src`-Projekt gibt es ein Testprojekt unter `tests/`
   (`PictureSorter.App.Tests`, `.Application.Tests`, `.Core.Tests`, `.Data.Tests`,
   `.Infrastructure.Tests`, `.Ollama.Tests`).
+- Geschwindigkeit: `tests/PictureSorter.Benchmarks` misst mit BenchmarkDotNet die zeitkritischen
+  Wege und läuft nicht in `dotnet test`. Einzelheiten stehen in der
+  [README des Messprojekts](tests/PictureSorter.Benchmarks/README.md).
 - Bildschirmfotos für die Webseite: `tools/bildschirmfotos.ps1` nimmt die ganze Serie mit
   einem Aufruf an einem Demo-Bestand neu auf. Sie liegt unter `docs/bilder/` und ist dort
   beschrieben.

@@ -143,7 +143,7 @@ Rückfrage. Eine neue Analyse fängt danach wieder von vorn an.
 Absturz) lässt sich trotzdem retten: Ordner und Gruppenname eingeben, dann im
 Analyse-Schritt **Vorschläge einer früheren Analyse zurückholen**. Die Urteile
 stammen dann aus dem Sortier-Gedächtnis. Voraussetzung: Die Fotos liegen unverändert
-an ihrem Platz, denn Pfad, Größe und Aufnahmezeit bilden ihre Kennung.
+an ihrem Platz, denn das Gedächtnis merkt sich den Pfad und prüft dort den Inhalt.
 
 **Wenn kein Lauf angeboten wird**, obwohl analysiert wurde: Im Protokoll nach
 Ereignis `5200` suchen („Das Protokoll des Analyselaufs konnte nicht geschrieben
@@ -227,6 +227,13 @@ Windows-1252, und die Meldungen zerfallen.
 Fällt die KI **mitten im Lauf** aus, wird das betroffene Foto übersprungen und der
 Lauf fortgesetzt. Das Foto wird dabei bewusst nicht als „passt nicht" gemerkt; der
 Ausfall ist kein Urteil über das Bild, und der nächste Lauf versucht es erneut.
+
+**Häufen sich im Protokoll Zeitlimits?** Ohne Grafikkarte rechnet die KI auf dem Prozessor:
+Ein Bild kann dort rund 100 Sekunden dauern. Die Vorgaben sind darauf eingestellt
+(`Sorting:MaxParallelEvaluations` = 1, `Ollama:RequestTimeoutSeconds` = 600). Mehr
+gleichzeitige Anfragen lohnen nur, wenn Ollama sie auch gleichzeitig abarbeitet
+(`OLLAMA_NUM_PARALLEL`, Grafikkarte). Sonst warten sie in dessen Schlange und laufen ins
+Zeitlimit.
 
 ---
 

@@ -51,17 +51,13 @@ public sealed class SortingOptions
     /// <summary>
     /// Wie viele Fotos gleichzeitig bewertet werden.
     ///
-    /// Jede Bewertung ist ein vollständiger Aufruf des Bild-Modells und dauert Sekunden;
-    /// nacheinander summiert sich das bei tausend Fotos auf Stunden. Die Anwendung
-    /// wartet dabei fast nur auf Ollama, kann also mehrere Anfragen offen halten.
-    ///
-    /// Vier ist bewusst nicht mehr: Ollama arbeitet nur eine begrenzte Zahl von Anfragen
-    /// wirklich gleichzeitig ab (Voreinstellung <c>OLLAMA_NUM_PARALLEL</c>), der Rest
-    /// wartet dort in einer Schlange. Zu viele gleichzeitige Anfragen werden deshalb
-    /// nicht schneller, sondern laufen einzeln ins Zeitlimit
-    /// (<c>Ollama:RequestTimeoutSeconds</c>), und ein Zeitlimit lässt das Bild
-    /// unbewertet. Wer Ollama höher eingestellt hat, darf hier mitziehen.
+    /// Eins, weil Ollama die Bild-Anfragen ohnehin nacheinander abarbeitet. Mehr offene
+    /// Anfragen werden nicht schneller, sondern warten in dessen Schlange und laufen dort
+    /// ins Zeitlimit (<c>Ollama:RequestTimeoutSeconds</c>). Gemessen auf einem Rechner ohne
+    /// Grafikkarte: Bei vier gleichzeitigen Anfragen scheiterten vier von fünf, ihre
+    /// Rechenzeit war verloren. Wer eine Grafikkarte hat und <c>OLLAMA_NUM_PARALLEL</c> höher
+    /// einstellt, darf hier mitziehen.
     /// </summary>
     [Range(1, 32)]
-    public int MaxParallelEvaluations { get; set; } = 4;
+    public int MaxParallelEvaluations { get; set; } = 1;
 }

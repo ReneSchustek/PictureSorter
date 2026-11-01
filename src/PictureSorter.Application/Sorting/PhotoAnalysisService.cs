@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Collections.Concurrent;
 using System.Globalization;
 using Microsoft.Extensions.Logging;
@@ -215,7 +216,7 @@ public sealed class PhotoAnalysisService : IPhotoAnalyzer
         // Liegt aus diesem Lauf bereits ein Urteil vor, wird es übernommen. Die Signatur
         // schließt Pfad, Größe und Aufnahmezeit ein. Eine veränderte Datei trägt eine
         // andere und wird deshalb zu Recht neu bewertet.
-        if (pass.Decided.TryGetValue(signature, out AnalysisRunItem? earlier))
+        if (TryFindEarlier(pass.Decided, photo, out AnalysisRunItem? earlier))
         {
             if (earlier.Outcome is AnalysisOutcome.Proposed)
             {
@@ -516,7 +517,7 @@ public sealed class PhotoAnalysisService : IPhotoAnalyzer
                 tally.Processed++;
                 total = scanned.Total;
 
-                if (decided.TryGetValue(signature, out AnalysisRunItem? earlier))
+                if (TryFindEarlier(decided, photo, out AnalysisRunItem? earlier))
                 {
                     if (earlier.Outcome is AnalysisOutcome.Proposed)
                     {
@@ -657,6 +658,15 @@ public sealed class PhotoAnalysisService : IPhotoAnalyzer
     // zählt ausdrücklich nicht dazu: Dort hat ein Ausfall der KI oder eine unlesbare Datei
     // ein Urteil verhindert, und ein einmaliger Aussetzer darf nicht dauerhaft
     // festgeschrieben werden.
+    // Ein Lauf, den eine ältere Fassung begonnen hat, trägt Signaturen mit Pfad. Auch er
+    // lässt sich fortsetzen, sonst wären die bereits bezahlten Urteile umsonst gewesen.
+    private static bool TryFindEarlier(
+        IReadOnlyDictionary<string, AnalysisRunItem> decided,
+        Photo photo,
+        [NotNullWhen(true)] out AnalysisRunItem? earlier) =>
+        decided.TryGetValue(photo.ComputeSignature(), out earlier)
+        || decided.TryGetValue(photo.ComputeLegacySignature(), out earlier);
+
     private async Task<IReadOnlyDictionary<string, AnalysisRunItem>> LoadDecidedAsync(
         AnalysisRun run,
         bool resume,

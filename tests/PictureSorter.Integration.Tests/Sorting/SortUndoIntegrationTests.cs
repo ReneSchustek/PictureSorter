@@ -59,7 +59,7 @@ public sealed class SortUndoIntegrationTests : IAsyncLifetime
             _provider.GetRequiredService<ISortJournal>(),
             NullLogger<SortJournalGateway>.Instance);
         _memory = new SortMemoryGateway(_rawMemory, new SystemClock(), NullLogger<SortMemoryGateway>.Instance);
-        _undo = new SortUndoService(_journal, _memory, _organizer, NullLogger<SortUndoService>.Instance);
+        _undo = new SortUndoService(_journal, _memory, _organizer, new PictureSorter.Infrastructure.Caching.FileFingerprinter(), NullLogger<SortUndoService>.Instance);
     }
 
     public async ValueTask DisposeAsync()
@@ -135,6 +135,7 @@ public sealed class SortUndoIntegrationTests : IAsyncLifetime
                 NullLogger<SortJournalGateway>.Instance),
             _memory,
             _organizer,
+            new PictureSorter.Infrastructure.Caching.FileFingerprinter(),
             NullLogger<SortUndoService>.Instance);
 
         UndoResult? result = await afterRestart.UndoLastRunAsync(CancellationToken.None);

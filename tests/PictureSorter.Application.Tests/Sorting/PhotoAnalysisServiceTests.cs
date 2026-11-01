@@ -387,13 +387,11 @@ public sealed class PhotoAnalysisServiceTests
     };
 
     [Fact]
-    public async Task CreateProposalsAsync_EvaluatesSeveralPhotosAtOnce()
+    public async Task CreateProposalsAsync_ByDefault_SendsOnlyOneRequestAtATime()
     {
-        // Der Kern der Beschleunigung: Jede Bewertung ist ein Aufruf des Bild-Modells und
-        // dauert Sekunden, die die Anwendung nur wartet. Nacheinander summiert sich das
-        // bei tausend Fotos auf Stunden. Der Test belegt, dass tatsächlich mehrere
-        // Aufrufe gleichzeitig offen sind. Eine Zusicherung über die Laufzeit allein
-        // wäre auf der Baumaschine nicht verlässlich zu messen.
+        // Ollama arbeitet die Bild-Anfragen nacheinander ab. Auf einem Rechner ohne
+        // Grafikkarte liefen weitere offene Anfragen in dessen Schlange ins Zeitlimit: Vier
+        // von fünf scheiterten, und ihre Rechenzeit war verloren.
         IReadOnlyList<Photo> photos = [.. Enumerable.Range(0, 8).Select(index => new Photo
         {
             FullPath = $@"C:\fotos\bild{index}.jpg",
@@ -405,6 +403,32 @@ public sealed class PhotoAnalysisServiceTests
             new FakeImageClassifier(new VisionVerdict { Matches = true, Confidence = 0.9 }),
             embeddingProvider: provider,
             photos: photos);
+
+        _ = await service.CreateProposalsAsync(
+            @"C:\fotos", CreateCategory(), includeSubfolders: false, DateRange.Unbounded, progress: null,
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(1, provider.MaxConcurrent);
+    }
+
+    [Fact]
+    public async Task CreateProposalsAsync_WhenConfiguredForMore_EvaluatesSeveralPhotosAtOnce()
+    {
+        // Wer eine Grafikkarte hat und Ollama entsprechend einstellt, kann mehr Anfragen
+        // gleichzeitig offen halten. Der Test belegt, dass die Einstellung auch wirkt. Eine
+        // Zusicherung über die Laufzeit wäre auf der Baumaschine nicht verlässlich zu messen.
+        IReadOnlyList<Photo> photos = [.. Enumerable.Range(0, 8).Select(index => new Photo
+        {
+            FullPath = $@"C:\fotos\bild{index}.jpg",
+            FileName = $"bild{index}.jpg",
+        })];
+        ConcurrencyTrackingEmbeddingProvider provider = new([1.0f, 0.0f, 0.0f]);
+        PhotoAnalysisService service = CreateService(
+            [1.0f, 0.0f, 0.0f],
+            new FakeImageClassifier(new VisionVerdict { Matches = true, Confidence = 0.9 }),
+            embeddingProvider: provider,
+            photos: photos,
+            maxParallelEvaluations: 4);
 
         _ = await service.CreateProposalsAsync(
             @"C:\fotos", CreateCategory(), includeSubfolders: false, DateRange.Unbounded, progress: null,
@@ -993,16 +1017,13 @@ public sealed class PhotoAnalysisServiceTests
             Foto("a.jpg", new DateOnly(2021, 7, 1)),
             Foto("b.jpg", new DateOnly(2021, 8, 1)),
         ]);
-        List<SortProgress> gemeldet = [];
+        RecordingSortProgress reported = new();
 
         _ = await service.CreateCalendarProposalsAsync(
             SourceFolder, TargetRoot, CalendarGranularity.Year, includeSubfolders: false,
-            new Progress<SortProgress>(gemeldet.Add), CancellationToken.None);
+            reported, CancellationToken.None);
 
-        // Progress<T> meldet über den Synchronisationskontext; im Test ohne einen solchen
-        // landet alles im Thread-Pool. Deshalb wird auf die Abschlussmeldung gewartet.
-        await WaitForFinalProgressAsync(gemeldet).ConfigureAwait(true);
-        Assert.Contains(gemeldet, p => p.IsFinal);
+        Assert.True(reported.Snapshot()[^1].IsFinal);
     }
 
     [Fact]
@@ -1024,11 +1045,29 @@ public sealed class PhotoAnalysisServiceTests
         _ = Assert.Single(proposals.Select(p => p.SourceFolder).Distinct());
     }
 
-    private static async Task WaitForFinalProgressAsync(List<SortProgress> reported)
+    // Progress<T> stellt jede Meldung in den Thread-Pool: Sie träfen ungeordnet und zu einem
+    // unbestimmten Zeitpunkt ein, und zwei gleichzeitige List.Add verlören Einträge. Diese
+    // Fassung nimmt die Meldung im Aufruf entgegen; die Sperre schützt vor dem Einlesen, das
+    // aus mehreren Strängen meldet.
+    private sealed class RecordingSortProgress : IProgress<SortProgress>
     {
-        for (int versuch = 0; versuch < 100 && !reported.Any(p => p.IsFinal); versuch++)
+        private readonly Lock _gate = new();
+        private readonly List<SortProgress> _reported = [];
+
+        public void Report(SortProgress value)
         {
-            await Task.Delay(10).ConfigureAwait(false);
+            lock (_gate)
+            {
+                _reported.Add(value);
+            }
+        }
+
+        public IReadOnlyList<SortProgress> Snapshot()
+        {
+            lock (_gate)
+            {
+                return [.. _reported];
+            }
         }
     }
 
@@ -1041,10 +1080,11 @@ public sealed class PhotoAnalysisServiceTests
         IEmbeddingProvider? embeddingProvider = null,
         IReadOnlyList<Photo>? photos = null,
         IPhotoSource? source = null,
-        FakeAnalysisJournal? analysisJournal = null)
+        FakeAnalysisJournal? analysisJournal = null,
+        int maxParallelEvaluations = 1)
     {
         IPhotoSource photoSource = source ?? new FakePhotoSource(photos ?? [SamplePhoto]);
-        IOptions<SortingOptions> options = Options.Create(new SortingOptions());
+        IOptions<SortingOptions> options = Options.Create(new SortingOptions { MaxParallelEvaluations = maxParallelEvaluations });
         FakeClock clock = new(new DateTimeOffset(2026, 7, 1, 8, 0, 0, TimeSpan.Zero));
 
         SortMemoryGateway gateway = new(

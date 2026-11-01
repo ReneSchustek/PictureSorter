@@ -172,12 +172,14 @@ internal sealed partial class PhotoDetailViewModel : ObservableObject
         // die Detailansicht nicht. Sie fragt nach diesem einen Bild, ganz gleich unter
         // welchem Namen es einsortiert wurde.
         string signature = Photo.ComputeSignature();
+        string legacySignature = Photo.ComputeLegacySignature();
         IReadOnlyList<SortMemoryRecord> ordner = await _memory
             .GetForFolderAsync(FolderPath, cancellationToken)
             .ConfigureAwait(true);
 
         SortMemoryRecord? record = ordner.FirstOrDefault(
-            eintrag => string.Equals(eintrag.FileSignature, signature, StringComparison.Ordinal));
+            eintrag => string.Equals(eintrag.FileSignature, signature, StringComparison.Ordinal)
+                || string.Equals(eintrag.FileSignature, legacySignature, StringComparison.Ordinal));
 
         TargetFolder = record?.CategoryName ?? string.Empty;
     }

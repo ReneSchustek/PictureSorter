@@ -93,6 +93,33 @@ public sealed class AnalysisJournalTests
     }
 
     [Fact]
+    public async Task ResumeAsync_ForARunOfAnOlderVersion_DoesNotAskTheAiAgain()
+    {
+        // Das Protokoll stammt aus einer Fassung, die Fotos noch am Pfad erkannte. Beim
+        // Fortsetzen tragen dieselben Fotos jetzt einen Inhaltsschlüssel.
+        FakeAnalysisJournal journal = new();
+        IReadOnlyList<Photo> older = [Foto("a.jpg"), Foto("b.jpg")];
+        _ = await CreateService(journal, older).CreateProposalsAsync(
+            SourceFolder, CreateCategory(), includeSubfolders: false, DateRange.Unbounded, progress: null, CancellationToken.None);
+
+        AnalysisRun run = Assert.Single(journal.Runs);
+        IReadOnlyList<Photo> current =
+        [
+            older[0] with { ContentFingerprint = "INHALT-A" },
+            older[1] with { ContentFingerprint = "INHALT-B" },
+        ];
+        PhotoAnalysisService second = CreateService(
+            journal,
+            current,
+            embeddingProvider: new ThrowingEmbeddingProvider());
+
+        IReadOnlyList<SortProposal> restored = await second.ResumeAsync(
+            run, CreateCategory(), progress: null, CancellationToken.None);
+
+        Assert.Equal(2, restored.Count);
+    }
+
+    [Fact]
     public async Task ResumeAsync_WithoutTheCategory_DeliversNothingInsteadOfGuessing()
     {
         FakeAnalysisJournal journal = new();

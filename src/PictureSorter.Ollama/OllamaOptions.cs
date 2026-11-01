@@ -46,7 +46,7 @@ public sealed class OllamaOptions
     /// Zeitlimit je Anfrage in Sekunden.
     /// </summary>
     [Range(5, 600)]
-    public int RequestTimeoutSeconds { get; set; } = 120;
+    public int RequestTimeoutSeconds { get; set; } = 600;
 
     /// <summary>
     /// Zeitlimit in Sekunden für die reine Erreichbarkeitsprüfung. Bewusst viel kürzer

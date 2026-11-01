@@ -9,6 +9,7 @@ namespace PictureSorter.App.Tests.Services;
 /// dass ein bösartiges Paket nicht ausbrechen kann, und dass eine misslungene
 /// Ersetzung nicht als halb aktualisierte Installation zurückbleibt.
 /// </summary>
+[Collection(UpdateTestGroups.WorkingDirectory)]
 public sealed class UpdateInstallerTests : IDisposable
 {
     private readonly string _root;

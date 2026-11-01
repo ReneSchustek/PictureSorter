@@ -65,6 +65,7 @@ public static class OllamaServiceCollectionExtensions
         _ = services.AddTransient<IEmbeddingProvider>(provider => new CachingEmbeddingProvider(
             provider.GetRequiredService<OllamaEmbeddingProvider>(),
             provider.GetRequiredService<IEmbeddingCache>(),
+            provider.GetRequiredService<IFileFingerprinter>(),
             provider.GetRequiredService<IOptions<OllamaOptions>>(),
             provider.GetRequiredService<ILogger<CachingEmbeddingProvider>>()));
 

@@ -144,5 +144,15 @@ internal static class RecoveryFactory
     public static SortMemoryRecovery Create(ISortMemory? memory = null) =>
         new(memory ?? new FakeSortMemory(),
             new EmptyMetadataReader(),
+            new NoFingerprinter(),
             NullLogger<SortMemoryRecovery>.Instance);
+}
+
+/// <summary>
+/// Liefert keinen Inhaltsschlüssel: Die Fotos der Oberflächen-Tests gibt es nicht wirklich.
+/// </summary>
+internal sealed class NoFingerprinter : IFileFingerprinter
+{
+    public Task<string?> ComputeAsync(string path, CancellationToken cancellationToken) =>
+        Task.FromResult<string?>(null);
 }

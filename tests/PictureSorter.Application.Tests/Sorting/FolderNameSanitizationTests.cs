@@ -1,4 +1,7 @@
 using PictureSorter.Application.Sorting;
+using PictureSorter.Core.Entities;
+using PictureSorter.Core.Enums;
+using PictureSorter.Core.ValueObjects;
 
 namespace PictureSorter.Application.Tests.Sorting;
 
@@ -9,6 +12,28 @@ namespace PictureSorter.Application.Tests.Sorting;
 /// </summary>
 public sealed class FolderNameSanitizationTests
 {
+    private static SortProposal Proposal(string sourceFolder, string targetFolder) => new()
+    {
+        Photo = new Photo { FullPath = Path.Combine(sourceFolder, "a.jpg"), FileName = "a.jpg" },
+        CategoryName = "Urlaub",
+        SourceFolder = sourceFolder,
+        TargetFolderPath = targetFolder,
+        Confidence = 1.0,
+        Method = ClassificationMethod.CaptureDate,
+    };
+
+    [Theory]
+    [InlineData(@"C:\Fotos", @"C:\Fotos\Urlaub", @"D:\Archiv\Urlaub")]
+    [InlineData(@"C:\Fotos", @"C:\Fotos\2026\Urlaub", @"D:\Archiv\2026\Urlaub")]
+    [InlineData(@"C:\Fotos\Neu", @"C:\Fotos\Urlaub", @"D:\Archiv\Urlaub")]
+    [InlineData(@"C:\Fotos", @"E:\Ablage\Urlaub", @"D:\Archiv\Urlaub")]
+    public void WithTargetRoot_StaysInsideTheChosenRoot(string source, string target, string expected)
+    {
+        SortProposal moved = TargetFolderNaming.WithTargetRoot(Proposal(source, target), @"D:\Archiv");
+
+        Assert.Equal(expected, moved.TargetFolderPath);
+    }
+
     [Theory]
     [InlineData("..")]
     [InlineData(".")]

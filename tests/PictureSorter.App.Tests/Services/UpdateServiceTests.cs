@@ -11,6 +11,7 @@ namespace PictureSorter.App.Tests.Services;
 /// redirect-sicheres Folgen (jeder Sprung wird erneut geprüft) und das
 /// Größenlimit gegen übergroße Antworten.
 /// </summary>
+[Collection(UpdateTestGroups.WorkingDirectory)]
 public sealed class UpdateServiceTests : IDisposable
 {
     private readonly string _target;
@@ -267,24 +268,36 @@ public sealed class UpdateServiceTests : IDisposable
     {
         // Der Balken darf nicht erst am Ende springen: Der Download umfasst rund
         // hundert Megabyte, und ohne Meldung wirkt die Seite minutenlang tot.
-        List<UpdateStage> stufen = [];
+        RecordingUpdateProgress reported = new();
         UpdateService service = await SetupCheckedAsync(_ => new HttpResponseMessage(HttpStatusCode.NotFound));
 
-        _ = await service.DownloadAndLaunchUpdaterAsync(
-            new Progress<UpdateProgress>(fortschritt => stufen.Add(fortschritt.Stage)),
-            TestContext.Current.CancellationToken);
+        _ = await service.DownloadAndLaunchUpdaterAsync(reported, TestContext.Current.CancellationToken);
 
-        await WaitForAsync(() => stufen.Count > 0);
-        Assert.Contains(UpdateStage.Downloading, stufen);
+        Assert.Contains(UpdateStage.Downloading, reported.Snapshot());
     }
 
-    // Progress<T> meldet über den Synchronisationskontext; im Test ohne einen solchen
-    // landet die Meldung im Thread-Pool und ist nicht sofort da.
-    private static async Task WaitForAsync(Func<bool> bedingung)
+    // Progress<T> stellt jede Meldung in den Thread-Pool: Sie träfe zu einem unbestimmten
+    // Zeitpunkt ein, und zwei gleichzeitige List.Add verlören Einträge. Diese Fassung nimmt
+    // die Meldung im Aufruf entgegen.
+    private sealed class RecordingUpdateProgress : IProgress<UpdateProgress>
     {
-        for (int versuch = 0; versuch < 100 && !bedingung(); versuch++)
+        private readonly Lock _gate = new();
+        private readonly List<UpdateStage> _stages = [];
+
+        public void Report(UpdateProgress value)
         {
-            await Task.Delay(10).ConfigureAwait(false);
+            lock (_gate)
+            {
+                _stages.Add(value.Stage);
+            }
+        }
+
+        public IReadOnlyList<UpdateStage> Snapshot()
+        {
+            lock (_gate)
+            {
+                return [.. _stages];
+            }
         }
     }
 

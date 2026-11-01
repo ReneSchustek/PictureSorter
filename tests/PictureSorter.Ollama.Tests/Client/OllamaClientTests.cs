@@ -54,6 +54,27 @@ public sealed class OllamaClientTests : IDisposable
         Assert.Contains("\"stream\":false", _handler!.LastRequestBody, StringComparison.Ordinal);
     }
 
+    [Theory]
+    [InlineData("""{"response":""}""")]
+    [InlineData("""{"response":"  "}""")]
+    public async Task GenerateAsync_WithAnEmptyAnswer_ReportsAiUnavailable(string body)
+    {
+        OllamaClient sut = CreateSut(StubHttpMessageHandler.Json(body));
+
+        _ = await Assert.ThrowsAsync<AiUnavailableException>(
+            () => sut.GenerateAsync("moondream", "Was zeigt das Bild?", ["base64"], CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GenerateAsync_TurnsThinkingOff()
+    {
+        OllamaClient sut = CreateSut(StubHttpMessageHandler.Json("""{"response":"Ein Foto."}"""));
+
+        _ = await sut.GenerateAsync("gemma4:e2b", "Was zeigt das Bild?", ["base64"], CancellationToken.None);
+
+        Assert.Contains("\"think\":false", _handler!.LastRequestBody, StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task GenerateAsync_WithoutResponseField_ReportsAiUnavailable()
     {
@@ -150,6 +171,19 @@ public sealed class OllamaClientTests : IDisposable
             () => sut.EmbedAsync("nomic-embed-text", "ein Foto", CancellationToken.None));
 
         Assert.Equal(3, _handler!.CallCount);
+    }
+
+    [Fact]
+    public async Task Request_WhenTheTimeoutElapses_IsNotRetried()
+    {
+        // Eine Wiederholung kostet dieselbe Rechenzeit noch einmal und scheitert am selben
+        // Limit. Auf einem Rechner ohne Grafikkarte waren das Tage.
+        OllamaClient sut = CreateSut((_, _) => throw new TaskCanceledException("Zeitlimit."));
+
+        _ = await Assert.ThrowsAsync<AiUnavailableException>(
+            () => sut.GenerateAsync("qwen", "Was zeigt das Bild?", [], CancellationToken.None));
+
+        Assert.Equal(1, _handler!.CallCount);
     }
 
     [Fact]

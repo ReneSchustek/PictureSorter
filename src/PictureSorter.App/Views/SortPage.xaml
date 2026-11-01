@@ -611,11 +611,26 @@
 
                         <!-- Steht bewusst direkt über dem Sortieren-Knopf: Der Weg, auf dem
                              die Fotos ihren Ordner erreichen, gehört dorthin, wo man ihn
-                             auslöst, nicht in eine Einstellungsseite. -->
+                             auslöst, nicht in eine Einstellungsseite. Sichtbar in beiden
+                             Ansichten: Nur der Knopf selbst wechselt im geführten Modus. -->
                         <CheckBox
                             x:Uid="SortPage_CopyInsteadOfMoveCheck"
-                            IsChecked="{x:Bind ViewModel.CopyInsteadOfMove, Mode=TwoWay}"
-                            Visibility="{x:Bind ViewModel.Wizard.ShowStandardActions, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            IsChecked="{x:Bind ViewModel.CopyInsteadOfMove, Mode=TwoWay}" />
+
+                        <Grid ColumnSpacing="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBox
+                                x:Uid="SortPage_TargetRootBox"
+                                Text="{x:Bind ViewModel.TargetRootFolder, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <Button
+                                Grid.Column="1"
+                                VerticalAlignment="Bottom"
+                                x:Uid="SortPage_PickTargetRoot"
+                                Command="{x:Bind ViewModel.PickTargetRootCommand}" />
+                        </Grid>
 
                         <!-- Suche und Filter über der Vorschau. Bei einem Ordner mit
                              tausenden Fotos ist eine Liste ohne sie nicht durchzusehen,

@@ -23,6 +23,7 @@ public sealed class FileSystemPhotoSource : IPhotoSource
     };
 
     private readonly IImageMetadataReader _metadataReader;
+    private readonly IFileFingerprinter _fingerprinter;
     private readonly PhotoSourceOptions _options;
     private readonly ILogger<FileSystemPhotoSource> _logger;
 
@@ -30,17 +31,21 @@ public sealed class FileSystemPhotoSource : IPhotoSource
     /// Initialisiert die Quelle.
     /// </summary>
     /// <param name="metadataReader">Leser für die EXIF-Metadaten.</param>
+    /// <param name="fingerprinter">Erkennt die Fotos am Inhalt.</param>
     /// <param name="options">Einstellungen des Einlesens (Grad der Gleichzeitigkeit).</param>
     /// <param name="logger">Der Logger.</param>
     public FileSystemPhotoSource(
         IImageMetadataReader metadataReader,
+        IFileFingerprinter fingerprinter,
         IOptions<PhotoSourceOptions> options,
         ILogger<FileSystemPhotoSource> logger)
     {
         ArgumentNullException.ThrowIfNull(metadataReader);
+        ArgumentNullException.ThrowIfNull(fingerprinter);
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(logger);
         _metadataReader = metadataReader;
+        _fingerprinter = fingerprinter;
         _options = options.Value;
         _logger = logger;
     }
@@ -283,6 +288,7 @@ public sealed class FileSystemPhotoSource : IPhotoSource
     {
         FileInfo info = new(path);
         PhotoMetadata? metadata = await _metadataReader.ReadAsync(path, cancellationToken).ConfigureAwait(false);
+        string? fingerprint = await _fingerprinter.ComputeAsync(path, cancellationToken).ConfigureAwait(false);
 
         // Liegt kein EXIF-Aufnahmedatum vor, dient die letzte Änderungszeit als Annäherung.
         DateTimeOffset capturedAt = metadata?.CapturedAt
@@ -293,6 +299,7 @@ public sealed class FileSystemPhotoSource : IPhotoSource
             FullPath = info.FullName,
             FileName = info.Name,
             SizeBytes = info.Length,
+            ContentFingerprint = fingerprint,
             CapturedAt = capturedAt,
             Width = metadata?.Width,
             Height = metadata?.Height,

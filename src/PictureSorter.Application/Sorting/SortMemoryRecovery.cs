@@ -23,6 +23,7 @@ public sealed class SortMemoryRecovery
 {
     private readonly ISortMemory _memory;
     private readonly IImageMetadataReader _metadataReader;
+    private readonly IFileFingerprinter _fingerprinter;
     private readonly ILogger<SortMemoryRecovery> _logger;
 
     /// <summary>
@@ -30,18 +31,22 @@ public sealed class SortMemoryRecovery
     /// </summary>
     /// <param name="memory">Das dauerhafte Sortier-Gedächtnis.</param>
     /// <param name="metadataReader">Leser für die Metadaten der wiedergefundenen Dateien.</param>
+    /// <param name="fingerprinter">Erkennt die wiedergefundenen Dateien am Inhalt.</param>
     /// <param name="logger">Der Logger.</param>
     public SortMemoryRecovery(
         ISortMemory memory,
         IImageMetadataReader metadataReader,
+        IFileFingerprinter fingerprinter,
         ILogger<SortMemoryRecovery> logger)
     {
         ArgumentNullException.ThrowIfNull(memory);
         ArgumentNullException.ThrowIfNull(metadataReader);
+        ArgumentNullException.ThrowIfNull(fingerprinter);
         ArgumentNullException.ThrowIfNull(logger);
 
         _memory = memory;
         _metadataReader = metadataReader;
+        _fingerprinter = fingerprinter;
         _logger = logger;
     }
 
@@ -168,6 +173,9 @@ public sealed class SortMemoryRecovery
                 FullPath = info.FullName,
                 FileName = info.Name,
                 SizeBytes = info.Length,
+                ContentFingerprint = await _fingerprinter
+                    .ComputeAsync(record.PhotoPath, cancellationToken)
+                    .ConfigureAwait(false),
                 CapturedAt = metadata?.CapturedAt ?? new DateTimeOffset(info.LastWriteTimeUtc, TimeSpan.Zero),
                 Width = metadata?.Width,
                 Height = metadata?.Height,
@@ -177,6 +185,7 @@ public sealed class SortMemoryRecovery
             };
 
             return string.Equals(photo.ComputeSignature(), record.FileSignature, StringComparison.Ordinal)
+                || string.Equals(photo.ComputeLegacySignature(), record.FileSignature, StringComparison.Ordinal)
                 ? photo
                 : null;
         }

@@ -49,6 +49,7 @@ public sealed class AnalysisRecoveryIntegrationTests : IAsyncLifetime
         _recovery = new SortMemoryRecovery(
             _memory,
             new NoMetadataReader(),
+            new PictureSorter.Infrastructure.Caching.FileFingerprinter(),
             NullLogger<SortMemoryRecovery>.Instance);
     }
 
@@ -83,6 +84,20 @@ public sealed class AnalysisRecoveryIntegrationTests : IAsyncLifetime
             [first.FullPath, second.FullPath],
             proposals.Select(proposal => proposal.Photo.FullPath).Order(StringComparer.Ordinal));
         Assert.All(proposals, proposal => Assert.Equal(Category, proposal.CategoryName));
+    }
+
+    [Fact]
+    public async Task RecoverAsync_WithAVerdictUnderTheContentKey_BringsItBack()
+    {
+        Photo photo = CreatePhoto("a.jpg");
+        string? fingerprint = await new PictureSorter.Infrastructure.Caching.FileFingerprinter()
+            .ComputeAsync(photo.FullPath, TestContext.Current.CancellationToken);
+        await RememberAsync(photo with { ContentFingerprint = fingerprint }, SortMemoryStatus.Proposed, 0.9);
+
+        IReadOnlyList<SortProposal> proposals = await _recovery.RecoverAsync(
+            _photoFolder, Category, CategoryKind.Topic, CancellationToken.None);
+
+        _ = Assert.Single(proposals);
     }
 
     [Fact]

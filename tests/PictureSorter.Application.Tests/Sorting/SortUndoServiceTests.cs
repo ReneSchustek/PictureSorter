@@ -136,13 +136,15 @@ public sealed class SortUndoServiceTests
     private static SortUndoService CreateSut(
         FakeSortJournal journal,
         Core.Interfaces.IFileOrganizer organizer,
-        FakeSortMemory memory) => new(
+        FakeSortMemory memory,
+        string? fingerprint = null) => new(
             new SortJournalGateway(journal, NullLogger<SortJournalGateway>.Instance),
             new SortMemoryGateway(
                 memory,
                 new FakeClock(new DateTimeOffset(2026, 7, 1, 8, 0, 0, TimeSpan.Zero)),
                 NullLogger<SortMemoryGateway>.Instance),
             organizer,
+            new FakeFileFingerprinter(fingerprint),
             NullLogger<SortUndoService>.Instance);
 
     [Fact]
@@ -177,6 +179,20 @@ public sealed class SortUndoServiceTests
         Assert.Equal(1, result!.Restored);
         Assert.Equal(1, result.Skipped);
         Assert.Equal([Path.Combine(TargetFolder, "a.jpg")], organizer.Discarded);
+    }
+
+    [Fact]
+    public async Task UndoLastRunAsync_ForARunOfAnOlderVersion_AlsoForgetsTheAdoptedVerdict()
+    {
+        // Der Lauf trägt die alte Signatur, das Urteil wanderte inzwischen auf den
+        // Inhaltsschlüssel. Bliebe es stehen, käme das Foto nie wieder als Vorschlag.
+        FakeSortMemory memory = new();
+        memory.Records.Add(CreateRecord("INHALT"));
+        SortUndoService sut = CreateSut(Seeded("a.jpg"), new FakeFileOrganizer(), memory, fingerprint: "INHALT");
+
+        _ = await sut.UndoLastRunAsync(CancellationToken.None);
+
+        Assert.Empty(memory.Records);
     }
 
     private static FakeSortJournal Seeded(params string[] fileNames)

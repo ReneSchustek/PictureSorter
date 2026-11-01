@@ -26,6 +26,45 @@ public sealed class GatewayResilienceTests
     };
 
     [Fact]
+    public async Task IsSettledAsync_WithAVerdictOfAnOlderVersion_MovesItToTheContentKey()
+    {
+        // Das Urteil einer älteren Fassung liegt unter der Signatur mit Pfad. Es darf nicht
+        // verloren gehen und muss danach auch ein Verschieben überstehen.
+        FakeSortMemory memory = new();
+        memory.Records.Add(LegacyVerdict());
+        SortMemoryGateway sut = new(memory, new FakeClock(DateTimeOffset.UnixEpoch), NullLogger<SortMemoryGateway>.Instance);
+        Photo current = TestPhoto with { ContentFingerprint = "INHALT" };
+        Photo moved = current with { FullPath = @"C:\Fotos\Urlaub\strand.jpg" };
+
+        Assert.True(await sut.IsSettledAsync(@"C:\Fotos", current, "Urlaub", CancellationToken.None));
+        Assert.True(await sut.IsSettledAsync(@"C:\Fotos", moved, "Urlaub", CancellationToken.None));
+        Assert.Equal("INHALT", Assert.Single(memory.Records).FileSignature);
+    }
+
+    [Fact]
+    public async Task IsSettledAsync_WithoutAnyVerdict_StaysUnsettled()
+    {
+        SortMemoryGateway sut = new(new FakeSortMemory(), new FakeClock(DateTimeOffset.UnixEpoch), NullLogger<SortMemoryGateway>.Instance);
+
+        Assert.False(await sut.IsSettledAsync(
+            @"C:\Fotos",
+            TestPhoto with { ContentFingerprint = "INHALT" },
+            "Urlaub",
+            CancellationToken.None));
+    }
+
+    private static SortMemoryRecord LegacyVerdict() => new()
+    {
+        FolderPath = @"C:\Fotos",
+        FileSignature = TestPhoto.ComputeLegacySignature(),
+        PhotoPath = TestPhoto.FullPath,
+        CategoryName = "Urlaub",
+        Status = SortMemoryStatus.Rejected,
+        Confidence = 0.1,
+        UpdatedAt = DateTimeOffset.UnixEpoch,
+    };
+
+    [Fact]
     public async Task IsSettledAsync_WhenTheDatabaseFails_ReportsNotSettledInsteadOfThrowing()
     {
         // Ohne Gedächtnis wird eben nichts übersprungen, der Lauf geht weiter.

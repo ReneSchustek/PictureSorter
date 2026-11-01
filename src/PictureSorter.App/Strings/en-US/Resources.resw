@@ -310,6 +310,15 @@
   <data name="SortPage_CopyInsteadOfMoveCheck.Content" xml:space="preserve">
     <value>Copy photos instead of moving them (originals stay in place)</value>
   </data>
+  <data name="SortPage_TargetRootBox.Header" xml:space="preserve">
+    <value>Create target folders in (empty: inside the source folder)</value>
+  </data>
+  <data name="SortPage_TargetRootBox.PlaceholderText" xml:space="preserve">
+    <value>e.g. D:\Archive</value>
+  </data>
+  <data name="SortPage_PickTargetRoot.Content" xml:space="preserve">
+    <value>Browse</value>
+  </data>
   <data name="SortPage_Step2Heading.Text" xml:space="preserve">
     <value>2. Describe the category</value>
   </data>

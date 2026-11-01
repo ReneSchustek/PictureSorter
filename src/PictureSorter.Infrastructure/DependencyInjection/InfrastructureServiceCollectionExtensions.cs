@@ -33,6 +33,9 @@ public static class InfrastructureServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(configuration);
         ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
 
+        // Erkennt Fotos am Inhalt, damit Analysen und Urteile ein Verschieben überstehen.
+        _ = services.AddSingleton<IFileFingerprinter, FileFingerprinter>();
+
         // Embedding-Cache (Singleton, datei-basiert) beschleunigt wiederholte Läufe.
         _ = services.AddSingleton<IEmbeddingCache>(provider => new JsonlEmbeddingCache(
             dataDirectory,

@@ -46,6 +46,31 @@ public static class TargetFolderNaming
     }
 
     /// <summary>
+    /// Legt einen Vorschlag unter einem anderen Zielort ab. Der Aufbau unterhalb des
+    /// Quellordners bleibt erhalten, die Ordnernamen ändern sich also nicht.
+    /// </summary>
+    /// <param name="proposal">Der Vorschlag.</param>
+    /// <param name="targetRoot">Der gewählte Zielort.</param>
+    /// <returns>Der Vorschlag mit dem neuen Zielordner.</returns>
+    public static SortProposal WithTargetRoot(SortProposal proposal, string targetRoot)
+    {
+        ArgumentNullException.ThrowIfNull(proposal);
+        ArgumentException.ThrowIfNullOrWhiteSpace(targetRoot);
+
+        string relative = Path.GetRelativePath(proposal.SourceFolder, proposal.TargetFolderPath);
+
+        // Liegt das Ziel gar nicht unter dem Quellordner (anderes Laufwerk, Kalender-Ablage),
+        // käme ein Pfad mit „.." oder ein vollständiger Pfad heraus, und die Datei landete
+        // außerhalb des gewählten Orts. Dann zählt nur der Name des Zielordners.
+        bool outsideSource = Path.IsPathRooted(relative)
+            || relative.Equals("..", StringComparison.Ordinal)
+            || relative.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal);
+        string folder = outsideSource ? Path.GetFileName(proposal.TargetFolderPath) : relative;
+
+        return proposal with { TargetFolderPath = Path.Combine(targetRoot, folder) };
+    }
+
+    /// <summary>
     /// Setzt den Namen des Zielordners zusammen. Bei einer Ereignis-Kategorie trägt er
     /// zusätzlich das Aufnahmedatum.
     /// </summary>

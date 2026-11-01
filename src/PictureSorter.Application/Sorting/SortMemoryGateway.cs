@@ -63,6 +63,8 @@ public sealed class SortMemoryGateway
             photo.ComputeSignature(),
             categoryName,
             cancellationToken).ConfigureAwait(false);
+        remembered ??= await AdoptLegacyAsync(sourceFolder, photo, categoryName, cancellationToken)
+            .ConfigureAwait(false);
 
         // „Proposed" ist keine endgültige Entscheidung: Ein Vorschlag, der nie
         // angewendet wurde, soll erneut erscheinen.
@@ -162,6 +164,43 @@ public sealed class SortMemoryGateway
         {
             MemoryLog.ForgetFailed(_logger, ex);
         }
+    }
+
+    // Urteile älterer Fassungen hängen an einer Signatur mit Pfad. Beim ersten Wiedersehen
+    // wandern sie auf den Inhaltsschlüssel und überstehen danach jedes Verschieben. Ohne
+    // diesen Schritt wäre jedes Urteil verloren und das Bild käme erneut zur KI.
+    private async Task<SortMemoryRecord?> AdoptLegacyAsync(
+        string sourceFolder,
+        Photo photo,
+        string categoryName,
+        CancellationToken cancellationToken)
+    {
+        string signature = photo.ComputeSignature();
+        string legacy = photo.ComputeLegacySignature();
+        if (string.Equals(signature, legacy, StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        SortMemoryRecord? record = await TryGetAsync(sourceFolder, legacy, categoryName, cancellationToken)
+            .ConfigureAwait(false);
+        if (record is null)
+        {
+            return null;
+        }
+
+        SortMemoryRecord adopted = record with { FileSignature = signature };
+        try
+        {
+            await _memory.UpsertAsync(adopted, cancellationToken).ConfigureAwait(false);
+            await _memory.RemoveAsync(sourceFolder, legacy, categoryName, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (IsRecoverable(ex))
+        {
+            MemoryLog.WriteFailed(_logger, photo.FileName, ex);
+        }
+
+        return adopted;
     }
 
     private async Task<SortMemoryRecord?> TryGetAsync(

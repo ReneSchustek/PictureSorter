@@ -6,6 +6,35 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
+### Behoben
+
+- **Eine leere Antwort des Bildmodells gilt nicht mehr als Ergebnis.** Sie führte still zu einem
+  Vergleichswert ohne Aussage. Das Bild bleibt jetzt unbewertet und kommt im nächsten Lauf wieder dran.
+- **„Kopieren statt verschieben" fehlte in der geführten Ansicht.** Die Wahl war nur in der
+  Standard-Ansicht zu sehen, und die geführte ist die Vorgabe. Jetzt steht sie in beiden direkt über
+  dem Sortieren.
+- **Auf Rechnern ohne Grafikkarte scheiterten die meisten Bildanalysen, und ihre
+  Rechenzeit war verloren.** Vier Anfragen gleichzeitig warteten in der Schlange der KI
+  und liefen dort ins Zeitlimit von zwei Minuten; auf einem gemessenen Rechner traf das
+  vier von fünf. Das Programm stellt der KI jetzt eine Frage zur Zeit, gibt ihr bis zu
+  zehn Minuten und wiederholt ein abgelaufenes Zeitlimit nicht mehr. Wer eine Grafikkarte
+  hat, kann unter `Sorting:MaxParallelEvaluations` mehr einstellen.
+
+### Hinzugefügt
+
+- **Der Zielort ist frei wählbar.** In der Vorschau lässt sich festlegen, unter welchem Ordner die
+  Zielordner entstehen. Bleibt das Feld leer, entstehen sie wie bisher im Quellordner. Rückgängig
+  funktioniert auch von dort.
+
+### Geändert
+
+- **Ein Foto wird nur noch einmal analysiert, auch wenn es den Ordner wechselt.** Das
+  Programm erkennt ein Bild jetzt an seinem Inhalt statt an seinem Pfad. Einsortierte
+  Bilder und Kopien kosten beim nächsten Lauf keine Analyse mehr. Vorhandene Analysen und
+  Urteile bleiben gültig und werden beim ersten Wiedersehen übernommen. Ein unterbrochener
+  Lauf lässt sich weiter fortsetzen. Bilder, die schon vor diesem Update von Hand
+  verschoben wurden, werden einmal neu analysiert.
+
 ## [1.11.4] - 2026-11-01
 
 ### Behoben

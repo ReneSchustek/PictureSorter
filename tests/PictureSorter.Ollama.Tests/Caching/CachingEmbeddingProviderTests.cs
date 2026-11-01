@@ -78,10 +78,68 @@ public sealed class CachingEmbeddingProviderTests
         Assert.Equal(2, inner.CallCount);
     }
 
+    [Fact]
+    public async Task CreateEmbedding_WhenThePhotoWasMoved_DoesNotAnalyseAgain()
+    {
+        FakeEmbeddingCache cache = new();
+        CountingEmbeddingProvider inner = new();
+        CachingEmbeddingProvider sut = CreateSut(inner, cache);
+        Photo here = TestPhoto with { ContentFingerprint = "INHALT" };
+
+        _ = await sut.CreateEmbeddingAsync(here, CancellationToken.None);
+        _ = await sut.CreateEmbeddingAsync(here with { FullPath = @"C:\Fotos\Urlaub\urlaub.jpg" }, CancellationToken.None);
+
+        Assert.Equal(1, inner.CallCount);
+    }
+
+    [Fact]
+    public async Task CreateEmbedding_WhenTheContentChanged_AnalysesAgain()
+    {
+        FakeEmbeddingCache cache = new();
+        CountingEmbeddingProvider inner = new();
+        CachingEmbeddingProvider sut = CreateSut(inner, cache);
+
+        _ = await sut.CreateEmbeddingAsync(TestPhoto with { ContentFingerprint = "ALT" }, CancellationToken.None);
+        _ = await sut.CreateEmbeddingAsync(TestPhoto with { ContentFingerprint = "NEU" }, CancellationToken.None);
+
+        Assert.Equal(2, inner.CallCount);
+    }
+
+    [Fact]
+    public async Task CreateEmbedding_WithAnEntryOfAnOlderVersion_AdoptsItAndSurvivesTheNextMove()
+    {
+        // Der Eintrag entsteht wie in einer älteren Fassung, also ohne Inhaltsschlüssel.
+        FakeEmbeddingCache cache = new();
+        CountingEmbeddingProvider inner = new();
+        CachingEmbeddingProvider sut = CreateSut(inner, cache);
+        _ = await sut.CreateEmbeddingAsync(TestPhoto, CancellationToken.None);
+
+        Photo sameFile = TestPhoto with { ContentFingerprint = "INHALT" };
+        _ = await sut.CreateEmbeddingAsync(sameFile, CancellationToken.None);
+        _ = await sut.CreateEmbeddingAsync(sameFile with { FullPath = @"C:\Fotos\Urlaub\urlaub.jpg" }, CancellationToken.None);
+
+        Assert.Equal(1, inner.CallCount);
+        Assert.Equal(2, cache.Entries.Count);
+    }
+
+    [Fact]
+    public async Task CreateEmbedding_WithoutFingerprint_AsksTheFingerprinter()
+    {
+        FakeEmbeddingCache cache = new();
+        CountingEmbeddingProvider inner = new();
+        CachingEmbeddingProvider sut = CreateSut(inner, cache, fingerprint: "INHALT");
+
+        _ = await sut.CreateEmbeddingAsync(TestPhoto, CancellationToken.None);
+        _ = await sut.CreateEmbeddingAsync(TestPhoto with { ContentFingerprint = "INHALT" }, CancellationToken.None);
+
+        Assert.Equal(1, inner.CallCount);
+    }
+
     private static CachingEmbeddingProvider CreateSut(
         IEmbeddingProvider inner,
         IEmbeddingCache cache,
-        string embeddingModel = "nomic-embed-text")
+        string embeddingModel = "nomic-embed-text",
+        string? fingerprint = null)
     {
         OllamaOptions options = new()
         {
@@ -92,7 +150,14 @@ public sealed class CachingEmbeddingProviderTests
         return new CachingEmbeddingProvider(
             inner,
             cache,
+            new FixedFingerprinter(fingerprint),
             Options.Create(options),
             NullLogger<CachingEmbeddingProvider>.Instance);
+    }
+
+    private sealed class FixedFingerprinter(string? fingerprint) : IFileFingerprinter
+    {
+        public Task<string?> ComputeAsync(string path, CancellationToken cancellationToken) =>
+            Task.FromResult(fingerprint);
     }
 }
