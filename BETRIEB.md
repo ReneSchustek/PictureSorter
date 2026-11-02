@@ -239,7 +239,7 @@ Zeitlimit.
 (rund 90 MB) lädt sie beim ersten Gebrauch von huggingface.co in den Datenordner (`clip-vit-b32`), festgelegt auf eine
 Revision und Prüfsumme. Die Fotos verlassen dabei den Rechner nicht. Scheitert der Download, meldet die Seite das und ein
 neuer Versuch genügt; halbe Dateien bleiben nicht liegen. Wer den Ordner löscht, lädt beim nächsten Mal neu. Im
-32-Bit-Paket ist die Seite nicht verfügbar, weil es ONNX Runtime dafür nicht gibt.
+32-Bit-Paket meldet die Seite, dass sie nicht verfügbar ist, weil es ONNX Runtime dafür nicht gibt, und lädt nichts herunter.
 
 ---
 

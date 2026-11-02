@@ -21,4 +21,15 @@
     <InternalsVisibleTo Include="PictureSorter.Clip.Tests" />
   </ItemGroup>
 
+  <!--
+    ONNX Runtime liefert keine Fassung für 32-Bit-Windows, trägt sie aber trotzdem zum Kopieren ein, und der
+    Build bricht ab. Ohne den Eintrag baut das Paket; die Seite „Alles einsortieren“ meldet dann, dass sie auf
+    diesem Rechner nicht verfügbar ist.
+  -->
+  <Target Name="DropMissingOnnxRuntimeOnX86" BeforeTargets="AssignTargetPaths" Condition="'$(PlatformTarget)' == 'x86'">
+    <ItemGroup>
+      <None Remove="@(None)" Condition="$([System.String]::Copy('%(FullPath)').Contains('microsoft.ml.onnxruntime')) And !Exists('%(FullPath)')" />
+    </ItemGroup>
+  </Target>
+
 </Project>

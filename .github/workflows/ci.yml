@@ -34,6 +34,16 @@ jobs:
       - name: Release-Build (Warnungen = Fehler)
         run: dotnet build PictureSorter.slnx -c Release --no-restore
 
+      # Der Lauf für eine Fassung baut alle Pakete, dieser nur eines. Scheitert ein anderes, fiel das
+      # sonst erst nach dem Tag auf, und ein Tag lässt sich nicht zurücknehmen.
+      - name: Pakete für die übrigen Plattformen bauen
+        shell: pwsh
+        run: |
+          foreach ($ziel in @(@('win-x86', 'x86'), @('win-arm64', 'ARM64'))) {
+            dotnet publish src/PictureSorter.App/PictureSorter.App.csproj -c Release -p:Platform=$($ziel[1]) -r $($ziel[0]) --self-contained true -p:WindowsPackageType=None -o "publish/$($ziel[0])"
+            if ($LASTEXITCODE -ne 0) { throw "Paket $($ziel[0]) ließ sich nicht bauen." }
+          }
+
       - name: Zeilenenden/Whitespace prüfen
         run: dotnet format whitespace PictureSorter.slnx --verify-no-changes
 

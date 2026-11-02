@@ -4,10 +4,14 @@ Alle nennenswerten Änderungen an diesem Projekt werden hier dokumentiert.
 Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/),
 die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
-## [1.13.0] - 2026-11-02
+## [1.13.1] - 2026-11-02
+
+v1.13.0 ist nicht erschienen: Das 32-Bit-Paket ließ sich nicht bauen. Alle Änderungen stehen deshalb hier.
 
 ### Behoben
 
+- **Das 32-Bit-Paket lässt sich wieder bauen, und die neue Seite stürzt dort nicht ab.** „Alles einsortieren" meldet in diesem Paket,
+  dass die Funktion nur im 64-Bit-Paket verfügbar ist, und lädt nichts herunter.
 - **„Jetzt einrichten" steht jetzt auch auf der Startseite.** Bisher nannte sie nur den Weg über die Einstellungen.
 - **Die Einrichtung bricht nach der Installation von Ollama nicht mehr ab.** Auf einem PC ohne Ollama lief die Installation durch,
   danach kam eine Fehlermeldung, und die Modelle fehlten. Erst ein zweiter Start lud sie. Dieselbe Ursache ließ das Fenster während

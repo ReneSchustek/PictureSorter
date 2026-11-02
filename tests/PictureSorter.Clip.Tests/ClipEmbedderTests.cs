@@ -116,6 +116,31 @@ public sealed class ClipEmbedderTests : IDisposable
     }
 
     [Fact]
+    public async Task Prepare_InThe32BitPackage_RefusesBeforeDownloadingAnything()
+    {
+        // Das echte 32-Bit-Paket stürzte kurz nach dem Beginn des Downloads ab.
+        bool runtimeCreated = false;
+        using ClipEmbedder sut = new(
+            new ClipModelStore(new SingleClientFactory(_handler), _root, NullLogger<ClipModelStore>.Instance, StubHandler.Files),
+            _ =>
+            {
+                runtimeCreated = true;
+                return _runtime;
+            },
+            _reader,
+            _fingerprinter,
+            _cache,
+            NullLogger<ClipEmbedder>.Instance,
+            System.Runtime.InteropServices.Architecture.X86);
+
+        AiUnavailableException error = await Assert.ThrowsAsync<AiUnavailableException>(() => sut.PrepareAsync(null, CancellationToken.None));
+
+        Assert.Contains("32-Bit", error.Message, StringComparison.Ordinal);
+        Assert.False(runtimeCreated);
+        Assert.Empty(Directory.GetFileSystemEntries(_root));
+    }
+
+    [Fact]
     public async Task Prepare_WithoutARuntimeForThisProcessor_ReportsItAsUnavailable()
     {
         // ONNX Runtime liefert keine Fassung für 32-Bit-Windows, das Paket dafür gibt es trotzdem. Dort

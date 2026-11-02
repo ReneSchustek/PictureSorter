@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Logging;
@@ -27,6 +28,7 @@ internal sealed class ClipEmbedder : IVisualEmbedder, IDisposable
     private readonly IFileFingerprinter _fingerprinter;
     private readonly IEmbeddingCache _cache;
     private readonly ILogger<ClipEmbedder> _logger;
+    private readonly Architecture _architecture;
     private readonly SemaphoreSlim _prepareGate = new(1, 1);
 
     private IClipRuntime? _runtime;
@@ -40,13 +42,15 @@ internal sealed class ClipEmbedder : IVisualEmbedder, IDisposable
     /// <param name="fingerprinter">Erkennt Fotos ohne Inhaltsschlüssel.</param>
     /// <param name="cache">Der Zwischenspeicher der Vektoren.</param>
     /// <param name="logger">Der Logger.</param>
+    /// <param name="architecture">Der Prozessor; ohne Angabe der des laufenden Programms.</param>
     public ClipEmbedder(
         ClipModelStore store,
         Func<string, IClipRuntime> createRuntime,
         IScaledImageReader imageReader,
         IFileFingerprinter fingerprinter,
         IEmbeddingCache cache,
-        ILogger<ClipEmbedder> logger)
+        ILogger<ClipEmbedder> logger,
+        Architecture? architecture = null)
     {
         ArgumentNullException.ThrowIfNull(store);
         ArgumentNullException.ThrowIfNull(createRuntime);
@@ -61,11 +65,19 @@ internal sealed class ClipEmbedder : IVisualEmbedder, IDisposable
         _fingerprinter = fingerprinter;
         _cache = cache;
         _logger = logger;
+        _architecture = architecture ?? RuntimeInformation.ProcessArchitecture;
     }
 
     /// <inheritdoc />
     public async Task PrepareAsync(IProgress<ModelDownloadProgress>? progress, CancellationToken cancellationToken)
     {
+        // Vor allem anderen: Das 32-Bit-Paket stürzte beim Anlauf mit einem Heap-Fehler ab, und ONNX Runtime
+        // gibt es dafür ohnehin nicht. Ein Download wäre dort auch dann vergebens.
+        if (_architecture == Architecture.X86)
+        {
+            throw new AiUnavailableException("Diese Funktion ist im 32-Bit-Paket nicht verfügbar. Bitte nimm das 64-Bit-Paket.");
+        }
+
         await _prepareGate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
