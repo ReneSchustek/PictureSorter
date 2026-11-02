@@ -22,6 +22,56 @@ public sealed class FolderLookupTests : IDisposable
     }
 
     [Fact]
+    public void ListSubfolders_NamesTheVisibleOnesInOrder()
+    {
+        string root = Directory.CreateTempSubdirectory("PictureSorterFolders").FullName;
+        try
+        {
+            _ = Directory.CreateDirectory(Path.Combine(root, "Wald"));
+            _ = Directory.CreateDirectory(Path.Combine(root, "Meer"));
+            DirectoryInfo hidden = Directory.CreateDirectory(Path.Combine(root, "Versteckt"));
+            hidden.Attributes |= FileAttributes.Hidden;
+
+            Assert.Equal(["Meer", "Wald"], new FolderLookup().ListSubfolders(root));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void CountUnsupportedFiles_CountsOnlyVisibleFilesTheProgramDoesNotRead()
+    {
+        string root = Directory.CreateTempSubdirectory("PictureSorterFiles").FullName;
+        try
+        {
+            File.WriteAllBytes(Path.Combine(root, "foto.JPG"), []);
+            File.WriteAllBytes(Path.Combine(root, "roh.dng"), []);
+            File.WriteAllBytes(Path.Combine(root, "film.mov"), []);
+            string hidden = Path.Combine(root, "versteckt.dat");
+            File.WriteAllBytes(hidden, []);
+            File.SetAttributes(hidden, FileAttributes.Hidden);
+
+            Assert.Equal(2, new FolderLookup().CountUnsupportedFiles(root));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void CountUnsupportedFiles_ForAMissingFolder_IsZero() =>
+        Assert.Equal(0, new FolderLookup().CountUnsupportedFiles(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"))));
+
+    [Fact]
+    public void ListSubfolders_ForAMissingFolder_IsEmpty()
+    {
+        Assert.Empty(new FolderLookup().ListSubfolders(@"Z:\gibt\es\nicht"));
+    }
+
+    [Fact]
     public void FindLookalike_FindsTheFolderWithTheNoBreakSpace()
     {
         string echt = Path.Combine(_root, $"iCloud{NoBreakSpace}Fotos");

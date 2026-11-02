@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -710,10 +710,13 @@
     <value>The AI is ready. You can get started.</value>
   </data>
   <data name="Dashboard_AiModelsMissing" xml:space="preserve">
-    <value>AI models are still missing: {0}. Set them up under “Settings”.</value>
+    <value>AI models are still missing: {0}. Click "Set up now".</value>
+  </data>
+  <data name="DashboardPage_SetupButton.Content" xml:space="preserve">
+    <value>Set up now</value>
   </data>
   <data name="Dashboard_AiNotSetUp" xml:space="preserve">
-    <value>The AI (Ollama) is not set up yet. Open “Settings” and click “Set up now”.</value>
+    <value>The AI (Ollama) is not set up yet. Click "Set up now". "Sort everything" and duplicates work without it.</value>
   </data>
   <data name="ModelHint_Incomplete" xml:space="preserve">
     <value>The AI is not fully set up yet. Please click “Set up now” – the missing parts will then be downloaded automatically.</value>
@@ -1128,6 +1131,135 @@
   </data>
   <data name="Duplicates_FilterSimilar" xml:space="preserve">
     <value>Similar</value>
+  </data>
+  <data name="MainWindow_BulkSortNavItem.Content" xml:space="preserve">
+    <value>Sort everything</value>
+  </data>
+  <data name="BulkPage_Header.Title" xml:space="preserve">
+    <value>Sort everything</value>
+  </data>
+  <data name="BulkPage_Header.Subtitle" xml:space="preserve">
+    <value>One pass, all folders: no training and no graphics card needed.</value>
+  </data>
+  <data name="BulkPage_FolderHeading.Text" xml:space="preserve">
+    <value>Folder</value>
+  </data>
+  <data name="BulkPage_FolderHint.Text" xml:space="preserve">
+    <value>The subfolders are the targets, and their pictures show the program what belongs in them. The pictures directly in the folder get sorted. The first time, the program downloads about 90 MB once. Your pictures stay on your computer.</value>
+  </data>
+  <data name="BulkPage_SourceBox.Header" xml:space="preserve">
+    <value>Folder with photos</value>
+  </data>
+  <data name="BulkPage_SourceBox.PlaceholderText" xml:space="preserve">
+    <value>e.g. D:\Photos</value>
+  </data>
+  <data name="BulkPage_PickSource.Content" xml:space="preserve">
+    <value>Browse</value>
+  </data>
+  <data name="BulkPage_NewFoldersBox.Header" xml:space="preserve">
+    <value>More targets (optional, comma separated)</value>
+  </data>
+  <data name="BulkPage_NewFoldersBox.PlaceholderText" xml:space="preserve">
+    <value>e.g. Recipes, Garden</value>
+  </data>
+  <data name="BulkPage_Analyze.Content" xml:space="preserve">
+    <value>Create suggestions</value>
+  </data>
+  <data name="BulkPage_PreviewHeading.Text" xml:space="preserve">
+    <value>Suggestions</value>
+  </data>
+  <data name="BulkPage_PreviewHint.Text" xml:space="preserve">
+    <value>If a suggestion is wrong, pick the right folder. The other suggestions adapt right away. The number shows how sure the program is and is only good for comparing.</value>
+  </data>
+  <data name="BulkPage_ProposalList.AutomationProperties.Name" xml:space="preserve">
+    <value>Suggestions</value>
+  </data>
+  <data name="BulkPage_CopyCheck.Content" xml:space="preserve">
+    <value>Copy photos instead of moving them (originals stay in place)</value>
+  </data>
+  <data name="BulkPage_TargetRootBox.Header" xml:space="preserve">
+    <value>Create target folders in (empty: inside the source folder)</value>
+  </data>
+  <data name="BulkPage_TargetRootBox.PlaceholderText" xml:space="preserve">
+    <value>e.g. D:\Archive</value>
+  </data>
+  <data name="BulkPage_PickTargetRoot.Content" xml:space="preserve">
+    <value>Browse</value>
+  </data>
+  <data name="BulkPage_Apply.Content" xml:space="preserve">
+    <value>Sort</value>
+  </data>
+  <data name="Bulk_Preparing" xml:space="preserve">
+    <value>Preparing the run …</value>
+  </data>
+  <data name="Bulk_Downloading" xml:space="preserve">
+    <value>Downloading the model: {0} of {1} MB</value>
+  </data>
+  <data name="Bulk_ReadingFolders" xml:space="preserve">
+    <value>Reading the folders: {0} of {1}</value>
+  </data>
+  <data name="Bulk_ReadingPhotos" xml:space="preserve">
+    <value>Reading the photos: {0} of {1}</value>
+  </data>
+  <data name="Bulk_AnalyzeFailed" xml:space="preserve">
+    <value>The run failed: {0}</value>
+  </data>
+  <data name="Bulk_NoFolders" xml:space="preserve">
+    <value>This folder has no subfolders. Create some or enter more targets.</value>
+  </data>
+  <data name="Bulk_NothingToDo" xml:space="preserve">
+    <value>There are no photos directly in this folder.</value>
+  </data>
+  <data name="Bulk_YearLimitNote" xml:space="preserve">
+    <value>Only photos from the named year; photos without a date stay put: {0}.</value>
+  </data>
+  <data name="Bulk_NoExamplesNote" xml:space="preserve">
+    <value>No example images yet, so no suggestions: {0}. Assign a few photos by hand and the program learns from them.</value>
+  </data>
+  <data name="Bulk_UnsupportedNote" xml:space="preserve">
+    <value>{0} files were not read because their format is not supported, for example videos or RAW photos. They stay where they are.</value>
+  </data>
+  <data name="Bulk_UnreadableNote" xml:space="preserve">
+    <value>{0} photos could not be opened and stay put. Often they are only online in the cloud and not on this PC yet.</value>
+  </data>
+  <data name="Bulk_Summary" xml:space="preserve">
+    <value>{0} photos with a folder, {1} stay in place</value>
+  </data>
+  <data name="Bulk_NoFolderChoice" xml:space="preserve">
+    <value>Do not sort</value>
+  </data>
+  <data name="Bulk_ConfirmTitle" xml:space="preserve">
+    <value>Sort photos?</value>
+  </data>
+  <data name="Bulk_ConfirmMove" xml:space="preserve">
+    <value>{0} photos will be moved to their folders. You can undo this on the "Sort" page.</value>
+  </data>
+  <data name="Bulk_ConfirmCopy" xml:space="preserve">
+    <value>{0} photos will be copied to their folders. You can undo this on the "Sort" page.</value>
+  </data>
+  <data name="Bulk_ConfirmAccept" xml:space="preserve">
+    <value>Sort</value>
+  </data>
+  <data name="Bulk_ConfirmReject" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Bulk_ApplyCanceled" xml:space="preserve">
+    <value>Nothing was changed.</value>
+  </data>
+  <data name="Bulk_Applying" xml:space="preserve">
+    <value>Sorting the photos …</value>
+  </data>
+  <data name="Bulk_ApplyFailed" xml:space="preserve">
+    <value>Sorting failed: {0}</value>
+  </data>
+  <data name="Bulk_FilesSorted" xml:space="preserve">
+    <value>{0} photos sorted. You can undo this on the "Sort" page.</value>
+  </data>
+  <data name="Bulk_Canceling" xml:space="preserve">
+    <value>Stopping …</value>
+  </data>
+  <data name="Bulk_Canceled" xml:space="preserve">
+    <value>Canceled. The next run continues quickly, since finished work is kept.</value>
   </data>
   <data name="MainWindow_CalendarNavItem.Content" xml:space="preserve">
     <value>Sort into date folders</value>

@@ -147,11 +147,9 @@ public sealed class PhotoAnalysisService : IPhotoAnalyzer
         // tausend Bildern aus der Cloud nach Minuten. Nebeneinander bewegt sich der Zählstand
         // der Bewertung nach Sekunden statt nach Minuten.
         //
-        // Mehrere Fotos gleichzeitig bewerten: Jede Bewertung ist ein Aufruf des
-        // Bild-Modells und dauert Sekunden, in denen die Anwendung nur wartet. Der Grad
-        // der Gleichzeitigkeit ist eingestellt, nicht geraten: Ollama arbeitet nur eine
-        // begrenzte Zahl von Anfragen wirklich gleichzeitig ab, alles darüber wartet dort
-        // in der Schlange und läuft irgendwann ins Zeitlimit.
+        // Wie viele Fotos gleichzeitig zur KI gehen, ist eingestellt, nicht geraten: Ollama
+        // arbeitet nur eine begrenzte Zahl von Anfragen wirklich gleichzeitig ab, alles
+        // darüber wartet dort in der Schlange und läuft irgendwann ins Zeitlimit.
         IProgress<PhotoScanProgress>? gathering =
             progress is null ? null : new GatheringProgress(progress);
 
@@ -214,8 +212,8 @@ public sealed class PhotoAnalysisService : IPhotoAnalyzer
         AnalysisTally tally = pass.Tally;
 
         // Liegt aus diesem Lauf bereits ein Urteil vor, wird es übernommen. Die Signatur
-        // schließt Pfad, Größe und Aufnahmezeit ein. Eine veränderte Datei trägt eine
-        // andere und wird deshalb zu Recht neu bewertet.
+        // hängt am Inhalt: Eine veränderte Datei trägt eine andere und wird deshalb zu
+        // Recht neu bewertet.
         if (TryFindEarlier(pass.Decided, photo, out AnalysisRunItem? earlier))
         {
             if (earlier.Outcome is AnalysisOutcome.Proposed)

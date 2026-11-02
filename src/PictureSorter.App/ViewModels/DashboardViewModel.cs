@@ -20,12 +20,20 @@ internal sealed partial class DashboardViewModel : ObservableObject
     [ObservableProperty]
     public partial string AiStatusText { get; set; }
 
+    /// <summary>
+    /// <see langword="true"/>, wenn der Knopf zur Einrichtung gezeigt wird: Die Prüfung ist fertig, und die KI
+    /// ist nicht bereit. Während der Prüfung stünde er sonst kurz auch dort, wo alles in Ordnung ist.
+    /// </summary>
+    public bool ShowsSetupAction => !IsChecking && !IsAiReady;
+
     /// <summary><see langword="true"/>, wenn die KI einsatzbereit ist.</summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowsSetupAction))]
     public partial bool IsAiReady { get; set; }
 
     /// <summary><see langword="true"/>, solange der Zustand geprüft wird.</summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowsSetupAction))]
     public partial bool IsChecking { get; set; }
 
     /// <summary>

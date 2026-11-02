@@ -11,6 +11,9 @@ laufen vollständig offline auf dem eigenen Rechner.
   bestätigst einige Beispielbilder, und den Rest sortiert die App selbst. In die
   Bewertung fließen neben dem Bild auch die **Bildinformationen** ein: Aufnahmedatum,
   **Aufnahmeort (GPS)**, Kamera und Auflösung aus den EXIF-Daten.
+- **Alles einsortieren**: Ein Durchlauf für einen ganzen Ordner. Seine Unterordner sind die Ziele, ihre Bilder das
+  Vorbild, weitere Ziele lassen sich als Namen eingeben. Jede Korrektur passt die übrigen Vorschläge sofort an. Das
+  braucht weder Anlernen noch Ollama oder eine Grafikkarte; beim ersten Gebrauch werden einmalig rund 90 MB geladen.
 - **Sortieren nach Aufnahmedatum, ganz ohne KI**: Bei einem Urlaub entscheidet der
   Zeitraum, nicht das Motiv. Im zweiten Schritt lässt sich deshalb *„Nur nach
   Aufnahmedatum sortieren"* wählen. Dann entfallen das Anlernen und jede Bildbewertung,
@@ -149,6 +152,7 @@ Anwendungen update-unfähig**, weil sie nur den alten Schlüssel kennen.
   - `src/PictureSorter.Imaging`: EXIF-Auslesen und Wahrnehmungs-Hash (WinRT)
   - `src/PictureSorter.Infrastructure`: Dateisystem, Update, Cache, JSON
   - `src/PictureSorter.Ollama`: HTTP-Anbindung der lokalen KI
+  - `src/PictureSorter.Clip`: Bildvektoren mit CLIP über ONNX Runtime, für „Alles einsortieren"
 - Tests: zu jedem `src`-Projekt gibt es ein Testprojekt unter `tests/`
   (`PictureSorter.App.Tests`, `.Application.Tests`, `.Core.Tests`, `.Data.Tests`,
   `.Infrastructure.Tests`, `.Ollama.Tests`).
@@ -217,5 +221,9 @@ Wo die Daten liegen, wie man sie sichert und wie sich ein Sortierlauf oder ein
 Update zurücknehmen lässt, steht im [Betriebshandbuch](BETRIEB.md).
 
 ## Lizenz
+
+„Alles einsortieren" nutzt [ONNX Runtime](https://github.com/microsoft/onnxruntime) und das Modell
+[CLIP](https://github.com/openai/CLIP) in der [ONNX-Fassung von Xenova](https://huggingface.co/Xenova/clip-vit-base-patch32),
+alle unter MIT-Lizenz.
 
 MIT, siehe [LICENSE](LICENSE).

@@ -22,6 +22,11 @@ public sealed class FileSystemPhotoSource : IPhotoSource
         ".jpg", ".jpeg", ".png", ".bmp", ".gif", ".webp", ".heic", ".tif", ".tiff",
     };
 
+    /// <summary>Prüft, ob eine Dateiendung als Foto gelesen wird.</summary>
+    /// <param name="extension">Die Endung mit Punkt.</param>
+    /// <returns><see langword="true"/>, wenn das Format unterstützt wird.</returns>
+    internal static bool IsSupported(string extension) => SupportedExtensions.Contains(extension);
+
     private readonly IImageMetadataReader _metadataReader;
     private readonly IFileFingerprinter _fingerprinter;
     private readonly PhotoSourceOptions _options;
@@ -275,12 +280,57 @@ public sealed class FileSystemPhotoSource : IPhotoSource
     {
         try
         {
-            return await ReadPhotoAsync(path, cancellationToken).ConfigureAwait(false);
+            try
+            {
+                return await ReadWithTimeoutAsync(path, cancellationToken).ConfigureAwait(false);
+            }
+            catch (TimeoutException ex)
+            {
+                // Es trifft bei jedem Lauf andere Dateien. Der zweite Versuch rettet sie, statt ein
+                // lesbares Foto liegen zu lassen.
+                PhotoSourceLog.ReadTimedOut(_logger, LogPaths.Redact(path), ex);
+                return await ReadWithTimeoutAsync(path, cancellationToken).ConfigureAwait(false);
+            }
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or TimeoutException)
         {
             PhotoSourceLog.Skipped(_logger, LogPaths.Redact(path), ex);
             return null;
+        }
+    }
+
+    [SuppressMessage(
+        "Reliability",
+        "CA2000:Dispose objects before losing scope",
+        Justification = "Wird in der Fortsetzung des Lesens freigegeben; vorher hält ein hängendes Lesen noch das Zeichen.")]
+    private async Task<Photo> ReadWithTimeoutAsync(string path, CancellationToken cancellationToken)
+    {
+        CancellationTokenSource attempt = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+
+        // Task.Run, weil auch ein Lesen hängen kann, das schon beim Aufruf blockiert. Die Quelle wird erst mit
+        // dem Lesen freigegeben, denn ein hängendes Lesen hält ihr Zeichen noch in der Hand. Kommt es nie
+        // zurück, belegt es einen Thread, bis das Betriebssystem antwortet; der Lauf geht trotzdem weiter.
+        Task<Photo> read = Task.Run(() => ReadPhotoAsync(path, attempt.Token), attempt.Token);
+        _ = read.ContinueWith(
+            finished =>
+            {
+                _ = finished.Exception;
+                attempt.Dispose();
+            },
+            CancellationToken.None,
+            TaskContinuationOptions.ExecuteSynchronously,
+            TaskScheduler.Default);
+
+        try
+        {
+            return await read
+                .WaitAsync(TimeSpan.FromSeconds(_options.ReadTimeoutSeconds), cancellationToken)
+                .ConfigureAwait(false);
+        }
+        catch (TimeoutException)
+        {
+            await attempt.CancelAsync().ConfigureAwait(false);
+            throw;
         }
     }
 
@@ -320,4 +370,7 @@ internal static partial class PhotoSourceLog
 
     [LoggerMessage(EventId = 2301, Level = LogLevel.Warning, Message = "Foto {File} übersprungen: beim Einlesen nicht mehr erreichbar.")]
     public static partial void Skipped(ILogger logger, string file, Exception exception);
+
+    [LoggerMessage(EventId = 2302, Level = LogLevel.Warning, Message = "Foto {File} antwortet nicht, zweiter Versuch.")]
+    public static partial void ReadTimedOut(ILogger logger, string file, Exception exception);
 }

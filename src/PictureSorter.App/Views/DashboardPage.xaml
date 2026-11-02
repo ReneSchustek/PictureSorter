@@ -33,7 +33,14 @@
                 IsClosable="False"
                 IsOpen="True"
                 Message="{x:Bind ViewModel.AiStatusText, Mode=OneWay}"
-                Severity="{x:Bind ViewModel.IsAiReady, Mode=OneWay, Converter={StaticResource BoolToInfoBarSeverityConverter}}" />
+                Severity="{x:Bind ViewModel.IsAiReady, Mode=OneWay, Converter={StaticResource BoolToInfoBarSeverityConverter}}">
+                <InfoBar.ActionButton>
+                    <Button
+                        x:Uid="DashboardPage_SetupButton"
+                        Click="OnSetupClick"
+                        Visibility="{x:Bind ViewModel.ShowsSetupAction, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                </InfoBar.ActionButton>
+            </InfoBar>
 
             <TextBlock
                 x:Uid="DashboardPage_ActionsPrompt"

@@ -466,6 +466,95 @@ public sealed class FileSystemPhotoSourceTests : IDisposable
         }
     }
 
+    [Fact]
+    public async Task GetPhotosAsync_WhenReadingOneFileNeverReturns_SkipsItAndFinishes()
+    {
+        // So stand ein Lauf an einem echten Bestand: Eine Datei kam nie zurück, und der Lauf endete nie.
+        // Das Blockieren geschieht schon im Aufruf, nicht erst in der zurückgegebenen Aufgabe.
+        Write("gut.jpg");
+        Write("blocked.jpg");
+        using ManualResetEventSlim release = new(false);
+        FileSystemPhotoSource source = new(
+            new BlockingMetadataReader("blocked.jpg", release),
+            new FileFingerprinter(),
+            Options.Create(new PhotoSourceOptions { ReadTimeoutSeconds = 1 }),
+            NullLogger<FileSystemPhotoSource>.Instance);
+
+        try
+        {
+            IReadOnlyList<Photo> photos = await source
+                .GetPhotosAsync(_root, includeSubfolders: false, skip: 0, maxCount: null, null, TestContext.Current.CancellationToken)
+                .WaitAsync(TimeSpan.FromSeconds(30), TestContext.Current.CancellationToken);
+
+            Assert.Equal("gut.jpg", Assert.Single(photos).FileName);
+        }
+        finally
+        {
+            release.Set();
+        }
+    }
+
+    [Fact]
+    public async Task GetPhotosAsync_WhenTheFirstReadHangs_DeliversThePhotoOnTheSecondAttempt()
+    {
+        // Das Hängen trifft bei jedem Lauf andere Dateien, die Datei selbst ist in Ordnung.
+        Write("a.jpg");
+        FirstCallHangsMetadataReader reader = new();
+        FileSystemPhotoSource source = new(
+            reader,
+            new FileFingerprinter(),
+            Options.Create(new PhotoSourceOptions { ReadTimeoutSeconds = 1 }),
+            NullLogger<FileSystemPhotoSource>.Instance);
+
+        IReadOnlyList<Photo> photos = await source
+            .GetPhotosAsync(_root, includeSubfolders: false, skip: 0, maxCount: null, null, TestContext.Current.CancellationToken)
+            .WaitAsync(TimeSpan.FromSeconds(30), TestContext.Current.CancellationToken);
+
+        Assert.Equal("a.jpg", Assert.Single(photos).FileName);
+        Assert.Equal(2, reader.Calls);
+        Assert.True(reader.FirstCallWasCanceled);
+    }
+
+    private sealed class FirstCallHangsMetadataReader : IImageMetadataReader
+    {
+        public int Calls { get; private set; }
+
+        public bool FirstCallWasCanceled { get; private set; }
+
+        public async Task<PhotoMetadata?> ReadAsync(string filePath, CancellationToken cancellationToken)
+        {
+            Calls++;
+            if (Calls > 1)
+            {
+                return null;
+            }
+
+            try
+            {
+                await Task.Delay(Timeout.Infinite, cancellationToken).ConfigureAwait(false);
+                return null;
+            }
+            catch (OperationCanceledException)
+            {
+                FirstCallWasCanceled = true;
+                throw;
+            }
+        }
+    }
+
+    private sealed class BlockingMetadataReader(string blockedName, ManualResetEventSlim release) : IImageMetadataReader
+    {
+        public Task<PhotoMetadata?> ReadAsync(string filePath, CancellationToken cancellationToken)
+        {
+            if (Path.GetFileName(filePath) == blockedName)
+            {
+                release.Wait(CancellationToken.None);
+            }
+
+            return Task.FromResult<PhotoMetadata?>(null);
+        }
+    }
+
     private sealed class NullMetadataReader : IImageMetadataReader
     {
         public Task<PhotoMetadata?> ReadAsync(string filePath, CancellationToken cancellationToken) =>

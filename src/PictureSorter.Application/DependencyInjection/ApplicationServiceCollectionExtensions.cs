@@ -31,6 +31,7 @@ public static class ApplicationServiceCollectionExtensions
         // Zwei Verträge, zwei Dienste: Erzeugen liest und fragt die Bilderkennung,
         // Anwenden bewegt Dateien. Wer nur Vorschläge braucht, bekommt den zweiten nicht.
         _ = services.AddTransient<IPhotoAnalyzer, PhotoAnalysisService>();
+        _ = services.AddTransient<IBulkSortService, BulkSortService>();
         _ = services.AddTransient<IProposalApplier, ProposalApplyService>();
         _ = services.AddTransient<ICategoryTrainer, CategoryLearningService>();
         _ = services.AddTransient<IDuplicateScanner, DuplicateScanService>();

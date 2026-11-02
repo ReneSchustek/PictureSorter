@@ -18,6 +18,45 @@ namespace PictureSorter.Infrastructure.FileSystem;
 public sealed class FolderLookup : IFolderLookup
 {
     /// <inheritdoc />
+    public IReadOnlyList<string> ListSubfolders(string folderPath)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(folderPath);
+
+        try
+        {
+            // Versteckte Ordner wie „$RECYCLE.BIN" oder die Ablage eines Cloud-Dienstes sind keine Ziele,
+            // und ein Vorschlag dorthin wäre nicht wiederzufinden.
+            return [.. new DirectoryInfo(folderPath)
+                .EnumerateDirectories()
+                .Where(static directory => (directory.Attributes & (FileAttributes.Hidden | FileAttributes.System)) == 0)
+                .Select(static directory => directory.Name)
+                .Order(StringComparer.CurrentCultureIgnoreCase)];
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException)
+        {
+            return [];
+        }
+    }
+
+    /// <inheritdoc />
+    public int CountUnsupportedFiles(string folderPath)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(folderPath);
+
+        try
+        {
+            return new DirectoryInfo(folderPath)
+                .EnumerateFiles()
+                .Count(static file => (file.Attributes & (FileAttributes.Hidden | FileAttributes.System)) == 0
+                    && !FileSystemPhotoSource.IsSupported(file.Extension));
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException)
+        {
+            return 0;
+        }
+    }
+
+    /// <inheritdoc />
     public string? FindLookalike(string requestedPath)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(requestedPath);

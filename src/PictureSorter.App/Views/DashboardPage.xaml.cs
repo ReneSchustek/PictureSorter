@@ -1,7 +1,9 @@
+using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+using PictureSorter.App.Services;
 using PictureSorter.App.ViewModels;
 
 namespace PictureSorter.App.Views;
@@ -23,12 +25,15 @@ internal sealed partial class DashboardPage : Page
     /// </summary>
     public DashboardViewModel ViewModel { get; }
 
+    private readonly OllamaSetupService _setupService;
+
     /// <summary>
     /// Initialisiert die Startseite.
     /// </summary>
     public DashboardPage()
     {
         ViewModel = App.Services.GetRequiredService<DashboardViewModel>();
+        _setupService = App.Services.GetRequiredService<OllamaSetupService>();
         InitializeComponent();
 
         NavigationCacheMode = NavigationCacheMode.Required;
@@ -36,4 +41,18 @@ internal sealed partial class DashboardPage : Page
 
     private void OnPageLoaded(object sender, RoutedEventArgs e)
         => ViewModel.CheckAiCommand.Execute(parameter: null);
+
+    private void OnSetupClick(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            _setupService.LaunchSetup();
+        }
+        catch (Exception ex) when (ex is System.IO.FileNotFoundException or InvalidOperationException)
+        {
+            // Der Dienst hat den Grund schon protokolliert. Der Hinweis auf der Seite bleibt stehen, und
+            // die Einstellungsseite nennt den Fehler beim erneuten Versuch.
+            ViewModel.AiStatusText = ex.Message;
+        }
+    }
 }

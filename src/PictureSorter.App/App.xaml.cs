@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
+using PictureSorter.Clip.DependencyInjection;
 using PictureSorter.App.DependencyInjection;
 using PictureSorter.App.Logging;
 using PictureSorter.App.Services;
@@ -395,6 +396,7 @@ public partial class App : Microsoft.UI.Xaml.Application
         _ = services.Configure<TripDetectionOptions>(configuration.GetSection(TripDetectionOptions.SectionName));
         _ = services.AddPictureSorterOllama(configuration);
         _ = services.AddPictureSorterImaging();
+        _ = services.AddPictureSorterClip(dataDirectory);
         _ = services.AddPictureSorterInfrastructure(configuration, dataDirectory);
         _ = services.AddPictureSorterData(dataDirectory);
         _ = services.AddPictureSorterApplication();

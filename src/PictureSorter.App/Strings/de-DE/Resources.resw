@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -710,10 +710,13 @@
     <value>Die KI ist einsatzbereit. Du kannst loslegen.</value>
   </data>
   <data name="Dashboard_AiModelsMissing" xml:space="preserve">
-    <value>Es fehlen noch KI-Modelle: {0}. Richte sie unter „Einstellungen“ ein.</value>
+    <value>Es fehlen noch KI-Modelle: {0}. Klicke auf „Jetzt einrichten“.</value>
+  </data>
+  <data name="DashboardPage_SetupButton.Content" xml:space="preserve">
+    <value>Jetzt einrichten</value>
   </data>
   <data name="Dashboard_AiNotSetUp" xml:space="preserve">
-    <value>Die KI (Ollama) ist noch nicht eingerichtet. Öffne „Einstellungen“ und klicke auf „Jetzt einrichten“.</value>
+    <value>Die KI (Ollama) ist noch nicht eingerichtet. Klicke auf „Jetzt einrichten“. „Alles einsortieren“ und die Duplikate funktionieren auch ohne.</value>
   </data>
   <data name="ModelHint_Incomplete" xml:space="preserve">
     <value>Die KI ist noch nicht vollständig eingerichtet. Bitte auf „Jetzt einrichten“ klicken – die fehlenden Bestandteile werden dann automatisch geladen.</value>
@@ -1128,6 +1131,135 @@
   </data>
   <data name="Duplicates_FilterSimilar" xml:space="preserve">
     <value>Ähnliche</value>
+  </data>
+  <data name="MainWindow_BulkSortNavItem.Content" xml:space="preserve">
+    <value>Alles einsortieren</value>
+  </data>
+  <data name="BulkPage_Header.Title" xml:space="preserve">
+    <value>Alles einsortieren</value>
+  </data>
+  <data name="BulkPage_Header.Subtitle" xml:space="preserve">
+    <value>Ein Durchlauf, alle Ordner: ohne Anlernen und ohne Grafikkarte.</value>
+  </data>
+  <data name="BulkPage_FolderHeading.Text" xml:space="preserve">
+    <value>Ordner</value>
+  </data>
+  <data name="BulkPage_FolderHint.Text" xml:space="preserve">
+    <value>Die Unterordner sind die Ziele, ihre Bilder zeigen dem Programm, was hineingehört. Sortiert werden die Bilder, die direkt im Ordner liegen. Beim ersten Mal lädt das Programm einmalig rund 90 MB. Die Bilder verlassen deinen Rechner nicht.</value>
+  </data>
+  <data name="BulkPage_SourceBox.Header" xml:space="preserve">
+    <value>Ordner mit Fotos</value>
+  </data>
+  <data name="BulkPage_SourceBox.PlaceholderText" xml:space="preserve">
+    <value>z. B. D:\Fotos</value>
+  </data>
+  <data name="BulkPage_PickSource.Content" xml:space="preserve">
+    <value>Durchsuchen</value>
+  </data>
+  <data name="BulkPage_NewFoldersBox.Header" xml:space="preserve">
+    <value>Weitere Ziele (optional, durch Komma getrennt)</value>
+  </data>
+  <data name="BulkPage_NewFoldersBox.PlaceholderText" xml:space="preserve">
+    <value>z. B. Rezepte, Garten</value>
+  </data>
+  <data name="BulkPage_Analyze.Content" xml:space="preserve">
+    <value>Vorschläge erstellen</value>
+  </data>
+  <data name="BulkPage_PreviewHeading.Text" xml:space="preserve">
+    <value>Vorschläge</value>
+  </data>
+  <data name="BulkPage_PreviewHint.Text" xml:space="preserve">
+    <value>Passt ein Vorschlag nicht, wähle den richtigen Ordner. Die übrigen Vorschläge passen sich sofort an. Die Zahl sagt, wie sicher das Programm ist, und taugt nur zum Vergleichen.</value>
+  </data>
+  <data name="BulkPage_ProposalList.AutomationProperties.Name" xml:space="preserve">
+    <value>Vorschläge</value>
+  </data>
+  <data name="BulkPage_CopyCheck.Content" xml:space="preserve">
+    <value>Fotos kopieren statt verschieben (Originale bleiben liegen)</value>
+  </data>
+  <data name="BulkPage_TargetRootBox.Header" xml:space="preserve">
+    <value>Zielordner anlegen unter (leer: im Quellordner)</value>
+  </data>
+  <data name="BulkPage_TargetRootBox.PlaceholderText" xml:space="preserve">
+    <value>z. B. D:\Archiv</value>
+  </data>
+  <data name="BulkPage_PickTargetRoot.Content" xml:space="preserve">
+    <value>Durchsuchen</value>
+  </data>
+  <data name="BulkPage_Apply.Content" xml:space="preserve">
+    <value>Einsortieren</value>
+  </data>
+  <data name="Bulk_Preparing" xml:space="preserve">
+    <value>Bereite den Durchlauf vor …</value>
+  </data>
+  <data name="Bulk_Downloading" xml:space="preserve">
+    <value>Lade das Modell: {0} von {1} MB</value>
+  </data>
+  <data name="Bulk_ReadingFolders" xml:space="preserve">
+    <value>Lese die Ordner: {0} von {1}</value>
+  </data>
+  <data name="Bulk_ReadingPhotos" xml:space="preserve">
+    <value>Lese die Fotos: {0} von {1}</value>
+  </data>
+  <data name="Bulk_AnalyzeFailed" xml:space="preserve">
+    <value>Der Durchlauf ist gescheitert: {0}</value>
+  </data>
+  <data name="Bulk_NoFolders" xml:space="preserve">
+    <value>Dieser Ordner hat keine Unterordner. Lege welche an oder nenne weitere Ziele.</value>
+  </data>
+  <data name="Bulk_NothingToDo" xml:space="preserve">
+    <value>Es liegen keine Fotos direkt in diesem Ordner.</value>
+  </data>
+  <data name="Bulk_YearLimitNote" xml:space="preserve">
+    <value>Nur Fotos aus dem genannten Jahr, Fotos ohne Datum bleiben liegen: {0}.</value>
+  </data>
+  <data name="Bulk_NoExamplesNote" xml:space="preserve">
+    <value>Noch keine Beispielbilder, deshalb keine Vorschläge: {0}. Ordne ein paar Fotos von Hand zu, dann lernt das Programm daraus.</value>
+  </data>
+  <data name="Bulk_UnsupportedNote" xml:space="preserve">
+    <value>{0} Dateien wurden nicht gelesen, weil das Programm ihr Format nicht unterstützt, zum Beispiel Videos oder RAW-Fotos. Sie bleiben, wo sie sind.</value>
+  </data>
+  <data name="Bulk_UnreadableNote" xml:space="preserve">
+    <value>{0} Fotos ließen sich nicht öffnen und bleiben liegen. Oft liegen sie nur online in der Cloud und sind noch nicht auf diesem PC.</value>
+  </data>
+  <data name="Bulk_Summary" xml:space="preserve">
+    <value>{0} Fotos mit Ordner, {1} bleiben liegen</value>
+  </data>
+  <data name="Bulk_NoFolderChoice" xml:space="preserve">
+    <value>Nicht einsortieren</value>
+  </data>
+  <data name="Bulk_ConfirmTitle" xml:space="preserve">
+    <value>Fotos einsortieren?</value>
+  </data>
+  <data name="Bulk_ConfirmMove" xml:space="preserve">
+    <value>{0} Fotos werden in ihre Ordner verschoben. Das lässt sich auf der Seite „Sortieren" zurücknehmen.</value>
+  </data>
+  <data name="Bulk_ConfirmCopy" xml:space="preserve">
+    <value>{0} Fotos werden in ihre Ordner kopiert. Das lässt sich auf der Seite „Sortieren" zurücknehmen.</value>
+  </data>
+  <data name="Bulk_ConfirmAccept" xml:space="preserve">
+    <value>Einsortieren</value>
+  </data>
+  <data name="Bulk_ConfirmReject" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="Bulk_ApplyCanceled" xml:space="preserve">
+    <value>Nichts wurde verändert.</value>
+  </data>
+  <data name="Bulk_Applying" xml:space="preserve">
+    <value>Sortiere die Fotos ein …</value>
+  </data>
+  <data name="Bulk_ApplyFailed" xml:space="preserve">
+    <value>Das Einsortieren ist gescheitert: {0}</value>
+  </data>
+  <data name="Bulk_FilesSorted" xml:space="preserve">
+    <value>{0} Fotos einsortiert. Zurücknehmen geht auf der Seite „Sortieren".</value>
+  </data>
+  <data name="Bulk_Canceling" xml:space="preserve">
+    <value>Halte an …</value>
+  </data>
+  <data name="Bulk_Canceled" xml:space="preserve">
+    <value>Abgebrochen. Beim nächsten Durchlauf geht es schnell weiter, Berechnetes bleibt erhalten.</value>
   </data>
   <data name="MainWindow_CalendarNavItem.Content" xml:space="preserve">
     <value>Nach Datum ablegen</value>

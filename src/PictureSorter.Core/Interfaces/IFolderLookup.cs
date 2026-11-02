@@ -17,4 +17,18 @@ public interface IFolderLookup
     /// erklären).
     /// </returns>
     string? FindLookalike(string requestedPath);
+
+    /// <summary>
+    /// Nennt die sichtbaren Unterordner eines Ordners.
+    /// </summary>
+    /// <param name="folderPath">Der Ordner.</param>
+    /// <returns>Ihre Namen, nach Namen geordnet; leer, wenn der Ordner nicht lesbar ist.</returns>
+    IReadOnlyList<string> ListSubfolders(string folderPath);
+
+    /// <summary>
+    /// Zählt die sichtbaren Dateien direkt in einem Ordner, die das Programm nicht als Foto liest.
+    /// </summary>
+    /// <param name="folderPath">Der Ordner.</param>
+    /// <returns>Ihre Zahl; 0, wenn der Ordner nicht lesbar ist.</returns>
+    int CountUnsupportedFiles(string folderPath);
 }

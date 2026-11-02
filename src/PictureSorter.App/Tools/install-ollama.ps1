@@ -21,6 +21,12 @@ param(
 
     [int]$ReadyTimeoutSeconds = 60,
 
+    # Wie oft das Fenster während der Installation ein Lebenszeichen gibt.
+    [int]$HeartbeatSeconds = 30,
+
+    # Durchläuft auch den Installationszweig, wenn Ollama schon da ist. Nur für die Tests.
+    [switch]$ForceInstall,
+
     # Ohne wartende Eingabe am Ende, sonst hinge ein automatischer Lauf für immer.
     [switch]$NoPause
 )
@@ -45,16 +51,35 @@ function Find-Ollama {
     return $null
 }
 
+# Bewusst nicht als "winget ..." aufgerufen: Innerhalb einer Funktion landet dessen Ausgabe im
+# Rückgabewert. Das Fenster blieb so beim Laden von rund 1,6 GB minutenlang leer, und danach wurde der
+# gesamte Text als Pfad zu Ollama ausgeführt. Start-Process schreibt direkt in die Konsole. Das
+# Lebenszeichen bleibt für den Fall, dass winget selbst länger nichts ausgibt.
+function Invoke-WingetWithHeartbeat {
+    $process = Start-Process -FilePath (Get-Command winget).Source -NoNewWindow -PassThru -ArgumentList @(
+        'install', '--exact', '--id', 'Ollama.Ollama', '--accept-source-agreements', '--accept-package-agreements')
+
+    # Ohne diesen Zugriff bleibt ExitCode nach dem Warten leer: PowerShell gibt den Griff sonst frei.
+    $null = $process.Handle
+
+    $watch = [System.Diagnostics.Stopwatch]::StartNew()
+    while (-not $process.WaitForExit($HeartbeatSeconds * 1000)) {
+        Write-Host ('Die Installation läuft noch ({0:mm\:ss} Minuten). Bitte lass dieses Fenster offen.' -f $watch.Elapsed)
+    }
+
+    return $process.ExitCode
+}
+
 function Install-Ollama {
     Write-Host 'Ollama ist noch nicht installiert. Es wird jetzt über winget installiert.'
     Write-Host 'Bitte bestätige eventuelle Windows-Sicherheitsabfragen mit "Ja".'
+    Write-Host 'Der Download kann einige Minuten dauern. Bitte lass dieses Fenster offen, auch wenn sich zunächst nichts tut.'
 
     if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
         throw 'Das Programm "winget" ist auf diesem PC nicht verfügbar.'
     }
 
-    winget install --exact --id Ollama.Ollama --accept-source-agreements --accept-package-agreements
-    $wingetExitCode = $LASTEXITCODE
+    $wingetExitCode = Invoke-WingetWithHeartbeat
 
     # Der Installer trägt Ollama in den PATH ein, die laufende Sitzung sieht das aber nicht.
     $env:Path = [System.Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' +
@@ -138,7 +163,7 @@ try {
 
     Write-Step 'Prüfe, ob Ollama installiert ist…'
     $ollama = Find-Ollama
-    if ($ollama) {
+    if ($ollama -and -not $ForceInstall) {
         Write-Host "Ollama ist bereits installiert: $ollama" -ForegroundColor Green
     }
     else {

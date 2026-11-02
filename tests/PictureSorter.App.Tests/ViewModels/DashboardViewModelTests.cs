@@ -50,6 +50,19 @@ public sealed class DashboardViewModelTests
     }
 
     [Fact]
+    public async Task ShowsSetupAction_AppearsOnlyWhenTheAiIsNotReady()
+    {
+        DashboardViewModel missing = CreateSut(FakeModelAvailabilityChecker.Missing("llava"));
+        DashboardViewModel ready = CreateSut(FakeModelAvailabilityChecker.Ready());
+
+        await missing.CheckAiCommand.ExecuteAsync(parameter: null);
+        await ready.CheckAiCommand.ExecuteAsync(parameter: null);
+
+        Assert.True(missing.ShowsSetupAction);
+        Assert.False(ready.ShowsSetupAction);
+    }
+
+    [Fact]
     public async Task CheckAi_WhenEverythingIsInstalled_ReportsReady()
     {
         DashboardViewModel sut = CreateSut(FakeModelAvailabilityChecker.Ready());
@@ -80,7 +93,7 @@ public sealed class DashboardViewModelTests
         await sut.CheckAiCommand.ExecuteAsync(parameter: null);
 
         Assert.False(sut.IsAiReady);
-        Assert.Contains("Einstellungen", sut.AiStatusText, StringComparison.Ordinal);
+        Assert.Contains("Jetzt einrichten", sut.AiStatusText, StringComparison.Ordinal);
     }
 
     private static DashboardViewModel CreateSut(

@@ -77,6 +77,11 @@
                         <FontIcon Glyph="&#xE8B7;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
+                <NavigationViewItem x:Uid="MainWindow_BulkSortNavItem" Tag="bulksort">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE8B7;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
                 <NavigationViewItem x:Uid="MainWindow_DuplicatesNavItem" Tag="duplicates">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE8C8;" />

@@ -118,7 +118,73 @@ public sealed class OllamaSetupScriptTests : IDisposable
         Assert.DoesNotContain(Calls(), call => call.StartsWith("pull", StringComparison.Ordinal));
     }
 
-    private async Task<(int ExitCode, string Output)> RunScriptAsync(int listExitCode = 0)
+    [Fact]
+    public async Task Run_AfterWingetInstalledOllama_ContinuesWithTheModels()
+    {
+        // Auf einem echten Rechner ohne Ollama lief winget durch, seine Ausgabe landete aber im
+        // Rückgabewert der Funktion und wurde als Programm ausgeführt. Die Einrichtung brach ab, ohne
+        // ein Modell zu laden. Die Attrappe schreibt deshalb wie das echte winget auf die Standardausgabe.
+        string tools = Directory.CreateDirectory(Path.Combine(_root, "nur-winget")).FullName;
+        await File.WriteAllTextAsync(
+            Path.Combine(tools, "winget.cmd"),
+            "@echo Erfolgreich installiert",
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        (int exitCode, string output) = await RunScriptAsync(wingetDirectory: tools).ConfigureAwait(true);
+
+        Assert.Equal(0, exitCode);
+        Assert.Contains("Ollama wurde installiert", output, StringComparison.Ordinal);
+        (string embeddingModel, string visionModel) = ShippedModels();
+        Assert.Contains($"pull {embeddingModel}", Calls());
+        Assert.Contains($"pull {visionModel}", Calls());
+    }
+
+    [Fact]
+    public async Task Run_WhileWingetInstalls_KeepsShowingThatItIsAlive()
+    {
+        // Der Test bricht ab, sobald das Lebenszeichen erscheint: Das Weiterlaufen fände sonst ein etwa
+        // installiertes echtes Ollama über den PATH.
+        string tools = Directory.CreateDirectory(Path.Combine(_root, "nur-winget")).FullName;
+        await File.WriteAllTextAsync(Path.Combine(tools, "winget.cmd"), "@ping -n 60 127.0.0.1 >nul", TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        ProcessStartInfo startInfo = new()
+        {
+            FileName = "powershell.exe",
+            Arguments = $"-NoProfile -ExecutionPolicy Bypass -File \"{Path.Combine(_root, "Tools", "install-ollama.ps1")}\" -NoPause -HeartbeatSeconds 1",
+            RedirectStandardOutput = true,
+            StandardOutputEncoding = Encoding.UTF8,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+        };
+
+        // Nur die eigene Attrappe im PATH und ein leeres Programmverzeichnis: So gilt Ollama als fehlend,
+        // auch auf einem Rechner, auf dem es installiert ist.
+        startInfo.Environment["PATH"] = $"{tools};{Environment.SystemDirectory};{Path.Combine(Environment.SystemDirectory, "WindowsPowerShell", "v1.0")}";
+        startInfo.Environment["LOCALAPPDATA"] = tools;
+
+        using Process process = Process.Start(startInfo)!;
+        using CancellationTokenSource timeout = new(RunTimeout);
+        StringBuilder output = new();
+        try
+        {
+            while (await process.StandardOutput.ReadLineAsync(timeout.Token).ConfigureAwait(true) is { } line)
+            {
+                _ = output.AppendLine(line);
+                if (line.Contains("läuft noch", StringComparison.Ordinal))
+                {
+                    break;
+                }
+            }
+        }
+        finally
+        {
+            process.Kill(entireProcessTree: true);
+        }
+
+        Assert.Contains("Die Installation läuft noch", output.ToString(), StringComparison.Ordinal);
+    }
+
+    private async Task<(int ExitCode, string Output)> RunScriptAsync(int listExitCode = 0, string? wingetDirectory = null)
     {
         string script = Path.Combine(_root, "Tools", "install-ollama.ps1");
         string fakeOllama = Path.Combine(_root, "ollama.cmd");
@@ -131,6 +197,13 @@ public sealed class OllamaSetupScriptTests : IDisposable
             UseShellExecute = false,
             CreateNoWindow = true,
         };
+        if (wingetDirectory is not null)
+        {
+            // Die Attrappe steht vorn, damit nie das echte winget startet.
+            startInfo.Arguments += " -ForceInstall";
+            startInfo.Environment["PATH"] = $"{wingetDirectory};{Environment.GetEnvironmentVariable("PATH")}";
+        }
+
         startInfo.Environment["FAKE_OLLAMA_LIST"] = listExitCode.ToString(System.Globalization.CultureInfo.InvariantCulture);
 
         using Process process = Process.Start(startInfo)!;

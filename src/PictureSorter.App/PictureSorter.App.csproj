@@ -131,6 +131,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PictureSorter.Application\PictureSorter.Application.csproj" />
+    <ProjectReference Include="..\PictureSorter.Clip\PictureSorter.Clip.csproj" />
     <ProjectReference Include="..\PictureSorter.Core\PictureSorter.Core.csproj" />
     <ProjectReference Include="..\PictureSorter.Data\PictureSorter.Data.csproj" />
     <ProjectReference Include="..\PictureSorter.Imaging\PictureSorter.Imaging.csproj" />

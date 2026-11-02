@@ -19,6 +19,9 @@ internal enum AppSection
     /// <summary>Die Ablage nach Aufnahmedatum.</summary>
     Calendar,
 
+    /// <summary>Der Sammeldurchlauf über einen ganzen Ordner.</summary>
+    BulkSort,
+
     /// <summary>Die Namensreparatur.</summary>
     NameRepair,
 

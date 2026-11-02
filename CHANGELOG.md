@@ -4,7 +4,30 @@ Alle nennenswerten Änderungen an diesem Projekt werden hier dokumentiert.
 Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/),
 die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
-## [Unveröffentlicht]
+## [1.13.0] - 2026-11-02
+
+### Behoben
+
+- **„Jetzt einrichten" steht jetzt auch auf der Startseite.** Bisher nannte sie nur den Weg über die Einstellungen.
+- **Die Einrichtung bricht nach der Installation von Ollama nicht mehr ab.** Auf einem PC ohne Ollama lief die Installation durch,
+  danach kam eine Fehlermeldung, und die Modelle fehlten. Erst ein zweiter Start lud sie. Dieselbe Ursache ließ das Fenster während
+  des Downloads leer; jetzt ist die Ausgabe von winget zu sehen, dazu alle 30 Sekunden ein Lebenszeichen.
+- **Eine einzelne Datei kann einen Lauf nicht mehr für immer anhalten.** An einem echten iCloud-Bestand kam das Lesen je Lauf bei wechselnden
+  Dateien nie zurück, und der Lauf endete ohne jede Meldung nicht. Jetzt gilt je Datei eine Zeitgrenze von zwei Minuten mit einem zweiten
+  Versuch. Klappt auch der nicht, bleibt die Datei liegen und wird genannt.
+
+### Hinzugefügt
+
+- **Alles einsortieren: ein Durchlauf für alle Ordner.** Die neue Seite nimmt die Unterordner eines Ordners als Ziele
+  und ihre Bilder als Vorbild, ganz ohne Anlernen. Weitere Ziele lassen sich als Namen eingeben. Passt ein Vorschlag
+  nicht, genügt die Wahl des richtigen Ordners, und die übrigen Vorschläge passen sich sofort an.
+- **Das geht auch ohne Grafikkarte und ohne Ollama schnell.** Die Seite vergleicht die Bilder direkt, statt sie erst
+  beschreiben zu lassen. Auf einem gemessenen Rechner ohne Grafikkarte dauert ein Bestand von rund 4.700 Bildern damit
+  etwa 42 Minuten statt rund 5 Tage, bei vergleichbarer Trefferqualität. Dafür lädt das Programm beim ersten Gebrauch
+  einmalig rund 90 MB. Die Fotos verlassen den Rechner nicht. Im 32-Bit-Paket ist die Seite nicht verfügbar.
+- **Eine Jahreszahl im Ordnernamen ist eine feste Grenze.** „Urlaub 2026" bekommt nur Fotos aus 2026, Fotos ohne Datum bleiben liegen.
+- **Ein Ordner ohne Bilder bekommt erst Vorschläge, wenn du ihm Fotos von Hand zugeordnet hast.** Die Seite sagt das, und sie nennt auch die
+  Dateien, die nicht gelesen wurden.
 
 ## [1.12.0] - 2026-11-01
 

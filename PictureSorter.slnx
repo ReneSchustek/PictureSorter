@@ -4,6 +4,7 @@
       <Platform Project="x64" />
     </Project>
     <Project Path="src/PictureSorter.Application/PictureSorter.Application.csproj" />
+    <Project Path="src/PictureSorter.Clip/PictureSorter.Clip.csproj" />
     <Project Path="src/PictureSorter.Core/PictureSorter.Core.csproj" />
     <Project Path="src/PictureSorter.Data/PictureSorter.Data.csproj" />
     <Project Path="src/PictureSorter.Imaging/PictureSorter.Imaging.csproj" />
@@ -16,6 +17,7 @@
     </Project>
     <Project Path="tests/PictureSorter.Application.Tests/PictureSorter.Application.Tests.csproj" />
     <Project Path="tests/PictureSorter.Benchmarks/PictureSorter.Benchmarks.csproj" />
+    <Project Path="tests/PictureSorter.Clip.Tests/PictureSorter.Clip.Tests.csproj" />
     <Project Path="tests/PictureSorter.Core.Tests/PictureSorter.Core.Tests.csproj" />
     <Project Path="tests/PictureSorter.Data.Tests/PictureSorter.Data.Tests.csproj" />
     <Project Path="tests/PictureSorter.Imaging.Tests/PictureSorter.Imaging.Tests.csproj" />

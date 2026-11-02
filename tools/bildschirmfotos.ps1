@@ -33,6 +33,9 @@
     Der zweite, kleine Bestand mit unlesbaren Dateinamen. Getrennt vom Hauptbestand,
     weil solcher Zeichensalat auf den übrigen Bildern nichts verloren hat.
 
+.PARAMETER SammelOrdner
+    Der Bestand für „Alles einsortieren": Unterordner als Ziele, der Rest liegt offen.
+
 .PARAMETER Ziel
     Ablage der Bilder. Standard: docs\bilder im Projekt.
 
@@ -52,6 +55,7 @@
 param(
     [string] $Ordner = 'F:\Fotos',
     [string] $NamensOrdner = 'F:\Fotos aus iCloud',
+    [string] $SammelOrdner = 'F:\Fotos zum Einsortieren',
     [string] $Ziel,
     [string] $Exe,
     [switch] $OhneNeubau,
@@ -354,11 +358,27 @@ function Stop-App($app) {
 
 # ------------------------------------------------------------- Die Ansichten
 
+# Zwei Ziele mit je zwei Vorbildern, der Rest liegt offen. Was die Seite daraus vorschlägt, bleibt
+# echt gerechnet; das Bild zeigt, was das Programm mit so wenig Vorbildern kann.
+function New-BulkDemo {
+    Remove-Item -LiteralPath $SammelOrdner -Recurse -Force -ErrorAction SilentlyContinue
+    $ziele = @{ 'Muscheln im Watt' = @('IMG_2047.jpg', 'IMG_2048.jpg'); 'Landschaft' = @('IMG_2041.jpg', 'IMG_2043.jpg') }
+    $null = New-Item -ItemType Directory -Force -Path $SammelOrdner
+    foreach ($ziel in $ziele.Keys) {
+        $null = New-Item -ItemType Directory -Force -Path (Join-Path $SammelOrdner $ziel)
+        foreach ($name in $ziele[$ziel]) { Copy-Item -LiteralPath (Join-Path $Ordner $name) -Destination (Join-Path $SammelOrdner "$ziel\$name") }
+    }
+    $vorbilder = $ziele.Values | ForEach-Object { $_ }
+    Get-ChildItem -LiteralPath $Ordner -File | Where-Object { $_.Name -notmatch 'Kopie' -and $vorbilder -notcontains $_.Name } |
+        ForEach-Object { Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $SammelOrdner $_.Name) }
+}
+
 function Get-Series([string]$anhang) {
     $berichte = [System.Collections.Generic.List[object]]::new()
 
     Write-Schritt "  Demo-Bestand erzeugen ..."
     & (Join-Path $PSScriptRoot 'demobilder.ps1') -Ordner $Ordner -NamensOrdner $NamensOrdner | Write-Verbose
+    New-BulkDemo
 
     Write-Schritt "  Anwendung starten ..."
     $app = Start-App ($anhang -eq '-dunkel')
@@ -413,6 +433,16 @@ function Get-Series([string]$anhang) {
         Select-NavItem $fenster 'Gedächtnis'
         Start-Sleep -Seconds 2
         $berichte.Add((Save-WindowShot $app.Handle (Join-Path $Ziel "06-gedaechtnis$anhang.png")))
+
+        # --- Alles einsortieren: eigener Bestand, weil die Seite mehrere Zielordner mit Vorbildern
+        # --- braucht. Die lange Grenze gilt dem Modell, das beim ersten Gebrauch geladen wird.
+        Write-Schritt '    Alles einsortieren'
+        Select-NavItem $fenster 'Alles einsortieren'
+        Set-Text (Find-Element $fenster 'Ordner mit Fotos' 'Edit') $SammelOrdner
+        Invoke-Element (Find-Element $fenster 'Vorschläge erstellen' 'Button')
+        Wait-Until { (Get-StatusText $fenster) -match 'bleiben liegen' } 'die Vorschläge des Sammeldurchlaufs' 600 | Out-Null
+        Start-Sleep -Seconds 2
+        $berichte.Add((Save-WindowShot $app.Handle (Join-Path $Ziel "08-alles-einsortieren$anhang.png")))
 
         # --- Namen richten: eigener Bestand, weil unlesbare Namen auf den übrigen
         # --- Bildern nichts verloren haben

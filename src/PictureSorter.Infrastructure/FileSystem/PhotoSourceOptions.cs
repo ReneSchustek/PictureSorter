@@ -49,4 +49,15 @@ public sealed class PhotoSourceOptions
     /// </summary>
     [Range(0, 100_000)]
     public int PrefetchBuffer { get; set; }
+
+    /// <summary>
+    /// Wie viele Sekunden ein Versuch, eine einzelne Datei einzulesen, höchstens dauern darf. Danach gibt es
+    /// einen zweiten Versuch, dann wird die Datei übersprungen.
+    ///
+    /// Auf einem echten Bestand aus iCloud kam das Lesen je Lauf bei ein bis zwei Dateien nie zurück, bei
+    /// jedem Lauf bei anderen. Der ganze Lauf endete damit nie, ohne jede Meldung. Großzügig bemessen, weil
+    /// ein Cloud-Ordner die Datei dabei oft erst herunterlädt.
+    /// </summary>
+    [Range(1, 3600)]
+    public int ReadTimeoutSeconds { get; set; } = 120;
 }
