@@ -166,8 +166,11 @@ public sealed class OllamaSetupScriptTests : IDisposable
         Task<string> output = process.StandardOutput.ReadToEndAsync(timeout.Token);
         await process.WaitForExitAsync(timeout.Token).ConfigureAwait(true);
 
+        // Beim Scheitern die ganze Ausgabe nennen: Assert.Contains zeigt nur die erste Zeile, und dieser Test läuft
+        // nur auf dem Fließband, wo sich nichts nachsehen lässt.
+        string text = await output.ConfigureAwait(true);
         Assert.Equal(1, process.ExitCode);
-        Assert.Contains("winget meldete 3", await output.ConfigureAwait(true), StringComparison.Ordinal);
+        Assert.True(text.Contains("winget meldete 3", StringComparison.Ordinal), text);
     }
 
     [Fact]
