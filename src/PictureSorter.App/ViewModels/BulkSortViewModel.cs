@@ -421,6 +421,11 @@ internal sealed partial class BulkSortViewModel : ObservableObject, IDisposable
             notes.Add(_localizer.Format("Bulk_NoExamplesNote", string.Join(", ", session.CategoryNamesWithoutExamples)));
         }
 
+        if (session.OnlineOnlyPhotoCount > 0)
+        {
+            notes.Add(_localizer.Format("Bulk_OnlineOnlyNote", session.OnlineOnlyPhotoCount));
+        }
+
         if (session.UnsupportedFileCount > 0)
         {
             notes.Add(_localizer.Format("Bulk_UnsupportedNote", session.UnsupportedFileCount));

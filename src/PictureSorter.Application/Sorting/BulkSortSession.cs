@@ -112,6 +112,9 @@ public sealed class BulkSortSession
     /// <summary>Wie viele Fotos sich nicht öffnen ließen und deshalb liegen bleiben.</summary>
     public int UnreadablePhotoCount { get; init; }
 
+    /// <summary>Wie viele Fotos nur online in der Cloud liegen und deshalb nicht einbezogen sind.</summary>
+    public int OnlineOnlyPhotoCount { get; init; }
+
     /// <summary>Wie viele Dateien im Ordner ein Format haben, das das Programm nicht liest.</summary>
     public int UnsupportedFileCount { get; init; }
 

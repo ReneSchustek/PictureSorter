@@ -182,13 +182,15 @@ internal sealed class FakeRenameUndoService : IRenameUndoService
 }
 
 /// <summary>Meldet einen fest vorgegebenen ähnlich benannten Ordner.</summary>
-internal sealed class FakeFolderLookup(string? lookalike = null) : IFolderLookup
+internal sealed class FakeFolderLookup(string? lookalike = null, int onlineOnly = 0) : IFolderLookup
 {
     public string? FindLookalike(string requestedPath) => lookalike;
 
     public IReadOnlyList<string> ListSubfolders(string folderPath) => [];
 
     public int CountUnsupportedFiles(string folderPath) => 0;
+
+    public int CountOnlineOnlyPhotos(string folderPath, bool includeSubfolders) => onlineOnly;
 }
 
 /// <summary>Wählt ohne Dialog einen vorgegebenen Ordner und vorgegebene Bilder.</summary>

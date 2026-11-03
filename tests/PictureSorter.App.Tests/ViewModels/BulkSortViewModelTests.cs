@@ -43,6 +43,7 @@ public sealed class BulkSortViewModelTests
             [Entry("a.jpg", 1f, 0f, 0f)],
             [City])
         {
+            OnlineOnlyPhotoCount = 58,
             UnsupportedFileCount = 806,
             UnreadablePhotoCount = 61,
         };
@@ -54,6 +55,7 @@ public sealed class BulkSortViewModelTests
         Assert.True(sut.HasNotes);
         Assert.Contains("Meer 2026", sut.Notes, StringComparison.Ordinal);
         Assert.Contains("Rezepte", sut.Notes, StringComparison.Ordinal);
+        Assert.Contains("58", sut.Notes, StringComparison.Ordinal);
         Assert.Contains("806", sut.Notes, StringComparison.Ordinal);
         Assert.Contains("61", sut.Notes, StringComparison.Ordinal);
     }

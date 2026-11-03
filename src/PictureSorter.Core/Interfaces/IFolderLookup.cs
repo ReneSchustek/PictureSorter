@@ -31,4 +31,12 @@ public interface IFolderLookup
     /// <param name="folderPath">Der Ordner.</param>
     /// <returns>Ihre Zahl; 0, wenn der Ordner nicht lesbar ist.</returns>
     int CountUnsupportedFiles(string folderPath);
+
+    /// <summary>
+    /// Zählt die Fotos in einem Ordner, die nur online in der Cloud liegen und deshalb nicht gelesen werden.
+    /// </summary>
+    /// <param name="folderPath">Der Ordner.</param>
+    /// <param name="includeSubfolders">Ob Unterordner mitzählen.</param>
+    /// <returns>Ihre Zahl; 0, wenn der Ordner nicht lesbar ist.</returns>
+    int CountOnlineOnlyPhotos(string folderPath, bool includeSubfolders);
 }

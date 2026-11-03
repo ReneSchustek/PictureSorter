@@ -1220,7 +1220,13 @@
     <value>{0} files were not read because their format is not supported, for example videos or RAW photos. They stay where they are.</value>
   </data>
   <data name="Bulk_UnreadableNote" xml:space="preserve">
-    <value>{0} photos could not be opened and stay put. Often they are only online in the cloud and not on this PC yet.</value>
+    <value>{0} photos could not be opened and stay put.</value>
+  </data>
+  <data name="Bulk_OnlineOnlyNote" xml:space="preserve">
+    <value>{0} photos are only online in the cloud and were not included. Download them to this PC and run again if you want them included.</value>
+  </data>
+  <data name="Common_OnlineOnlyHint" xml:space="preserve">
+    <value>{0} photos are only online in the cloud and were not included.</value>
   </data>
   <data name="Bulk_Summary" xml:space="preserve">
     <value>{0} photos with a folder, {1} stay in place</value>

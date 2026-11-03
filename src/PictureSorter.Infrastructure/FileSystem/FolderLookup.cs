@@ -57,6 +57,24 @@ public sealed class FolderLookup : IFolderLookup
     }
 
     /// <inheritdoc />
+    public int CountOnlineOnlyPhotos(string folderPath, bool includeSubfolders)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(folderPath);
+
+        try
+        {
+            SearchOption scope = includeSubfolders ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
+            return new DirectoryInfo(folderPath)
+                .EnumerateFiles("*", scope)
+                .Count(static file => FileSystemPhotoSource.IsSupported(file.Extension) && OnlineOnlyFiles.IsOnlineOnly(file.FullName));
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException)
+        {
+            return 0;
+        }
+    }
+
+    /// <inheritdoc />
     public string? FindLookalike(string requestedPath)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(requestedPath);

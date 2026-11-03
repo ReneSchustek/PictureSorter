@@ -60,4 +60,13 @@ public sealed class PhotoSourceOptions
     /// </summary>
     [Range(1, 3600)]
     public int ReadTimeoutSeconds { get; set; } = 120;
+
+    /// <summary>
+    /// Lässt Dateien aus, die nur online in der Cloud liegen, statt sie zu öffnen.
+    ///
+    /// An einem echten iCloud-Bestand lieferte das Öffnen nichts und blockierte je Datei zweimal die volle
+    /// Zeitgrenze. Solange solche Dateien gelesen wurden, blieb außerdem der Aufräum-Thread von .NET stehen,
+    /// und das Programm wuchs bis zum Absturz. Wer sie einbeziehen will, lädt sie vorher auf den PC.
+    /// </summary>
+    public bool SkipOnlineOnlyFiles { get; set; } = true;
 }

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 using PictureSorter.Core.Entities;
@@ -67,10 +68,14 @@ public sealed class BulkSortService : IBulkSortService
     // Gemessen mit 60 unsortierten Bildern als Gegenseite. Mehr davon gehörten zunehmend selbst in die Ordner.
     private const int WeakNegativeCount = 60;
 
+    // Selten genug, dass das Abfragen nicht zählt, und oft genug bei rund 55 MB je Foto im schlimmsten Fall.
+    private const int MemoryCheckInterval = 25;
+
     private readonly IPhotoSource _photoSource;
     private readonly IVisualEmbedder _embedder;
     private readonly IFolderLookup _folderLookup;
     private readonly ILogger<BulkSortService> _logger;
+    private readonly Func<bool> _isMemoryLow;
 
     /// <summary>
     /// Initialisiert den Dienst.
@@ -79,11 +84,13 @@ public sealed class BulkSortService : IBulkSortService
     /// <param name="embedder">Berechnet die Vektoren.</param>
     /// <param name="folderLookup">Nennt die Unterordner.</param>
     /// <param name="logger">Der Logger.</param>
+    /// <param name="isMemoryLow">Meldet, dass der Speicher knapp wird; ohne Angabe gilt der Prozess im Verhältnis zum Rechner.</param>
     public BulkSortService(
         IPhotoSource photoSource,
         IVisualEmbedder embedder,
         IFolderLookup folderLookup,
-        ILogger<BulkSortService> logger)
+        ILogger<BulkSortService> logger,
+        Func<bool>? isMemoryLow = null)
     {
         ArgumentNullException.ThrowIfNull(photoSource);
         ArgumentNullException.ThrowIfNull(embedder);
@@ -94,6 +101,7 @@ public sealed class BulkSortService : IBulkSortService
         _embedder = embedder;
         _folderLookup = folderLookup;
         _logger = logger;
+        _isMemoryLow = isMemoryLow ?? IsProcessNearPhysicalMemory;
     }
 
     /// <inheritdoc />
@@ -126,6 +134,7 @@ public sealed class BulkSortService : IBulkSortService
         return new BulkSortSession(sourceFolder, categories, photos, weakNegatives)
         {
             UnreadablePhotoCount = unreadable,
+            OnlineOnlyPhotoCount = _folderLookup.CountOnlineOnlyPhotos(sourceFolder, includeSubfolders: false),
             UnsupportedFileCount = _folderLookup.CountUnsupportedFiles(sourceFolder),
         };
     }
@@ -216,12 +225,25 @@ public sealed class BulkSortService : IBulkSortService
 
                 _ = Interlocked.Exchange(ref total, scanned.Total);
                 int done = Interlocked.Increment(ref processed);
+                if (done % MemoryCheckInterval == 0 && _isMemoryLow())
+                {
+                    // Lieber eine klare Meldung als ein Absturz, der den Lauf ohne ein Wort beendet.
+                    throw new InsufficientMemoryException("Der Arbeitsspeicher wird knapp. Bitte schließe andere Programme und starte den Durchlauf neu; bereits berechnete Fotos gehen nicht verloren.");
+                }
+
                 progress?.Report(new BulkSortProgress(BulkSortPhase.Photos, done, scanned.Total));
             }).ConfigureAwait(false);
 
         // Was schon beim Einlesen ausfiel, kommt hier gar nicht an. Die Gesamtzahl der Quelle zählt es mit.
         int notDelivered = Math.Max(0, total - processed);
         return ([.. results.OrderBy(static result => result.Index).Select(static result => result.Entry)], unreadable + notDelivered);
+    }
+
+    // Der Speicher der Bilddecoder liegt außerhalb von .NET, die Zahlen des GC sehen ihn nicht.
+    private static bool IsProcessNearPhysicalMemory()
+    {
+        using Process process = Process.GetCurrentProcess();
+        return process.PrivateMemorySize64 > GC.GetGCMemoryInfo().TotalAvailableMemoryBytes * 3 / 4;
     }
 
     private async Task<float[]?> TryEmbedAsync(Photo photo, CancellationToken cancellationToken)

@@ -65,8 +65,7 @@ public sealed class WindowsPerceptualHasher : IPerceptualHasher
     {
         try
         {
-            StorageFile file = await StorageFile.GetFileFromPathAsync(filePath).AsTask(cancellationToken).ConfigureAwait(false);
-            using IRandomAccessStream stream = await file.OpenAsync(FileAccessMode.Read).AsTask(cancellationToken).ConfigureAwait(false);
+            using IRandomAccessStream stream = await FileRandomAccessStream.OpenAsync(filePath, FileAccessMode.Read).AsTask(cancellationToken).ConfigureAwait(false);
             BitmapDecoder decoder = await BitmapDecoder.CreateAsync(stream).AsTask(cancellationToken).ConfigureAwait(false);
 
             // Fant und nicht Linear: Ein Foto schrumpft hier von mehreren Millionen

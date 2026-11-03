@@ -236,7 +236,7 @@ public sealed class FileSystemPhotoSource : IPhotoSource
     // Das Aufzählen selbst liest nur die Verzeichniseinträge und ist auch bei einem
     // Cloud-Ordner billig; teuer wird erst das Öffnen jeder Datei im Anschluss.
     // Deshalb hört schon das Aufzählen bei der Höchstzahl auf.
-    private static List<string> EnumerateImagePaths(
+    private List<string> EnumerateImagePaths(
         string folderPath,
         bool includeSubfolders,
         int skip,
@@ -251,6 +251,11 @@ public sealed class FileSystemPhotoSource : IPhotoSource
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (!SupportedExtensions.Contains(Path.GetExtension(path)))
+            {
+                continue;
+            }
+
+            if (_options.SkipOnlineOnlyFiles && OnlineOnlyFiles.IsOnlineOnly(path))
             {
                 continue;
             }

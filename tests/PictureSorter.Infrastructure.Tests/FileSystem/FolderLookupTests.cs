@@ -62,6 +62,40 @@ public sealed class FolderLookupTests : IDisposable
     }
 
     [Fact]
+    public void CountOnlineOnlyPhotos_CountsOnlyPhotosThatAreNotOnThisComputer()
+    {
+        string root = Directory.CreateTempSubdirectory("PictureSorterOnline").FullName;
+        try
+        {
+            File.WriteAllBytes(Path.Combine(root, "hier.jpg"), []);
+            string online = Path.Combine(root, "online.jpg");
+            File.WriteAllBytes(online, []);
+            File.SetAttributes(online, FileAttributes.Offline);
+            string video = Path.Combine(root, "online.mov");
+            File.WriteAllBytes(video, []);
+            File.SetAttributes(video, FileAttributes.Offline);
+
+            Assert.Equal(1, new FolderLookup().CountOnlineOnlyPhotos(root, includeSubfolders: false));
+
+            string below = Directory.CreateDirectory(Path.Combine(root, "Unterordner")).FullName;
+            string deeper = Path.Combine(below, "tief.jpg");
+            File.WriteAllBytes(deeper, []);
+            File.SetAttributes(deeper, FileAttributes.Offline);
+
+            Assert.Equal(1, new FolderLookup().CountOnlineOnlyPhotos(root, includeSubfolders: false));
+            Assert.Equal(2, new FolderLookup().CountOnlineOnlyPhotos(root, includeSubfolders: true));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void CountOnlineOnlyPhotos_ForAMissingFolder_IsZero() =>
+        Assert.Equal(0, new FolderLookup().CountOnlineOnlyPhotos(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N")), includeSubfolders: false));
+
+    [Fact]
     public void CountUnsupportedFiles_ForAMissingFolder_IsZero() =>
         Assert.Equal(0, new FolderLookup().CountUnsupportedFiles(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"))));
 

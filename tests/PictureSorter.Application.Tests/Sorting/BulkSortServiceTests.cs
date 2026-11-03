@@ -76,6 +76,33 @@ public sealed class BulkSortServiceTests
 
         Assert.Equal(1, session.UnreadablePhotoCount);
         Assert.Equal(7, session.UnsupportedFileCount);
+        Assert.Equal(58, session.OnlineOnlyPhotoCount);
+    }
+
+    [Fact]
+    public async Task Analyze_WhenMemoryRunsLow_StopsWithAClearMessage()
+    {
+        // Das Programm starb an einem echten Bestand ohne ein Wort. Jetzt endet der Lauf mit einer Meldung.
+        Photo[] photos = [.. Enumerable.Range(0, 60).Select(static index => Named($"{index:D2}.jpg"))];
+        FolderPhotoSource source = new(new Dictionary<string, Photo[]> { [Source] = photos });
+        BulkSortService sut = new(source, new RecordingEmbedder(), new FixedFolderLookup([]), NullLogger<BulkSortService>.Instance, static () => true);
+
+        InsufficientMemoryException error = await Assert.ThrowsAsync<InsufficientMemoryException>(
+            () => sut.AnalyzeAsync(Source, [], null, CancellationToken.None));
+
+        Assert.Contains("Arbeitsspeicher", error.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Analyze_WithEnoughMemory_ReadsEverything()
+    {
+        Photo[] photos = [.. Enumerable.Range(0, 60).Select(static index => Named($"{index:D2}.jpg"))];
+        FolderPhotoSource source = new(new Dictionary<string, Photo[]> { [Source] = photos });
+        BulkSortService sut = new(source, new RecordingEmbedder(), new FixedFolderLookup([]), NullLogger<BulkSortService>.Instance, static () => false);
+
+        BulkSortSession session = await sut.AnalyzeAsync(Source, [], null, CancellationToken.None);
+
+        Assert.Equal(60, session.Calculate().Count);
     }
 
     [Fact]
@@ -249,6 +276,8 @@ public sealed class BulkSortServiceTests
         public IReadOnlyList<string> ListSubfolders(string folderPath) => folders;
 
         public int CountUnsupportedFiles(string folderPath) => 7;
+
+        public int CountOnlineOnlyPhotos(string folderPath, bool includeSubfolders) => 58;
     }
 
     /// <summary>Nimmt Meldungen im Aufruf entgegen; unter Sperre, weil Bilder gleichzeitig melden.</summary>

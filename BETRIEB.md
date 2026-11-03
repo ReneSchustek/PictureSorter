@@ -241,6 +241,11 @@ Revision und Prüfsumme. Die Fotos verlassen dabei den Rechner nicht. Scheitert 
 neuer Versuch genügt; halbe Dateien bleiben nicht liegen. Wer den Ordner löscht, lädt beim nächsten Mal neu. Im
 32-Bit-Paket meldet die Seite, dass sie nicht verfügbar ist, weil es ONNX Runtime dafür nicht gibt, und lädt nichts herunter.
 
+**Fotos, die nur online in der Cloud liegen, liest das Programm nicht.** Es erkennt sie am Dateiattribut, ohne sie zu öffnen; Sortieren,
+Duplikate und „Alles einsortieren" nennen ihre Zahl. Damit sie mitlaufen, müssen sie auf dem PC liegen (bei iCloud: „Immer auf diesem Gerät behalten"). Die
+Einstellung `PhotoSource:SkipOnlineOnlyFiles` in der `appsettings.json` schaltet das ab, allerdings hing das Programm damit auf einem
+echten Bestand bis zum Speichertod.
+
 ---
 
 ## 7. Regelmäßige Pflege

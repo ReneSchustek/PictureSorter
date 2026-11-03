@@ -4,6 +4,21 @@ Alle nennenswerten Änderungen an diesem Projekt werden hier dokumentiert.
 Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/),
 die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
+## [1.13.2] - 2026-11-03
+
+### Behoben
+
+- **Große Bestände aus iCloud lassen das Programm nicht mehr am Speicher sterben.** An einem Bestand mit rund 4.300 Fotos wuchs es auf
+  einem PC mit 16 GB bis auf 14 GB und beendete sich ohne Meldung. Jetzt bleibt es dort bei rund 1,3 GB. Das betrifft das Einlesen in allen
+  Funktionen.
+- **Wird der Speicher trotzdem knapp, sagt „Alles einsortieren" das**, statt abzustürzen. Bereits berechnete Fotos gehen nicht verloren.
+
+### Geändert
+
+- **Fotos, die nur online in der Cloud liegen, werden nicht mehr geöffnet.** Das Öffnen lieferte nichts und blockierte je Datei bis zu vier
+  Minuten. Das gilt im ganzen Programm: Sortieren, Duplikate und „Alles einsortieren" nennen ihre Zahl. Wer sie einbeziehen will, lädt sie vorher
+  auf den PC.
+
 ## [1.13.1] - 2026-11-02
 
 v1.13.0 ist nicht erschienen: Das 32-Bit-Paket ließ sich nicht bauen. Alle Änderungen stehen deshalb hier.

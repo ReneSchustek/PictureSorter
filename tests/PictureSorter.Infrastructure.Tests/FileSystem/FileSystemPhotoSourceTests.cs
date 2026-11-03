@@ -515,6 +515,36 @@ public sealed class FileSystemPhotoSourceTests : IDisposable
         Assert.True(reader.FirstCallWasCanceled);
     }
 
+    [Fact]
+    public async Task GetPhotosAsync_LeavesOutFilesThatAreOnlyOnline()
+    {
+        Write("hier.jpg");
+        Write("online.jpg");
+        File.SetAttributes(Path.Combine(_root, "online.jpg"), FileAttributes.Offline);
+
+        IReadOnlyList<Photo> photos = await _source
+            .GetPhotosAsync(_root, includeSubfolders: false, skip: 0, maxCount: null, null, TestContext.Current.CancellationToken);
+
+        Assert.Equal("hier.jpg", Assert.Single(photos).FileName);
+    }
+
+    [Fact]
+    public async Task GetPhotosAsync_WhenAskedTo_IncludesFilesThatAreOnlyOnline()
+    {
+        Write("online.jpg");
+        File.SetAttributes(Path.Combine(_root, "online.jpg"), FileAttributes.Offline);
+        FileSystemPhotoSource source = new(
+            new NullMetadataReader(),
+            new FileFingerprinter(),
+            Options.Create(new PhotoSourceOptions { SkipOnlineOnlyFiles = false }),
+            NullLogger<FileSystemPhotoSource>.Instance);
+
+        IReadOnlyList<Photo> photos = await source
+            .GetPhotosAsync(_root, includeSubfolders: false, skip: 0, maxCount: null, null, TestContext.Current.CancellationToken);
+
+        Assert.Equal("online.jpg", Assert.Single(photos).FileName);
+    }
+
     private sealed class FirstCallHangsMetadataReader : IImageMetadataReader
     {
         public int Calls { get; private set; }

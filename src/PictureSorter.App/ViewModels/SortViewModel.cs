@@ -861,7 +861,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
                 folder, category, withSubfolders, range, progress, token),
             token).ConfigureAwait(true);
 
-        ShowProposals(proposals, "Sort_NoMatchingPhotos");
+        await ShowProposalsAsync(proposals, "Sort_NoMatchingPhotos").ConfigureAwait(true);
     }
 
     // Der Zwilling von AnalyzeAsync ohne KI: Statt jedes Foto zu bewerten, entscheidet
@@ -903,7 +903,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
                 folder, targetFolder, withSubfolders, range, progress, token),
             token).ConfigureAwait(true);
 
-        ShowProposals(proposals, "Sort_NoPhotosInRange");
+        await ShowProposalsAsync(proposals, "Sort_NoPhotosInRange").ConfigureAwait(true);
     }
 
     [RelayCommand(CanExecute = nameof(CanApply))]
@@ -1076,7 +1076,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
             () => _analyzer.ResumeAsync(run, category, progress, token),
             token).ConfigureAwait(true);
 
-        ShowProposals(proposals, "Sort_NoMatchingPhotos");
+        await ShowProposalsAsync(proposals, "Sort_NoMatchingPhotos").ConfigureAwait(true);
 
         // Direkt in den Schritt mit der Vorschau: Die Nutzerin hat um das Ergebnis
         // gebeten, nicht um den Weg dorthin.
@@ -1126,7 +1126,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
             return;
         }
 
-        ShowProposals(proposals, "Sort_NothingRemembered");
+        await ShowProposalsAsync(proposals, "Sort_NothingRemembered").ConfigureAwait(true);
         Wizard.MaxReachedStep = SortWizardViewModel.StepCount - 1;
         Wizard.GoToStep(SortWizardViewModel.StepCount - 1);
     }
@@ -1405,14 +1405,21 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
 
     // Übernimmt ein Ergebnis in die Vorschau. Gemeinsam für Analyse, Datumssuche und das
     // Zurückholen eines protokollierten Laufs. Drei Wege, ein Ergebnis.
-    private void ShowProposals(IReadOnlyList<SortProposal> proposals, string emptyMessageKey)
+    private async Task ShowProposalsAsync(IReadOnlyList<SortProposal> proposals, string emptyMessageKey)
     {
         Proposals.Replace(proposals);
         State = SortState.Preview;
+        string message = proposals.Count == 0
+            ? _localizer.Get(emptyMessageKey)
+            : _localizer.Format("Sort_ProposalsFound", proposals.Count);
+
+        // Fotos, die nur online liegen, werden nicht gelesen. Ohne den Hinweis sähe das aus, als gäbe es sie
+        // nicht. Im Hintergrund, weil ein großer Ordner sonst die Oberfläche anhielte.
+        string folder = SourceFolder;
+        bool withSubfolders = IncludeSubfolders;
+        int onlineOnly = await Task.Run(() => _folderLookup.CountOnlineOnlyPhotos(folder, withSubfolders)).ConfigureAwait(true);
         _status.Finish(
-            proposals.Count == 0
-                ? _localizer.Get(emptyMessageKey)
-                : _localizer.Format("Sort_ProposalsFound", proposals.Count),
+            onlineOnly == 0 ? message : $"{message} {_localizer.Format("Common_OnlineOnlyHint", onlineOnly)}",
             proposals.Count == 0 ? StatusSeverity.Warning : StatusSeverity.Success);
     }
 

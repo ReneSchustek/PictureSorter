@@ -29,6 +29,21 @@ public sealed class DuplicatesViewModelTests
     }
 
     [Fact]
+    public async Task Scan_WithOnlineOnlyPhotos_SaysThatTheyWereLeftOut()
+    {
+        ReswLocalizer localizer = new();
+        StatusBarViewModel status = new(localizer);
+        System.Collections.Concurrent.ConcurrentBag<string> messages = [];
+        status.PropertyChanged += (_, _) => messages.Add(status.Message);
+        using DuplicatesViewModel viewModel = CreateViewModel([], new FakeFileDeleter(), onlineOnly: 58, status: status);
+        viewModel.SourceFolder = @"C:\fotos";
+
+        await viewModel.ScanCommand.ExecuteAsync(parameter: null);
+
+        Assert.Contains(messages, static message => message.Contains("58", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public async Task Scan_WithoutDuplicates_CompletesEmpty()
     {
         using DuplicatesViewModel viewModel = CreateViewModel([], new FakeFileDeleter());
@@ -246,7 +261,9 @@ public sealed class DuplicatesViewModelTests
     private static DuplicatesViewModel CreateViewModel(
         IReadOnlyList<DuplicateGroup> groups,
         FakeFileDeleter deleter,
-        bool confirmed = true)
+        bool confirmed = true,
+        int onlineOnly = 0,
+        StatusBarViewModel? status = null)
     {
         ReswLocalizer localizer = new();
 
@@ -254,9 +271,9 @@ public sealed class DuplicatesViewModelTests
             new FakeDuplicateScanner(groups),
             deleter,
             new FakeFolderPicker(@"C:\fotos"),
-            new FakeFolderLookup(),
+            new FakeFolderLookup(onlineOnly: onlineOnly),
             new StubConfirmationService(confirmed),
-            new StatusBarViewModel(localizer),
+            status ?? new StatusBarViewModel(localizer),
             localizer,
             NullLogger<DuplicatesViewModel>.Instance);
     }

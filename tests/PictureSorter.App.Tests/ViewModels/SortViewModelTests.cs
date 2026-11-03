@@ -18,6 +18,21 @@ public sealed class SortViewModelTests
     private const string SourceFolder = @"C:\fotos";
 
     [Fact]
+    public async Task Analyze_WithOnlineOnlyPhotos_SaysThatTheyWereLeftOut()
+    {
+        // Gesammelt statt zuletzt gelesen: Ohne Oberflächen-Thread kommen Fortschrittsmeldungen nebenläufig an
+        // und können die Statuszeile nach dem Ergebnis noch überschreiben.
+        StatusBarViewModel status = new(new ReswLocalizer());
+        System.Collections.Concurrent.ConcurrentBag<string> messages = [];
+        status.PropertyChanged += (_, _) => messages.Add(status.Message);
+        using SortViewModel sut = CreateSut(new FakePhotoSorter(CreateProposals(3)), onlineOnly: 58, status: status);
+
+        await AnalyzeAsync(sut);
+
+        Assert.Contains(messages, static message => message.Contains("58", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public async Task Analyze_MakesAllProposalsSelectedByDefault()
     {
         FakePhotoSorter sorter = new(CreateProposals(3));
@@ -567,7 +582,9 @@ public sealed class SortViewModelTests
         bool confirms = true,
         FakePhotoSource? photoSource = null,
         FakeAnalysisJournal? journal = null,
-        SortMemoryRecovery? recovery = null)
+        SortMemoryRecovery? recovery = null,
+        int onlineOnly = 0,
+        StatusBarViewModel? status = null)
     {
         Photo examplePhoto = new()
         {
@@ -588,9 +605,9 @@ public sealed class SortViewModelTests
             new FakeCategoryTrainer(CreateCategory()),
             new FakeCategoryRepository(),
             new FakeFolderPicker(SourceFolder),
-            new FakeFolderLookup(),
+            new FakeFolderLookup(onlineOnly: onlineOnly),
             new StubConfirmationService(confirms),
-            new StatusBarViewModel(localizer),
+            status ?? new StatusBarViewModel(localizer),
             Options.Create(new SortingOptions()),
             localizer,
             NullLogger<SortViewModel>.Instance);

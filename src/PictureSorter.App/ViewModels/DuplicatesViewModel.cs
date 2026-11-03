@@ -254,6 +254,16 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
     // Steht der Ordner sichtbar im Explorer und wird trotzdem nicht gefunden, liegt es
     // meist an einem Zeichen, das man nicht sieht - etwa einem geschützten Leerzeichen
     // aus einem iCloud-Bestand. Dann wird der wirkliche Name genannt.
+    // Fotos, die nur online liegen, werden nicht gelesen. Ohne den Hinweis sähe das aus, als gäbe es sie nicht.
+    // Im Hintergrund, weil ein großer Ordner sonst die Oberfläche anhielte.
+    private async Task<string> WithOnlineOnlyHintAsync(string message)
+    {
+        string folder = SourceFolder;
+        bool withSubfolders = IncludeSubfolders;
+        int count = await Task.Run(() => _folderLookup.CountOnlineOnlyPhotos(folder, withSubfolders)).ConfigureAwait(true);
+        return count == 0 ? message : $"{message} {_localizer.Format("Common_OnlineOnlyHint", count)}";
+    }
+
     private string DescribeMissingFolder()
     {
         if (!string.IsNullOrWhiteSpace(SourceFolder))
@@ -314,9 +324,10 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
 
             PopulateGroups(groups);
             State = Groups.Count > 0 ? DuplicateState.Review : DuplicateState.Completed;
-            _status.Finish(Groups.Count > 0
+            string found = Groups.Count > 0
                 ? _localizer.Format("Duplicates_GroupsFound", Groups.Count, MarkedCount)
-                : _localizer.Get("Duplicates_NoneFound"));
+                : _localizer.Get("Duplicates_NoneFound");
+            _status.Finish(await WithOnlineOnlyHintAsync(found).ConfigureAwait(true));
         }
         catch (OperationCanceledException)
         {

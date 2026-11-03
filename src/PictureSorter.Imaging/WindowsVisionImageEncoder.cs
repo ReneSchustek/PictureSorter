@@ -44,8 +44,7 @@ public sealed class WindowsVisionImageEncoder : IVisionImageEncoder
 
         try
         {
-            StorageFile file = await StorageFile.GetFileFromPathAsync(filePath).AsTask(cancellationToken).ConfigureAwait(false);
-            using IRandomAccessStream source = await file.OpenAsync(FileAccessMode.Read).AsTask(cancellationToken).ConfigureAwait(false);
+            using IRandomAccessStream source = await FileRandomAccessStream.OpenAsync(filePath, FileAccessMode.Read).AsTask(cancellationToken).ConfigureAwait(false);
             BitmapDecoder decoder = await BitmapDecoder.CreateAsync(source).AsTask(cancellationToken).ConfigureAwait(false);
 
             (uint width, uint height) = ScaleToMaxEdge(decoder.PixelWidth, decoder.PixelHeight);

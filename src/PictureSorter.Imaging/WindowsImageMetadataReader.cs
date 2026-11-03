@@ -59,8 +59,7 @@ public sealed class WindowsImageMetadataReader : IImageMetadataReader
 
         try
         {
-            StorageFile file = await StorageFile.GetFileFromPathAsync(filePath).AsTask(cancellationToken).ConfigureAwait(false);
-            using IRandomAccessStream stream = await file.OpenAsync(FileAccessMode.Read).AsTask(cancellationToken).ConfigureAwait(false);
+            using IRandomAccessStream stream = await FileRandomAccessStream.OpenAsync(filePath, FileAccessMode.Read).AsTask(cancellationToken).ConfigureAwait(false);
             BitmapDecoder decoder = await BitmapDecoder.CreateAsync(stream).AsTask(cancellationToken).ConfigureAwait(false);
 
             (DateTimeOffset? capturedAt, string? cameraModel, double? latitude, double? longitude) =

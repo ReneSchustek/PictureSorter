@@ -1220,7 +1220,13 @@
     <value>{0} Dateien wurden nicht gelesen, weil das Programm ihr Format nicht unterstützt, zum Beispiel Videos oder RAW-Fotos. Sie bleiben, wo sie sind.</value>
   </data>
   <data name="Bulk_UnreadableNote" xml:space="preserve">
-    <value>{0} Fotos ließen sich nicht öffnen und bleiben liegen. Oft liegen sie nur online in der Cloud und sind noch nicht auf diesem PC.</value>
+    <value>{0} Fotos ließen sich nicht öffnen und bleiben liegen.</value>
+  </data>
+  <data name="Bulk_OnlineOnlyNote" xml:space="preserve">
+    <value>{0} Fotos liegen nur online in der Cloud und wurden nicht einbezogen. Lade sie auf diesen PC und starte den Durchlauf neu, wenn sie mitlaufen sollen.</value>
+  </data>
+  <data name="Common_OnlineOnlyHint" xml:space="preserve">
+    <value>{0} Fotos liegen nur online in der Cloud und wurden nicht einbezogen.</value>
   </data>
   <data name="Bulk_Summary" xml:space="preserve">
     <value>{0} Fotos mit Ordner, {1} bleiben liegen</value>

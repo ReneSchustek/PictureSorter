@@ -107,3 +107,4 @@ $RECYCLE.BIN/
 # ein fremdes Programm von 22 MB und hat im Repository nichts verloren - die
 # Konfiguration daneben (.gitleaks.toml) dagegen schon.
 tools/gitleaks.exe
+BenchmarkDotNet.Artifacts/
