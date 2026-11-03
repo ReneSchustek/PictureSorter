@@ -495,6 +495,14 @@ internal sealed class FakeSortMemory : ISortMemory
     public Task<IReadOnlyList<SortMemoryRecord>> GetAllAsync(CancellationToken cancellationToken) =>
         Task.FromResult<IReadOnlyList<SortMemoryRecord>>([.. Records]);
 
+    public Task<SortMemoryRecord?> FindSortedAsync(
+        string fileSignature,
+        string legacySignature,
+        CancellationToken cancellationToken) =>
+        Task.FromResult(Records.FirstOrDefault(record =>
+            record.Status is SortMemoryStatus.Sorted
+            && (record.FileSignature == fileSignature || record.FileSignature == legacySignature)));
+
     public Task<int> CountProposalsAsync(
         string folderPath,
         string categoryName,
@@ -535,6 +543,11 @@ internal sealed class ThrowingSortMemory : ISortMemory
 
     public Task<IReadOnlyList<SortMemoryRecord>> GetAllAsync(CancellationToken cancellationToken) =>
         throw new IOException("Gedächtnis gesperrt");
+
+    public Task<SortMemoryRecord?> FindSortedAsync(
+        string fileSignature,
+        string legacySignature,
+        CancellationToken cancellationToken) => throw new IOException("Gedächtnis gesperrt");
 
     public Task<int> CountProposalsAsync(
         string folderPath,

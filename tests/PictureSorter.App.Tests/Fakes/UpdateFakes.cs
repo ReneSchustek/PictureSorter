@@ -17,7 +17,7 @@ internal sealed class FakeUpdateCoordinator(UpdateInfo? info = null, bool launch
 
     public Task<UpdateInfo?> CheckAsync(CancellationToken cancellationToken) => Task.FromResult(info);
 
-    public Task<bool> DownloadAndLaunchUpdaterAsync(
+    public Task<bool> DownloadAndStartHelperAsync(
         IProgress<UpdateProgress>? progress,
         CancellationToken cancellationToken)
     {

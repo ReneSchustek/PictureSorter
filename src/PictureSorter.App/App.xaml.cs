@@ -303,7 +303,7 @@ public partial class App : Microsoft.UI.Xaml.Application
 
         try
         {
-            if (await updateService.DownloadAndLaunchUpdaterAsync(progress, cancellation.Token).ConfigureAwait(true))
+            if (await updateService.DownloadAndStartHelperAsync(progress, cancellation.Token).ConfigureAwait(true))
             {
                 status.Finish(localizer.Get("Update_Restarting"), StatusSeverity.Success);
                 _window?.Close();

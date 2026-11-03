@@ -126,12 +126,10 @@
                                             x:Uid="NameRepair_SelectCheck"
                                             VerticalAlignment="Center"
                                             IsChecked="{x:Bind IsSelected, Mode=TwoWay}" />
-                                        <Image
+                                        <controls:PhotoThumbnail
                                             Grid.Column="1"
-                                            Width="56"
-                                            Height="56"
-                                            Source="{x:Bind FilePath, Converter={StaticResource ThumbnailConverter}}"
-                                            Stretch="UniformToFill" />
+                                            FileName="{x:Bind SuggestedName}"
+                                            FilePath="{x:Bind FilePath}" />
                                         <!-- Der alte Name steht gedämpft, der neue kräftig:
                                              Der alte ist ohnehin nicht zu lesen, und die
                                              Frage lautet, ob der neue taugt. -->

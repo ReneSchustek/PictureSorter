@@ -55,5 +55,5 @@ internal interface IUpdateCoordinator
     /// </param>
     /// <param name="cancellationToken">Token zum Abbrechen des Vorgangs.</param>
     /// <returns><see langword="true"/>, wenn das Einspielen angelaufen ist.</returns>
-    Task<bool> DownloadAndLaunchUpdaterAsync(IProgress<UpdateProgress>? progress, CancellationToken cancellationToken);
+    Task<bool> DownloadAndStartHelperAsync(IProgress<UpdateProgress>? progress, CancellationToken cancellationToken);
 }

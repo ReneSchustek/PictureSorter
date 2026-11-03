@@ -695,7 +695,7 @@
                                                 Width="56"
                                                 Height="56"
                                                 AutomationProperties.Name="{x:Bind FileName}"
-                                                Source="{x:Bind FilePath, Converter={StaticResource ThumbnailConverter}}"
+                                                controls:ThumbnailImage.Path="{x:Bind FilePath}"
                                                 Stretch="UniformToFill"
                                                 ToolTipService.ToolTip="{x:Bind InfoTooltip}" />
                                         </Button>

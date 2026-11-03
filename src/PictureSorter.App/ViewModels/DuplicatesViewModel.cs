@@ -195,13 +195,13 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
     {
         ArgumentNullException.ThrowIfNull(photo);
 
-        DuplicateGroupViewModel? group = _allGroups.FirstOrDefault(kandidat => kandidat.Photos.Contains(photo));
+        DuplicateGroupViewModel? group = _allGroups.FirstOrDefault(candidate => candidate.Photos.Contains(photo));
         if (group is null)
         {
             return [];
         }
 
-        return [.. group.Photos.Where(anderes => !ReferenceEquals(anderes, photo)).Select(anderes => anderes.FilePath)];
+        return [.. group.Photos.Where(other => !ReferenceEquals(other, photo)).Select(other => other.FilePath)];
     }
 
     /// <summary>
@@ -213,7 +213,7 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
     {
         ArgumentNullException.ThrowIfNull(photo);
 
-        DuplicateGroupViewModel? group = _allGroups.FirstOrDefault(kandidat => kandidat.Photos.Contains(photo));
+        DuplicateGroupViewModel? group = _allGroups.FirstOrDefault(candidate => candidate.Photos.Contains(photo));
         if (group is null)
         {
             return;
@@ -245,11 +245,11 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
             return true;
         }
 
-        string gesucht = SearchText.Trim();
+        string term = SearchText.Trim();
 
         return group.Photos.Any(photo =>
-            photo.FileName.Contains(gesucht, StringComparison.OrdinalIgnoreCase)
-            || photo.FilePath.Contains(gesucht, StringComparison.OrdinalIgnoreCase));
+            photo.FileName.Contains(term, StringComparison.OrdinalIgnoreCase)
+            || photo.FilePath.Contains(term, StringComparison.OrdinalIgnoreCase));
     }
 
     // Fotos, die nur online liegen, werden nicht gelesen. Ohne den Hinweis sähe das aus, als gäbe es sie nicht.

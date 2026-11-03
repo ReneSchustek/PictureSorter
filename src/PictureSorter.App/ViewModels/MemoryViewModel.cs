@@ -303,11 +303,11 @@ internal sealed partial class MemoryViewModel : ObservableObject
             return true;
         }
 
-        string suche = SearchText.Trim();
+        string term = SearchText.Trim();
 
-        return record.PhotoPath.Contains(suche, StringComparison.OrdinalIgnoreCase)
-            || record.FolderPath.Contains(suche, StringComparison.OrdinalIgnoreCase)
-            || record.CategoryName.Contains(suche, StringComparison.OrdinalIgnoreCase);
+        return record.PhotoPath.Contains(term, StringComparison.OrdinalIgnoreCase)
+            || record.FolderPath.Contains(term, StringComparison.OrdinalIgnoreCase)
+            || record.CategoryName.Contains(term, StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>

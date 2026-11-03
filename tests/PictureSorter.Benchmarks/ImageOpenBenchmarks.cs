@@ -61,6 +61,23 @@ public class ImageOpenBenchmarks
         return decoder.PixelWidth;
     }
 
+    /// <summary>Ein Vorschaubild für die Listen, wie es der Lader je Zeile liest.</summary>
+    /// <returns>Die Zahl der Bildpunkt-Bytes.</returns>
+    [Benchmark]
+    public async Task<int> ReadThumbnailAsync()
+    {
+        using IRandomAccessStream stream = await FileRandomAccessStream.OpenAsync(_path, FileAccessMode.Read).AsTask().ConfigureAwait(false);
+        BitmapDecoder decoder = await BitmapDecoder.CreateAsync(stream).AsTask().ConfigureAwait(false);
+        BitmapTransform transform = new() { ScaledWidth = 112, ScaledHeight = 112, InterpolationMode = BitmapInterpolationMode.Fant };
+        PixelDataProvider pixels = await decoder.GetPixelDataAsync(
+            BitmapPixelFormat.Rgba8,
+            BitmapAlphaMode.Ignore,
+            transform,
+            ExifOrientationMode.RespectExifOrientation,
+            ColorManagementMode.ColorManageToSRgb).AsTask().ConfigureAwait(false);
+        return pixels.DetachPixelData().Length;
+    }
+
     /// <summary>Der frühere Weg.</summary>
     /// <returns>Die Breite des Bildes.</returns>
     [Benchmark]

@@ -1111,6 +1111,36 @@ public sealed class SortViewModelFlowTests : IDisposable
     }
 
     [Fact]
+    public async Task SuggestTrips_WithAnUnexpectedFailure_EndsWithAMessage()
+    {
+        StatusBarViewModel status = new(new ReswLocalizer());
+        using SortViewModel sut = CreateSut(
+            photoSource: new ThrowingPhotoSource(new InvalidOperationException("unerwartet")),
+            status: status);
+        sut.SourceFolder = SourceFolder;
+
+        await sut.SuggestTripsCommand.ExecuteAsync(parameter: null);
+
+        Assert.Equal(StatusSeverity.Error, status.Severity);
+        Assert.False(status.IsBusy);
+    }
+
+    [Fact]
+    public async Task SuggestExamples_WithAnUnexpectedFailure_EndsWithAMessage()
+    {
+        StatusBarViewModel status = new(new ReswLocalizer());
+        using SortViewModel sut = CreateSut(
+            photoSource: new ThrowingPhotoSource(new InvalidOperationException("unerwartet")),
+            status: status);
+        sut.SourceFolder = SourceFolder;
+
+        await sut.SuggestPositivesCommand.ExecuteAsync(parameter: null);
+
+        Assert.Equal(StatusSeverity.Error, status.Severity);
+        Assert.False(status.IsBusy);
+    }
+
+    [Fact]
     public async Task SuggestTrips_WhenTheFolderIsGone_SaysSo()
     {
         // Die Urlaubssuche liest jede Datei des Ordners. Verschwindet er zwischen Wahl und

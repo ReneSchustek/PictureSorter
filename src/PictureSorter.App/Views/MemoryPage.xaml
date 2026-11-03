@@ -82,12 +82,10 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
-                        <Image
-                            Width="48"
-                            Height="48"
-                            AutomationProperties.Name="{x:Bind FileName}"
-                            Source="{x:Bind FilePath, Converter={StaticResource ThumbnailConverter}}"
-                            Stretch="UniformToFill" />
+                        <controls:PhotoThumbnail
+                            FileName="{x:Bind FileName}"
+                            FilePath="{x:Bind FilePath}"
+                            ImageSize="48" />
 
                         <StackPanel
                             Grid.Column="1"

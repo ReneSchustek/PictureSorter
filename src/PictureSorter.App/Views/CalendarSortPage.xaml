@@ -172,13 +172,10 @@
                                             x:Uid="CalendarPage_ProposalSelectCheck"
                                             VerticalAlignment="Center"
                                             IsChecked="{x:Bind IsSelected, Mode=TwoWay}" />
-                                        <Image
+                                        <controls:PhotoThumbnail
                                             Grid.Column="1"
-                                            Width="56"
-                                            Height="56"
-                                            AutomationProperties.Name="{x:Bind FileName}"
-                                            Source="{x:Bind FilePath, Converter={StaticResource ThumbnailConverter}}"
-                                            Stretch="UniformToFill" />
+                                            FileName="{x:Bind FileName}"
+                                            FilePath="{x:Bind FilePath}" />
                                         <StackPanel
                                             Grid.Column="2"
                                             VerticalAlignment="Center"

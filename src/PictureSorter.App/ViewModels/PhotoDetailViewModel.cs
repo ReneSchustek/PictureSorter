@@ -161,9 +161,9 @@ internal sealed partial class PhotoDetailViewModel : ObservableObject
         ArgumentNullException.ThrowIfNull(duplicates);
 
         Duplicates.Clear();
-        foreach (string pfad in duplicates)
+        foreach (string path in duplicates)
         {
-            Duplicates.Add(pfad);
+            Duplicates.Add(path);
         }
 
         OnPropertyChanged(nameof(HasDuplicates));
@@ -171,27 +171,18 @@ internal sealed partial class PhotoDetailViewModel : ObservableObject
         TargetFolder = await FindTargetAsync(cancellationToken).ConfigureAwait(true);
     }
 
-    // Über den Ordner statt über die Kategorie: Welche Kategorie im Spiel war, weiß die Detailansicht nicht. Nur
-    // „einsortiert" zählt: Auch ein offener Vorschlag, ein Nein der KI oder eine Abwahl stehen im Gedächtnis, und
-    // keines davon ist ein Ziel. Das Gedächtnis ist eine Zugabe, ohne Datenbank öffnet sich die Ansicht trotzdem.
+    // Das Gedächtnis ist eine Zugabe, ohne Datenbank öffnet sich die Ansicht trotzdem.
     [SuppressMessage(
         "Design",
         "CA1031:Keine allgemeinen Ausnahmetypen abfangen",
         Justification = "Die Detailansicht darf an einer gesperrten oder beschädigten Datenbank nicht scheitern; der Fehler wird protokolliert.")]
     private async Task<string> FindTargetAsync(CancellationToken cancellationToken)
     {
-        string signature = Photo.ComputeSignature();
-        string legacySignature = Photo.ComputeLegacySignature();
-
         try
         {
-            IReadOnlyList<SortMemoryRecord> records = await _memory
-                .GetForFolderAsync(FolderPath, cancellationToken)
+            SortMemoryRecord? record = await _memory
+                .FindSortedAsync(Photo.ComputeSignature(), Photo.ComputeLegacySignature(), cancellationToken)
                 .ConfigureAwait(true);
-            SortMemoryRecord? record = records.FirstOrDefault(
-                entry => entry.Status is SortMemoryStatus.Sorted
-                    && (string.Equals(entry.FileSignature, signature, StringComparison.Ordinal)
-                        || string.Equals(entry.FileSignature, legacySignature, StringComparison.Ordinal)));
 
             return record?.CategoryName ?? string.Empty;
         }

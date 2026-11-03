@@ -4,6 +4,18 @@ Alle nennenswerten Änderungen an diesem Projekt werden hier dokumentiert.
 Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/),
 die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
+## [1.13.4] - 2026-11-03
+
+### Behoben
+
+- **Die Vorschaulisten bleiben auch bei tausenden Fotos bedienbar.** Beim Scrollen durch 4.329 Fotos wuchs das Programm auf über 4 GB und reagierte nicht mehr. Vorschaubilder laden jetzt höchstens zu zweit, Bilder, die aus dem Blick gescrollt sind, werden nicht mehr gelesen.
+- **„Einsortiert nach" findet auch verschobene Fotos.** Die Detailansicht suchte nur im Ordner, in dem das Foto gerade liegt.
+- **Die Suche nach Beispielen und Urlauben bleibt bei einem unerwarteten Fehler nicht stehen.** Sie meldet ihn in der Statusleiste.
+
+### Neu
+
+- **Vorschaubilder sind klickbar.** Ein Klick zeigt das Foto groß in „Alles einsortieren", „Nach Datum ablegen", „Namen richten" und „Gedächtnis".
+
 ## [1.13.3] - 2026-11-03
 
 ### Behoben

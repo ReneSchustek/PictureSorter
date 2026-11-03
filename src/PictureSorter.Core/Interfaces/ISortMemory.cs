@@ -35,6 +35,19 @@ public interface ISortMemory
         CancellationToken cancellationToken);
 
     /// <summary>
+    /// Findet den jüngsten Eintrag „einsortiert" zu einem Foto, gleich aus welchem Ordner. Das Gedächtnis ist nach
+    /// dem Quellordner geschlüsselt, ein verschobenes Foto liegt aber längst im Zielordner.
+    /// </summary>
+    /// <param name="fileSignature">Die Signatur der Datei.</param>
+    /// <param name="legacySignature">Die Signatur älterer Fassungen.</param>
+    /// <param name="cancellationToken">Token zum Abbrechen des Vorgangs.</param>
+    /// <returns>Der Eintrag oder <see langword="null"/>, wenn das Foto nie einsortiert wurde.</returns>
+    Task<SortMemoryRecord?> FindSortedAsync(
+        string fileSignature,
+        string legacySignature,
+        CancellationToken cancellationToken);
+
+    /// <summary>
     /// Legt einen Eintrag an oder aktualisiert ihn. Idempotent über Ordner, Signatur
     /// und Kategorie.
     /// </summary>

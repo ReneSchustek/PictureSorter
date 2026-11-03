@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="PictureSorter.App.Controls.PhotoThumbnail"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:PictureSorter.App.Controls">
+
+    <!-- Ein Knopf statt eines bloßen Bildes: In 56 Punkten erkennt man kein Gesicht. Der Klick zeigt das Foto groß,
+         und mit Fokus und Tastatur geht das genauso. -->
+    <Button
+        x:Uid="PhotoThumbnail_Button"
+        Padding="0"
+        AutomationProperties.Name="{x:Bind FileName, Mode=OneWay}"
+        Background="Transparent"
+        BorderThickness="0"
+        Click="OnClick">
+        <Image
+            Width="{x:Bind ImageSize, Mode=OneWay}"
+            Height="{x:Bind ImageSize, Mode=OneWay}"
+            controls:ThumbnailImage.Path="{x:Bind FilePath, Mode=OneWay}"
+            Stretch="UniformToFill" />
+    </Button>
+</UserControl>

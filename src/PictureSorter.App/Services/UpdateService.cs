@@ -25,14 +25,14 @@ internal sealed class UpdateService : IUpdateCoordinator
     /// Name des benannten HttpClients, der Weiterleitungen NICHT automatisch folgt
     /// (siehe DI-Registrierung und <see cref="DownloadToAsync"/>).
     /// </summary>
-    public const string DownloadClientName = "updater-download";
+    public const string DownloadClientName = "update-download";
 
     // Obergrenze der Weiterleitungen. GitHub leitet den Asset-Download i. d. R. einmal
     // um; mehr als eine Handvoll Sprünge deutet auf eine Umleitungsschleife hin.
     private const int MaxRedirects = 5;
 
     // Deckel gegen eine Speicher-/Platz-DoS durch eine riesige Antwort.
-    private const long MaxUpdaterBytes = 300L * 1024 * 1024;
+    private const long MaxDownloadBytes = 300L * 1024 * 1024;
 
     // Auslieferungs-Hosts von GitHub. Eine Adresse außerhalb dieser Liste wird nicht
     // heruntergeladen, egal was die Release-Antwort behauptet.
@@ -110,7 +110,7 @@ internal sealed class UpdateService : IUpdateCoordinator
     /// <param name="progress">Nimmt die Zwischenstände entgegen (für die Statusanzeige).</param>
     /// <param name="cancellationToken">Token zum Abbrechen des Vorgangs.</param>
     /// <returns><see langword="true"/>, wenn der Helfer gestartet wurde.</returns>
-    public async Task<bool> DownloadAndLaunchUpdaterAsync(
+    public async Task<bool> DownloadAndStartHelperAsync(
         IProgress<UpdateProgress>? progress,
         CancellationToken cancellationToken)
     {
@@ -210,7 +210,7 @@ internal sealed class UpdateService : IUpdateCoordinator
             });
 
             string redactedExecutable = LogPaths.Redact(stagedExecutable);
-            UpdateServiceLog.UpdaterLaunched(_logger, redactedExecutable);
+            UpdateServiceLog.HelperStarted(_logger, redactedExecutable);
             return true;
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -274,7 +274,7 @@ internal sealed class UpdateService : IUpdateCoordinator
 
             _ = response.EnsureSuccessStatusCode();
 
-            if (response.Content.Headers.ContentLength is > MaxUpdaterBytes)
+            if (response.Content.Headers.ContentLength is > MaxDownloadBytes)
             {
                 UpdateServiceLog.TooLarge(_logger, response.Content.Headers.ContentLength.Value);
                 return false;
@@ -293,7 +293,7 @@ internal sealed class UpdateService : IUpdateCoordinator
     private static bool IsRedirect(System.Net.HttpStatusCode status) =>
         (int)status is >= 300 and < 400;
 
-    // Kopiert höchstens MaxUpdaterBytes, auch wenn kein Content-Length gemeldet wird,
+    // Kopiert höchstens MaxDownloadBytes, auch wenn kein Content-Length gemeldet wird,
     // und meldet dabei den Fortschritt. Ohne bekannte Gesamtgröße bleibt es beim
     // Abschnitt ohne Prozentwert; die Oberfläche zeigt dann einen laufenden Balken.
     private static async Task CopyWithLimitAsync(
@@ -310,7 +310,7 @@ internal sealed class UpdateService : IUpdateCoordinator
         while ((read = await source.ReadAsync(buffer, cancellationToken).ConfigureAwait(true)) > 0)
         {
             total += read;
-            if (total > MaxUpdaterBytes)
+            if (total > MaxDownloadBytes)
             {
                 throw new IOException("Die heruntergeladene Datei überschreitet die zulässige Größe.");
             }
@@ -368,7 +368,7 @@ internal sealed class UpdateService : IUpdateCoordinator
 internal static partial class UpdateServiceLog
 {
     [LoggerMessage(EventId = 5100, Level = LogLevel.Information, Message = "Neue Fassung im Helfer-Modus gestartet: {Path}.")]
-    public static partial void UpdaterLaunched(ILogger logger, string path);
+    public static partial void HelperStarted(ILogger logger, string path);
 
     [LoggerMessage(EventId = 5101, Level = LogLevel.Error, Message = "Aktualisierung fehlgeschlagen.")]
     public static partial void UpdateFailed(ILogger logger, Exception exception);

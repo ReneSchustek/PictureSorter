@@ -29,6 +29,8 @@ internal static class AppServiceCollectionExtensions
         // Instanziierung dieser internen Klassen erkennt (CA1812).
         _ = services.AddSingleton<ILocalizer>(static _ => new ResourceLocalizer());
         _ = services.AddSingleton(static _ => new WindowContext());
+        _ = services.AddSingleton(static provider =>
+            new ThumbnailLoader(provider.GetRequiredService<IScaledImageReader>()));
 
         // Der Navigationsdienst wird unter beiden Typen registriert: Das Hauptfenster
         // reicht ihm Leiste und Rahmen (konkreter Typ), die ViewModels navigieren nur

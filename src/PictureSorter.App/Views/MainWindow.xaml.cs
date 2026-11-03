@@ -83,7 +83,7 @@ internal sealed partial class MainWindow : Window
             Progress<UpdateProgress> progress = new(ReportUpdateProgress);
 
             bool started = await _updateService
-                .DownloadAndLaunchUpdaterAsync(progress, cancellation.Token)
+                .DownloadAndStartHelperAsync(progress, cancellation.Token)
                 .ConfigureAwait(true);
 
             if (started)

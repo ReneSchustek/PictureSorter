@@ -165,6 +165,11 @@ public sealed class MemoryViewModelFailureTests
                 ? Task.FromException<IReadOnlyList<SortMemoryRecord>>(failure)
                 : Task.FromResult(records);
 
+        public Task<SortMemoryRecord?> FindSortedAsync(
+            string fileSignature,
+            string legacySignature,
+            CancellationToken cancellationToken) => Task.FromException<SortMemoryRecord?>(failure);
+
         public Task<int> CountProposalsAsync(
             string folderPath,
             string categoryName,

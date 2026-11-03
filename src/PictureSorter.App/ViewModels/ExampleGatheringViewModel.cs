@@ -126,6 +126,10 @@ internal sealed class ExampleGatheringViewModel
     /// <param name="set">Die Seite, die die Bilder aufnimmt.</param>
     /// <param name="otherSide">Die andere Seite; deren Bilder werden übergangen.</param>
     /// <param name="isPositive"><see langword="true"/> für die passenden Bilder.</param>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Design",
+        "CA1031:Keine allgemeinen Ausnahmetypen abfangen",
+        Justification = "Eine entweichende Ausnahme ließe die Statusleiste laufen und beendete über den Befehl das Programm; sie gehört als Meldung dorthin.")]
     public async Task SuggestAsync(ExampleSetViewModel set, ExampleSetViewModel otherSide, bool isPositive)
     {
         ArgumentNullException.ThrowIfNull(set);
@@ -176,7 +180,7 @@ internal sealed class ExampleGatheringViewModel
             SortViewModelLog.LoadExamplesFailed(_logger, ex);
             _status.Finish(_localizer.Get("Sort_FolderNotFound"), StatusSeverity.Error);
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        catch (Exception ex)
         {
             SortViewModelLog.LoadExamplesFailed(_logger, ex);
             _status.Finish(_localizer.Get("Sort_FolderUnreadable"), StatusSeverity.Error);
@@ -192,9 +196,9 @@ internal sealed class ExampleGatheringViewModel
     {
         // Auch hier zählt der Balken mit: Auf einer langsamen Platte dauert schon ein Schwung
         // von wenigen Bildern spürbar lange.
-        Progress<PhotoScanProgress> progress = new(stand => _status.ReportProgress(
-            _localizer.Format("Common_GatherProgress", stand.Processed, stand.Total),
-            stand.Total == 0 ? 0 : stand.Processed * 100d / stand.Total));
+        Progress<PhotoScanProgress> progress = new(report => _status.ReportProgress(
+            _localizer.Format("Common_GatherProgress", report.Processed, report.Total),
+            report.Total == 0 ? 0 : report.Processed * 100d / report.Total));
 
         int offset = isPositive ? _positiveOffset : _negativeOffset;
         IReadOnlyList<Photo> photos = await _photoSource

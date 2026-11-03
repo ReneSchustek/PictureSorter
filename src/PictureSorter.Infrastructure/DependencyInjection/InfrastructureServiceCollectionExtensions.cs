@@ -51,6 +51,8 @@ public static class InfrastructureServiceCollectionExtensions
             client.BaseAddress = new Uri("https://api.github.com/");
             client.DefaultRequestHeaders.UserAgent.ParseAdd("PictureSorter-UpdateChecker");
             client.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github+json");
+
+            // Die Prüfung läuft beim Start nebenher, und niemand wartet auf sie. Länger lohnt sich nicht.
             client.Timeout = TimeSpan.FromSeconds(15);
 
             // Deckel gegen eine übergroße Antwort: Die Release-JSON ist klein.

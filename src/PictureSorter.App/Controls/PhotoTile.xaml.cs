@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -12,6 +13,8 @@ namespace PictureSorter.App.Controls;
 /// </summary>
 internal sealed partial class PhotoTile : UserControl
 {
+    private CancellationTokenSource? _previewLoading;
+
     /// <summary>Pfad der Bilddatei.</summary>
     public static readonly DependencyProperty ImagePathProperty = DependencyProperty.Register(
         nameof(ImagePath), typeof(string), typeof(PhotoTile), new PropertyMetadata(null, OnImagePathChanged));
@@ -154,6 +157,7 @@ internal sealed partial class PhotoTile : UserControl
         if (string.IsNullOrWhiteSpace(path))
         {
             // Kein Pfad, keine Vorschau: Das Kürzel bleibt stehen.
+            tile._previewLoading?.Cancel();
             tile.Preview.Source = null;
             tile.Preview.Visibility = Visibility.Collapsed;
             tile.InitialsText.Visibility = Visibility.Visible;
@@ -161,12 +165,7 @@ internal sealed partial class PhotoTile : UserControl
             return;
         }
 
-        tile.Preview.Source = new BitmapImage(new Uri(path))
-        {
-            // Nur so groß laden, wie die Kachel es zeigt. Ein Urlaubsbild mit 24
-            // Megapixeln je Kachel würde den Speicher einer Übersicht sprengen.
-            DecodePixelHeight = (int)tile.PreviewHeight,
-        };
+        _ = tile.LoadPreviewAsync(path);
     }
 
     private static void OnFileNameChanged(DependencyObject sender, DependencyPropertyChangedEventArgs args)
@@ -191,7 +190,7 @@ internal sealed partial class PhotoTile : UserControl
     // Das Kürzel wird dabei ausgeblendet, nicht nur überdeckt: Ein verdeckter Text steht
     // weiter im Baum der Bedienhilfen und würde von der Sprachausgabe zusätzlich zum
     // Dateinamen vorgelesen.
-    private void OnImageOpened(object sender, RoutedEventArgs e)
+    private void ShowPreview()
     {
         Preview.Visibility = Visibility.Visible;
         InitialsText.Visibility = Visibility.Collapsed;
@@ -199,7 +198,7 @@ internal sealed partial class PhotoTile : UserControl
     }
 
     // Eine kaputte, gesperrte oder gelöschte Datei ist kein Grund für ein graues Loch.
-    private void OnImageFailed(object sender, ExceptionRoutedEventArgs e)
+    private void ShowInitials()
     {
         Preview.Visibility = Visibility.Collapsed;
         InitialsText.Visibility = Visibility.Visible;
@@ -210,6 +209,49 @@ internal sealed partial class PhotoTile : UserControl
     }
 
     private void OnHeadClick(object sender, RoutedEventArgs e) => Opened?.Invoke(this, EventArgs.Empty);
+
+    // Nur so groß laden, wie die Kachel es zeigt, und über denselben Lader wie die Listen: Eine Übersicht aus
+    // vielen Kacheln mit großen Fotos sprengte sonst den Speicher.
+    [SuppressMessage(
+        "Design",
+        "CA1031:Do not catch general exception types",
+        Justification = "Läuft ohne Aufrufer; ein Vorschaubild ist eine Zugabe, ohne es bleibt das Kürzel stehen.")]
+    private async Task LoadPreviewAsync(string path)
+    {
+        if (_previewLoading is { } previous)
+        {
+            await previous.CancelAsync().ConfigureAwait(true);
+            previous.Dispose();
+        }
+
+        CancellationTokenSource loading = new();
+        _previewLoading = loading;
+
+        try
+        {
+            WriteableBitmap? bitmap = await ThumbnailImage
+                .LoadAsync(path, (int)PreviewHeight, loading.Token)
+                .ConfigureAwait(true);
+            if (loading.IsCancellationRequested)
+            {
+                return;
+            }
+
+            Preview.Source = bitmap;
+            if (bitmap is null)
+            {
+                ShowInitials();
+            }
+            else
+            {
+                ShowPreview();
+            }
+        }
+        catch (Exception)
+        {
+            // Abgebrochen, weil die Kachel inzwischen ein anderes Bild zeigt, oder gescheitert.
+        }
+    }
 
     private void OnPointerEntered(object sender, PointerRoutedEventArgs e)
     {

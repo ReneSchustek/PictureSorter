@@ -39,7 +39,7 @@ public sealed class TripDetectionService : ITripDetector
         // umgerechnet (dasselbe Datum, das die Anwendung überall anzeigt und das der
         // Zeitraum-Filter verwendet). Sonst schlüge die Erkennung Tage vor, die im Filter
         // andere Bilder träfen.
-        List<DateOnly> tage =
+        List<DateOnly> days =
         [
             .. photos
                 .Where(photo => photo.CapturedAt is not null)
@@ -47,37 +47,37 @@ public sealed class TripDetectionService : ITripDetector
                 .Order(),
         ];
 
-        if (tage.Count == 0)
+        if (days.Count == 0)
         {
             return [];
         }
 
-        List<TripSuggestion> vorschlaege = [];
-        DateOnly beginn = tage[0];
-        DateOnly letzter = tage[0];
-        int anzahl = 1;
+        List<TripSuggestion> suggestions = [];
+        DateOnly first = days[0];
+        DateOnly last = days[0];
+        int count = 1;
 
-        for (int i = 1; i < tage.Count; i++)
+        for (int i = 1; i < days.Count; i++)
         {
-            int pause = tage[i].DayNumber - letzter.DayNumber;
-            if (pause > _options.MaxGapDays)
+            int gap = days[i].DayNumber - last.DayNumber;
+            if (gap > _options.MaxGapDays)
             {
-                Sammle(vorschlaege, beginn, letzter, anzahl);
-                beginn = tage[i];
-                anzahl = 0;
+                Collect(suggestions, first, last, count);
+                first = days[i];
+                count = 0;
             }
 
-            letzter = tage[i];
-            anzahl++;
+            last = days[i];
+            count++;
         }
 
-        Sammle(vorschlaege, beginn, letzter, anzahl);
+        Collect(suggestions, first, last, count);
 
         // Der umfangreichste Zeitraum zuerst: Er ist am ehesten der gesuchte. Bei
         // Gleichstand der jüngere, denn danach wird meist zuerst gesucht.
         return
         [
-            .. vorschlaege
+            .. suggestions
                 .OrderByDescending(vorschlag => vorschlag.PhotoCount)
                 .ThenByDescending(vorschlag => vorschlag.Range.From),
         ];
@@ -86,11 +86,11 @@ public sealed class TripDetectionService : ITripDetector
     // Nimmt einen abgeschlossenen Block auf, wenn er groß genug ist. Ohne Mindestgröße
     // stünden zwischen den Urlauben dutzende Vorschläge aus zwei Sonntagsfotos, und die
     // Liste wäre wertlos.
-    private void Sammle(List<TripSuggestion> ziel, DateOnly beginn, DateOnly ende, int anzahl)
+    private void Collect(List<TripSuggestion> target, DateOnly first, DateOnly end, int count)
     {
-        if (anzahl >= _options.MinPhotos)
+        if (count >= _options.MinPhotos)
         {
-            ziel.Add(new TripSuggestion(new DateRange(beginn, ende), anzahl));
+            target.Add(new TripSuggestion(new DateRange(first, end), count));
         }
     }
 }

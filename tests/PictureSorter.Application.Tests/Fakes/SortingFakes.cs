@@ -552,6 +552,19 @@ internal class FakeSortMemory : ISortMemory
         }
     }
 
+    public Task<SortMemoryRecord?> FindSortedAsync(
+        string fileSignature,
+        string legacySignature,
+        CancellationToken cancellationToken)
+    {
+        lock (_gate)
+        {
+            return Task.FromResult(_records.FirstOrDefault(record =>
+                record.Status is SortMemoryStatus.Sorted
+                && (record.FileSignature == fileSignature || record.FileSignature == legacySignature)));
+        }
+    }
+
     public Task<int> CountProposalsAsync(
         string folderPath,
         string categoryName,

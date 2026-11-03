@@ -662,9 +662,9 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         // Für jedes Beispiel läuft ein vollständiger Aufruf des Bild-Modells. Ohne
         // Zählstand stünde die Oberfläche minutenlang bei derselben unveränderten
         // Zeile und wäre nicht von einem Absturz zu unterscheiden.
-        Progress<TrainingProgress> progress = new(stand => _status.ReportProgress(
-            _localizer.Format("Sort_LearningProgress", stand.Processed, stand.Total),
-            stand.Total == 0 ? 0 : stand.Processed * 100d / stand.Total));
+        Progress<TrainingProgress> progress = new(report => _status.ReportProgress(
+            _localizer.Format("Sort_LearningProgress", report.Processed, report.Total),
+            report.Total == 0 ? 0 : report.Processed * 100d / report.Total));
 
         CategoryKind kind = IsEventCategory ? CategoryKind.Event : CategoryKind.Topic;
         string name = CategoryName.Trim();
@@ -692,13 +692,13 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     {
         get
         {
-            DateRange bereich = new(ToDay(DateFrom), ToDay(DateTo));
-            return bereich.IsReversed ? DateRange.Unbounded : bereich;
+            DateRange range = new(ToDay(DateFrom), ToDay(DateTo));
+            return range.IsReversed ? DateRange.Unbounded : range;
         }
     }
 
-    private static DateOnly? ToDay(DateTimeOffset? wert) =>
-        wert is { } vorhanden ? DateOnly.FromDateTime(vorhanden.LocalDateTime) : null;
+    private static DateOnly? ToDay(DateTimeOffset? value) =>
+        value is { } present ? DateOnly.FromDateTime(present.LocalDateTime) : null;
 
     /// <summary>
     /// Nimmt die Beschränkung auf einen Zeitraum wieder zurück.
@@ -748,26 +748,30 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     /// der Ladeteil einer Analyse, nur ohne KI danach. Der Fortschrittsbalken zeigt sie an.
     /// </summary>
     [RelayCommand(CanExecute = nameof(CanSuggestTrips))]
+    [SuppressMessage(
+        "Design",
+        "CA1031:Keine allgemeinen Ausnahmetypen abfangen",
+        Justification = "Eine entweichende Ausnahme ließe die Statusleiste laufen und beendete über den Befehl das Programm; sie gehört als Meldung dorthin.")]
     private async Task SuggestTripsAsync()
     {
-        using CancellationTokenSource abbruch = new();
-        _status.Begin(_localizer.Get("Sort_SearchingTrips"), abbruch.Cancel);
+        using CancellationTokenSource cancellation = new();
+        _status.Begin(_localizer.Get("Sort_SearchingTrips"), cancellation.Cancel);
         TripSuggestions.Clear();
         TripHint = string.Empty;
 
         try
         {
-            Progress<PhotoScanProgress> fortschritt = new(stand => _status.ReportProgress(
-                _localizer.Format("Common_GatherProgress", stand.Processed, stand.Total),
-                stand.Total == 0 ? 0 : stand.Processed * 100d / stand.Total));
+            Progress<PhotoScanProgress> progress = new(report => _status.ReportProgress(
+                _localizer.Format("Common_GatherProgress", report.Processed, report.Total),
+                report.Total == 0 ? 0 : report.Processed * 100d / report.Total));
 
             IReadOnlyList<Photo> photos = await _photoSource
-                .GetPhotosAsync(SourceFolder, IncludeSubfolders, skip: 0, maxCount: null, fortschritt, abbruch.Token)
+                .GetPhotosAsync(SourceFolder, IncludeSubfolders, skip: 0, maxCount: null, progress, cancellation.Token)
                 .ConfigureAwait(true);
 
-            foreach (TripSuggestion vorschlag in _tripDetector.Detect(photos))
+            foreach (TripSuggestion suggestion in _tripDetector.Detect(photos))
             {
-                TripSuggestions.Add(new TripSuggestionViewModel(vorschlag, _localizer));
+                TripSuggestions.Add(new TripSuggestionViewModel(suggestion, _localizer));
             }
 
             if (TripSuggestions.Count == 0)
@@ -792,7 +796,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
             SortViewModelLog.TripSearchFailed(_logger, ex);
             _status.Finish(_localizer.Get("Sort_FolderNotFound"), StatusSeverity.Error);
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        catch (Exception ex)
         {
             SortViewModelLog.TripSearchFailed(_logger, ex);
             _status.Finish(_localizer.Get("Sort_FolderUnreadable"), StatusSeverity.Error);
@@ -821,8 +825,8 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         _status.Report(_localizer.Format("Sort_DateRangeTaken", suggestion.Label), StatusSeverity.Success);
     }
 
-    private static DateTimeOffset? ToOffset(DateOnly? tag) =>
-        tag is { } vorhanden ? new DateTimeOffset(vorhanden.ToDateTime(TimeOnly.MinValue)) : null;
+    private static DateTimeOffset? ToOffset(DateOnly? day) =>
+        day is { } present ? new DateTimeOffset(present.ToDateTime(TimeOnly.MinValue)) : null;
 
     [RelayCommand(CanExecute = nameof(CanAnalyze))]
     private async Task AnalyzeAsync()

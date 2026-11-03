@@ -12,7 +12,7 @@ public readonly record struct TripSuggestion(DateRange Range, int PhotoCount)
     /// Länge des Zeitraums in Tagen (mindestens 1). Ein einzelner Tag mit vielen Fotos
     /// ist eher eine Feier, mehrere Tage eher eine Reise.
     /// </summary>
-    public int DayCount => Range.From is { } von && Range.To is { } bis
-        ? bis.DayNumber - von.DayNumber + 1
+    public int DayCount => Range.From is { } first && Range.To is { } last
+        ? last.DayNumber - first.DayNumber + 1
         : 1;
 }

@@ -56,4 +56,4 @@ darin, und wie viel helle Fläche? Eine leere Aufnahme hat genau eine Farbe, und
 der dunklen Reihe, auf dem ein Dialog sein Design nicht übernommen hat, fällt durch den
 Anteil weißer Fläche auf. Beanstandete Bilder werden beim Namen genannt.
 
-Aufgenommen mit Fassung 1.13.3 bei 1386 × 993 Punkten.
+Aufgenommen mit Fassung 1.13.4 bei 1386 × 993 Punkten.

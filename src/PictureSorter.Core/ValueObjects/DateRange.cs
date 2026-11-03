@@ -27,7 +27,7 @@ public readonly record struct DateRange(DateOnly? From, DateOnly? To)
     /// solcher Zeitraum enthält nichts; die Oberfläche muss das abfangen, statt der
     /// Nutzerin wortlos ein leeres Ergebnis zu zeigen.
     /// </summary>
-    public bool IsReversed => From is { } von && To is { } bis && von > bis;
+    public bool IsReversed => From is { } first && To is { } last && first > last;
 
     /// <summary>
     /// Prüft, ob ein Aufnahmezeitpunkt in den Zeitraum fällt.
@@ -41,7 +41,7 @@ public readonly record struct DateRange(DateOnly? From, DateOnly? To)
         // eines Ereignisses, in der Duplikat-Liste. Würde hier umgerechnet, fiele ein
         // Bild vom späten Abend aus dem Zeitraum, obwohl daneben der Tag steht, den die
         // Nutzerin eingetippt hat.
-        DateOnly tag = DateOnly.FromDateTime(moment.DateTime);
-        return (From is null || tag >= From) && (To is null || tag <= To);
+        DateOnly day = DateOnly.FromDateTime(moment.DateTime);
+        return (From is null || day >= From) && (To is null || day <= To);
     }
 }

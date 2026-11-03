@@ -63,8 +63,6 @@
                         <Image
                             x:Name="Preview"
                             AutomationProperties.Name="{x:Bind FileName, Mode=OneWay}"
-                            ImageFailed="OnImageFailed"
-                            ImageOpened="OnImageOpened"
                             Stretch="UniformToFill" />
                     </Grid>
                 </Button>

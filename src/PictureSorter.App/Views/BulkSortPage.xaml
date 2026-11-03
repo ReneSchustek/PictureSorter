@@ -92,12 +92,9 @@
                                             <ColumnDefinition Width="Auto" />
                                             <ColumnDefinition Width="220" />
                                         </Grid.ColumnDefinitions>
-                                        <Image
-                                            Width="56"
-                                            Height="56"
-                                            AutomationProperties.Name="{x:Bind FileName}"
-                                            Source="{x:Bind FilePath, Converter={StaticResource ThumbnailConverter}}"
-                                            Stretch="UniformToFill" />
+                                        <controls:PhotoThumbnail
+                                            FileName="{x:Bind FileName}"
+                                            FilePath="{x:Bind FilePath}" />
                                         <TextBlock
                                             Grid.Column="1"
                                             VerticalAlignment="Center"

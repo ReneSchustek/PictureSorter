@@ -181,7 +181,7 @@ internal sealed partial class SettingsViewModel : ObservableObject
         Progress<UpdateProgress> progress = new(ReportInstallProgress);
 
         bool started = await _updateService
-            .DownloadAndLaunchUpdaterAsync(progress, CancellationToken.None)
+            .DownloadAndStartHelperAsync(progress, CancellationToken.None)
             .ConfigureAwait(true);
 
         if (started)

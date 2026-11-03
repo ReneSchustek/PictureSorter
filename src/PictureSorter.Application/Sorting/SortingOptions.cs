@@ -14,13 +14,15 @@ public sealed class SortingOptions
     public const string SectionName = "Sorting";
 
     /// <summary>
-    /// Ab dieser Ähnlichkeit gilt ein Bild ohne Vision-Prüfung als zugehörig.
+    /// Ab dieser Ähnlichkeit gilt ein Bild ohne Vision-Prüfung als zugehörig. Gesetzt, nicht gemessen, und nur für
+    /// <c>nomic-embed-text</c> sinnvoll: Kosinus-Ähnlichkeiten verteilen sich je Modell anders.
     /// </summary>
     [Range(0.0, 1.0)]
     public double UpperSimilarityThreshold { get; set; } = 0.78;
 
     /// <summary>
-    /// Unter dieser Ähnlichkeit gilt ein Bild ohne Vision-Prüfung als nicht zugehörig.
+    /// Unter dieser Ähnlichkeit gilt ein Bild ohne Vision-Prüfung als nicht zugehörig. Gesetzt, nicht gemessen; es
+    /// gilt dasselbe wie beim oberen Wert. Alles dazwischen geht an das teure Bild-Modell.
     /// </summary>
     [Range(0.0, 1.0)]
     public double LowerSimilarityThreshold { get; set; } = 0.45;
@@ -33,7 +35,7 @@ public sealed class SortingOptions
 
     /// <summary>
     /// Ab dieser Anzahl an Verschiebungen verlangt die Oberfläche eine zusätzliche
-    /// Bestätigung (Safe-Write).
+    /// Bestätigung (Safe-Write). Gesetzt, nicht gemessen.
     /// </summary>
     [Range(1, 100000)]
     public int BulkConfirmationThreshold { get; set; } = 50;

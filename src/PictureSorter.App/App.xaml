@@ -24,7 +24,6 @@
             <x:Double x:Key="TitleBarIconMaxWidth">32</x:Double>
             <x:Double x:Key="TitleBarIconMaxHeight">32</x:Double>
 
-            <converters:PathToThumbnailConverter x:Key="ThumbnailConverter" />
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
             <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
             <converters:StatusSeverityToInfoBarSeverityConverter x:Key="StatusSeverityConverter" />

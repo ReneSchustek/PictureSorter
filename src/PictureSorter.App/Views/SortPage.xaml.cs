@@ -130,14 +130,14 @@ internal sealed partial class SortPage : Page
         _previewOpen = true;
         try
         {
-            PhotoEditOutcome ergebnis = await PhotoPreviewDialog
+            PhotoEditOutcome outcome = await PhotoPreviewDialog
                 .ShowAsync(this, proposal.Photo)
                 .ConfigureAwait(true);
 
             // Wurde das Bild aus der Detailansicht heraus umbenannt, verschoben oder
             // gelöscht, gilt der Vorschlag dazu nicht mehr: Er zeigte auf einen Pfad,
             // den es nicht mehr gibt.
-            if (ergebnis.NeedsRefresh)
+            if (outcome.NeedsRefresh)
             {
                 ViewModel.Proposals.Remove(proposal);
             }
@@ -177,7 +177,7 @@ internal sealed partial class SortPage : Page
         _previewOpen = true;
         try
         {
-            PhotoEditOutcome ergebnis = await PhotoPreviewDialog
+            PhotoEditOutcome outcome = await PhotoPreviewDialog
                 .ShowAsync(this, candidate.Photo)
                 .ConfigureAwait(true);
 
@@ -185,7 +185,7 @@ internal sealed partial class SortPage : Page
             // es nicht mehr gibt, und würde beim Anlernen als Fehler zurückkommen. Welche
             // der beiden Seiten es war, muss nicht unterschieden werden. Das Entfernen
             // greift nur dort, wo es tatsächlich steht.
-            if (ergebnis.NeedsRefresh)
+            if (outcome.NeedsRefresh)
             {
                 ViewModel.PositiveExamples.RemoveCommand.Execute(candidate);
                 ViewModel.NegativeExamples.RemoveCommand.Execute(candidate);

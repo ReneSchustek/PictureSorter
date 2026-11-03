@@ -166,7 +166,7 @@ public sealed class UpdateServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task DownloadAndLaunchUpdaterAsync_WhenTheLineStalls_GivesUpInsteadOfHangingForever()
+    public async Task DownloadAndStartHelperAsync_WhenTheLineStalls_GivesUpInsteadOfHangingForever()
     {
         // Die Kopfzeilen kommen, danach steht die Leitung. HttpClient.Timeout greift hier nicht mehr.
         string[] before = TempUpdateDirectories();
@@ -177,7 +177,7 @@ public sealed class UpdateServiceTests : IDisposable
         service.DownloadTimeout = TimeSpan.FromMilliseconds(200);
 
         bool started = await service
-            .DownloadAndLaunchUpdaterAsync(progress: null, TestContext.Current.CancellationToken)
+            .DownloadAndStartHelperAsync(progress: null, TestContext.Current.CancellationToken)
             .WaitAsync(TimeSpan.FromSeconds(30), TestContext.Current.CancellationToken);
 
         Assert.False(started);
@@ -185,18 +185,18 @@ public sealed class UpdateServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task DownloadAndLaunchUpdaterAsync_WithoutAvailableUpdate_DoesNothing()
+    public async Task DownloadAndStartHelperAsync_WithoutAvailableUpdate_DoesNothing()
     {
         (UpdateService service, _) = Setup(_ => Content("egal"));
 
-        bool started = await service.DownloadAndLaunchUpdaterAsync(
+        bool started = await service.DownloadAndStartHelperAsync(
             progress: null, TestContext.Current.CancellationToken);
 
         Assert.False(started);
     }
 
     [Fact]
-    public async Task DownloadAndLaunchUpdaterAsync_WithForgedSignature_RefusesAndLeavesNothingBehind()
+    public async Task DownloadAndStartHelperAsync_WithForgedSignature_RefusesAndLeavesNothingBehind()
     {
         // Der Ernstfall der ganzen Kette: Jemand hat den Release-Kanal übernommen und
         // ein eigenes Paket samt eigener Signatur hinterlegt. Ohne den privaten
@@ -206,7 +206,7 @@ public sealed class UpdateServiceTests : IDisposable
         (UpdateService service, _) = SetupWithUpdate(_ => Content("ein untergeschobenes Paket"));
 
         _ = await service.CheckAsync(TestContext.Current.CancellationToken);
-        bool started = await service.DownloadAndLaunchUpdaterAsync(
+        bool started = await service.DownloadAndStartHelperAsync(
             progress: null, TestContext.Current.CancellationToken);
 
         Assert.False(started);
@@ -237,25 +237,25 @@ public sealed class UpdateServiceTests : IDisposable
     // ── Der ganze Weg: laden, prüfen, entpacken ───────────────────────────────
 
     [Fact]
-    public async Task DownloadAndLaunchUpdaterAsync_WithoutAKnownUpdate_DoesNothing()
+    public async Task DownloadAndStartHelperAsync_WithoutAKnownUpdate_DoesNothing()
     {
         // Kein Beleg, kein Einspielen. Ohne vorher geprüfte Fassung darf die Kette
         // nicht einmal anfangen zu laden.
         (UpdateService service, _) = Setup(_ => Content("egal"));
 
-        bool started = await service.DownloadAndLaunchUpdaterAsync(
+        bool started = await service.DownloadAndStartHelperAsync(
             progress: null, TestContext.Current.CancellationToken);
 
         Assert.False(started);
     }
 
     [Fact]
-    public async Task DownloadAndLaunchUpdaterAsync_WhenTheDownloadFails_LeavesNothingBehind()
+    public async Task DownloadAndStartHelperAsync_WhenTheDownloadFails_LeavesNothingBehind()
     {
         string[] vorher = TempUpdateDirectories();
         UpdateService service = await SetupCheckedAsync(_ => new HttpResponseMessage(HttpStatusCode.NotFound));
 
-        bool started = await service.DownloadAndLaunchUpdaterAsync(
+        bool started = await service.DownloadAndStartHelperAsync(
             progress: null, TestContext.Current.CancellationToken);
 
         Assert.False(started);
@@ -265,7 +265,7 @@ public sealed class UpdateServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task DownloadAndLaunchUpdaterAsync_WithAWrongSignature_StopsBeforeUnpacking()
+    public async Task DownloadAndStartHelperAsync_WithAWrongSignature_StopsBeforeUnpacking()
     {
         // Der Vertrauensanker. Ein Paket ohne gültige Unterschrift wird nicht einmal
         // ausgepackt. Wer den Release-Kanal übernimmt, kommt hier nicht vorbei.
@@ -275,7 +275,7 @@ public sealed class UpdateServiceTests : IDisposable
                 ? Bytes(new byte[64])
                 : Bytes(ZipWithEntry("beliebig.txt")));
 
-        bool started = await service.DownloadAndLaunchUpdaterAsync(
+        bool started = await service.DownloadAndStartHelperAsync(
             progress: null, TestContext.Current.CancellationToken);
 
         Assert.False(started);
@@ -283,14 +283,14 @@ public sealed class UpdateServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task DownloadAndLaunchUpdaterAsync_ReportsEveryStageItReaches()
+    public async Task DownloadAndStartHelperAsync_ReportsEveryStageItReaches()
     {
         // Der Balken darf nicht erst am Ende springen: Der Download umfasst rund
         // hundert Megabyte, und ohne Meldung wirkt die Seite minutenlang tot.
         RecordingUpdateProgress reported = new();
         UpdateService service = await SetupCheckedAsync(_ => new HttpResponseMessage(HttpStatusCode.NotFound));
 
-        _ = await service.DownloadAndLaunchUpdaterAsync(reported, TestContext.Current.CancellationToken);
+        _ = await service.DownloadAndStartHelperAsync(reported, TestContext.Current.CancellationToken);
 
         Assert.Contains(UpdateStage.Downloading, reported.Snapshot());
     }

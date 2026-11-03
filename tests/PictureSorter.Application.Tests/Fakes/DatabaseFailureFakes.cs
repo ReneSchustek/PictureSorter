@@ -55,6 +55,11 @@ internal sealed class FailingSortMemory(Exception failure) : ISortMemory
 
     public Task<IReadOnlyList<SortMemoryRecord>> GetAllAsync(CancellationToken cancellationToken) => throw failure;
 
+    public Task<SortMemoryRecord?> FindSortedAsync(
+        string fileSignature,
+        string legacySignature,
+        CancellationToken cancellationToken) => throw failure;
+
     public Task<int> CountProposalsAsync(
         string folderPath,
         string categoryName,

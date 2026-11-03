@@ -220,10 +220,10 @@ internal sealed partial class ProposalListViewModel : ObservableObject
             return true;
         }
 
-        string gesucht = _search.Trim();
+        string term = _search.Trim();
 
-        return proposal.FileName.Contains(gesucht, StringComparison.OrdinalIgnoreCase)
-            || proposal.TargetFolderName.Contains(gesucht, StringComparison.OrdinalIgnoreCase);
+        return proposal.FileName.Contains(term, StringComparison.OrdinalIgnoreCase)
+            || proposal.TargetFolderName.Contains(term, StringComparison.OrdinalIgnoreCase);
     }
 
     private void BuildFilters()

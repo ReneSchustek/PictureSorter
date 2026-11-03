@@ -24,13 +24,13 @@ internal sealed class TripSuggestionViewModel
 
         _suggestion = suggestion;
 
-        string von = Format(suggestion.Range.From);
-        string bis = Format(suggestion.Range.To);
+        string first = Format(suggestion.Range.From);
+        string last = Format(suggestion.Range.To);
 
         // Ein einzelner Tag bekommt keinen Zeitraum: „vom 3.8. bis 3.8." liest sich falsch.
         Label = suggestion.DayCount <= 1
-            ? localizer.Format("Sort_TripSingleDay", von, suggestion.PhotoCount)
-            : localizer.Format("Sort_TripRange", von, bis, suggestion.DayCount, suggestion.PhotoCount);
+            ? localizer.Format("Sort_TripSingleDay", first, suggestion.PhotoCount)
+            : localizer.Format("Sort_TripRange", first, last, suggestion.DayCount, suggestion.PhotoCount);
     }
 
     /// <summary>Der zugehörige Zeitraum.</summary>
@@ -39,6 +39,6 @@ internal sealed class TripSuggestionViewModel
     /// <summary>Die Beschriftung für die Liste.</summary>
     public string Label { get; }
 
-    private static string Format(DateOnly? tag) =>
-        tag?.ToString("d", CultureInfo.CurrentCulture) ?? string.Empty;
+    private static string Format(DateOnly? day) =>
+        day?.ToString("d", CultureInfo.CurrentCulture) ?? string.Empty;
 }

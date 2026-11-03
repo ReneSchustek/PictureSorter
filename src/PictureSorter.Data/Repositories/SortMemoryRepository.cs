@@ -83,6 +83,31 @@ internal sealed class SortMemoryRepository : ISortMemory
     }
 
     /// <inheritdoc />
+    public async Task<SortMemoryRecord?> FindSortedAsync(
+        string fileSignature,
+        string legacySignature,
+        CancellationToken cancellationToken)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(fileSignature);
+        ArgumentException.ThrowIfNullOrWhiteSpace(legacySignature);
+
+        PictureSorterDbContext context = await CreateContextAsync(cancellationToken).ConfigureAwait(false);
+        await using (context.ConfigureAwait(false))
+        {
+            // Ohne Index auf die Signatur: Gefragt wird einmal je geöffneter Detailansicht, nicht je Foto eines Laufs.
+            SortMemoryEntity? entity = await context.SortMemory
+                .AsNoTracking()
+                .Where(item => item.Status == (int)SortMemoryStatus.Sorted
+                    && (item.FileSignature == fileSignature || item.FileSignature == legacySignature))
+                .OrderByDescending(item => item.UpdatedAtUtc)
+                .FirstOrDefaultAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            return entity is null ? null : ToRecord(entity);
+        }
+    }
+
+    /// <inheritdoc />
     public async Task UpsertAsync(SortMemoryRecord record, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(record);

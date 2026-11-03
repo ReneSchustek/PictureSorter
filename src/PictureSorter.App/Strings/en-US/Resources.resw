@@ -934,6 +934,9 @@
   <data name="Sort_RecoverOfferSummary" xml:space="preserve">
     <value>There are {1} decisions from an earlier analysis of “{0}” in memory. They can be brought back without re-evaluating a single picture — even from a run that was interrupted.</value>
   </data>
+  <data name="PhotoThumbnail_Button.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>View photo large</value>
+  </data>
   <data name="PhotoTile_Head.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>View picture large</value>
   </data>

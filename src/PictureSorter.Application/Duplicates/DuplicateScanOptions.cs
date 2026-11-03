@@ -21,7 +21,8 @@ public sealed class DuplicateScanOptions
 
     /// <summary>
     /// Maximale Hamming-Distanz (0–64) zweier Wahrnehmungs-Hashes, ab der zwei
-    /// Bilder noch als ähnlich gelten. Kleiner = strenger.
+    /// Bilder noch als ähnlich gelten. Kleiner = strenger. Acht ist gesetzt, nicht gemessen; gelöscht wird
+    /// trotzdem nur, was die Nutzerin in der Fundgruppe bestätigt.
     /// </summary>
     [Range(0, 64)]
     public int MaxHammingDistance { get; set; } = 8;

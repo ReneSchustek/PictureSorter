@@ -137,6 +137,38 @@ public sealed class SortMemoryRepositoryTests : IAsyncLifetime
         _ = Assert.Single(await _sut.GetAllAsync(CancellationToken.None));
     }
 
+    [Theory]
+    [InlineData(SortMemoryStatus.Proposed)]
+    [InlineData(SortMemoryStatus.Rejected)]
+    [InlineData(SortMemoryStatus.Ignored)]
+    public async Task FindSorted_WithoutASortedDecision_FindsNothing(SortMemoryStatus status)
+    {
+        // „Einsortiert nach Urlaub" bei einem Foto, das die KI abgelehnt hat, wäre schlicht falsch.
+        await _sut.UpsertAsync(CreateRecord("sig", status), CancellationToken.None);
+
+        Assert.Null(await _sut.FindSortedAsync("sig", "alt", CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task FindSorted_FindsThePhotoWhereverItWasSortedFrom()
+    {
+        // Das verschobene Foto liegt im Zielordner, der Eintrag steht unter dem Quellordner.
+        await _sut.UpsertAsync(CreateRecord("sig", SortMemoryStatus.Sorted), CancellationToken.None);
+
+        SortMemoryRecord? found = await _sut.FindSortedAsync("sig", "alt", CancellationToken.None);
+
+        Assert.NotNull(found);
+        Assert.Equal("sig", found.FileSignature);
+    }
+
+    [Fact]
+    public async Task FindSorted_FindsEntriesOfOlderVersionsByTheirSignature()
+    {
+        await _sut.UpsertAsync(CreateRecord("alt", SortMemoryStatus.Sorted), CancellationToken.None);
+
+        Assert.NotNull(await _sut.FindSortedAsync("sig", "alt", CancellationToken.None));
+    }
+
     [Fact]
     public async Task GetAll_ReturnsNewestFirst()
     {
