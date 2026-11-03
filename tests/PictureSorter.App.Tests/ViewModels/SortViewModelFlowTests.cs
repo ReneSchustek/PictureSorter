@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using PictureSorter.App.Services;
@@ -1014,11 +1015,12 @@ public sealed class SortViewModelFlowTests : IDisposable
             new FailingPhotoSorter(new AiUnavailableException("Ollama antwortet nicht")),
             status: status);
         await PrepareLearnedCategoryAsync(sut);
+        ConcurrentBag<string> messages = CollectMessages(status);
 
         await sut.AnalyzeCommand.ExecuteAsync(parameter: null);
 
         Assert.Equal(SortState.Error, sut.State);
-        Assert.Contains("Ollama", status.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(messages, static message => message.Contains("Ollama", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -1029,11 +1031,12 @@ public sealed class SortViewModelFlowTests : IDisposable
             new FailingPhotoSorter(new DirectoryNotFoundException("weg")),
             status: status);
         await PrepareLearnedCategoryAsync(sut);
+        ConcurrentBag<string> messages = CollectMessages(status);
 
         await sut.AnalyzeCommand.ExecuteAsync(parameter: null);
 
         Assert.Equal(SortState.Error, sut.State);
-        Assert.Contains("Ordner", status.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(messages, static message => message.Contains("Ordner", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -1204,6 +1207,15 @@ public sealed class SortViewModelFlowTests : IDisposable
         TotalPhotos = 4130,
         DecidedPhotos = 3472,
     };
+
+    // Gesammelt statt zuletzt gelesen: Ohne Oberflächen-Thread kommen Fortschrittsmeldungen nebenläufig an und
+    // können die Statuszeile nach dem Ergebnis noch überschreiben.
+    private static ConcurrentBag<string> CollectMessages(StatusBarViewModel status)
+    {
+        ConcurrentBag<string> messages = [];
+        status.PropertyChanged += (_, _) => messages.Add(status.Message);
+        return messages;
+    }
 
     private static async Task PrepareLearnedCategoryAsync(SortViewModel sut)
     {
