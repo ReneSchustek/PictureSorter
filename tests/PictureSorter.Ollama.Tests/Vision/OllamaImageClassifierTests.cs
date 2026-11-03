@@ -83,9 +83,11 @@ public sealed class OllamaImageClassifierTests : IDisposable
         Assert.False((await ClassifyAsync(answer)).Matches);
 
     [Theory]
-    [InlineData("""{"matches": true, "confidence": 1.5}""", 1.0)]
+    [InlineData("""{"matches": true, "confidence": 150}""", 1.0)]
     [InlineData("""{"matches": true, "confidence": -0.2}""", 0.0)]
-    [InlineData("""{"matches": true, "confidence": 95}""", 1.0)]
+    [InlineData("""{"matches": true, "confidence": 95}""", 0.95)]
+    [InlineData("""{"matches": true, "confidence": 5}""", 0.05)]
+    [InlineData("""{"matches": true, "confidence": "40"}""", 0.4)]
     public async Task ClassifyAsync_WithConfidenceOutOfRange_IsClamped(string answer, double expected) =>
         Assert.Equal(expected, (await ClassifyAsync(answer)).Confidence, precision: 5);
 

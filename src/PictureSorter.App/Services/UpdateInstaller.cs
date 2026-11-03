@@ -191,8 +191,8 @@ internal static class UpdateInstaller
 
     /// <summary>
     /// Prüft, ob sich im Programmordner überhaupt schreiben lässt. Wurde die Anwendung
-    /// „für alle Benutzer" nach <c>C:\Programme</c> installiert, darf der Updater ohne
-    /// Administratorrechte nichts ersetzen. Ohne diese Vorabprüfung lädt er erst
+    /// „für alle Benutzer" nach <c>C:\Programme</c> installiert, darf die Aktualisierung ohne
+    /// Administratorrechte nichts ersetzen. Ohne diese Vorabprüfung lädt sie erst
     /// hundert Megabyte herunter, beendet die Anwendung und scheitert dann lautlos.
     /// Aus Sicht des Nutzers startet das Programm einfach unverändert neu.
     /// </summary>

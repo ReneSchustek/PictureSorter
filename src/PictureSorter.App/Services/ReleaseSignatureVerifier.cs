@@ -88,7 +88,7 @@ internal static class ReleaseSignatureVerifier
         }
 
         // Der Hash wird einmal gebildet und gegen jeden zugelassenen Schlüssel geprüft:
-        // Das Paket ist mehrere hundert Megabyte groß, ein erneutes Durchlesen je
+        // Das Paket ist rund hundert Megabyte groß, ein erneutes Durchlesen je
         // Schlüssel wäre reine Wartezeit.
         foreach (string publicKeySpkiBase64 in acceptedPublicKeys)
         {

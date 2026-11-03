@@ -32,7 +32,7 @@ internal sealed partial class NameRepairPage : Page
 
     // Das Angebot zum Zurücknehmen kommt aus dem Protokoll und überlebt einen
     // Neustart. Es wird deshalb bei jedem Betreten neu erfragt und nicht nur einmal
-    // beim Erzeugen der Seite - sonst stünde es nach einem Lauf auf einer anderen
+    // beim Erzeugen der Seite. Sonst stünde es nach einem Lauf auf einer anderen
     // Seite hier nicht.
     private void OnPageLoaded(object sender, RoutedEventArgs e) =>
         ViewModel.RefreshUndoOfferCommand.Execute(parameter: null);

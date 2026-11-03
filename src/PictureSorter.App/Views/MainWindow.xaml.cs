@@ -12,8 +12,8 @@ using PictureSorter.App.ViewModels;
 namespace PictureSorter.App.Views;
 
 /// <summary>
-/// Hauptfenster mit Titelleiste und Navigationsbereich. Schaltet zwischen der
-/// Sortier- und der Über-Seite um.
+/// Hauptfenster mit Titelleiste, Navigationsbereich und Statusleiste. Die Navigation selbst
+/// liegt im <see cref="NavigationService"/>.
 /// </summary>
 internal sealed partial class MainWindow : Window
 {
@@ -60,8 +60,8 @@ internal sealed partial class MainWindow : Window
     private void TitleBar_PaneToggleRequested(TitleBar sender, object args)
         => NavView.IsPaneOpen = !NavView.IsPaneOpen;
 
-    // Lädt den Updater herunter, startet ihn und beendet die App, damit er die
-    // Dateien ersetzen kann. Fehler sind im UpdateService bereits abgefangen.
+    // Lädt die neue Fassung herunter, startet sie im Helfer-Modus und beendet die App, damit
+    // sie die Dateien ersetzen kann. Fehler sind im UpdateService bereits abgefangen.
     [SuppressMessage(
         "Design",
         "CA1031:Do not catch general exception types",
@@ -77,7 +77,7 @@ internal sealed partial class MainWindow : Window
             _update.ReportPreparing();
 
             // Das Paket ist rund hundert Megabyte groß. Ohne Balken und Prozentzahl
-            // sah der Knopf aus, als bewirke er nichts. Der Abbruch über „Stopp" der
+            // sieht der Knopf aus, als bewirke er nichts. Der Abbruch über „Stopp" der
             // Statusleiste gehört dazu, sonst bliebe nur das Schließen des Fensters.
             Status.Begin(_localizer.Get("Update_Downloading"), cancellation.Cancel);
             Progress<UpdateProgress> progress = new(ReportUpdateProgress);

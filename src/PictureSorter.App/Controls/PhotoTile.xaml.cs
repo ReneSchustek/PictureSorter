@@ -40,10 +40,6 @@ internal sealed partial class PhotoTile : UserControl
     public static readonly DependencyProperty InitialsProperty = DependencyProperty.Register(
         nameof(Initials), typeof(string), typeof(PhotoTile), new PropertyMetadata(string.Empty));
 
-    /// <summary>Beschriftung des Bildbereichs für die Sprachausgabe.</summary>
-    public static readonly DependencyProperty OpenLabelProperty = DependencyProperty.Register(
-        nameof(OpenLabel), typeof(string), typeof(PhotoTile), new PropertyMetadata("Bild groß ansehen"));
-
     /// <summary>
     /// Initialisiert die Bildkachel.
     /// </summary>
@@ -60,13 +56,6 @@ internal sealed partial class PhotoTile : UserControl
 
     /// <summary>Meldet den Klick auf das Bild, den Weg in die Detailansicht.</summary>
     public event EventHandler? Opened;
-
-    /// <summary>Beschriftung des Bildbereichs für die Sprachausgabe.</summary>
-    public string OpenLabel
-    {
-        get => (string)GetValue(OpenLabelProperty);
-        set => SetValue(OpenLabelProperty, value);
-    }
 
     /// <summary>Pfad der Bilddatei.</summary>
     public string? ImagePath

@@ -556,6 +556,9 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
         CategoryName = string.Empty;
         CategoryDescription = string.Empty;
         IsEventCategory = false;
+        SortByDateOnly = false;
+        CopyInsteadOfMove = false;
+        TargetRootFolder = string.Empty;
         DateFrom = null;
         DateTo = null;
         TripSuggestions.Clear();
@@ -1003,7 +1006,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private async Task RefreshUndoStateAsync()
     {
-        SortRun? run = await _undo.GetUndoableRunAsync(CancellationToken.None).ConfigureAwait(true);
+        SortRun? run = await TryGetUndoableRunAsync().ConfigureAwait(true);
         if (run is null)
         {
             HasUndoableRun = false;
@@ -1017,6 +1020,25 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
             run.CategoryName,
             run.StartedAt.ToLocalTime().ToString("g", CultureInfo.CurrentCulture));
         HasUndoableRun = true;
+    }
+
+    // Das Angebot ist eine Zugabe, und es wird beim Öffnen der Seite erfragt. Eine gesperrte oder beschädigte
+    // Datenbank darf nicht die ganze Anwendung mitreißen, sie läuft dann eben ohne Gedächtnis weiter.
+    [SuppressMessage(
+        "Design",
+        "CA1031:Keine allgemeinen Ausnahmetypen abfangen",
+        Justification = "Das Nachsehen im Protokoll darf das Öffnen der Seite nicht scheitern lassen; der Fehler wird protokolliert.")]
+    private async Task<SortRun?> TryGetUndoableRunAsync()
+    {
+        try
+        {
+            return await _undo.GetUndoableRunAsync(CancellationToken.None).ConfigureAwait(true);
+        }
+        catch (Exception ex)
+        {
+            SortViewModelLog.UndoStateUnavailable(_logger, ex);
+            return null;
+        }
     }
 
     // Der Ablauf eines fortgesetzten Laufs. Das Angebot dazu (Erkennen, Beschriften,
@@ -1269,7 +1291,7 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     {
         using IDisposable? logScope = _logger.BeginScope("Rückgängig {CorrelationId}", NewCorrelationId());
 
-        SortRun? run = await _undo.GetUndoableRunAsync(CancellationToken.None).ConfigureAwait(true);
+        SortRun? run = await TryGetUndoableRunAsync().ConfigureAwait(true);
         if (run is null)
         {
             await RefreshUndoStateAsync().ConfigureAwait(true);
@@ -1330,11 +1352,9 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     /// jedem Fall wieder bedienbar ist.
     ///
     /// Ein Lauf über tausende Fotos dauert Stunden bis Tage. Er darf deshalb unter keinen
-    /// Umständen stumm stehenbleiben: Wurden nur der Abbruch und zwei Datei-Ausnahmen
-    /// gefangen, ließ jede andere den Ablaufzustand auf „läuft" stehen: jeder Knopf
-    /// gesperrt, die Statusleiste beim letzten Zählstand hängend, der Stopp-Knopf ohne
-    /// Wirkung, weil das Abbruch-Objekt bereits verworfen war. Von einem Stillstand war
-    /// das nicht zu unterscheiden, und es half nur noch das Beenden des Programms.
+    /// Umständen stumm stehenbleiben: Eine nicht gefangene Ausnahme ließe den Ablaufzustand
+    /// auf „läuft" stehen, jeden Knopf gesperrt und den Stopp-Knopf ohne Wirkung, weil das
+    /// Abbruch-Objekt bereits verworfen ist. Dann hülfe nur noch das Beenden des Programms.
     /// </summary>
     /// <param name="operation">Der auszuführende Vorgang.</param>
     /// <param name="canceledState">Zustand nach einem Abbruch durch die Nutzerin.</param>
@@ -1465,17 +1485,21 @@ internal sealed partial class SortViewModel : ObservableObject, IDisposable
     // alle Logeinträge eines Laufs, auch die der nachgelagerten Ollama-Aufrufe.
     private static string NewCorrelationId() => Guid.NewGuid().ToString("N")[..8];
 
+    // Gefragt wird nach dem, was wirklich geschieht: Abgewählte Vorschläge bewegen sich nicht, und ein Kopierlauf
+    // verschiebt nichts.
     private async Task<bool> ConfirmBulkAsync()
     {
-        if (Proposals.Count < _options.BulkConfirmationThreshold)
+        int count = Proposals.SelectedCount;
+        if (count < _options.BulkConfirmationThreshold)
         {
             return true;
         }
 
+        bool copy = CopyInsteadOfMove;
         return await _confirmationService.ConfirmAsync(
-            _localizer.Get("Sort_BulkConfirmTitle"),
-            _localizer.Format("Sort_BulkConfirmMessage", Proposals.Count),
-            _localizer.Get("Sort_BulkConfirmPrimary"),
+            _localizer.Get(copy ? "Sort_BulkConfirmCopyTitle" : "Sort_BulkConfirmTitle"),
+            _localizer.Format(copy ? "Sort_BulkConfirmCopyMessage" : "Sort_BulkConfirmMessage", count),
+            _localizer.Get(copy ? "Sort_BulkConfirmCopyPrimary" : "Sort_BulkConfirmPrimary"),
             _localizer.Get("Common_Cancel")).ConfigureAwait(true);
     }
 
@@ -1556,6 +1580,6 @@ internal static partial class SortViewModelLog
     [LoggerMessage(EventId = 5250, Level = LogLevel.Warning, Message = "Im Sortier-Gedächtnis konnte nicht nachgesehen werden; es wird kein Zurückholen angeboten.")]
     public static partial void RecoverOfferUnavailable(ILogger logger, Exception exception);
 
-    [LoggerMessage(EventId = 3106, Level = LogLevel.Warning, Message = "Auf das Protokoll der Analyseläufe konnte nicht zugegriffen werden; es wird kein Lauf zum Fortsetzen angeboten.")]
-    public static partial void AnalysisJournalUnreadable(ILogger logger, Exception exception);
+    [LoggerMessage(EventId = 5251, Level = LogLevel.Warning, Message = "Im Protokoll der Sortierläufe konnte nicht nachgesehen werden; es wird kein Rückgängig angeboten.")]
+    public static partial void UndoStateUnavailable(ILogger logger, Exception exception);
 }

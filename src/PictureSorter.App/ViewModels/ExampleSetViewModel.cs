@@ -155,7 +155,7 @@ internal sealed partial class ExampleSetViewModel : ObservableObject
                 FullPath = info.FullName,
                 FileName = info.Name,
                 SizeBytes = info.Length,
-                CapturedAt = new DateTimeOffset(info.LastWriteTimeUtc, TimeSpan.Zero),
+                CapturedAt = new DateTimeOffset(info.LastWriteTimeUtc).ToLocalTime(),
             };
             return true;
         }

@@ -29,6 +29,18 @@ public sealed class MemoryViewModelFailureTests
     }
 
     [Fact]
+    public async Task Refresh_WhenTheDatabaseIsLocked_EndsInTheErrorStateInsteadOfAborting()
+    {
+        // SQLite meldet eine gesperrte oder beschädigte Datei als DbException. Entkäme sie dem Befehl, beendete
+        // sie das Programm.
+        MemoryViewModel sut = CreateSut(new FailingSortMemory(new TestDatabaseException()));
+
+        await sut.RefreshCommand.ExecuteAsync(parameter: null);
+
+        Assert.Equal(MemoryState.Error, sut.State);
+    }
+
+    [Fact]
     public async Task Refresh_WithoutEntries_ShowsTheEmptyState()
     {
         MemoryViewModel sut = CreateSut(new FakeSortMemory());
@@ -145,7 +157,7 @@ public sealed class MemoryViewModelFailureTests
     /// Liefert wahlweise Einträge und scheitert dann bei jedem Schreibzugriff, oder
     /// scheitert bereits beim Lesen.
     /// </summary>
-    private sealed class FailingSortMemory(Exception failure, IReadOnlyList<SortMemoryRecord>? records = null)
+    internal sealed class FailingSortMemory(Exception failure, IReadOnlyList<SortMemoryRecord>? records = null)
         : ISortMemory
     {
         public Task<IReadOnlyList<SortMemoryRecord>> GetAllAsync(CancellationToken cancellationToken) =>

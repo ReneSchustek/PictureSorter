@@ -14,8 +14,8 @@ namespace PictureSorter.App.Services;
 
 /// <summary>
 /// Orchestriert die Aktualisierung: prüft über den <see cref="IUpdateChecker"/> auf
-/// eine neuere Version und lädt auf Wunsch das Updater-Programm aus dem
-/// GitHub-Release herunter und startet es. Der Updater ersetzt anschließend die
+/// eine neuere Version und lädt auf Wunsch die neue Fassung aus dem GitHub-Release
+/// herunter und startet sie im Helfer-Modus. Sie ersetzt anschließend die
 /// Programmdateien; dazu beendet sich die laufende App (siehe Aufrufer).
 /// Alle Schritte sind fehlertolerant: Schlägt etwas fehl, läuft die App normal weiter.
 /// </summary>
@@ -26,11 +26,6 @@ internal sealed class UpdateService : IUpdateCoordinator
     /// (siehe DI-Registrierung und <see cref="DownloadToAsync"/>).
     /// </summary>
     public const string DownloadClientName = "updater-download";
-
-    // Ein Paket hat rund 100 MB. Fünf Minuten reichen damit ab etwa 3 MBit/s; wer langsamer angebunden
-    // ist, greift zum Setup. Unbegrenzt darf der Download nicht laufen, sonst hinge er bei einem
-    // Verbindungsabbruch ohne Meldung.
-    private static readonly TimeSpan DownloadTimeout = TimeSpan.FromMinutes(5);
 
     // Obergrenze der Weiterleitungen. GitHub leitet den Asset-Download i. d. R. einmal
     // um; mehr als eine Handvoll Sprünge deutet auf eine Umleitungsschleife hin.
@@ -76,6 +71,13 @@ internal sealed class UpdateService : IUpdateCoordinator
         _dataDirectory = dataDirectory;
         _logger = logger;
     }
+
+    /// <summary>
+    /// Wie lange der ganze Download dauern darf. Ein Paket hat rund 100 MB, fünf Minuten reichen damit ab etwa
+    /// 3 MBit/s; wer langsamer angebunden ist, greift zum Setup. Unbegrenzt darf er nicht laufen, sonst hinge er
+    /// bei einer stehenden Verbindung ohne Meldung.
+    /// </summary>
+    internal TimeSpan DownloadTimeout { get; set; } = TimeSpan.FromMinutes(5);
 
     /// <summary>
     /// Das Ergebnis der letzten Prüfung, falls eine Aktualisierung verfügbar ist.
@@ -148,11 +150,15 @@ internal sealed class UpdateService : IUpdateCoordinator
             // etwas ausgelöst hat, nicht erst wenn die erste Antwort da ist.
             progress?.Report(new UpdateProgress(UpdateStage.Downloading, 0));
 
+            // Eine eigene Frist, denn HttpClient.Timeout endet hier schon mit den Kopfzeilen: Gelesen wird mit
+            // ResponseHeadersRead, und vor einem Stillstand mitten in der Datei schützte es nicht.
+            using CancellationTokenSource limit = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            limit.CancelAfter(DownloadTimeout);
+
             using (HttpClient client = _httpClientFactory.CreateClient(DownloadClientName))
             {
-                client.Timeout = DownloadTimeout;
-                if (!await DownloadToAsync(client, packageUrl, packagePath, progress, cancellationToken).ConfigureAwait(true)
-                    || !await DownloadToAsync(client, signatureUrl, signaturePath, progress: null, cancellationToken).ConfigureAwait(true))
+                if (!await DownloadToAsync(client, packageUrl, packagePath, progress, limit.Token).ConfigureAwait(true)
+                    || !await DownloadToAsync(client, signatureUrl, signaturePath, progress: null, limit.Token).ConfigureAwait(true))
                 {
                     TryCleanUp(workingDirectory);
                     return false;
@@ -207,10 +213,17 @@ internal sealed class UpdateService : IUpdateCoordinator
             UpdateServiceLog.UpdaterLaunched(_logger, redactedExecutable);
             return true;
         }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // Die Nutzerin hat abgebrochen; das meldet der Aufrufer anders als einen Fehler.
+            UpdateInstaller.RemovePendingNote(_dataDirectory);
+            TryCleanUp(workingDirectory);
+            throw;
+        }
         catch (Exception ex) when (ex is IOException
             or InvalidDataException
             or HttpRequestException
-            or TaskCanceledException
+            or OperationCanceledException
             or UnauthorizedAccessException
             or System.ComponentModel.Win32Exception
             or InvalidOperationException)
@@ -354,7 +367,7 @@ internal sealed class UpdateService : IUpdateCoordinator
 /// </summary>
 internal static partial class UpdateServiceLog
 {
-    [LoggerMessage(EventId = 5100, Level = LogLevel.Information, Message = "Updater gestartet: {Path}.")]
+    [LoggerMessage(EventId = 5100, Level = LogLevel.Information, Message = "Neue Fassung im Helfer-Modus gestartet: {Path}.")]
     public static partial void UpdaterLaunched(ILogger logger, string path);
 
     [LoggerMessage(EventId = 5101, Level = LogLevel.Error, Message = "Aktualisierung fehlgeschlagen.")]

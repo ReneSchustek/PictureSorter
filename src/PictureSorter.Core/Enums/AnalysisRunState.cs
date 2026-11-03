@@ -26,8 +26,8 @@ public enum AnalysisRunState
     /// <summary>
     /// Die Nutzerin hat den Lauf angehalten.
     ///
-    /// Bewusst „angehalten" und nicht „abgebrochen": Seit jedes Ergebnis im Protokoll
-    /// steht, geht beim Anhalten nichts verloren, und der Lauf setzt später genau dort
+    /// Bewusst „angehalten" und nicht „abgebrochen": Jedes Ergebnis steht im Protokoll,
+    /// beim Anhalten geht also nichts verloren, und der Lauf setzt später genau dort
     /// wieder an. Wer einen Ordner mit tausenden Bildern sortiert, muss den Rechner nicht
     /// tagelang durchlaufen lassen.
     /// </summary>

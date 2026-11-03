@@ -162,10 +162,14 @@ internal sealed class FakeRenameUndoService : IRenameUndoService
     /// <summary>Der Lauf, der zum Zurücknehmen bereitsteht.</summary>
     public RenameRun? Run { get; set; }
 
+    /// <summary>Womit das Nachsehen scheitert; ohne Wert gelingt es.</summary>
+    public Exception? Failure { get; set; }
+
     /// <summary><see langword="true"/>, wenn zurückgenommen wurde.</summary>
     public bool WasUndone { get; private set; }
 
-    public Task<RenameRun?> GetUndoableRunAsync(CancellationToken cancellationToken) => Task.FromResult(Run);
+    public Task<RenameRun?> GetUndoableRunAsync(CancellationToken cancellationToken) =>
+        Failure is null ? Task.FromResult(Run) : Task.FromException<RenameRun?>(Failure);
 
     public Task<UndoResult?> UndoLastRunAsync(CancellationToken cancellationToken)
     {

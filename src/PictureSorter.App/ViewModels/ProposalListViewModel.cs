@@ -130,10 +130,6 @@ internal sealed partial class ProposalListViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Leert die Vorschau und meldet sich von den Einträgen ab. Ohne das Abmelden
-    /// hielten die Ereignis-Verweise jede Vorschau des Programmlaufs im Speicher.
-    /// </summary>
-    /// <summary>
     /// Nimmt einen Vorschlag aus der Liste, weil das Bild dazu umbenannt, verschoben
     /// oder gelöscht wurde und der Vorschlag auf einen Pfad zeigte, den es nicht mehr
     /// gibt.
@@ -146,9 +142,15 @@ internal sealed partial class ProposalListViewModel : ObservableObject
         _ = _all.Remove(proposal);
         _ = Items.Remove(proposal);
         proposal.PropertyChanged -= OnProposalChanged;
-        NotifyStateChanged();
+
+        // Auch Zähler und Zusammenfassung: Sonst bliebe „Sortieren" frei, obwohl nichts mehr ausgewählt ist.
+        NotifyChanged();
     }
 
+    /// <summary>
+    /// Leert die Vorschau und meldet sich von den Einträgen ab. Ohne das Abmelden
+    /// hielten die Ereignis-Verweise jede Vorschau des Programmlaufs im Speicher.
+    /// </summary>
     public void Clear()
     {
         foreach (ProposalViewModel proposal in _all)

@@ -126,6 +126,17 @@ public sealed class NameRepairViewModelTests
     }
 
     [Fact]
+    public async Task UndoOffer_WhenTheDatabaseFails_IsSimplyNotMade()
+    {
+        FakeRenameUndoService undo = new() { Failure = new TestDatabaseException() };
+        using NameRepairViewModel sut = CreateSut(new FakeFileNameRepairService([]), undo: undo);
+
+        await sut.RefreshUndoOfferAsync();
+
+        Assert.False(sut.HasUndoableRun);
+    }
+
+    [Fact]
     public async Task Undo_GivesTheOldNamesBackAndClearsTheOffer()
     {
         FakeRenameUndoService undo = new() { Run = CreateRun() };

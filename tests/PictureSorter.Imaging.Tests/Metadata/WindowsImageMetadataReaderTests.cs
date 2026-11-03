@@ -58,6 +58,27 @@ public sealed class WindowsImageMetadataReaderTests : IDisposable
     }
 
     [Fact]
+    public async Task ReadAsync_KeepsTheWallClockOfTheCamera()
+    {
+        // So schreibt es eine echte Kamera: Ortszeit ohne Zeitzone, hier kurz nach Mitternacht.
+        // Als UTC gelesen läge das Foto auf dem Vortag, im falschen Zeitraum und im falschen Ordner.
+        // Sichtbar nur auf einem Rechner östlich von Greenwich, auf dem Fließband steht UTC.
+        string path = await WriteJpegAsync([48, 8, 30], "N", [11, 34, 0], "E");
+        byte[] jpeg = await File.ReadAllBytesAsync(path, TestContext.Current.CancellationToken);
+        await File.WriteAllBytesAsync(
+            path,
+            WithCameraExif(jpeg, "2026:07:04 00:30:00"),
+            TestContext.Current.CancellationToken);
+
+        PhotoMetadata? metadata = await _sut.ReadAsync(path, CancellationToken.None);
+
+        Assert.Equal(new DateTime(2026, 7, 4, 0, 30, 0), metadata!.CapturedAt!.Value.DateTime);
+
+        // Die Anzeige rechnet in die Ortszeit um. Sie muss dieselbe Uhrzeit zeigen, nach der einsortiert wird.
+        Assert.Equal(new DateTime(2026, 7, 4, 0, 30, 0), metadata.CapturedAt.Value.ToLocalTime().DateTime);
+    }
+
+    [Fact]
     public async Task ReadAsync_ConvertsCoordinatesFromDegreesMinutesSeconds()
     {
         // 48° 8′ 30″ N = 48,141667°. Die Bild-API liefert den Wert nicht als fertige
@@ -102,6 +123,38 @@ public sealed class WindowsImageMetadataReaderTests : IDisposable
     [Fact]
     public async Task ReadAsync_WithoutPath_IsRejected() =>
         await Assert.ThrowsAsync<ArgumentException>(() => _sut.ReadAsync(" ", CancellationToken.None));
+
+    // Ersetzt alle APP1-Blöcke durch einen von Hand gebauten EXIF-Block mit genau einem Aufnahmedatum.
+    private static byte[] WithCameraExif(byte[] jpeg, string dateTimeOriginal)
+    {
+        byte[] date = [.. System.Text.Encoding.ASCII.GetBytes(dateTimeOriginal), 0];
+        byte[] tiff =
+        [
+            (byte)'I', (byte)'I', 42, 0, 8, 0, 0, 0,
+            1, 0, 0x69, 0x87, 4, 0, 1, 0, 0, 0, 26, 0, 0, 0, 0, 0, 0, 0,
+            1, 0, 0x03, 0x90, 2, 0, (byte)date.Length, 0, 0, 0, 44, 0, 0, 0, 0, 0, 0, 0,
+            .. date,
+        ];
+        byte[] header = [.. "Exif"u8, 0, 0];
+        int length = 2 + header.Length + tiff.Length;
+
+        List<byte> result = [jpeg[0], jpeg[1], 0xFF, 0xE1, (byte)(length >> 8), (byte)length, .. header, .. tiff];
+
+        int position = 2;
+        while (jpeg[position] == 0xFF && jpeg[position + 1] != 0xDA)
+        {
+            int segment = 2 + (jpeg[position + 2] << 8) + jpeg[position + 3];
+            if (jpeg[position + 1] != 0xE1)
+            {
+                result.AddRange(jpeg.AsSpan(position, segment));
+            }
+
+            position += segment;
+        }
+
+        result.AddRange(jpeg.AsSpan(position));
+        return [.. result];
+    }
 
     private async Task<string> WriteJpegAsync(
         uint[] latitude,

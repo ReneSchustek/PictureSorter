@@ -16,10 +16,9 @@ public sealed class PhotoSourceOptions
     /// <summary>
     /// Wie viele Dateien gleichzeitig eingelesen werden.
     ///
-    /// Das Einlesen wartet fast nur: auf die Festplatte, und bei einem Ordner aus der
-    /// Cloud (iCloud-Fotos unter Windows, OneDrive) auf den Download der Datei. Wartezeit
-    /// lässt sich übereinanderlegen, ohne dass es etwas kostet. Deshalb wird der
-    /// langsamste Abschnitt eines Laufs hier um ein Vielfaches kürzer.
+    /// Das Einlesen wartet fast nur auf die Festplatte, mit abgeschaltetem
+    /// <see cref="SkipOnlineOnlyFiles"/> auch auf Downloads aus der Cloud. Wartezeit lässt sich
+    /// übereinanderlegen, ohne dass es etwas kostet.
     ///
     /// Acht ist bewusst kein hoher Wert: Eine mechanische Festplatte wird durch zu viele
     /// gleichzeitige Zugriffe langsamer statt schneller, weil der Kopf zwischen den
@@ -33,19 +32,14 @@ public sealed class PhotoSourceOptions
     /// Laden wartet. <c>0</c> bedeutet: ohne Grenze; das Laden wartet nie auf die
     /// Bewertung.
     ///
-    /// Voreingestellt ist die Entkopplung (<c>0</c>), und zwar aus zwei Gründen. Erstens
-    /// kostet der Vorrat kaum Speicher: Gepuffert wird nur ein <c>Photo</c> mit seinen
-    /// Metadaten, nie der Bildinhalt. Selbst zehntausend Einträge bleiben im
-    /// zweistelligen Megabyte-Bereich. Zweitens sparte die alte Grenze von fünfzig
-    /// Bildern keine einzige Übertragung: Das Laden muss ohnehin JEDE Datei öffnen, um an
-    /// das Aufnahmedatum zu kommen, also wird bei einem vollständigen Lauf am Ende alles
-    /// heruntergeladen. Die Grenze verschob den Download nur nach hinten und machte dabei
-    /// das Laden von der Geschwindigkeit der KI abhängig, genau das, was die getrennten
-    /// Balken sichtbar machen sollten.
+    /// Voreingestellt ist die Entkopplung (<c>0</c>): Das Laden hängt nicht an der Geschwindigkeit
+    /// der KI, und genau das sollen die getrennten Balken zeigen. Der Vorrat kostet kaum Speicher:
+    /// Gepuffert wird nur ein <c>Photo</c> mit seinen Metadaten, nie der Bildinhalt. Selbst
+    /// zehntausend Einträge bleiben im zweistelligen Megabyte-Bereich. Eine Grenze spart auch keine
+    /// Arbeit, denn das Laden öffnet ohnehin jede Datei, um an das Aufnahmedatum zu kommen.
     ///
-    /// Der Preis: Wird ein Lauf früh abgebrochen, wurden bereits Dateien geladen, die
-    /// niemand mehr braucht. Wer über eine langsame oder teure Leitung arbeitet, setzt
-    /// hier wieder eine Grenze.
+    /// Der Preis: Wird ein Lauf früh abgebrochen, wurden bereits Dateien gelesen, die niemand mehr
+    /// braucht.
     /// </summary>
     [Range(0, 100_000)]
     public int PrefetchBuffer { get; set; }

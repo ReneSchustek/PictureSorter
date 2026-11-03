@@ -238,7 +238,7 @@ public sealed class PhotoAnalysisService : IPhotoAnalyzer
         // verlässliche Angabe. In der Praxis tritt der Fall kaum auf: Die Foto-Quelle
         // greift ersatzweise auf die Änderungszeit der Datei zurück.
         if (!pass.Range.IsUnbounded
-            && !(photo.CapturedAt is { } aufgenommen && pass.Range.Contains(aufgenommen)))
+            && !(photo.CapturedAt is { } captured && pass.Range.Contains(captured)))
         {
             await CountAndRecordAsync(pass, photo, signature, AnalysisOutcome.OutsideRange, scanned, cancellationToken)
                 .ConfigureAwait(false);

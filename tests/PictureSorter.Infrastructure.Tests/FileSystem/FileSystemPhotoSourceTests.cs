@@ -43,6 +43,21 @@ public sealed class FileSystemPhotoSourceTests : IDisposable
     }
 
     [Fact]
+    public async Task GetPhotosAsync_WithoutExif_DatesThePhotoInLocalTime()
+    {
+        // Zeitraum und Ordnername lesen die Wandzeit, die Anzeige die Ortszeit. Trüge die Ersatzzeit UTC als
+        // Wandzeit, lägen beide bei einem Foto kurz nach Mitternacht einen Tag auseinander.
+        Write("a.jpg");
+        DateTime changed = new(2026, 7, 4, 22, 30, 0, DateTimeKind.Utc);
+        File.SetLastWriteTimeUtc(Path.Combine(_root, "a.jpg"), changed);
+
+        Photo photo = Assert.Single(await _source.GetPhotosAsync(_root, includeSubfolders: false, skip: 0, maxCount: null, progress: null, CancellationToken.None));
+
+        Assert.Equal(changed.ToLocalTime(), photo.CapturedAt!.Value.DateTime);
+        Assert.Equal(changed, photo.CapturedAt.Value.UtcDateTime);
+    }
+
+    [Fact]
     public async Task GetPhotosAsync_MissingFolder_ThrowsDirectoryNotFound()
     {
         string missing = Path.Combine(_root, "gibt-es-nicht");

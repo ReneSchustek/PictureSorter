@@ -16,7 +16,7 @@ public sealed class OllamaEmbeddingProvider : IEmbeddingProvider
     // Die Frage steht auf Englisch, obwohl die Anwendung deutsch ist. Das ist kein
     // Versehen und auch keine Stilfrage: Der Text geht nie an die Nutzerin, sondern
     // ausschließlich in den Vergleichsvektor. Auf Deutsch gefragt schreibt das
-    // Bild-Modell holpriges und teils falsches Deutsch - dasselbe Bild wurde als
+    // Bild-Modell holpriges und teils falsches Deutsch: Dasselbe Bild wurde als
     // „Sonnen- oder Mondenkugel" beschrieben, auf Englisch dagegen richtig als
     // „stylized graphic of a sunset". Und das Embedding-Modell ist ohnehin auf
     // Englisch trainiert; eine schiefe deutsche Beschreibung ist der schlechteste
@@ -67,7 +67,7 @@ public sealed class OllamaEmbeddingProvider : IEmbeddingProvider
 
         // Auch die Vorsortierung sieht das Bild nur über das Bild-Modell. Ohne
         // Aufbereitung bekäme es bei einem Handyfoto einen HEIC-Container, den es nicht
-        // öffnen kann – und der Vergleichsvektor entstünde aus einer Beschreibung, die
+        // öffnen kann, und der Vergleichsvektor entstünde aus einer Beschreibung, die
         // auf keinem Bild beruht.
         byte[] jpeg = await _encoder.EncodeAsync(photo.FullPath, cancellationToken).ConfigureAwait(false);
         string imageBase64 = Convert.ToBase64String(jpeg);

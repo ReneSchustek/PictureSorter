@@ -34,6 +34,30 @@ public sealed class ProposalListViewModelTests
     }
 
     [Fact]
+    public void Remove_RefreshesCountsAndTellsTheOwner()
+    {
+        int notified = 0;
+        ProposalListViewModel sut = new(new ReswLocalizer(), () => true, () => notified++);
+        sut.Replace([Proposal("a.jpg")]);
+        notified = 0;
+
+        sut.Remove(sut.Items[0]);
+
+        Assert.Equal(0, sut.SelectedCount);
+        Assert.True(notified > 0);
+    }
+
+    [Fact]
+    public void AProposalByDate_NamesItsMethod()
+    {
+        ProposalViewModel sut = new(
+            Proposal("a.jpg") with { Method = ClassificationMethod.CaptureDate },
+            new ReswLocalizer());
+
+        Assert.Equal("Aufnahmedatum", sut.MethodText);
+    }
+
+    [Fact]
     public void Search_WithoutMatch_ShowsTheOtherEmptyState()
     {
         ProposalListViewModel sut = CreateSut();

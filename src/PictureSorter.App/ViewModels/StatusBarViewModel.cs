@@ -8,7 +8,7 @@ namespace PictureSorter.App.ViewModels;
 /// <summary>
 /// Schweregrad einer Statusmeldung. Steuert die Farbgebung der Statusleiste.
 /// Entspricht eins zu eins der WinUI-InfoBar-Schwere (über einen Converter
-/// abgebildet, damit die Application-Schicht UI-frei bleibt).
+/// abgebildet, damit die Anzeige-Modelle frei von WinUI-Typen bleiben).
 /// </summary>
 internal enum StatusSeverity
 {

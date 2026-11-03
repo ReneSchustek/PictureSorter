@@ -4,7 +4,7 @@ namespace PictureSorter.App.Services;
 
 /// <summary>
 /// Fest verdrahtetes Spendenziel für den freiwilligen „Kaffee spendieren"-Eintrag
-/// auf der Über-Seite.
+/// auf der Einstellungsseite.
 /// <para>
 /// Die Ziel-URL ist bewusst eine Compile-Zeit-Konstante und wird <b>niemals</b> aus
 /// Settings, Datenbank, Umgebungsvariable oder Netz-Antwort gelesen. So gibt es zur

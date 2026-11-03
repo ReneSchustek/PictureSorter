@@ -88,7 +88,7 @@ public sealed class CachingEmbeddingProvider : IEmbeddingProvider
     }
 
     // Kennzeichen dafür, wie ein Vektor zustande kam. Hochzählen, sobald sich an der
-    // Erzeugung etwas ändert, das den Vektor beeinflusst - dann rechnet die Anwendung
+    // Erzeugung etwas ändert, das den Vektor beeinflusst: Dann rechnet die Anwendung
     // einmal neu, statt weiter mit den alten Werten zu arbeiten.
     //
     // 2: Das Bild-Modell wird mit fester Temperatur befragt. Ohne sie schreibt es zu
@@ -96,7 +96,7 @@ public sealed class CachingEmbeddingProvider : IEmbeddingProvider
     //    sich und würden sonst unbegrenzt weiterverwendet.
     // 3: Die Beschreibung wird auf Englisch erfragt. Auf Deutsch schreibt das
     //    Bild-Modell holprige und teils falsche Sätze, und das Embedding-Modell ist
-    //    auf Englisch trainiert - Vektoren der Stufe 2 beruhen auf schlechteren
+    //    auf Englisch trainiert: Vektoren der Stufe 2 beruhen auf schlechteren
     //    Beschreibungen.
     private const int EmbeddingRecipe = 3;
 

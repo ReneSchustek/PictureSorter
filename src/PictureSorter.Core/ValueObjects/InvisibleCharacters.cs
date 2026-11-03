@@ -7,8 +7,8 @@ namespace PictureSorter.Core.ValueObjects;
 /// Erkennt und vereinheitlicht Zeichen in Datei- und Ordnernamen, die man sieht,
 /// aber nicht unterscheiden kann.
 ///
-/// Der Anlass ist ein Bestand aus iCloud: Sein Ordner trug zwischen zwei Wörtern ein
-/// geschütztes Leerzeichen (U+00A0) statt eines gewöhnlichen. Auf dem Bildschirm ist
+/// Ein Ordner aus iCloud kann zwischen zwei Wörtern ein geschütztes Leerzeichen (U+00A0)
+/// statt eines gewöhnlichen tragen. Auf dem Bildschirm ist
 /// das nicht zu erkennen; wer den Pfad abtippt oder aus einer Nachricht kopiert,
 /// trifft den Ordner nicht, und die Anwendung meldet wahrheitsgemäß, aber
 /// unverständlich: „Der Ordner wurde nicht gefunden."
@@ -16,7 +16,7 @@ namespace PictureSorter.Core.ValueObjects;
 public static class InvisibleCharacters
 {
     // Zeichen ohne eigene Breite: Sie stehen im Namen, hinterlassen aber keine Spur auf
-    // dem Bildschirm. Beim Vergleich werden sie weggelassen statt ersetzt - ein Name
+    // dem Bildschirm. Beim Vergleich werden sie weggelassen statt ersetzt: Ein Name
     // mit und einer ohne sie sehen gleich aus.
     //
     // Bewusst NICHT dabei sind die beiden Verbinder ZWJ (U+200D) und ZWNJ (U+200C).
@@ -62,7 +62,7 @@ public static class InvisibleCharacters
 
     /// <summary>
     /// <see langword="true"/>, wenn der Name ein Zeichen enthält, das man sieht, aber
-    /// nicht als das erkennt, was es ist - oder das man gar nicht sieht.
+    /// nicht als das erkennt, was es ist, oder das man gar nicht sieht.
     /// </summary>
     /// <param name="name">Der zu prüfende Name.</param>
     /// <returns>Ob der Name ein solches Zeichen enthält.</returns>

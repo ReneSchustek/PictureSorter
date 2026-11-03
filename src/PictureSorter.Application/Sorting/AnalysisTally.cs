@@ -103,7 +103,7 @@ public sealed class AnalysisTally
     /// Die Abschlussmeldung sagt ausdrücklich, dass dieser Abschnitt fertig ist. Sie darf
     /// nicht daraus erschlossen werden, dass der Zählstand die Gesamtzahl erreicht: Fällt
     /// beim Einlesen eine Datei aus, kommen weniger Fotos zur Bewertung, als der Ordner
-    /// Dateien hat — und die Anzeige bliebe für immer kurz vor dem Ende stehen.
+    /// Dateien hat, und die Anzeige bliebe für immer kurz vor dem Ende stehen.
     /// </summary>
     public void ReportFinished()
     {

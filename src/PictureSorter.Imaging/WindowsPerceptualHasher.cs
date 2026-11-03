@@ -84,6 +84,8 @@ public sealed class WindowsPerceptualHasher : IPerceptualHasher
                 InterpolationMode = BitmapInterpolationMode.Fant,
             };
 
+            // Ohne EXIF-Drehung: Der Hash vergleicht die gespeicherten Bildpunkte. Zwei Dateien mit gleichem Inhalt
+            // und anderer Drehangabe gelten so als ähnlich; ein tatsächlich gedrehtes Foto dagegen nicht.
             PixelDataProvider provider = await decoder.GetPixelDataAsync(
                 BitmapPixelFormat.Bgra8,
                 BitmapAlphaMode.Ignore,

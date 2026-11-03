@@ -60,6 +60,7 @@ public sealed class DuplicatesViewModelFailureTests
     [InlineData(typeof(DirectoryNotFoundException))]
     [InlineData(typeof(IOException))]
     [InlineData(typeof(UnauthorizedAccessException))]
+    [InlineData(typeof(InvalidOperationException))]
     public async Task Scan_WhenTheFolderIsUnreadable_EndsInTheErrorStateButStaysOperable(Type failureType)
     {
         Exception failure = (Exception)Activator.CreateInstance(failureType)!;

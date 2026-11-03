@@ -56,6 +56,7 @@ internal sealed partial class ProposalViewModel : ObservableObject
     {
         ClassificationMethod.Embedding => _localizer.Get("Proposal_MethodEmbedding"),
         ClassificationMethod.VisionModel => _localizer.Get("Proposal_MethodVision"),
+        ClassificationMethod.CaptureDate => _localizer.Get("Proposal_MethodCaptureDate"),
         ClassificationMethod.Manual => _localizer.Get("Proposal_MethodManual"),
         _ => _localizer.Get("Proposal_MethodUnknown"),
     };

@@ -6,7 +6,7 @@ using PictureSorter.App.ViewModels;
 namespace PictureSorter.App.Converters;
 
 /// <summary>
-/// Bildet den UI-freien <see cref="StatusSeverity"/> der Application-Schicht auf
+/// Bildet den WinUI-freien <see cref="StatusSeverity"/> der Anzeige-Modelle auf
 /// die WinUI-<see cref="InfoBarSeverity"/> der Statusleiste ab.
 /// </summary>
 internal sealed partial class StatusSeverityToInfoBarSeverityConverter : IValueConverter

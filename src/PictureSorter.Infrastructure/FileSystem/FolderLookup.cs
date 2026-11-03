@@ -6,11 +6,10 @@ namespace PictureSorter.Infrastructure.FileSystem;
 /// <summary>
 /// Sucht den Ordner, der gemeint war, wenn der angegebene Pfad ins Leere geht.
 ///
-/// Der Anlass: Ein aus iCloud geladener Bestand lag in einem Ordner, dessen Name
-/// zwischen zwei Wörtern ein geschütztes Leerzeichen trug. Auf dem Bildschirm sieht
-/// das aus wie ein gewöhnliches. Wer den Pfad abtippte, bekam „Der Ordner wurde nicht
-/// gefunden" zu lesen, während der Ordner im Explorer sichtbar danebenlag - eine
-/// Meldung, die zwar stimmt, aber niemanden weiterbringt.
+/// Ein aus iCloud geladener Ordner kann in seinem Namen ein geschütztes Leerzeichen tragen, das auf dem
+/// Bildschirm wie ein gewöhnliches aussieht. Wer den Pfad abtippt, liest dann „Der Ordner wurde nicht
+/// gefunden", während der Ordner im Explorer sichtbar danebenliegt. Die Meldung stimmt, bringt aber niemanden
+/// weiter.
 ///
 /// Gesucht wird Abschnitt für Abschnitt, weil das unsichtbare Zeichen überall im Pfad
 /// stecken kann, nicht nur im letzten Ordner.

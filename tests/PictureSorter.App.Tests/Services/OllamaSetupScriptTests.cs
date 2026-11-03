@@ -140,6 +140,37 @@ public sealed class OllamaSetupScriptTests : IDisposable
     }
 
     [Fact]
+    public async Task Run_WhenWingetFailsAndOllamaStaysMissing_NamesTheExitCode()
+    {
+        // Nach der Installation liest das Skript den PATH neu aus der Registry, und dort kann die Attrappe nicht
+        // stehen. Auf einem Rechner mit echtem Ollama fände es das und würde Modelle laden, deshalb nur ohne.
+        Assert.SkipWhen(OllamaIsOnTheRegisteredPath(), "Auf diesem Rechner ist Ollama installiert.");
+
+        string tools = Directory.CreateDirectory(Path.Combine(_root, "nur-winget")).FullName;
+        await File.WriteAllTextAsync(Path.Combine(tools, "winget.cmd"), "@exit /b 3", TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        ProcessStartInfo startInfo = new()
+        {
+            FileName = "powershell.exe",
+            Arguments = $"-NoProfile -ExecutionPolicy Bypass -File \"{Path.Combine(_root, "Tools", "install-ollama.ps1")}\" -NoPause",
+            RedirectStandardOutput = true,
+            StandardOutputEncoding = Encoding.UTF8,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+        };
+        startInfo.Environment["PATH"] = $"{tools};{Environment.SystemDirectory};{Path.Combine(Environment.SystemDirectory, "WindowsPowerShell", "v1.0")}";
+        startInfo.Environment["LOCALAPPDATA"] = tools;
+
+        using Process process = Process.Start(startInfo)!;
+        using CancellationTokenSource timeout = new(RunTimeout);
+        Task<string> output = process.StandardOutput.ReadToEndAsync(timeout.Token);
+        await process.WaitForExitAsync(timeout.Token).ConfigureAwait(true);
+
+        Assert.Equal(1, process.ExitCode);
+        Assert.Contains("winget meldete 3", await output.ConfigureAwait(true), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task Run_WhileWingetInstalls_KeepsShowingThatItIsAlive()
     {
         // Der Test bricht ab, sobald das Lebenszeichen erscheint: Das Weiterlaufen fände sonst ein etwa
@@ -212,6 +243,11 @@ public sealed class OllamaSetupScriptTests : IDisposable
         await process.WaitForExitAsync(timeout.Token).ConfigureAwait(true);
         return (process.ExitCode, await output.ConfigureAwait(true));
     }
+
+    private static bool OllamaIsOnTheRegisteredPath() =>
+        new[] { EnvironmentVariableTarget.Machine, EnvironmentVariableTarget.User }
+            .SelectMany(static target => (Environment.GetEnvironmentVariable("Path", target) ?? string.Empty).Split(';', StringSplitOptions.RemoveEmptyEntries))
+            .Any(static folder => File.Exists(Path.Combine(folder, "ollama.exe")));
 
     private void UseModels(string embeddingModel, string visionModel) =>
         File.WriteAllText(

@@ -22,9 +22,7 @@ public interface IPhotoSource
     /// <param name="maxCount">
     /// Höchstzahl der einzulesenden Fotos, oder <see langword="null"/> für alle. Wer nur
     /// eine Handvoll Bilder braucht, soll auch nur diese einlesen: Das Ermitteln der
-    /// Metadaten öffnet jede Datei einzeln, und bei einem Ordner, dessen Dateien erst
-    /// aus der Cloud geholt werden (etwa die iCloud-Fotos unter Windows), zieht jedes
-    /// Öffnen einen vollständigen Download nach sich.
+    /// Metadaten öffnet jede Datei einzeln.
     /// </param>
     /// <param name="progress">
     /// Optionaler Fortschritt des Einlesens. Er wird gebraucht, weil dieser Schritt bei
@@ -50,7 +48,7 @@ public interface IPhotoSource
     /// einer Kette, in der beides nebeneinander läuft: Die Bewertung beginnt beim ersten
     /// fertigen Bild. Wer alle Bilder auf einmal braucht, nimmt <see cref="GetPhotosAsync"/>.
     ///
-    /// Die Bilder kommen in der Reihenfolge, in der sie fertig werden — mehrere Dateien
+    /// Die Bilder kommen in der Reihenfolge, in der sie fertig werden: Mehrere Dateien
     /// werden gleichzeitig gelesen. Wer die Reihenfolge des Ordners braucht, ordnet nach
     /// <see cref="ScannedPhoto.Index"/>.
     /// </summary>
@@ -95,6 +93,6 @@ public readonly record struct ScannedPhoto(Photo Photo, int Index, int Total);
 /// <param name="Processed">Anzahl der bereits eingelesenen Dateien.</param>
 /// <param name="Total">
 /// Gesamtzahl der gefundenen Bilddateien. Steht fest, sobald das Verzeichnis
-/// aufgezählt ist – und damit lange bevor die letzte Datei gelesen ist.
+/// aufgezählt ist, und damit lange bevor die letzte Datei gelesen ist.
 /// </param>
 public readonly record struct PhotoScanProgress(int Processed, int Total);

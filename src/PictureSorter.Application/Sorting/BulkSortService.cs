@@ -239,7 +239,9 @@ public sealed class BulkSortService : IBulkSortService
         return ([.. results.OrderBy(static result => result.Index).Select(static result => result.Entry)], unreadable + notDelivered);
     }
 
-    // Der Speicher der Bilddecoder liegt außerhalb von .NET, die Zahlen des GC sehen ihn nicht.
+    // Der Speicher der Bilddecoder liegt außerhalb von .NET, die Zahlen des GC sehen ihn nicht. Drei Viertel lassen
+    // Windows und den übrigen Programmen genug Luft, um den Lauf noch geordnet zu beenden. Im Normalfall bleibt
+    // das Programm weit darunter: gemessen rund 1,4 GB bei 16 GB Arbeitsspeicher.
     private static bool IsProcessNearPhysicalMemory()
     {
         using Process process = Process.GetCurrentProcess();

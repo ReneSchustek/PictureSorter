@@ -70,7 +70,7 @@ public interface ISortMemory
     Task<IReadOnlyList<SortMemoryRecord>> GetAllAsync(CancellationToken cancellationToken);
 
     /// <summary>
-    /// Zählt die offenen Vorschläge eines Ordners für eine Kategorie — also das, was sich
+    /// Zählt die offenen Vorschläge eines Ordners für eine Kategorie, also das, was sich
     /// aus dem Gedächtnis zurückholen ließe.
     /// </summary>
     /// <param name="folderPath">Der Quellordner.</param>

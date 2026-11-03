@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Data.Common;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -150,7 +151,7 @@ internal sealed partial class MemoryViewModel : ObservableObject
                 ? _localizer.Get("Memory_Empty")
                 : _localizer.Format("Memory_Loaded", _allRecords.Count));
         }
-        catch (Exception ex) when (ex is IOException or InvalidOperationException or TimeoutException)
+        catch (Exception ex) when (ex is IOException or InvalidOperationException or TimeoutException or DbException)
         {
             MemoryViewLog.LoadFailed(_logger, ex);
             State = MemoryState.Error;
@@ -196,7 +197,7 @@ internal sealed partial class MemoryViewModel : ObservableObject
             State = _allRecords.Count == 0 ? MemoryState.Empty : MemoryState.Review;
             _status.Report(_localizer.Get("Memory_Forgotten"), StatusSeverity.Success);
         }
-        catch (Exception ex) when (ex is IOException or InvalidOperationException or TimeoutException)
+        catch (Exception ex) when (ex is IOException or InvalidOperationException or TimeoutException or DbException)
         {
             MemoryViewLog.DeleteFailed(_logger, ex);
             State = MemoryState.Error;
@@ -236,7 +237,7 @@ internal sealed partial class MemoryViewModel : ObservableObject
             State = _allRecords.Count == 0 ? MemoryState.Empty : MemoryState.Review;
             _status.Report(_localizer.Format("Memory_FolderCleared", affected, folder), StatusSeverity.Success);
         }
-        catch (Exception ex) when (ex is IOException or InvalidOperationException or TimeoutException)
+        catch (Exception ex) when (ex is IOException or InvalidOperationException or TimeoutException or DbException)
         {
             MemoryViewLog.DeleteFailed(_logger, ex);
             State = MemoryState.Error;

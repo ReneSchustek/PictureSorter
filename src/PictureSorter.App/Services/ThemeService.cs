@@ -20,9 +20,9 @@ internal enum AppTheme
 }
 
 /// <summary>
-/// Verwaltet die persistenten UI-Einstellungen: das Hell-/Dunkel-Design und die
-/// Ansichtsart der Sortierseite (Schritt-für-Schritt oder Standard). Speichert
-/// beides in einer kleinen JSON-Datei (<c>ui-settings.json</c>) im
+/// Verwaltet die persistenten UI-Einstellungen: das Hell-/Dunkel-Design, die
+/// Ansichtsart der Sortierseite (Schritt-für-Schritt oder Standard) und die Schalter
+/// für Updates. Speichert alles in einer kleinen JSON-Datei (<c>ui-settings.json</c>) im
 /// Anwendungsdatenordner und wendet das Design über
 /// <see cref="FrameworkElement.RequestedTheme"/> auf das Hauptfenster an.
 /// </summary>
@@ -152,7 +152,7 @@ internal sealed class ThemeService
     /// </summary>
     /// <remarks>
     /// Die Titelleiste des Systems richtet sich nach dem Erscheinungsbild von Windows,
-    /// nicht nach dem der Anwendung. Bei hellem Windows stand deshalb ein weißer Balken
+    /// nicht nach dem der Anwendung. Bei hellem Windows stünde sonst ein weißer Balken
     /// über dem dunklen Bildfenster. Wer den Inhalt in die Titelleiste zieht und sie
     /// selbst zeichnet (das Hauptfenster tut das), braucht die Farben nicht und
     /// bekommt sie hier auch nicht gesetzt.

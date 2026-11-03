@@ -154,11 +154,18 @@ public sealed class SortViewModelFlowTests : IDisposable
         sut.IncludeSubfolders = true;
         sut.IsEventCategory = true;
         sut.CategoryDescription = "Bilder meiner Familie";
+        sut.CopyInsteadOfMove = true;
+        sut.TargetRootFolder = @"D:\Archiv";
+        sut.SortByDateOnly = true;
 
         Assert.NotEmpty(sut.ActiveCategoryName);
 
         sut.Wizard.RestartCommand.Execute(parameter: null);
 
+        // Die Wahl gilt für den einzelnen Lauf: Ein neuer Lauf darf nicht still woandershin kopieren.
+        Assert.False(sut.CopyInsteadOfMove);
+        Assert.Empty(sut.TargetRootFolder);
+        Assert.False(sut.SortByDateOnly);
         Assert.Empty(sut.SourceFolder);
         Assert.Empty(sut.CategoryName);
         Assert.Empty(sut.CategoryDescription);
@@ -453,6 +460,22 @@ public sealed class SortViewModelFlowTests : IDisposable
 
         Assert.Empty(sorter.Applied);
         Assert.Equal(SortState.Preview, sut.State);
+    }
+
+    [Fact]
+    public async Task Apply_WithFewSelected_DoesNotAskBecauseOfTheDeselected()
+    {
+        // Gezählt wird, was sich bewegt: Eins von drei Fotos ist keine große Menge.
+        FakePhotoSorter sorter = new(CreateProposals(3));
+        using SortViewModel sut = CreateSut(sorter, confirms: false, bulkThreshold: 2);
+        await PrepareLearnedCategoryAsync(sut);
+        await sut.AnalyzeCommand.ExecuteAsync(parameter: null);
+        sut.Proposals.Items[0].IsSelected = false;
+        sut.Proposals.Items[1].IsSelected = false;
+
+        await sut.ApplyCommand.ExecuteAsync(parameter: null);
+
+        _ = Assert.Single(sorter.Applied);
     }
 
     [Fact]

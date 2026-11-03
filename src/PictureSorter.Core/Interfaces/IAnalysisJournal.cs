@@ -8,7 +8,7 @@ namespace PictureSorter.Core.Interfaces;
 ///
 /// Es beantwortet zwei Fragen, die ein Lauf über Stunden oder Tage sonst offenlässt: was
 /// bisher herausgekommen ist, und wo weiterzumachen wäre. Geschrieben wird fortlaufend
-/// und in Stapeln — nicht am Ende. Ein Protokoll, das erst am Ende entsteht, fehlt genau
+/// und in Stapeln, nicht am Ende. Ein Protokoll, das erst am Ende entsteht, fehlt genau
 /// dann, wenn es gebraucht wird.
 /// </summary>
 public interface IAnalysisJournal

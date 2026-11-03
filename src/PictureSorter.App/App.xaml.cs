@@ -28,11 +28,6 @@ using PictureSorter.Ollama.DependencyInjection;
 namespace PictureSorter.App;
 
 /// <summary>
-/// Anwendungs-Bootstrap und Composition-Root. Konfiguriert das DI-Container, das
-/// Logging und die Konfiguration und steuert den Startablauf inklusive
-/// SplashScreen.
-/// </summary>
-/// <summary>
 /// Einstiegspunkt der Anwendung: baut die Dienste auf, zeigt den Startbildschirm und öffnet das
 /// Hauptfenster.
 /// </summary>
@@ -56,8 +51,7 @@ public partial class App : Microsoft.UI.Xaml.Application
     /// <remarks>
     /// An einer Stelle gehalten, weil es an mehreren Fenstern gebraucht wird und der
     /// Pfad zur Laufzeit aufgelöst wird: Fehlt die Datei neben der Programmdatei, bleibt
-    /// das Symbol stumm generisch. Genau das ist in einer Auslieferung schon einmal
-    /// passiert.
+    /// das Symbol stumm generisch.
     /// </remarks>
     internal const string WindowIconPath = "Assets/AppIcon.ico";
 
@@ -270,8 +264,8 @@ public partial class App : Microsoft.UI.Xaml.Application
     }
 
     // Prüft beim Start auf eine neuere Version. Ist eine verfügbar, erscheint ein
-    // Hinweis im Hauptfenster; bei aktiviertem Auto-Update wird der Updater direkt
-    // geladen und gestartet und die App beendet, damit er die Dateien ersetzen kann.
+    // Hinweis im Hauptfenster; bei aktiviertem Auto-Update wird die neue Fassung direkt
+    // geladen und gestartet und die App beendet, damit sie die Dateien ersetzen kann.
     // In sich fehlertolerant: Ein fehlgeschlagener Check stört den Start nie.
     private async Task CheckForUpdatesAtStartupAsync()
     {
@@ -301,19 +295,27 @@ public partial class App : Microsoft.UI.Xaml.Application
         // Ohne Anzeige schlösse sich das Fenster für die Nutzerin ohne jeden Anlass.
         StatusBarViewModel status = Services.GetRequiredService<StatusBarViewModel>();
         ILocalizer localizer = Services.GetRequiredService<ILocalizer>();
-        status.Begin(localizer.Get("Update_Downloading"), static () => { });
+        using CancellationTokenSource cancellation = new();
+        status.Begin(localizer.Get("Update_Downloading"), cancellation.Cancel);
         Progress<UpdateProgress> progress = new(update => status.ReportProgress(
             localizer.Format("Update_DownloadingPercent", (int)update.Percent),
             update.Percent));
 
-        if (await updateService.DownloadAndLaunchUpdaterAsync(progress, CancellationToken.None).ConfigureAwait(true))
+        try
         {
-            status.Finish(localizer.Get("Update_Restarting"), StatusSeverity.Success);
-            _window?.Close();
-            return;
-        }
+            if (await updateService.DownloadAndLaunchUpdaterAsync(progress, cancellation.Token).ConfigureAwait(true))
+            {
+                status.Finish(localizer.Get("Update_Restarting"), StatusSeverity.Success);
+                _window?.Close();
+                return;
+            }
 
-        status.Finish(localizer.Get("Update_Failed"), StatusSeverity.Error);
+            status.Finish(localizer.Get("Update_Failed"), StatusSeverity.Error);
+        }
+        catch (OperationCanceledException)
+        {
+            status.Finish(localizer.Get("Update_Canceled"), StatusSeverity.Warning);
+        }
     }
 
     // Prüft beim Start, ob Ollama erreichbar ist und die Modelle vorhanden sind.
@@ -434,9 +436,6 @@ internal static partial class AppLog
 
     [LoggerMessage(EventId = 1008, Level = LogLevel.Error, Message = "Aktualisierung nicht eingespielt. Datei {File}: {Reason}")]
     public static partial void UpdateApplyFailed(ILogger logger, string file, string reason);
-
-    [LoggerMessage(EventId = 1009, Level = LogLevel.Error, Message = "Aktualisierung nicht möglich: Im Programmordner {Folder} darf nicht geschrieben werden.")]
-    public static partial void UpdateFolderNotWritable(ILogger logger, string folder);
 
     [LoggerMessage(EventId = 1003, Level = LogLevel.Information, Message = "Neue Version verfügbar: {Version}.")]
     public static partial void UpdateAvailable(ILogger logger, string version);

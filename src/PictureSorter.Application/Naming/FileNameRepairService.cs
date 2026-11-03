@@ -125,7 +125,7 @@ public sealed class FileNameRepairService : IFileNameRepairService
                 .ConfigureAwait(false);
 
             // Die laufende Nummer zählt nur weiter, wenn sie auch gebraucht wird. Zählte
-            // sie bei jeder Datei mit, entstünden Lücken - „002" und „004" ohne „001" und
+            // sie bei jeder Datei mit, entstünden Lücken: „002" und „004" ohne „001" und
             // „003" sehen aus, als sei etwas verlorengegangen.
             int number = 0;
             if (metadata?.CapturedAt is null)

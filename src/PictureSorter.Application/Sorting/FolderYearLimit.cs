@@ -29,8 +29,9 @@ public sealed partial record FolderYearLimit(int First, int Last)
     }
 
     /// <summary>
-    /// Prüft, ob ein Foto in die Grenze fällt. Ein Foto ohne Datum fällt nicht hinein: Es bleibt lieber
-    /// liegen, als im falschen Jahr zu landen.
+    /// Prüft, ob ein Foto in die Grenze fällt. Ein Foto ganz ohne Datum fällt nicht hinein. Das kommt selten
+    /// vor: Fehlt das EXIF-Datum, setzt die Fotoquelle die letzte Änderungszeit ein, und mit der zählt es hier.
+    /// Ein Cloud-Abgleich, der diese Zeit anfasst, kann ein solches Foto deshalb in ein anderes Jahr verschieben.
     /// </summary>
     /// <param name="capturedAt">Das Aufnahmedatum.</param>
     /// <returns><see langword="true"/>, wenn das Foto in den Ordner darf.</returns>

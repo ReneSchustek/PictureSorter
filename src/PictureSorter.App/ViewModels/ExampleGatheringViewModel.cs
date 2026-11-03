@@ -138,8 +138,7 @@ internal sealed class ExampleGatheringViewModel
         }
 
         // Begin statt Report: Nur Begin schaltet den Fortschrittsbalken ein. Mit bloßem
-        // Text sah das Laden aus einem großen (oder aus der Cloud geholten) Ordner aus,
-        // als sei die Anwendung stehengeblieben.
+        // Text sieht das Laden aus einem großen Ordner aus, als sei die Anwendung stehengeblieben.
         using CancellationTokenSource cancellation = new();
         _status.Begin(_localizer.Get("Sort_LoadingExamples"), cancellation.Cancel);
         try
@@ -185,16 +184,14 @@ internal sealed class ExampleGatheringViewModel
     }
 
     // Nur so viele Bilder einlesen, wie noch Platz haben. Das Ermitteln der
-    // Aufnahmedaten öffnet jede Datei einzeln; bei einem Ordner, dessen Bilder erst aus
-    // der Cloud geholt werden (iCloud-Fotos unter Windows), zieht jedes Öffnen einen
-    // vollständigen Download nach sich.
+    // Aufnahmedaten öffnet jede Datei einzeln.
     private async Task<IReadOnlyList<Photo>> ReadNextBatchAsync(
         ExampleSetViewModel set,
         bool isPositive,
         CancellationToken cancellationToken)
     {
-        // Auch hier zählt der Balken mit: Bei einem Ordner, dessen Bilder erst aus der
-        // Cloud geholt werden, dauert schon ein Schwung von wenigen Bildern spürbar lange.
+        // Auch hier zählt der Balken mit: Auf einer langsamen Platte dauert schon ein Schwung
+        // von wenigen Bildern spürbar lange.
         Progress<PhotoScanProgress> progress = new(stand => _status.ReportProgress(
             _localizer.Format("Common_GatherProgress", stand.Processed, stand.Total),
             stand.Total == 0 ? 0 : stand.Processed * 100d / stand.Total));

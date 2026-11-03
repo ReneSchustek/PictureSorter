@@ -7,6 +7,24 @@ using PictureSorter.Core.ValueObjects;
 
 namespace PictureSorter.App.Tests.Fakes;
 
+/// <summary>Steht für das, was SQLite bei einer gesperrten oder beschädigten Datei wirft.</summary>
+internal sealed class TestDatabaseException : System.Data.Common.DbException
+{
+    public TestDatabaseException()
+    {
+    }
+
+    public TestDatabaseException(string message)
+        : base(message)
+    {
+    }
+
+    public TestDatabaseException(string message, Exception innerException)
+        : base(message, innerException)
+    {
+    }
+}
+
 /// <summary>
 /// Wirft bei jedem Zugriff denselben Fehler. Damit lassen sich die Abbruch- und
 /// Fehlerzweige der ViewModels prüfen, ohne ein Dateisystem zu manipulieren.

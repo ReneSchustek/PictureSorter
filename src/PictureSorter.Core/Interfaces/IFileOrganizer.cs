@@ -29,8 +29,8 @@ public interface IFileOrganizer
 
     /// <summary>
     /// Entfernt die Kopie eines Kopierlaufs, aber nur, wenn sie nachweislich noch
-    /// unverändert ist. Das Original liegt beim Kopieren noch im Quellordner; ein
-    /// Zurückholen gäbe es hier also nicht zurückzuholen, sondern doppelt.
+    /// unverändert ist. Das Original liegt beim Kopieren noch im Quellordner, es gibt
+    /// also nichts zurückzuholen.
     /// </summary>
     /// <param name="copyPath">Der Pfad der angelegten Kopie.</param>
     /// <param name="expectedLength">

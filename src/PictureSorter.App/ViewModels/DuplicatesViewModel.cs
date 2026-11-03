@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -100,13 +101,13 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
         BuildFilters();
     }
 
-    /// <summary>
-    /// Die gefundenen Duplikat-Gruppen.
-    /// </summary>
     // Der ganze Fund. Getrennt von der Anzeige, damit ein Filter nur bestimmt, was man
     // sieht, und nicht klammheimlich den Bestand verkleinert.
     private readonly List<DuplicateGroupViewModel> _allGroups = [];
 
+    /// <summary>
+    /// Die angezeigten Duplikat-Gruppen.
+    /// </summary>
     public ObservableCollection<DuplicateGroupViewModel> Groups { get; } = [];
 
     /// <summary>Die Filter: alle Gruppen, nur gleiche, nur ähnliche.</summary>
@@ -251,9 +252,6 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
             || photo.FilePath.Contains(gesucht, StringComparison.OrdinalIgnoreCase));
     }
 
-    // Steht der Ordner sichtbar im Explorer und wird trotzdem nicht gefunden, liegt es
-    // meist an einem Zeichen, das man nicht sieht - etwa einem geschützten Leerzeichen
-    // aus einem iCloud-Bestand. Dann wird der wirkliche Name genannt.
     // Fotos, die nur online liegen, werden nicht gelesen. Ohne den Hinweis sähe das aus, als gäbe es sie nicht.
     // Im Hintergrund, weil ein großer Ordner sonst die Oberfläche anhielte.
     private async Task<string> WithOnlineOnlyHintAsync(string message)
@@ -264,6 +262,9 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
         return count == 0 ? message : $"{message} {_localizer.Format("Common_OnlineOnlyHint", count)}";
     }
 
+    // Steht der Ordner sichtbar im Explorer und wird trotzdem nicht gefunden, liegt es
+    // meist an einem Zeichen, das man nicht sieht, etwa einem geschützten Leerzeichen
+    // aus einem iCloud-Bestand. Dann wird der wirkliche Name genannt.
     private string DescribeMissingFolder()
     {
         if (!string.IsNullOrWhiteSpace(SourceFolder))
@@ -305,6 +306,10 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
     }
 
     [RelayCommand(CanExecute = nameof(CanScan))]
+    [SuppressMessage(
+        "Design",
+        "CA1031:Keine allgemeinen Ausnahmetypen abfangen",
+        Justification = "Eine nicht gefangene Ausnahme ließe die Ansicht für immer auf „sucht\" stehen; sie gehört als Meldung in die Statusleiste.")]
     private async Task ScanAsync()
     {
         using IDisposable? logScope = _logger.BeginScope("Duplikatsuche {CorrelationId}", NewCorrelationId());
@@ -340,7 +345,7 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
             State = DuplicateState.Error;
             _status.Finish(DescribeMissingFolder(), StatusSeverity.Error);
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        catch (Exception ex)
         {
             DuplicatesLog.ScanFailed(_logger, ex);
             State = DuplicateState.Error;
@@ -381,6 +386,10 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
         _status.Report(_localizer.Get("Common_CancelRequested"));
     }
 
+    [SuppressMessage(
+        "Design",
+        "CA1031:Keine allgemeinen Ausnahmetypen abfangen",
+        Justification = "Der Papierkorb meldet auch COM-Fehler. Ein Bild, das nicht weggeht, darf den Lauf nicht beenden; es bleibt in der Liste und im Protokoll.")]
     private async Task DeleteMarkedAsync(IReadOnlyList<DuplicatePhotoViewModel> marked)
     {
         using IDisposable? logScope = _logger.BeginScope("Löschen {CorrelationId}", NewCorrelationId());
@@ -404,7 +413,7 @@ internal sealed partial class DuplicatesViewModel : ObservableObject, IDisposabl
                     RemovePhoto(photo);
                     deleted++;
                 }
-                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                catch (Exception ex) when (ex is not OperationCanceledException)
                 {
                     DuplicatesLog.DeleteFailed(_logger, photo.FileName, ex);
                 }

@@ -523,6 +523,15 @@
   <data name="Sort_BulkConfirmPrimary" xml:space="preserve">
     <value>Move</value>
   </data>
+  <data name="Sort_BulkConfirmCopyTitle" xml:space="preserve">
+    <value>Copy many files</value>
+  </data>
+  <data name="Sort_BulkConfirmCopyMessage" xml:space="preserve">
+    <value>{0} files will be copied. Continue?</value>
+  </data>
+  <data name="Sort_BulkConfirmCopyPrimary" xml:space="preserve">
+    <value>Copy</value>
+  </data>
   <data name="Wizard_Step1Title" xml:space="preserve">
     <value>Step 1 of 6: Choose the folder with your photos</value>
   </data>
@@ -585,6 +594,9 @@
   </data>
   <data name="Proposal_MethodUnknown" xml:space="preserve">
     <value>Not rated</value>
+  </data>
+  <data name="Proposal_MethodCaptureDate" xml:space="preserve">
+    <value>Capture date</value>
   </data>
   <data name="Proposal_AutomationName" xml:space="preserve">
     <value>{0}, target {1}, confidence {2}</value>
@@ -922,6 +934,9 @@
   <data name="Sort_RecoverOfferSummary" xml:space="preserve">
     <value>There are {1} decisions from an earlier analysis of “{0}” in memory. They can be brought back without re-evaluating a single picture — even from a run that was interrupted.</value>
   </data>
+  <data name="PhotoTile_Head.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>View picture large</value>
+  </data>
   <data name="PhotoTile_ZoomButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Enlarge picture</value>
   </data>
@@ -1211,7 +1226,7 @@
     <value>There are no photos directly in this folder.</value>
   </data>
   <data name="Bulk_YearLimitNote" xml:space="preserve">
-    <value>Only photos from the named year; photos without a date stay put: {0}.</value>
+    <value>Only photos from the named year: {0}. Without a capture date, the file's modified date counts.</value>
   </data>
   <data name="Bulk_NoExamplesNote" xml:space="preserve">
     <value>No example images yet, so no suggestions: {0}. Assign a few photos by hand and the program learns from them.</value>

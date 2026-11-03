@@ -198,6 +198,8 @@ public sealed class DuplicateScanService : IDuplicateScanner
         List<FingerprintedPhoto> cluster = [candidates[seed]];
         clustered[seed] = true;
 
+        // Verglichen wird nur mit dem ersten Bild der Gruppe, nicht mit jedem darin. Sonst zöge eine Kette aus je
+        // leicht ähnlichen Fotos auch Bilder zusammen, die einander gar nicht gleichen, und die stünden zum Löschen.
         for (int other = seed + 1; other < candidates.Count; other++)
         {
             if (clustered[other])

@@ -136,7 +136,6 @@ public static class TargetFolderNaming
         "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
     ];
 
-    // Intern (nicht privat) für den gezielten Randfall-Test der Pfad-Sicherheit.
     /// <summary>
     /// Macht aus einem beliebigen Namen einen, den Windows als Ordner anlegt.
     /// </summary>

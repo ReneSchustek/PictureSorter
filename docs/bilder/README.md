@@ -4,11 +4,11 @@ tags: anleitung, dotnet, oberfläche
 
 # Bildschirmfotos
 
-Sieben Ansichten der Anwendung, je einmal im hellen und im dunklen Erscheinungsbild.
+Acht Ansichten der Anwendung, je einmal im hellen und im dunklen Erscheinungsbild.
 Aufgenommen an einem Demo-Bestand: vierzehn Fotos von der Nordseeküste mit
 Aufnahmedatum, darunter zwei Paare, die sich gleichen, und daneben ein zweiter,
 kleiner Bestand mit vier unlesbaren Dateinamen, wie ihn ein iCloud-Export mitbringt.
-Die Fotos stammen aus einer eigenen, veröffentlichten Serie; `tools/demobilder.ps1`
+Für „Alles einsortieren" legt das Werkzeug daraus einen eigenen Ordner mit zwei Zielen an. Die Fotos stammen aus einer eigenen, veröffentlichten Serie; `tools/demobilder.ps1`
 holt sie und bereitet sie auf.
 
 | Datei | Was zu sehen ist |
@@ -20,6 +20,7 @@ holt sie und bereitet sie auf.
 | `05-detailansicht.png` | Detailansicht eines Bildes samt Angaben, Doppelgängern und Bearbeiten |
 | `06-gedaechtnis.png` | Was sich die Anwendung gemerkt hat, mit Ordner- und Kategorie-Filter |
 | `07-namen-richten.png` | Unlesbare Dateinamen mit ihren Vorschlägen (aus dem Aufnahmedatum oder aus Ordner und Nummer) |
+| `08-alles-einsortieren.png` | Ein Durchlauf über alle Unterordner: Vorschläge je Foto, unsichere bleiben liegen |
 
 Die dunkle Reihe trägt dieselben Namen mit dem Zusatz `-dunkel`.
 
@@ -36,7 +37,7 @@ neu:
 ```
 
 Das Werkzeug baut die Anwendung, erzeugt beide Demo-Bestände über `tools/demobilder.ps1`,
-geht jede Ansicht an und legt die vierzehn Bilder hier ab. Es dauert einige Minuten, weil
+geht jede Ansicht an und legt die sechzehn Bilder hier ab. Es dauert einige Minuten, weil
 für die Sortier-Ansicht wirklich eine Analyse läuft. Jedes Foto wird der Bilderkennung
 vorgelegt. Ollama muss dafür laufen.
 
@@ -55,4 +56,4 @@ darin, und wie viel helle Fläche? Eine leere Aufnahme hat genau eine Farbe, und
 der dunklen Reihe, auf dem ein Dialog sein Design nicht übernommen hat, fällt durch den
 Anteil weißer Fläche auf. Beanstandete Bilder werden beim Namen genannt.
 
-Aufgenommen mit Fassung 1.11.3 bei 1386 × 993 Punkten.
+Aufgenommen mit Fassung 1.13.3 bei 1386 × 993 Punkten.

@@ -12,6 +12,8 @@ namespace PictureSorter.App.Views;
 /// </summary>
 internal sealed partial class DuplicatesPage : Page
 {
+    private bool _previewOpen;
+
     /// <summary>
     /// Das an die Oberfläche gebundene ViewModel.
     /// </summary>
@@ -42,22 +44,36 @@ internal sealed partial class DuplicatesPage : Page
     // hier vollkommen überflüssig.
     private async void OnPhotoOpened(object? sender, EventArgs e)
     {
-        if (sender is not PhotoTile { Tag: DuplicatePhotoViewModel photo })
+        // Wiedereintritt verhindern: WinUI lässt nur einen ContentDialog gleichzeitig zu, und ein
+        // zweiter, fast gleichzeitiger Klick risse im async-void-Handler den Prozess mit.
+        if (_previewOpen || sender is not PhotoTile { Tag: DuplicatePhotoViewModel photo })
         {
             return;
         }
 
-        IReadOnlyList<string> geschwister = ViewModel.SiblingsOf(photo);
-        PhotoEditOutcome ergebnis = await PhotoPreviewDialog
-            .ShowAsync(this, photo.Photo, geschwister)
-            .ConfigureAwait(true);
-
-        // Nach einem Umbenennen, Verschieben oder Löschen stimmt der Fund für dieses
-        // Bild nicht mehr. Es aus der Gruppe zu nehmen ist ehrlicher, als einen Pfad
-        // stehen zu lassen, den es nicht mehr gibt.
-        if (ergebnis.NeedsRefresh)
+        _previewOpen = true;
+        try
         {
-            ViewModel.Forget(photo);
+            IReadOnlyList<string> siblings = ViewModel.SiblingsOf(photo);
+            PhotoEditOutcome outcome = await PhotoPreviewDialog
+                .ShowAsync(this, photo.Photo, siblings)
+                .ConfigureAwait(true);
+
+            // Nach einem Umbenennen, Verschieben oder Löschen stimmt der Fund für dieses
+            // Bild nicht mehr. Es aus der Gruppe zu nehmen ist ehrlicher, als einen Pfad
+            // stehen zu lassen, den es nicht mehr gibt.
+            if (outcome.NeedsRefresh)
+            {
+                ViewModel.Forget(photo);
+            }
+        }
+        catch (InvalidOperationException)
+        {
+            // Ein Dialog war bereits offen, für die Nutzerin kein Fehler.
+        }
+        finally
+        {
+            _previewOpen = false;
         }
     }
 

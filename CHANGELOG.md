@@ -4,6 +4,22 @@ Alle nennenswerten Änderungen an diesem Projekt werden hier dokumentiert.
 Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/),
 die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
+## [1.13.3] - 2026-11-03
+
+### Behoben
+
+- **„Alles einsortieren" sagt richtig, welches Datum bei der Jahresgrenze zählt.** Der Hinweis nannte „Fotos ohne Datum bleiben liegen". Tatsächlich
+  zählt bei einem Foto ohne Aufnahmedatum das Änderungsdatum der Datei.
+- **Die Rückfrage vor großen Mengen nennt die richtige Zahl.** Sie zählte auch abgewählte Vorschläge und sprach beim Kopieren vom Verschieben.
+- **„Einsortiert nach" stimmt.** Die Detailansicht nannte auch bei einem abgelehnten oder abgewählten Foto eine Gruppe als Ziel.
+- **Vorschläge nach Datum heißen so.** In der Vorschau standen sie als „Unbewertet".
+- **Ein Foto ohne Aufnahmedatum liegt auf dem richtigen Tag.** Die Ersatzzeit aus der Datei zählte für Zeitraum und Ordner in UTC, die Anzeige in Ortszeit. Kurz nach Mitternacht lagen sie einen Tag auseinander.
+- **Neu beginnen setzt auch Kopieren, Zielort und „nur nach Datum" zurück.** Ein neuer Lauf übernahm sie bisher still.
+- **Eine gesperrte oder beschädigte Datenbank beendet das Programm nicht mehr.** Das galt für die Seiten Gedächtnis, Sortieren und Namen sowie die Detailansicht.
+- **Ein Fehler bei der Duplikat-Suche lässt die Seite nicht mehr stehen.** Ein Doppelklick auf ein Bild dort beendet das Programm nicht mehr.
+- **Ein stehender Update-Download gibt nach fünf Minuten auf.** Die Frist galt bisher nur bis zur ersten Antwort. Auch das automatische Update lässt sich jetzt stoppen.
+- **Eine Antwort der Bilderkennung in Prozent wird richtig gelesen.** Aus „5" (5 %) wurde bisher volle Sicherheit, und das Foto galt als passend.
+
 ## [1.13.2] - 2026-11-03
 
 ### Behoben

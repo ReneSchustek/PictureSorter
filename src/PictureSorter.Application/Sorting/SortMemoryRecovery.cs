@@ -151,9 +151,9 @@ public sealed class SortMemoryRecovery
         return proposals;
     }
 
-    // Die Datei muss noch da und unverändert sein. Die Signatur schließt Pfad, Größe und
-    // Aufnahmezeit ein: Stimmt sie nicht mehr, ist es nicht mehr dasselbe Foto, und das
-    // gemerkte Urteil gilt nicht für das, was jetzt dort liegt.
+    // Die Datei muss noch da und unverändert sein. Die Signatur hängt am Inhalt, bei Einträgen älterer
+    // Fassungen an Pfad, Größe und Aufnahmezeit: Stimmt sie nicht mehr, ist es nicht mehr dasselbe Foto, und
+    // das gemerkte Urteil gilt nicht für das, was jetzt dort liegt.
     private async Task<Photo?> TryReadAsync(SortMemoryRecord record, CancellationToken cancellationToken)
     {
         try
@@ -176,7 +176,7 @@ public sealed class SortMemoryRecovery
                 ContentFingerprint = await _fingerprinter
                     .ComputeAsync(record.PhotoPath, cancellationToken)
                     .ConfigureAwait(false),
-                CapturedAt = metadata?.CapturedAt ?? new DateTimeOffset(info.LastWriteTimeUtc, TimeSpan.Zero),
+                CapturedAt = metadata?.CapturedAt ?? new DateTimeOffset(info.LastWriteTimeUtc).ToLocalTime(),
                 Width = metadata?.Width,
                 Height = metadata?.Height,
                 CameraModel = metadata?.CameraModel,

@@ -523,6 +523,15 @@
   <data name="Sort_BulkConfirmPrimary" xml:space="preserve">
     <value>Verschieben</value>
   </data>
+  <data name="Sort_BulkConfirmCopyTitle" xml:space="preserve">
+    <value>Viele Dateien kopieren</value>
+  </data>
+  <data name="Sort_BulkConfirmCopyMessage" xml:space="preserve">
+    <value>{0} Dateien werden kopiert. Fortfahren?</value>
+  </data>
+  <data name="Sort_BulkConfirmCopyPrimary" xml:space="preserve">
+    <value>Kopieren</value>
+  </data>
   <data name="Wizard_Step1Title" xml:space="preserve">
     <value>Schritt 1 von 6: Ordner mit Fotos wählen</value>
   </data>
@@ -585,6 +594,9 @@
   </data>
   <data name="Proposal_MethodUnknown" xml:space="preserve">
     <value>Unbewertet</value>
+  </data>
+  <data name="Proposal_MethodCaptureDate" xml:space="preserve">
+    <value>Aufnahmedatum</value>
   </data>
   <data name="Proposal_AutomationName" xml:space="preserve">
     <value>{0}, Ziel {1}, Sicherheit {2}</value>
@@ -922,6 +934,9 @@
   <data name="Sort_RecoverOfferSummary" xml:space="preserve">
     <value>Zu „{0}“ liegen {1} Urteile einer früheren Analyse im Gedächtnis. Sie lassen sich zurückholen, ohne ein einziges Bild erneut zu bewerten — auch aus einem Lauf, der abgebrochen ist.</value>
   </data>
+  <data name="PhotoTile_Head.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Bild groß ansehen</value>
+  </data>
   <data name="PhotoTile_ZoomButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Bild vergrößern</value>
   </data>
@@ -1211,7 +1226,7 @@
     <value>Es liegen keine Fotos direkt in diesem Ordner.</value>
   </data>
   <data name="Bulk_YearLimitNote" xml:space="preserve">
-    <value>Nur Fotos aus dem genannten Jahr, Fotos ohne Datum bleiben liegen: {0}.</value>
+    <value>Nur Fotos aus dem genannten Jahr: {0}. Ohne Aufnahmedatum zählt das Änderungsdatum der Datei.</value>
   </data>
   <data name="Bulk_NoExamplesNote" xml:space="preserve">
     <value>Noch keine Beispielbilder, deshalb keine Vorschläge: {0}. Ordne ein paar Fotos von Hand zu, dann lernt das Programm daraus.</value>

@@ -6,7 +6,7 @@ namespace PictureSorter.Core.ValueObjects;
 /// <summary>
 /// Erkennt Dateinamen, die sich nicht lesen lassen, und schlägt einen lesbaren vor.
 ///
-/// Der Anlass ist ein aus iCloud geladener Bestand: 159 von 1507 Dateien trugen Namen
+/// In einem aus iCloud geladenen Bestand trugen 159 von 1507 Dateien Namen
 /// wie <c>?4?ӝ___.JPEG</c>. Die Fragezeichen stehen für U+FFFD, das Zeichen, mit dem
 /// Windows meldet „hier stand etwas, das sich nicht abbilden ließ". Die Dateien selbst
 /// waren in Ordnung: Sie ließen sich öffnen, es waren gültige Bilder. Kaputt war
@@ -45,7 +45,7 @@ public static class FileNameRepair
             }
 
             // Ein Surrogat allein ist ein halbes Zeichen und damit kaputt. Ein Paar
-            // dagegen ist ein gültiges Zeichen - jedes Emoji besteht daraus. Wer nicht
+            // dagegen ist ein gültiges Zeichen: Jedes Emoji besteht daraus. Wer nicht
             // unterscheidet, bietet jeden Namen mit Emoji zum Umbenennen an.
             if (char.IsHighSurrogate(character))
             {

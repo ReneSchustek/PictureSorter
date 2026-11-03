@@ -12,9 +12,8 @@ namespace PictureSorter.Infrastructure.Caching;
 /// <remarks>
 /// Am Anfang stehen die Metadaten und der Bildbeginn, am Ende die letzten Bilddaten. Eine
 /// Bearbeitung ändert damit den Schlüssel. Bei 4.000 Fotos fallen so rund 500 MB Lesearbeit
-/// an statt des gesamten Bestands. Das zählt besonders bei Ordnern aus der Cloud, deren
-/// Dateien sonst bei jedem Lauf vollständig geladen würden. Die Änderungszeit gehört nicht
-/// dazu, weil ein Cloud-Abgleich sie ändert, ohne dass sich das Bild ändert.
+/// an statt des gesamten Bestands. Die Änderungszeit gehört nicht dazu, weil ein Cloud-Abgleich
+/// sie ändert, ohne dass sich das Bild ändert.
 /// </remarks>
 public sealed class FileFingerprinter : IFileFingerprinter
 {

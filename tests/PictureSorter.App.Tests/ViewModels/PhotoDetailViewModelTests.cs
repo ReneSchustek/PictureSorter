@@ -174,6 +174,52 @@ public sealed class PhotoDetailViewModelTests
         _ = Assert.Single(viewModel.Duplicates);
     }
 
+    [Theory]
+    [InlineData(SortMemoryStatus.Proposed)]
+    [InlineData(SortMemoryStatus.Rejected)]
+    [InlineData(SortMemoryStatus.Ignored)]
+    public async Task Relations_WithoutASortedDecision_NameNoTarget(SortMemoryStatus status)
+    {
+        // „Einsortiert nach Urlaub" bei einem Foto, das die KI abgelehnt hat, wäre schlicht falsch.
+        FakeSortMemoryStore memory = new();
+        await memory.UpsertAsync(
+            new SortMemoryRecord
+            {
+                FolderPath = Folder,
+                FileSignature = SamplePhoto().ComputeSignature(),
+                PhotoPath = Path.Combine(Folder, "urlaub.jpg"),
+                CategoryName = "Urlaub Norwegen",
+                Status = status,
+                Confidence = 0.5,
+                UpdatedAt = DateTimeOffset.UnixEpoch,
+            },
+            TestContext.Current.CancellationToken);
+        PhotoDetailViewModel viewModel = CreateViewModel(memory: memory);
+
+        await viewModel.LoadRelationsAsync([], TestContext.Current.CancellationToken);
+
+        Assert.False(viewModel.HasTarget);
+    }
+
+    [Fact]
+    public async Task Relations_WhenTheDatabaseFails_StillOpen()
+    {
+        PhotoDetailViewModel viewModel = new(
+            SamplePhoto(),
+            new FakePhotoFileEditor(),
+            new FakeFileDeleter(),
+            new FakeFolderPicker(@"D:\archiv"),
+            new FakeShellLauncher(),
+            new MemoryViewModelFailureTests.FailingSortMemory(new TestDatabaseException()),
+            new ReswLocalizer(),
+            NullLogger<PhotoDetailViewModel>.Instance);
+
+        await viewModel.LoadRelationsAsync([@"C:\fotos\kopie.jpg"], TestContext.Current.CancellationToken);
+
+        Assert.False(viewModel.HasTarget);
+        Assert.True(viewModel.HasDuplicates);
+    }
+
     [Fact]
     public async Task Relations_WithoutAnyDecision_StayEmpty()
     {

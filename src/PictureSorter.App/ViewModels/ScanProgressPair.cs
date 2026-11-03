@@ -29,7 +29,7 @@ internal readonly record struct ScanProgressPair(
 
     /// <summary>
     /// Stand des Ladens in Prozent (0–100). Ein beendeter Abschnitt steht bei 100 %, auch
-    /// wenn weniger Bilder gezählt wurden als der Ordner Dateien hat — dann waren die
+    /// wenn weniger Bilder gezählt wurden als der Ordner Dateien hat: Dann waren die
     /// übrigen Dateien keine lesbaren Bilder, und mehr wird es nicht mehr.
     /// </summary>
     public double GatherPercent => Percent(Gathered, GatherDone);

@@ -5,14 +5,14 @@ namespace PictureSorter.Core.ValueObjects;
 /// <summary>
 /// Das protokollierte Ergebnis zu einem einzelnen Foto.
 ///
-/// Der Schlüssel ist die Signatur, nicht der Pfad: Wird eine Datei umbenannt oder
-/// verändert, ändert sich ihre Signatur, und sie wird beim Fortsetzen zu Recht neu
-/// bewertet. Der Pfad steht trotzdem dabei: Ein Protokoll, das man nicht lesen kann,
+/// Der Schlüssel ist die Signatur, nicht der Pfad: Wird eine Datei verändert, ändert sich
+/// ihre Signatur, und sie wird beim Fortsetzen zu Recht neu bewertet. Der Pfad steht
+/// trotzdem dabei: Ein Protokoll, das man nicht lesen kann,
 /// ist keines.
 /// </summary>
 public sealed record AnalysisRunItem
 {
-    /// <summary>Signatur des Fotos (Pfad, Größe, Aufnahmezeit).</summary>
+    /// <summary>Signatur des Fotos (Inhalt; bei älteren Einträgen Pfad, Größe, Aufnahmezeit).</summary>
     public required string FileSignature { get; init; }
 
     /// <summary>Pfad des Fotos zum Zeitpunkt der Bewertung.</summary>

@@ -166,6 +166,25 @@ public sealed class UpdateServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task DownloadAndLaunchUpdaterAsync_WhenTheLineStalls_GivesUpInsteadOfHangingForever()
+    {
+        // Die Kopfzeilen kommen, danach steht die Leitung. HttpClient.Timeout greift hier nicht mehr.
+        string[] before = TempUpdateDirectories();
+        UpdateService service = await SetupCheckedAsync(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StreamContent(new StalledStream()),
+        });
+        service.DownloadTimeout = TimeSpan.FromMilliseconds(200);
+
+        bool started = await service
+            .DownloadAndLaunchUpdaterAsync(progress: null, TestContext.Current.CancellationToken)
+            .WaitAsync(TimeSpan.FromSeconds(30), TestContext.Current.CancellationToken);
+
+        Assert.False(started);
+        Assert.Equal(before.Length, TempUpdateDirectories().Length);
+    }
+
+    [Fact]
     public async Task DownloadAndLaunchUpdaterAsync_WithoutAvailableUpdate_DoesNothing()
     {
         (UpdateService service, _) = Setup(_ => Content("egal"));
@@ -416,6 +435,22 @@ public sealed class UpdateServiceTests : IDisposable
     /// Ein Strom ohne Ende. Bildet die Antwort nach, die ihre Größe verschweigt und
     /// einfach weiterliefert.
     /// </summary>
+    // Liefert nie ein Byte und endet erst mit dem Abbruch.
+    private sealed class StalledStream : MemoryStream
+    {
+        public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
+            return 0;
+        }
+
+        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
+            return 0;
+        }
+    }
+
     private sealed class EndlessStream : Stream
     {
         public override bool CanRead => true;

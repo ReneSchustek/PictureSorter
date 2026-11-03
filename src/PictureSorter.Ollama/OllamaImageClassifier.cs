@@ -71,7 +71,7 @@ public sealed class OllamaImageClassifier : IImageClassifier
         // Englisch aus demselben Grund wie die Bildbeschreibung: Weder Frage noch
         // Antwort erreichen die Nutzerin, das Urteil wird als JSON ausgewertet. Auf
         // Englisch hält sich das Bild-Modell zuverlässiger an die geforderte Form.
-        // Die Beschreibung der Gruppe bleibt unangetastet - sie sind die Worte der
+        // Die Beschreibung der Gruppe bleibt unangetastet: Sie sind die Worte der
         // Nutzerin, und die werden nicht übersetzt.
         string metadataLine = string.IsNullOrWhiteSpace(metadata)
             ? string.Empty
@@ -140,8 +140,9 @@ public sealed class OllamaImageClassifier : IImageClassifier
         };
     }
 
-    // Ebenso die Konfidenz: „0.9" als Zeichenkette ist häufig. Manche Modelle
-    // antworten auch in Prozent (95). Das Clamping des Aufrufers fängt das auf.
+    // Ebenso die Konfidenz: „0.9" als Zeichenkette ist häufig. Manche Modelle antworten auch in Prozent (95).
+    // Ohne die Umrechnung würden daraus erst beim Begrenzen 100 %, auch aus einem „5", und ein fast sicheres Nein
+    // der KI ginge als sicheres Ja durch.
     private static double ReadNumber(JsonElement root, string name)
     {
         if (!root.TryGetProperty(name, out JsonElement element))
@@ -151,15 +152,17 @@ public sealed class OllamaImageClassifier : IImageClassifier
 
         return element.ValueKind switch
         {
-            JsonValueKind.Number => element.GetDouble(),
+            JsonValueKind.Number => FromPercent(element.GetDouble()),
             JsonValueKind.String => double.TryParse(
                 element.GetString(),
                 NumberStyles.Float,
                 CultureInfo.InvariantCulture,
-                out double value) ? value : 0.0,
+                out double value) ? FromPercent(value) : 0.0,
             _ => 0.0,
         };
     }
+
+    private static double FromPercent(double value) => value is > 1.0 and <= 100.0 ? value / 100.0 : value;
 
     // Modelle umrahmen das JSON gelegentlich mit Fließtext. Gesucht wird das erste
     // Objekt mit ausgeglichenen Klammern, nicht bis zur letzten Klammer im Text:

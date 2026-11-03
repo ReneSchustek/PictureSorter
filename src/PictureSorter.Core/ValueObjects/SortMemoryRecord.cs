@@ -15,7 +15,7 @@ public sealed record SortMemoryRecord
     public required string FolderPath { get; init; }
 
     /// <summary>
-    /// Stabile Signatur der Datei (Inhalt bzw. Pfad, Größe und Änderungszeit).
+    /// Stabile Signatur der Datei (Inhalt; bei älteren Einträgen Pfad, Größe und Aufnahmezeit).
     /// Ändert sich die Datei, entsteht eine neue Signatur und das Foto wird erneut
     /// bewertet.
     /// </summary>

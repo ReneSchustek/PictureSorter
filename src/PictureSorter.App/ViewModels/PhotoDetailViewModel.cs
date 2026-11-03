@@ -168,20 +168,38 @@ internal sealed partial class PhotoDetailViewModel : ObservableObject
 
         OnPropertyChanged(nameof(HasDuplicates));
 
-        // Über den Ordner statt über die Kategorie: Welche Kategorie im Spiel war, weiß
-        // die Detailansicht nicht. Sie fragt nach diesem einen Bild, ganz gleich unter
-        // welchem Namen es einsortiert wurde.
+        TargetFolder = await FindTargetAsync(cancellationToken).ConfigureAwait(true);
+    }
+
+    // Über den Ordner statt über die Kategorie: Welche Kategorie im Spiel war, weiß die Detailansicht nicht. Nur
+    // „einsortiert" zählt: Auch ein offener Vorschlag, ein Nein der KI oder eine Abwahl stehen im Gedächtnis, und
+    // keines davon ist ein Ziel. Das Gedächtnis ist eine Zugabe, ohne Datenbank öffnet sich die Ansicht trotzdem.
+    [SuppressMessage(
+        "Design",
+        "CA1031:Keine allgemeinen Ausnahmetypen abfangen",
+        Justification = "Die Detailansicht darf an einer gesperrten oder beschädigten Datenbank nicht scheitern; der Fehler wird protokolliert.")]
+    private async Task<string> FindTargetAsync(CancellationToken cancellationToken)
+    {
         string signature = Photo.ComputeSignature();
         string legacySignature = Photo.ComputeLegacySignature();
-        IReadOnlyList<SortMemoryRecord> ordner = await _memory
-            .GetForFolderAsync(FolderPath, cancellationToken)
-            .ConfigureAwait(true);
 
-        SortMemoryRecord? record = ordner.FirstOrDefault(
-            eintrag => string.Equals(eintrag.FileSignature, signature, StringComparison.Ordinal)
-                || string.Equals(eintrag.FileSignature, legacySignature, StringComparison.Ordinal));
+        try
+        {
+            IReadOnlyList<SortMemoryRecord> records = await _memory
+                .GetForFolderAsync(FolderPath, cancellationToken)
+                .ConfigureAwait(true);
+            SortMemoryRecord? record = records.FirstOrDefault(
+                entry => entry.Status is SortMemoryStatus.Sorted
+                    && (string.Equals(entry.FileSignature, signature, StringComparison.Ordinal)
+                        || string.Equals(entry.FileSignature, legacySignature, StringComparison.Ordinal)));
 
-        TargetFolder = record?.CategoryName ?? string.Empty;
+            return record?.CategoryName ?? string.Empty;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            PhotoDetailLog.MemoryUnavailable(_logger, ex);
+            return string.Empty;
+        }
     }
 
     /// <summary>
@@ -347,6 +365,9 @@ internal static partial class PhotoDetailLog
 {
     [LoggerMessage(EventId = 5240, Level = LogLevel.Warning, Message = "Der Ordner konnte nicht geöffnet werden.")]
     public static partial void OpenFolderFailed(ILogger logger);
+
+    [LoggerMessage(EventId = 5242, Level = LogLevel.Warning, Message = "Im Sortier-Gedächtnis konnte nicht nachgesehen werden; das Ziel des Bildes bleibt offen.")]
+    public static partial void MemoryUnavailable(ILogger logger, Exception exception);
 
     [LoggerMessage(EventId = 5241, Level = LogLevel.Warning, Message = "Das Bild konnte nicht in den Papierkorb gelegt werden.")]
     public static partial void DeleteFailed(ILogger logger, Exception exception);

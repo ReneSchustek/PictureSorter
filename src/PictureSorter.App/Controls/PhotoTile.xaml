@@ -41,11 +41,11 @@
                      Tastaturbedienung und eine Ansage für die Sprachausgabe geschenkt. -->
                 <Button
                     x:Name="Head"
+                    x:Uid="PhotoTile_Head"
                     Padding="0"
                     HorizontalAlignment="Stretch"
                     HorizontalContentAlignment="Stretch"
                     VerticalContentAlignment="Stretch"
-                    AutomationProperties.Name="{x:Bind OpenLabel, Mode=OneWay}"
                     Background="{ThemeResource AppAccentSoftBrush}"
                     BorderThickness="0"
                     Click="OnHeadClick"

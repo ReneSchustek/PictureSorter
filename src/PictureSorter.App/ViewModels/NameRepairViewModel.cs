@@ -15,8 +15,8 @@ namespace PictureSorter.App.ViewModels;
 /// ViewModel der Namensreparatur: Ordner wählen, Vorschau durchsehen, umbenennen
 /// und im Zweifel zurücknehmen.
 ///
-/// Der Anlass steht in einem gemessenen Bestand: 159 von 1507 aus iCloud geladenen
-/// Dateien trugen Namen aus Ersatzzeichen. Die Bilder waren in Ordnung, nur ihre
+/// In einem gemessenen Bestand trugen 159 von 1507 aus iCloud geladenen Dateien Namen
+/// aus Ersatzzeichen. Die Bilder waren in Ordnung, nur ihre
 /// Namen nicht, und damit war weder zu suchen noch zu sortieren noch weiterzugeben.
 ///
 /// Die Vorschau ist hier kein Beiwerk, sondern der Kern: Ein Name ist alles, was die
@@ -149,9 +149,22 @@ internal sealed partial class NameRepairViewModel : ObservableObject, IDisposabl
     /// </summary>
     /// <returns>Der Vorgang.</returns>
     [RelayCommand]
+    [SuppressMessage(
+        "Design",
+        "CA1031:Keine allgemeinen Ausnahmetypen abfangen",
+        Justification = "Das Angebot ist eine Zugabe; eine gesperrte oder beschädigte Datenbank darf das Öffnen der Seite nicht scheitern lassen.")]
     public async Task RefreshUndoOfferAsync()
     {
-        RenameRun? run = await _undo.GetUndoableRunAsync(CancellationToken.None).ConfigureAwait(true);
+        RenameRun? run = null;
+        try
+        {
+            run = await _undo.GetUndoableRunAsync(CancellationToken.None).ConfigureAwait(true);
+        }
+        catch (Exception ex)
+        {
+            NameRepairLog.UndoOfferUnavailable(_logger, ex);
+        }
+
         HasUndoableRun = run is not null;
         UndoSummary = run is null
             ? string.Empty
@@ -440,6 +453,9 @@ internal static partial class NameRepairLog
 
     [LoggerMessage(EventId = 5301, Level = LogLevel.Error, Message = "Die Dateien konnten nicht umbenannt werden.")]
     public static partial void ApplyFailed(ILogger logger, Exception exception);
+
+    [LoggerMessage(EventId = 5303, Level = LogLevel.Warning, Message = "Im Protokoll der Umbenennungen konnte nicht nachgesehen werden; es wird kein Zurücknehmen angeboten.")]
+    public static partial void UndoOfferUnavailable(ILogger logger, Exception exception);
 
     [LoggerMessage(EventId = 5302, Level = LogLevel.Error, Message = "Der Umbenennungs-Lauf konnte nicht zurückgenommen werden.")]
     public static partial void UndoFailed(ILogger logger, Exception exception);

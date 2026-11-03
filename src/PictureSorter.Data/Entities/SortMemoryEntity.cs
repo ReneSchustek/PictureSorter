@@ -13,7 +13,7 @@ internal sealed class SortMemoryEntity
     /// <summary>Quellordner, für den die Entscheidung gilt.</summary>
     public required string FolderPath { get; set; }
 
-    /// <summary>Stabile Signatur der Datei (Pfad, Größe, Änderungszeit).</summary>
+    /// <summary>Stabile Signatur der Datei (Inhalt; bei älteren Einträgen Pfad, Größe, Aufnahmezeit).</summary>
     public required string FileSignature { get; set; }
 
     /// <summary>Pfad des Fotos zum Zeitpunkt der Entscheidung.</summary>

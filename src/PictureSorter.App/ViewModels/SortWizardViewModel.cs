@@ -62,7 +62,7 @@ internal sealed partial class SortWizardViewModel : ObservableObject
     /// <param name="canRunStep">Prüft, ob die Aktion eines Schritts ausführbar ist.</param>
     /// <param name="runStep">Führt die Aktion eines Schritts aus; <see langword="true"/> = danach weiterblättern.</param>
     /// <param name="resetData">Setzt die fachlichen Daten beim Neustart zurück.</param>
-    /// <param name="onStepEntered">Wird beim Betreten eines Schritts aufgerufen (z. B. Beispiele laden).</param>
+    /// <param name="onStepEntered">Wird beim Betreten eines Schritts aufgerufen.</param>
     /// <param name="localizer">Die Textquelle.</param>
     public SortWizardViewModel(
         Func<bool> isInteractive,
@@ -124,7 +124,7 @@ internal sealed partial class SortWizardViewModel : ObservableObject
 
     /// <summary>
     /// Beschriftung des einen Aktionsknopfs des aktuellen Schritts. Jeder Schritt
-    /// hat genau eine Aktion – ein Klick genügt, um sie auszulösen.
+    /// hat genau eine Aktion, ein Klick genügt, um sie auszulösen.
     /// </summary>
     public string PrimaryActionLabel => CurrentStep switch
     {
@@ -147,7 +147,7 @@ internal sealed partial class SortWizardViewModel : ObservableObject
 
     /// <summary>
     /// <see langword="true"/>, wenn die Karte für Schritt 3 sichtbar ist. Beim Sortieren
-    /// nach Datum entfällt sie ganz – auch in der Standard-Ansicht, in der sonst alle
+    /// nach Datum entfällt sie ganz, auch in der Standard-Ansicht, in der sonst alle
     /// Karten untereinander stehen.
     /// </summary>
     public bool ShowStep3 => !SkipsExampleSteps && (!IsGuided || IsStep3);
@@ -209,14 +209,14 @@ internal sealed partial class SortWizardViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Springt direkt zu einem Schritt – aber nur zu einem bereits erreichten und
+    /// Springt direkt zu einem Schritt, aber nur zu einem bereits erreichten und
     /// nur, wenn gerade kein Vorgang läuft.
     /// </summary>
     /// <param name="step">Der Zielschritt (0-basiert).</param>
     public void GoToStep(int step)
     {
         // Ein ausgeblendeter Schritt bleibt auch über die Schrittleiste unerreichbar:
-        // Seine Karte wäre unsichtbar und der Aktionsknopf ohne Wirkung – die Nutzerin
+        // Seine Karte wäre unsichtbar und der Aktionsknopf ohne Wirkung, und die Nutzerin
         // stünde vor einer leeren Seite.
         if (IsHidden(step))
         {

@@ -157,11 +157,8 @@ public sealed class FileSystemPhotoSource : IPhotoSource
         PhotoSourceLog.Scanned(_logger, paths.Count, redactedFolder);
     }
 
-    // Liest alle Dateien (mehrere gleichzeitig) und legt jedes fertige Bild in den
-    // Kanal. Der Schritt wartet fast nur: auf die Platte, bei einem Cloud-Ordner auf den
-    // Download der Datei. Genau hier lag die Wartezeit vor der Analyse; jede Datei wird
-    // einmal geöffnet, und bei iCloud-Fotos oder OneDrive zieht das je Datei einen
-    // vollständigen Download nach sich.
+    // Liest alle Dateien (mehrere gleichzeitig) und legt jedes fertige Bild in den Kanal. Der Schritt wartet
+    // fast nur auf die Platte; Dateien, die nur online liegen, sind beim Aufzählen schon ausgeschieden.
     [SuppressMessage(
         "Design",
         "CA1031:Keine allgemeinen Ausnahmetypen abfangen",
@@ -279,8 +276,7 @@ public sealed class FileSystemPhotoSource : IPhotoSource
 
     // Zwischen dem Auflisten und dem Lesen kann die Datei verschwinden: Ein
     // Virenscanner schiebt sie in Quarantäne, ein Cloud-Ordner räumt sie weg, jemand
-    // löscht sie im Explorer. Bis hierher riss der Zugriff auf die Dateigröße dann den
-    // gesamten Lauf mit (für alle Funktionen, die Fotos einlesen).
+    // löscht sie im Explorer. Das kostet diese eine Datei, nicht den Lauf.
     private async Task<Photo?> TryReadPhotoAsync(string path, CancellationToken cancellationToken)
     {
         try
@@ -334,7 +330,15 @@ public sealed class FileSystemPhotoSource : IPhotoSource
         }
         catch (TimeoutException)
         {
-            await attempt.CancelAsync().ConfigureAwait(false);
+            try
+            {
+                await attempt.CancelAsync().ConfigureAwait(false);
+            }
+            catch (ObjectDisposedException)
+            {
+                // Das Lesen ist im selben Moment doch fertig geworden und hat die Quelle freigegeben.
+            }
+
             throw;
         }
     }
@@ -345,9 +349,10 @@ public sealed class FileSystemPhotoSource : IPhotoSource
         PhotoMetadata? metadata = await _metadataReader.ReadAsync(path, cancellationToken).ConfigureAwait(false);
         string? fingerprint = await _fingerprinter.ComputeAsync(path, cancellationToken).ConfigureAwait(false);
 
-        // Liegt kein EXIF-Aufnahmedatum vor, dient die letzte Änderungszeit als Annäherung.
+        // Liegt kein EXIF-Aufnahmedatum vor, dient die letzte Änderungszeit als Annäherung. In Ortszeit wie das
+        // EXIF-Datum: Zeitraum und Ordnername lesen die Wandzeit, und die soll zur Anzeige passen.
         DateTimeOffset capturedAt = metadata?.CapturedAt
-            ?? new DateTimeOffset(info.LastWriteTimeUtc, TimeSpan.Zero);
+            ?? new DateTimeOffset(info.LastWriteTimeUtc).ToLocalTime();
 
         return new Photo
         {

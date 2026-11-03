@@ -6,7 +6,7 @@ namespace PictureSorter.App.ViewModels;
 /// <summary>
 /// Zustand des Update-Hinweises im Hauptfenster. Wird beim Start gesetzt, sobald
 /// eine neuere Version gefunden wurde, und vom Hauptfenster als dezenter Hinweis
-/// angezeigt. Die eigentliche Aktualisierung (Download und Start des Updaters)
+/// angezeigt. Die eigentliche Aktualisierung (Download und Start des Helfer-Modus)
 /// liegt in der App-Schicht.
 /// </summary>
 internal sealed partial class UpdateViewModel : ObservableObject
